@@ -35,7 +35,7 @@
         align-items: center;
       }
 
-.btn-switch, .btn-login {
+      .btn-switch, .btn-login {
         color: #ffffff;
         text-decoration: none;
         border: 1px solid #ffffff;
@@ -142,10 +142,10 @@
           margin-left: 0;
           width: 100%;
           justify-content: flex-end;
+          flex-wrap: wrap;
         }
 
-        .btn-switch { display: none; }
-        .btn-login { font-size: 0.8em; padding: 6px 12px; }
+        .btn-switch, .btn-login { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
 
         .hamburger { display: block; }
 
@@ -165,7 +165,6 @@
         }
 
         main { padding: 24px 20px; }
-
         h2 { font-size: 1.3em; }
       }
     </style>
