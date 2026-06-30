@@ -4,13 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academy | Pinnacle Darts</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <style>
+      * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
 
-      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; }
+      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
       header img { height: 70px; }
       header h1 { margin: 0; color: #ffffff; font-size: 2em; }
       header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
+
+      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+      .btn-switch, .btn-login { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; }
+      .btn-switch:hover, .btn-login:hover { background-color: #ffffff; color: #000000; }
+
+      .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
 
       nav { background-color: #222222; display: flex; justify-content: center; gap: 40px; padding: 15px; flex-wrap: wrap; }
       nav a { color: #ffffff; text-decoration: none; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
@@ -19,7 +27,7 @@
       main { padding: 40px; max-width: 900px; margin: 0 auto; }
       h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
 
-      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; }
+      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
       .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
       .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
       .tab:hover { color: #000000; }
@@ -41,16 +49,16 @@
       .negative { color: #cc0000; font-weight: bold; }
       .neutral { color: #888888; }
       .key { font-size: 0.85em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
-      .key span { margin-right: 20px; }
+      .key span { margin-right: 20px; display: inline-block; }
 
       .search-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
       .search-box label { font-weight: bold; display: block; margin-bottom: 10px; }
-      .search-controls { display: flex; gap: 12px; }
-      .search-controls input, .search-controls select { flex: 1; padding: 10px 14px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; }
+      .search-controls { display: flex; gap: 12px; flex-wrap: wrap; }
+      .search-controls input, .search-controls select { flex: 1; min-width: 140px; padding: 10px 14px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; }
       .search-controls input:focus, .search-controls select:focus { outline: none; border-color: #000000; }
 
       .profile-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 30px; }
-      .profile-top { display: flex; align-items: center; gap: 24px; margin-bottom: 30px; }
+      .profile-top { display: flex; align-items: center; gap: 24px; margin-bottom: 30px; flex-wrap: wrap; }
       .player-avatar { width: 90px; height: 90px; border-radius: 50%; background-color: #000000; color: #ffffff; font-size: 2.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
       .profile-info h3 { margin: 0 0 4px; font-size: 1.8em; }
       .profile-info .username { color: #888888; font-size: 0.95em; margin-bottom: 4px; }
@@ -64,13 +72,35 @@
       .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.95em; }
       .detail-row:last-child { border-bottom: none; }
       .detail-row .detail-label { color: #555555; }
-      .detail-row .detail-value { font-weight: bold; }
+      .detail-row .detail-value { font-weight: bold; text-align: right; }
 
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; }
-      .btn-switch:hover { background-color: #ffffff; color: #000000; }
-      .btn-login { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; }
-      .btn-login:hover { background-color: #ffffff; color: #000000; }
+      @media (max-width: 700px) {
+        header { flex-wrap: wrap; padding: 16px 20px; }
+        header img { height: 50px; }
+        header h1 { font-size: 1.4em; }
+        header p { font-size: 0.85em; }
+
+        .header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; }
+        .btn-switch { display: none; }
+        .btn-login { font-size: 0.8em; padding: 6px 12px; }
+
+        .hamburger { display: block; }
+
+        nav { display: none; flex-direction: column; gap: 0; padding: 0; }
+        nav.open { display: flex; }
+        nav a { padding: 14px 20px; border-bottom: 1px solid #333333; font-size: 1em; }
+
+        main { padding: 24px 20px; }
+        h2 { font-size: 1.3em; }
+
+        table { font-size: 0.85em; }
+        th, td { padding: 8px 6px; }
+
+        .key-stats { grid-template-columns: 1fr 1fr; }
+        .profile-top { gap: 14px; }
+        .player-avatar { width: 70px; height: 70px; font-size: 1.8em; }
+        .profile-info h3 { font-size: 1.4em; }
+      }
     </style>
   </head>
   <body>
@@ -84,10 +114,11 @@
       <div class="header-buttons">
         <a href="index.html" class="btn-switch">Switch to Online</a>
         <a href="login.html" class="btn-login">Login / Register</a>
+        <button class="hamburger" onclick="toggleMenu()">☰</button>
       </div>
     </header>
 
-    <nav>
+    <nav id="mainNav">
       <a href="academy.html">Home</a>
       <a href="academy.html">Standings</a>
       <a href="academy.html">Players</a>
@@ -118,7 +149,6 @@
         </div>
       </div>
 
-      <!-- Note: Scoring system to be updated to include drill points and academy-specific columns -->
       <div id="tab-table" class="tab-content">
         <table>
           <thead>
@@ -244,6 +274,10 @@
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
         event.target.classList.add('active');
         document.getElementById('tab-' + name).classList.add('active');
+      }
+
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
       }
 
       renderAcademyStandings();
