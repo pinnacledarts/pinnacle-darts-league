@@ -4,164 +4,69 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leagues | Pinnacle Darts League</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <style>
-      body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background-color: #f5f5f5;
-        color: #111111;
-      }
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
 
-      header {
-        background-color: #000000;
-        padding: 20px 40px;
-        display: flex;
-        align-items: center;
-        gap: 20px;
-      }
-
+      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
       header img { height: 70px; }
+      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
+      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
 
-      header h1 {
-        margin: 0;
-        color: #ffffff;
-        font-size: 2em;
-      }
+      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+      .btn-switch, .btn-login { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; }
+      .btn-switch:hover, .btn-login:hover { background-color: #ffffff; color: #000000; }
 
-      header p {
-        margin: 4px 0 0;
-        color: #cccccc;
-        font-size: 1em;
-      }
+      .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
 
-      nav {
-        background-color: #222222;
-        display: flex;
-        justify-content: center;
-        gap: 40px;
-        padding: 15px;
-      }
-
-      nav a {
-        color: #ffffff;
-        text-decoration: none;
-        font-size: 1.1em;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-      }
-
+      nav { background-color: #222222; display: flex; justify-content: center; gap: 40px; padding: 15px; }
+      nav a { color: #ffffff; text-decoration: none; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
       nav a:hover { color: #aaaaaa; }
 
-      main {
-        padding: 40px;
-        max-width: 900px;
-        margin: 0 auto;
-      }
-
-      h2 {
-        border-bottom: 3px solid #111111;
-        padding-bottom: 8px;
-        margin-top: 40px;
-      }
-
+      main { padding: 40px; max-width: 900px; margin: 0 auto; }
+      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-top: 40px; }
       h2:first-child { margin-top: 0; }
 
-      table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-      }
-
-      th {
-        background-color: #111111;
-        color: #ffffff;
-        padding: 12px;
-        text-align: left;
-      }
-
-      th abbr {
-        text-decoration: none;
-        cursor: help;
-        border-bottom: 1px dotted #ffffff;
-      }
-
-      td {
-        padding: 12px;
-        border-bottom: 1px solid #dddddd;
-      }
-
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th { background-color: #111111; color: #ffffff; padding: 12px; text-align: left; }
+      th abbr { text-decoration: none; cursor: help; border-bottom: 1px dotted #ffffff; }
+      td { padding: 12px; border-bottom: 1px solid #dddddd; }
       tr:nth-child(even) { background-color: #eeeeee; }
 
       .positive { color: #006600; font-weight: bold; }
       .negative { color: #cc0000; font-weight: bold; }
       .neutral { color: #888888; }
 
-      .fixture {
-        background-color: #ffffff;
-        border: 1px solid #dddddd;
-        border-radius: 6px;
-        padding: 16px 20px;
-        margin-bottom: 12px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-      }
-
-      .fixture .teams {
-        font-size: 1.1em;
-        font-weight: bold;
-      }
-
+      .fixture { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+      .fixture .teams { font-size: 1.1em; font-weight: bold; }
       .fixture .result { font-size: 1em; color: #555555; }
+      .fixture .result.pending { color: #aaaaaa; font-style: italic; }
 
-      .fixture .result.pending {
-        color: #aaaaaa;
-        font-style: italic;
-      }
+      .key { font-size: 0.85em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
+      .key span { margin-right: 20px; display: inline-block; }
 
-      .key {
-        font-size: 0.85em;
-        color: #666666;
-        margin-top: 12px;
-        border-top: 1px solid #dddddd;
-        padding-top: 12px;
-      }
+      @media (max-width: 700px) {
+        header { flex-wrap: wrap; padding: 16px 20px; }
+        header img { height: 50px; }
+        header h1 { font-size: 1.4em; }
+        header p { font-size: 0.85em; }
 
-      .key span { margin-right: 20px; }
+        .header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; }
+        .btn-switch { display: none; }
+        .btn-login { font-size: 0.8em; padding: 6px 12px; }
 
-      .header-buttons {
-        margin-left: auto;
-        display: flex;
-        gap: 10px;
-        align-items: center;
-      }
+        .hamburger { display: block; }
 
-      .btn-switch {
-        color: #ffffff;
-        text-decoration: none;
-        border: 1px solid #ffffff;
-        padding: 8px 18px;
-        border-radius: 4px;
-        font-size: 0.9em;
-      }
+        nav { display: none; flex-direction: column; gap: 0; padding: 0; }
+        nav.open { display: flex; }
+        nav a { padding: 14px 20px; border-bottom: 1px solid #333333; font-size: 1em; }
 
-      .btn-switch:hover {
-        background-color: #ffffff;
-        color: #000000;
-      }
+        main { padding: 24px 20px; }
+        h2 { font-size: 1.3em; }
 
-      .btn-login {
-        color: #ffffff;
-        text-decoration: none;
-        border: 1px solid #ffffff;
-        padding: 8px 18px;
-        border-radius: 4px;
-        font-size: 0.9em;
-      }
-
-      .btn-login:hover {
-        background-color: #ffffff;
-        color: #000000;
+        table { font-size: 0.85em; }
+        th, td { padding: 8px 6px; }
       }
     </style>
   </head>
@@ -176,14 +81,15 @@
       <div class="header-buttons">
         <a href="academy.html" class="btn-switch">Switch to Academy</a>
         <a href="login.html" class="btn-login">Login / Register</a>
+        <button class="hamburger" onclick="toggleMenu()">☰</button>
       </div>
     </header>
 
-    <nav>
+    <nav id="mainNav">
       <a href="index.html">Home</a>
       <a href="leagues.html">Leagues</a>
       <a href="tournaments.html">Tournaments</a>
-    <a href="players.html">Players</a>
+      <a href="players.html">Players</a>
     </nav>
 
     <main>
@@ -251,21 +157,13 @@
         const tbody = document.getElementById('standingsBody');
         tbody.innerHTML = sorted.map((p, i) => {
           const diff = p.legsFor - p.legsAgainst;
-          const diffDisplay = diff > 0
-            ? `<span class="positive">+${diff}</span>`
-            : diff < 0
-            ? `<span class="negative">${diff}</span>`
-            : `<span class="neutral">0</span>`;
-          return `<tr>
-            <td>${i + 1}</td>
-            <td>${p.name}</td>
-            <td>${p.played}</td>
-            <td>${p.won}</td>
-            <td>${p.lost}</td>
-            <td>${diffDisplay}</td>
-            <td><strong>${p.pts}</strong></td>
-          </tr>`;
+          const diffDisplay = diff > 0 ? `<span class="positive">+${diff}</span>` : diff < 0 ? `<span class="negative">${diff}</span>` : `<span class="neutral">0</span>`;
+          return `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.played}</td><td>${p.won}</td><td>${p.lost}</td><td>${diffDisplay}</td><td><strong>${p.pts}</strong></td></tr>`;
         }).join('');
+      }
+
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
       }
 
       renderStandings();
