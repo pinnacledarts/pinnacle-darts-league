@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pinnacle Darts League</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #111111;
+      }
+
+      header {
+        background-color: #000000;
+        padding: 20px 40px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      header img { height: 70px; }
+      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
+      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
+
+      nav {
+        background-color: #222222;
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        padding: 15px;
+      }
+
+      nav a {
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 1.1em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      nav a:hover { color: #aaaaaa; }
+
+      main {
+        padding: 40px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      h2 {
+        border-bottom: 3px solid #111111;
+        padding-bottom: 8px;
+        margin-top: 40px;
+      }
+
+      h2:first-child { margin-top: 0; }
+
+      .news-item {
+        background-color: #ffffff;
+        border: 1px solid #dddddd;
+        border-radius: 6px;
+        padding: 24px;
+        margin-bottom: 16px;
+      }
+
+      .news-item h3 { margin: 0 0 6px; font-size: 1.2em; }
+      .news-date { font-size: 0.85em; color: #888888; margin-bottom: 12px; }
+      .news-item p { margin: 0; color: #444444; line-height: 1.6; }
+
+      .news-tag {
+        display: inline-block;
+        background-color: #111111;
+        color: #ffffff;
+        font-size: 0.75em;
+        padding: 3px 10px;
+        border-radius: 20px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .see-more {
+        text-align: center;
+        margin-top: 10px;
+      }
+
+      .see-more a {
+        color: #111111;
+        font-weight: bold;
+        text-decoration: none;
+        border-bottom: 2px solid #111111;
+        padding-bottom: 2px;
+      }
+
+      .see-more a:hover { color: #555555; border-color: #555555; }
+
+      .header-buttons {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .btn-switch {
+        color: #ffffff;
+        text-decoration: none;
+        border: 1px solid #ffffff;
+        padding: 8px 18px;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+
+      .btn-switch:hover { background-color: #ffffff; color: #000000; }
+
+      .btn-login {
+        color: #ffffff;
+        text-decoration: none;
+        border: 1px solid #ffffff;
+        padding: 8px 18px;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+
+      .btn-login:hover { background-color: #ffffff; color: #000000; }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <img src="logo.png" alt="Pinnacle Darts Logo">
+      <div>
+        <h1>Pinnacle Darts League</h1>
+        <p>Official League Website</p>
+      </div>
+      <div class="header-buttons">
+        <a href="academy.html" class="btn-switch">Switch to Academy</a>
+        <a href="login.html" class="btn-login">Login / Register</a>
+      </div>
+    </header>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="leagues.html">Leagues</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="players.html">Players</a>
+    </nav>
+
+    <main>
+      <h2>Welcome</h2>
+      <p>Welcome to the official Pinnacle Darts League website. Check the standings, fixtures and player profiles above.</p>
+
+      <h2>Latest News</h2>
+
+      <div class="news-item">
+        <span class="news-tag">League</span>
+        <h3>Season 1 is underway</h3>
+        <div class="news-date">June 2026</div>
+        <p>The first season of the Pinnacle Darts League has kicked off. Check the Leagues page for the latest standings and upcoming fixtures.</p>
+      </div>
+
+      <div class="news-item">
+        <span class="news-tag">Announcement</span>
+        <h3>Welcome to the Pinnacle Darts League!</h3>
+        <div class="news-date">June 2026</div>
+        <p>The Pinnacle Darts League website is now live. Stay tuned for fixtures, results, standings and more as the season gets underway.</p>
+      </div>
+
+      <div class="see-more">
+        <a href="news.html">See all news →</a>
+      </div>
+
+    </main>
+
+  </body>
+</html>

@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Players | Pinnacle Darts League</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #111111;
+      }
+
+      header {
+        background-color: #000000;
+        padding: 20px 40px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      header img { height: 70px; }
+      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
+      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
+
+      nav {
+        background-color: #222222;
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        padding: 15px;
+      }
+
+      nav a {
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 1.1em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      nav a:hover { color: #aaaaaa; }
+
+      main { padding: 40px; max-width: 900px; margin: 0 auto; }
+
+      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; }
+
+      .search-box {
+        background-color: #ffffff;
+        border: 1px solid #dddddd;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+      }
+
+      .search-box label { font-weight: bold; display: block; margin-bottom: 10px; }
+
+      .search-controls { display: flex; gap: 12px; }
+
+      .search-controls input,
+      .search-controls select {
+        flex: 1;
+        padding: 10px 14px;
+        border: 1px solid #dddddd;
+        border-radius: 4px;
+        font-size: 1em;
+        background-color: #f9f9f9;
+      }
+
+      .search-controls input:focus,
+      .search-controls select:focus { outline: none; border-color: #000000; }
+
+      .profile-card {
+        background-color: #ffffff;
+        border: 1px solid #dddddd;
+        border-radius: 8px;
+        padding: 30px;
+        margin-bottom: 20px;
+      }
+
+      .profile-top { display: flex; align-items: center; gap: 24px; margin-bottom: 30px; }
+
+      .player-avatar {
+        width: 90px; height: 90px; border-radius: 50%;
+        background-color: #000000; color: #ffffff;
+        font-size: 2.2em; font-weight: bold;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .profile-info h3 { margin: 0 0 4px; font-size: 1.8em; }
+      .profile-info .username { color: #888888; font-size: 0.95em; margin-bottom: 4px; }
+      .profile-info .location { font-size: 0.9em; color: #555555; }
+
+      .key-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 30px;
+      }
+
+      .stat-box { border: 1px solid #dddddd; border-radius: 8px; padding: 20px; text-align: center; }
+      .stat-box .stat-label { font-size: 0.8em; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+      .stat-box .stat-value { font-size: 2em; font-weight: bold; }
+
+      .details-section { border-top: 1px solid #eeeeee; padding-top: 20px; }
+      .details-section h4 { font-size: 1em; margin: 0 0 16px; padding-left: 12px; border-left: 4px solid #000000; }
+
+      .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.95em; }
+      .detail-row:last-child { border-bottom: none; }
+      .detail-row .detail-label { color: #555555; }
+      .detail-row .detail-value { font-weight: bold; }
+
+      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+
+      .btn-switch { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; }
+      .btn-switch:hover { background-color: #ffffff; color: #000000; }
+
+      .btn-login { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; }
+      .btn-login:hover { background-color: #ffffff; color: #000000; }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <img src="logo.png" alt="Pinnacle Darts Logo">
+      <div>
+        <h1>Pinnacle Darts League</h1>
+        <p>Official League Website</p>
+      </div>
+      <div class="header-buttons">
+        <a href="academy.html" class="btn-switch">Switch to Academy</a>
+        <a href="login.html" class="btn-login">Login / Register</a>
+      </div>
+    </header>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="leagues.html">Leagues</a>
+      <a href="tournaments.html">Tournaments</a>
+<a href="players.html">Players</a>
+    </nav>
+
+    <main>
+      <h2>Players</h2>
+
+      <div class="search-box">
+        <label>View Player</label>
+        <div class="search-controls">
+          <input type="text" id="searchInput" placeholder="Search player..." oninput="searchPlayer()" />
+          <select id="playerDropdown" onchange="selectPlayer()">
+            <option value="macca">Macca</option>
+            <option value="craig">Craig</option>
+            <option value="judd">Judd</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="profile-card">
+        <div class="profile-top">
+          <div class="player-avatar" id="profileAvatar">M</div>
+          <div class="profile-info">
+            <h3 id="profileName">Macca</h3>
+            <div class="username" id="profileUsername">@macca</div>
+            <div class="location" id="profileLocation">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England • Barnsley</div>
+          </div>
+        </div>
+
+        <div class="key-stats">
+          <div class="stat-box">
+            <div class="stat-label">Average</div>
+            <div class="stat-value" id="profileAverage">87</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Wins</div>
+            <div class="stat-value" id="profileWins">1</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Matches</div>
+            <div class="stat-value" id="profileMatches">1</div>
+          </div>
+        </div>
+
+        <div class="details-section">
+          <h4>Player Details</h4>
+          <div class="detail-row">
+            <span class="detail-label">Member Since</span>
+            <span class="detail-value" id="profileMemberSince">June 2026</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Last 100 Average</span>
+            <span class="detail-value" id="profileLast100">87</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Highest Checkout</span>
+            <span class="detail-value" id="profileCheckout">116</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Country</span>
+            <span class="detail-value" id="profileCountry">England</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Hometown</span>
+            <span class="detail-value" id="profileHometown">Barnsley</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Darts Brand</span>
+            <span class="detail-value" id="profileBrand">Target</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Dart Weight</span>
+            <span class="detail-value" id="profileWeight">24g</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Walkout Song</span>
+            <span class="detail-value" id="profileWalkout">Return of the Mac</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Favourite Player</span>
+            <span class="detail-value" id="profileFavPlayer">The Asp</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">League Rank</span>
+            <span class="detail-value" id="profileRank">1</span>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <script>
+      const players = {
+        macca: {
+          avatar: "M", name: "Macca", username: "@macca",
+          location: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England • Barnsley",
+          average: 87, wins: 1, matches: 1,
+          memberSince: "June 2026", last100: 87, checkout: 116,
+          country: "England", hometown: "Barnsley",
+          brand: "Target", weight: "24g",
+          walkout: "Return of the Mac", favPlayer: "The Asp", rank: 1
+        },
+        craig: {
+          avatar: "C", name: "Craig", username: "@craig",
+          location: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England",
+          average: 74, wins: 0, matches: 1,
+          memberSince: "June 2026", last100: 74, checkout: 96,
+          country: "England", hometown: "TBC",
+          brand: "TBC", weight: "TBC",
+          walkout: "TBC", favPlayer: "TBC", rank: 2
+        },
+        judd: {
+          avatar: "J", name: "Judd", username: "@judd",
+          location: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England",
+          average: 0, wins: 0, matches: 0,
+          memberSince: "June 2026", last100: 0, checkout: 0,
+          country: "England", hometown: "TBC",
+          brand: "TBC", weight: "TBC",
+          walkout: "TBC", favPlayer: "TBC", rank: 3
+        }
+      };
+
+      function showPlayer(key) {
+        const p = players[key];
+        if (!p) return;
+        document.getElementById("profileAvatar").textContent = p.avatar;
+        document.getElementById("profileName").textContent = p.name;
+        document.getElementById("profileUsername").textContent = p.username;
+        document.getElementById("profileLocation").textContent = p.location;
+        document.getElementById("profileAverage").textContent = p.average;
+        document.getElementById("profileWins").textContent = p.wins;
+        document.getElementById("profileMatches").textContent = p.matches;
+        document.getElementById("profileMemberSince").textContent = p.memberSince;
+        document.getElementById("profileLast100").textContent = p.last100;
+        document.getElementById("profileCheckout").textContent = p.checkout;
+        document.getElementById("profileCountry").textContent = p.country;
+        document.getElementById("profileHometown").textContent = p.hometown;
+        document.getElementById("profileBrand").textContent = p.brand;
+        document.getElementById("profileWeight").textContent = p.weight;
+        document.getElementById("profileWalkout").textContent = p.walkout;
+        document.getElementById("profileFavPlayer").textContent = p.favPlayer;
+        document.getElementById("profileRank").textContent = p.rank;
+      }
+
+      function searchPlayer() {
+        const val = document.getElementById("searchInput").value.toLowerCase().trim();
+        const match = Object.keys(players).find(k => players[k].name.toLowerCase().startsWith(val) && val.length > 0);
+        if (match) {
+          document.getElementById("playerDropdown").value = match;
+          showPlayer(match);
+        }
+      }
+
+      function selectPlayer() {
+        const val = document.getElementById("playerDropdown").value;
+        document.getElementById("searchInput").value = players[val] ? players[val].name : "";
+        showPlayer(val);
+      }
+
+      showPlayer("macca");
+    </script>
+
+  </body>
+</html>

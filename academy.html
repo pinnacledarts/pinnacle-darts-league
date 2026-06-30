@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academy | Pinnacle Darts</title>
+    <style>
+      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
+
+      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; }
+      header img { height: 70px; }
+      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
+      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
+
+      nav { background-color: #222222; display: flex; justify-content: center; gap: 40px; padding: 15px; flex-wrap: wrap; }
+      nav a { color: #ffffff; text-decoration: none; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+      nav a:hover { color: #aaaaaa; }
+
+      main { padding: 40px; max-width: 900px; margin: 0 auto; }
+      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
+
+      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; }
+      .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+      .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
+      .tab:hover { color: #000000; }
+      .tab-content { display: none; }
+      .tab-content.active { display: block; }
+
+      .news-item { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 24px; margin-bottom: 16px; }
+      .news-item h3 { margin: 0 0 6px; font-size: 1.2em; }
+      .news-date { font-size: 0.85em; color: #888888; margin-bottom: 12px; }
+      .news-item p { margin: 0; color: #444444; line-height: 1.6; }
+      .news-tag { display: inline-block; background-color: #111111; color: #ffffff; font-size: 0.75em; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+      th { background-color: #111111; color: #ffffff; padding: 12px; text-align: left; }
+      th abbr { text-decoration: none; cursor: help; border-bottom: 1px dotted #ffffff; }
+      td { padding: 12px; border-bottom: 1px solid #dddddd; }
+      tr:nth-child(even) { background-color: #eeeeee; }
+      .positive { color: #006600; font-weight: bold; }
+      .negative { color: #cc0000; font-weight: bold; }
+      .neutral { color: #888888; }
+      .key { font-size: 0.85em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
+      .key span { margin-right: 20px; }
+
+      .search-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
+      .search-box label { font-weight: bold; display: block; margin-bottom: 10px; }
+      .search-controls { display: flex; gap: 12px; }
+      .search-controls input, .search-controls select { flex: 1; padding: 10px 14px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; }
+      .search-controls input:focus, .search-controls select:focus { outline: none; border-color: #000000; }
+
+      .profile-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 30px; }
+      .profile-top { display: flex; align-items: center; gap: 24px; margin-bottom: 30px; }
+      .player-avatar { width: 90px; height: 90px; border-radius: 50%; background-color: #000000; color: #ffffff; font-size: 2.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+      .profile-info h3 { margin: 0 0 4px; font-size: 1.8em; }
+      .profile-info .username { color: #888888; font-size: 0.95em; margin-bottom: 4px; }
+      .profile-info .location { font-size: 0.9em; color: #555555; }
+      .key-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 30px; }
+      .stat-box { border: 1px solid #dddddd; border-radius: 8px; padding: 20px; text-align: center; }
+      .stat-box .stat-label { font-size: 0.8em; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+      .stat-box .stat-value { font-size: 2em; font-weight: bold; }
+      .details-section { border-top: 1px solid #eeeeee; padding-top: 20px; }
+      .details-section h4 { font-size: 1em; margin: 0 0 16px; padding-left: 12px; border-left: 4px solid #000000; }
+      .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.95em; }
+      .detail-row:last-child { border-bottom: none; }
+      .detail-row .detail-label { color: #555555; }
+      .detail-row .detail-value { font-weight: bold; }
+
+      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+      .btn-switch { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; }
+      .btn-switch:hover { background-color: #ffffff; color: #000000; }
+      .btn-login { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; }
+      .btn-login:hover { background-color: #ffffff; color: #000000; }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <img src="logo.png" alt="Pinnacle Darts Logo">
+      <div>
+        <h1>Pinnacle Academy</h1>
+        <p>Official Academy Website</p>
+      </div>
+      <div class="header-buttons">
+        <a href="index.html" class="btn-switch">Switch to Online</a>
+        <a href="login.html" class="btn-login">Login / Register</a>
+      </div>
+    </header>
+
+    <nav>
+      <a href="academy.html">Home</a>
+      <a href="academy.html">Standings</a>
+      <a href="academy.html">Players</a>
+      <a href="academy.html">News</a>
+    </nav>
+
+    <main>
+      <h2>Pinnacle Academy</h2>
+
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('news', event)">News & Updates</button>
+        <button class="tab" onclick="showTab('table', event)">League Table</button>
+        <button class="tab" onclick="showTab('profiles', event)">Player Profiles</button>
+      </div>
+
+      <div id="tab-news" class="tab-content active">
+        <div class="news-item">
+          <span class="news-tag">Announcement</span>
+          <h3>Welcome to the Pinnacle Academy!</h3>
+          <div class="news-date">June 2026</div>
+          <p>The Pinnacle Academy is up and running. Follow this page for the latest news, results and updates from the academy.</p>
+        </div>
+        <div class="news-item">
+          <span class="news-tag">Update</span>
+          <h3>Season 1 has begun</h3>
+          <div class="news-date">June 2026</div>
+          <p>The first academy season is underway. Check the League Table tab for the latest standings.</p>
+        </div>
+      </div>
+
+      <!-- Note: Scoring system to be updated to include drill points and academy-specific columns -->
+      <div id="tab-table" class="tab-content">
+        <table>
+          <thead>
+            <tr>
+              <th>Pos</th>
+              <th>Player</th>
+              <th><abbr title="Matches Played">P</abbr></th>
+              <th><abbr title="Matches Won">W</abbr></th>
+              <th><abbr title="Matches Lost">L</abbr></th>
+              <th><abbr title="Leg Difference">+/-</abbr></th>
+              <th><abbr title="Points">Pts</abbr></th>
+            </tr>
+          </thead>
+          <tbody id="academyStandingsBody"></tbody>
+        </table>
+        <div class="key">
+          <span><strong>P</strong> = Played</span>
+          <span><strong>W</strong> = Won</span>
+          <span><strong>L</strong> = Lost</span>
+          <span><strong>+/-</strong> = Leg Difference</span>
+          <span><strong>Pts</strong> = Points</span>
+        </div>
+      </div>
+
+      <div id="tab-profiles" class="tab-content">
+        <div class="search-box">
+          <label>View Player</label>
+          <div class="search-controls">
+            <input type="text" id="searchInput" placeholder="Search player..." oninput="searchPlayer()" />
+            <select id="playerDropdown" onchange="selectPlayer()">
+              <option value="player1">Academy Player 1</option>
+              <option value="player2">Academy Player 2</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="profile-card">
+          <div class="profile-top">
+            <div class="player-avatar" id="profileAvatar">A</div>
+            <div class="profile-info">
+              <h3 id="profileName">Academy Player 1</h3>
+              <div class="username" id="profileUsername">@player1</div>
+              <div class="location" id="profileLocation">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England</div>
+            </div>
+          </div>
+          <div class="key-stats">
+            <div class="stat-box"><div class="stat-label">Average</div><div class="stat-value" id="profileAverage">-</div></div>
+            <div class="stat-box"><div class="stat-label">Wins</div><div class="stat-value" id="profileWins">-</div></div>
+            <div class="stat-box"><div class="stat-label">Matches</div><div class="stat-value" id="profileMatches">-</div></div>
+          </div>
+          <div class="details-section">
+            <h4>Player Details</h4>
+            <div class="detail-row"><span class="detail-label">Member Since</span><span class="detail-value" id="profileMemberSince">-</span></div>
+            <div class="detail-row"><span class="detail-label">Hometown</span><span class="detail-value" id="profileHometown">-</span></div>
+            <div class="detail-row"><span class="detail-label">Darts Brand</span><span class="detail-value" id="profileBrand">-</span></div>
+            <div class="detail-row"><span class="detail-label">Dart Weight</span><span class="detail-value" id="profileWeight">-</span></div>
+            <div class="detail-row"><span class="detail-label">Walkout Song</span><span class="detail-value" id="profileWalkout">-</span></div>
+            <div class="detail-row"><span class="detail-label">Favourite Player</span><span class="detail-value" id="profileFavPlayer">-</span></div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      const academyPlayers = {
+        player1: { avatar: "A", name: "Academy Player 1", username: "@player1", location: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", average: 0, wins: 0, matches: 0, memberSince: "June 2026", hometown: "TBC", brand: "TBC", weight: "TBC", walkout: "TBC", favPlayer: "TBC" },
+        player2: { avatar: "A", name: "Academy Player 2", username: "@player2", location: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", average: 0, wins: 0, matches: 0, memberSince: "June 2026", hometown: "TBC", brand: "TBC", weight: "TBC", walkout: "TBC", favPlayer: "TBC" }
+      };
+
+      const academyStandings = [
+        { name: "Academy Player 1", played: 0, won: 0, lost: 0, legsFor: 0, legsAgainst: 0, pts: 0 },
+        { name: "Academy Player 2", played: 0, won: 0, lost: 0, legsFor: 0, legsAgainst: 0, pts: 0 }
+      ];
+
+      function renderAcademyStandings() {
+        const sorted = academyStandings.slice().sort((a, b) => {
+          if (b.pts !== a.pts) return b.pts - a.pts;
+          const aDiff = a.legsFor - a.legsAgainst;
+          const bDiff = b.legsFor - b.legsAgainst;
+          if (bDiff !== aDiff) return bDiff - aDiff;
+          return b.legsFor - a.legsFor;
+        });
+        const tbody = document.getElementById('academyStandingsBody');
+        tbody.innerHTML = sorted.map((p, i) => {
+          const diff = p.legsFor - p.legsAgainst;
+          const diffDisplay = diff > 0 ? `<span class="positive">+${diff}</span>` : diff < 0 ? `<span class="negative">${diff}</span>` : `<span class="neutral">0</span>`;
+          return `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.played}</td><td>${p.won}</td><td>${p.lost}</td><td>${diffDisplay}</td><td><strong>${p.pts}</strong></td></tr>`;
+        }).join('');
+      }
+
+      function showPlayer(key) {
+        const p = academyPlayers[key];
+        if (!p) return;
+        document.getElementById("profileAvatar").textContent = p.avatar;
+        document.getElementById("profileName").textContent = p.name;
+        document.getElementById("profileUsername").textContent = p.username;
+        document.getElementById("profileLocation").textContent = p.location;
+        document.getElementById("profileAverage").textContent = p.average || "-";
+        document.getElementById("profileWins").textContent = p.wins;
+        document.getElementById("profileMatches").textContent = p.matches;
+        document.getElementById("profileMemberSince").textContent = p.memberSince;
+        document.getElementById("profileHometown").textContent = p.hometown;
+        document.getElementById("profileBrand").textContent = p.brand;
+        document.getElementById("profileWeight").textContent = p.weight;
+        document.getElementById("profileWalkout").textContent = p.walkout;
+        document.getElementById("profileFavPlayer").textContent = p.favPlayer;
+      }
+
+      function searchPlayer() {
+        const val = document.getElementById("searchInput").value.toLowerCase().trim();
+        const match = Object.keys(academyPlayers).find(k => academyPlayers[k].name.toLowerCase().startsWith(val) && val.length > 0);
+        if (match) { document.getElementById("playerDropdown").value = match; showPlayer(match); }
+      }
+
+      function selectPlayer() {
+        const val = document.getElementById("playerDropdown").value;
+        document.getElementById("searchInput").value = academyPlayers[val] ? academyPlayers[val].name : "";
+        showPlayer(val);
+      }
+
+      function showTab(name, event) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        event.target.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+      }
+
+      renderAcademyStandings();
+      showPlayer('player1');
+    </script>
+
+  </body>
+</html>

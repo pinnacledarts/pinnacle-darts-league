@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leagues | Pinnacle Darts League</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        color: #111111;
+      }
+
+      header {
+        background-color: #000000;
+        padding: 20px 40px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      header img { height: 70px; }
+
+      header h1 {
+        margin: 0;
+        color: #ffffff;
+        font-size: 2em;
+      }
+
+      header p {
+        margin: 4px 0 0;
+        color: #cccccc;
+        font-size: 1em;
+      }
+
+      nav {
+        background-color: #222222;
+        display: flex;
+        justify-content: center;
+        gap: 40px;
+        padding: 15px;
+      }
+
+      nav a {
+        color: #ffffff;
+        text-decoration: none;
+        font-size: 1.1em;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      nav a:hover { color: #aaaaaa; }
+
+      main {
+        padding: 40px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+
+      h2 {
+        border-bottom: 3px solid #111111;
+        padding-bottom: 8px;
+        margin-top: 40px;
+      }
+
+      h2:first-child { margin-top: 0; }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th {
+        background-color: #111111;
+        color: #ffffff;
+        padding: 12px;
+        text-align: left;
+      }
+
+      th abbr {
+        text-decoration: none;
+        cursor: help;
+        border-bottom: 1px dotted #ffffff;
+      }
+
+      td {
+        padding: 12px;
+        border-bottom: 1px solid #dddddd;
+      }
+
+      tr:nth-child(even) { background-color: #eeeeee; }
+
+      .positive { color: #006600; font-weight: bold; }
+      .negative { color: #cc0000; font-weight: bold; }
+      .neutral { color: #888888; }
+
+      .fixture {
+        background-color: #ffffff;
+        border: 1px solid #dddddd;
+        border-radius: 6px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .fixture .teams {
+        font-size: 1.1em;
+        font-weight: bold;
+      }
+
+      .fixture .result { font-size: 1em; color: #555555; }
+
+      .fixture .result.pending {
+        color: #aaaaaa;
+        font-style: italic;
+      }
+
+      .key {
+        font-size: 0.85em;
+        color: #666666;
+        margin-top: 12px;
+        border-top: 1px solid #dddddd;
+        padding-top: 12px;
+      }
+
+      .key span { margin-right: 20px; }
+
+      .header-buttons {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .btn-switch {
+        color: #ffffff;
+        text-decoration: none;
+        border: 1px solid #ffffff;
+        padding: 8px 18px;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+
+      .btn-switch:hover {
+        background-color: #ffffff;
+        color: #000000;
+      }
+
+      .btn-login {
+        color: #ffffff;
+        text-decoration: none;
+        border: 1px solid #ffffff;
+        padding: 8px 18px;
+        border-radius: 4px;
+        font-size: 0.9em;
+      }
+
+      .btn-login:hover {
+        background-color: #ffffff;
+        color: #000000;
+      }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <img src="logo.png" alt="Pinnacle Darts Logo">
+      <div>
+        <h1>Pinnacle Darts League</h1>
+        <p>Official League Website</p>
+      </div>
+      <div class="header-buttons">
+        <a href="academy.html" class="btn-switch">Switch to Academy</a>
+        <a href="login.html" class="btn-login">Login / Register</a>
+      </div>
+    </header>
+
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="leagues.html">Leagues</a>
+      <a href="tournaments.html">Tournaments</a>
+    <a href="players.html">Players</a>
+    </nav>
+
+    <main>
+
+      <h2>League Standings</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Pos</th>
+            <th>Player</th>
+            <th><abbr title="Matches Played">P</abbr></th>
+            <th><abbr title="Matches Won">W</abbr></th>
+            <th><abbr title="Matches Lost">L</abbr></th>
+            <th><abbr title="Leg Difference">+/-</abbr></th>
+            <th><abbr title="Points">Pts</abbr></th>
+          </tr>
+        </thead>
+        <tbody id="standingsBody"></tbody>
+      </table>
+
+      <div class="key">
+        <span><strong>P</strong> = Played</span>
+        <span><strong>W</strong> = Won</span>
+        <span><strong>L</strong> = Lost</span>
+        <span><strong>+/-</strong> = Leg Difference</span>
+        <span><strong>Pts</strong> = Points</span>
+      </div>
+
+      <h2>Fixtures & Results</h2>
+
+      <div class="fixture">
+        <span class="teams">Macca vs Craig</span>
+        <span class="result">3 - 1</span>
+      </div>
+
+      <div class="fixture">
+        <span class="teams">Macca vs Judd</span>
+        <span class="result pending">Not yet played</span>
+      </div>
+
+      <div class="fixture">
+        <span class="teams">Craig vs Judd</span>
+        <span class="result pending">Not yet played</span>
+      </div>
+
+    </main>
+
+    <script>
+      const players = [
+        { name: "Macca", played: 1, won: 1, lost: 0, legsFor: 3, legsAgainst: 1, pts: 3 },
+        { name: "Craig", played: 1, won: 0, lost: 1, legsFor: 1, legsAgainst: 3, pts: 0 },
+        { name: "Judd",  played: 0, won: 0, lost: 0, legsFor: 0, legsAgainst: 0, pts: 0 }
+      ];
+
+      function renderStandings() {
+        const sorted = players.slice().sort((a, b) => {
+          if (b.pts !== a.pts) return b.pts - a.pts;
+          const aDiff = a.legsFor - a.legsAgainst;
+          const bDiff = b.legsFor - b.legsAgainst;
+          if (bDiff !== aDiff) return bDiff - aDiff;
+          return b.legsFor - a.legsFor;
+        });
+
+        const tbody = document.getElementById('standingsBody');
+        tbody.innerHTML = sorted.map((p, i) => {
+          const diff = p.legsFor - p.legsAgainst;
+          const diffDisplay = diff > 0
+            ? `<span class="positive">+${diff}</span>`
+            : diff < 0
+            ? `<span class="negative">${diff}</span>`
+            : `<span class="neutral">0</span>`;
+          return `<tr>
+            <td>${i + 1}</td>
+            <td>${p.name}</td>
+            <td>${p.played}</td>
+            <td>${p.won}</td>
+            <td>${p.lost}</td>
+            <td>${diffDisplay}</td>
+            <td><strong>${p.pts}</strong></td>
+          </tr>`;
+        }).join('');
+      }
+
+      renderStandings();
+    </script>
+
+  </body>
+</html>
