@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pinnacle Darts League</title>
     <style>
+      * { box-sizing: border-box; }
+
       body {
         margin: 0;
         font-family: Arial, sans-serif;
@@ -18,11 +20,41 @@
         display: flex;
         align-items: center;
         gap: 20px;
+        flex-wrap: wrap;
       }
 
       header img { height: 70px; }
       header h1 { margin: 0; color: #ffffff; font-size: 2em; }
       header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
+
+      .header-buttons {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .btn-switch, .btn-login {
+        color: #ffffff;
+        text-decoration: none;
+        border: 1px solid #ffffff;
+        padding: 8px 18px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        white-space: nowrap;
+      }
+
+      .btn-switch:hover, .btn-login:hover { background-color: #ffffff; color: #000000; }
+
+      .hamburger {
+        display: none;
+        background: none;
+        border: none;
+        color: #ffffff;
+        font-size: 1.8em;
+        cursor: pointer;
+        padding: 0 10px;
+      }
 
       nav {
         background-color: #222222;
@@ -80,10 +112,7 @@
         letter-spacing: 0.5px;
       }
 
-      .see-more {
-        text-align: center;
-        margin-top: 10px;
-      }
+      .see-more { text-align: center; margin-top: 10px; }
 
       .see-more a {
         color: #111111;
@@ -95,34 +124,48 @@
 
       .see-more a:hover { color: #555555; border-color: #555555; }
 
-      .header-buttons {
-        margin-left: auto;
-        display: flex;
-        gap: 10px;
-        align-items: center;
+      /* ---------- MOBILE STYLES ---------- */
+      @media (max-width: 700px) {
+        header {
+          flex-direction: column;
+          align-items: flex-start;
+          padding: 16px 20px;
+        }
+
+        header img { height: 50px; }
+        header h1 { font-size: 1.4em; }
+        header p { font-size: 0.85em; }
+
+        .header-buttons {
+          margin-left: 0;
+          width: 100%;
+          justify-content: flex-end;
+        }
+
+        .btn-switch { display: none; }
+        .btn-login { font-size: 0.8em; padding: 6px 12px; }
+
+        .hamburger { display: block; }
+
+        nav {
+          display: none;
+          flex-direction: column;
+          gap: 0;
+          padding: 0;
+        }
+
+        nav.open { display: flex; }
+
+        nav a {
+          padding: 14px 20px;
+          border-bottom: 1px solid #333333;
+          font-size: 1em;
+        }
+
+        main { padding: 24px 20px; }
+
+        h2 { font-size: 1.3em; }
       }
-
-      .btn-switch {
-        color: #ffffff;
-        text-decoration: none;
-        border: 1px solid #ffffff;
-        padding: 8px 18px;
-        border-radius: 4px;
-        font-size: 0.9em;
-      }
-
-      .btn-switch:hover { background-color: #ffffff; color: #000000; }
-
-      .btn-login {
-        color: #ffffff;
-        text-decoration: none;
-        border: 1px solid #ffffff;
-        padding: 8px 18px;
-        border-radius: 4px;
-        font-size: 0.9em;
-      }
-
-      .btn-login:hover { background-color: #ffffff; color: #000000; }
     </style>
   </head>
   <body>
@@ -136,10 +179,11 @@
       <div class="header-buttons">
         <a href="academy.html" class="btn-switch">Switch to Academy</a>
         <a href="login.html" class="btn-login">Login / Register</a>
+        <button class="hamburger" onclick="toggleMenu()">☰</button>
       </div>
     </header>
 
-    <nav>
+    <nav id="mainNav">
       <a href="index.html">Home</a>
       <a href="leagues.html">Leagues</a>
       <a href="tournaments.html">Tournaments</a>
@@ -171,6 +215,12 @@
       </div>
 
     </main>
+
+    <script>
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+      }
+    </script>
 
   </body>
 </html>
