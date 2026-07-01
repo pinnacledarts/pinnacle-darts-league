@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
     <style>
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
@@ -15,8 +17,9 @@
       header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
 
       .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; }
-      .btn-switch:hover, .btn-login:hover { background-color: #ffffff; color: #000000; }
+      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
+      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
+      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
 
       .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
 
@@ -25,7 +28,6 @@
       nav a:hover { color: #aaaaaa; }
 
       main { padding: 40px; max-width: 900px; margin: 0 auto; }
-
       h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 30px; }
 
       .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
@@ -69,19 +71,14 @@
         header img { height: 50px; }
         header h1 { font-size: 1.4em; }
         header p { font-size: 0.85em; }
-
         .header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-        .btn-switch, .btn-login { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
-
+        .btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
         .hamburger { display: block; }
-
         nav { display: none; flex-direction: column; gap: 0; padding: 0; }
         nav.open { display: flex; }
         nav a { padding: 14px 20px; border-bottom: 1px solid #333333; font-size: 1em; }
-
         main { padding: 24px 20px; }
         h2 { font-size: 1.3em; }
-
         .form-row { grid-template-columns: 1fr; }
         table { font-size: 0.8em; }
         th, td { padding: 8px 6px; }
@@ -96,9 +93,9 @@
         <h1>Pinnacle Darts League</h1>
         <p>Official League Website</p>
       </div>
-      <div class="header-buttons">
-        <a href="academy.html" class="btn-switch">Switch to Academy</a>
-        <span class="btn-login">⚙️ Admin</span>
+      <a href="academy.html" class="btn-switch">Switch to Academy</a>
+      <div class="header-buttons" style="margin-left: auto;">
+        <div id="authButtons"></div>
         <button class="hamburger" onclick="toggleMenu()">☰</button>
       </div>
     </header>
@@ -119,7 +116,6 @@
         <button class="tab" onclick="showTab('players', event)">Players</button>
       </div>
 
-      <!-- LEAGUES TAB -->
       <div id="tab-leagues" class="tab-content active">
         <div class="card">
           <h3>Create New League</h3>
@@ -144,13 +140,22 @@
               <input type="date" id="leagueEnd" />
             </div>
           </div>
-          <div class="form-group">
-            <label>Format</label>
-            <select id="leagueFormat">
-              <option>Round Robin</option>
-              <option>Home & Away</option>
-              <option>Swiss System</option>
-            </select>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Format</label>
+              <select id="leagueFormat">
+                <option>Round Robin</option>
+                <option>Home & Away</option>
+                <option>Swiss System</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Platform</label>
+              <select id="leaguePlatform">
+                <option value="dartcounter">Dartcounter</option>
+                <option value="scolia">Scolia</option>
+              </select>
+            </div>
           </div>
           <button class="btn btn-primary" onclick="createLeague()">Create League</button>
         </div>
@@ -161,14 +166,14 @@
             <tr>
               <th>League</th>
               <th>Season</th>
-              <th>Format</th>
+              <th>Platform</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
             <tr>
               <td>Division A</td>
               <td>2026</td>
-              <td>Round Robin</td>
+              <td>Dartcounter</td>
               <td>Active</td>
               <td>
                 <div class="action-buttons">
@@ -182,7 +187,6 @@
         </div>
       </div>
 
-      <!-- TOURNAMENTS TAB -->
       <div id="tab-tournaments" class="tab-content">
         <div class="card">
           <h3>Create New Tournament</h3>
@@ -207,6 +211,15 @@
               </select>
             </div>
             <div class="form-group">
+              <label>Platform</label>
+              <select id="tournamentPlatform">
+                <option value="dartcounter">Dartcounter</option>
+                <option value="scolia">Scolia</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
               <label>Max Players</label>
               <input type="number" id="tournamentMax" placeholder="e.g. 16" />
             </div>
@@ -224,14 +237,14 @@
             <tr>
               <th>Tournament</th>
               <th>Date</th>
-              <th>Format</th>
+              <th>Platform</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
             <tr>
               <td>Pinnacle Open — Season 1</td>
               <td>TBC</td>
-              <td>Single Elimination</td>
+              <td>Both</td>
               <td>Upcoming</td>
               <td>
                 <div class="action-buttons">
@@ -245,7 +258,6 @@
         </div>
       </div>
 
-      <!-- PLAYERS TAB -->
       <div id="tab-players" class="tab-content">
         <div class="card">
           <h3>Add New Player</h3>
@@ -266,29 +278,36 @@
               <input type="email" id="playerEmail" placeholder="e.g. john@email.com" />
             </div>
             <div class="form-group">
-              <label>Hometown</label>
-              <input type="text" id="playerHometown" placeholder="e.g. Barnsley" />
+              <label>Platform</label>
+              <select id="playerPlatform">
+                <option value="dartcounter">Dartcounter</option>
+                <option value="scolia">Scolia</option>
+              </select>
             </div>
           </div>
           <div class="form-row">
+            <div class="form-group">
+              <label>Hometown</label>
+              <input type="text" id="playerHometown" placeholder="e.g. Barnsley" />
+            </div>
             <div class="form-group">
               <label>Darts Brand</label>
               <input type="text" id="playerBrand" placeholder="e.g. Target" />
             </div>
+          </div>
+          <div class="form-row">
             <div class="form-group">
               <label>Dart Weight</label>
               <input type="text" id="playerWeight" placeholder="e.g. 24g" />
             </div>
-          </div>
-          <div class="form-row">
             <div class="form-group">
               <label>Walkout Song</label>
               <input type="text" id="playerWalkout" placeholder="e.g. Return of the Mac" />
             </div>
-            <div class="form-group">
-              <label>Favourite Player</label>
-              <input type="text" id="playerFavPlayer" placeholder="e.g. Phil Taylor" />
-            </div>
+          </div>
+          <div class="form-group">
+            <label>Favourite Player</label>
+            <input type="text" id="playerFavPlayer" placeholder="e.g. Phil Taylor" />
           </div>
           <button class="btn btn-primary" onclick="addPlayer()">Add Player</button>
         </div>
@@ -299,41 +318,15 @@
             <tr>
               <th>Name</th>
               <th>Username</th>
-              <th>Hometown</th>
+              <th>Platform</th>
               <th>Admin</th>
               <th>Actions</th>
             </tr>
             <tr>
               <td>Macca Evans</td>
               <td>@macca</td>
-              <td>Barnsley</td>
+              <td>Both</td>
               <td>✅ Yes</td>
-              <td>
-                <div class="action-buttons">
-                  <button class="btn-small view">View</button>
-                  <button class="btn-small">Edit</button>
-                  <button class="btn-small danger">Remove</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>Craig</td>
-              <td>@craig</td>
-              <td>TBC</td>
-              <td>❌ No</td>
-              <td>
-                <div class="action-buttons">
-                  <button class="btn-small view">View</button>
-                  <button class="btn-small">Edit</button>
-                  <button class="btn-small danger">Remove</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>Judd</td>
-              <td>@judd</td>
-              <td>TBC</td>
-              <td>❌ No</td>
               <td>
                 <div class="action-buttons">
                   <button class="btn-small view">View</button>
@@ -380,6 +373,8 @@
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
+
+      checkAuth();
     </script>
 
   </body>
