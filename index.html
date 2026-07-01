@@ -234,7 +234,7 @@
           const username = profile ? profile.username : session.user.email;
 
           document.getElementById('authButtons').innerHTML = `
-            <span class="btn-username">👋 ${username}</span>
+<span class="btn-username">Logged in as ${username}</span>
             <button class="btn-logout" onclick="handleLogout()">Logout</button>
           `;
         }
