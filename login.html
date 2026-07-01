@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
@@ -37,6 +38,9 @@
       .register-link { text-align: center; margin-top: 16px; font-size: 0.9em; color: #555555; }
       .register-link a { color: #111111; font-weight: bold; text-decoration: none; }
       .register-link a:hover { text-decoration: underline; }
+
+      .error-msg { display: none; background: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px; border-radius: 4px; margin-bottom: 16px; font-size: 0.9em; }
+      .success-msg { display: none; background: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px; border-radius: 4px; margin-bottom: 16px; font-size: 0.9em; }
 
       @media (max-width: 700px) {
         header { flex-wrap: wrap; padding: 16px 20px; }
@@ -83,15 +87,19 @@
     <main>
       <h2>Login</h2>
       <div class="form-box">
+
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg">Logged in successfully! Redirecting...</div>
+
         <div class="form-group">
-          <label>Username</label>
-          <input type="text" placeholder="Enter your username" />
+          <label>Email</label>
+          <input type="email" id="email" placeholder="Enter your email" />
         </div>
         <div class="form-group">
           <label>Password</label>
-          <input type="password" placeholder="Enter your password" />
+          <input type="password" id="password" placeholder="Enter your password" />
         </div>
-        <button class="btn-submit">Login</button>
+        <button class="btn-submit" onclick="handleLogin()">Login</button>
         <div class="register-link">
           Don't have an account? <a href="register.html">Create one here</a>
         </div>
@@ -99,6 +107,47 @@
     </main>
 
     <script>
+      const SUPABASE_URL = 'https://xcygwejfphziercarakq.supabase.co';
+      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjeWd3ZWpmcGh6aWVyY2FyYWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NDQwNDIsImV4cCI6MjA5ODQyMDA0Mn0.9FZ_OlIohNt0c-5cq4YI9pS1I1V2HvrggXtvZIXfr6U';
+      const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      async function handleLogin() {
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+
+        if (!email || !password) {
+          errorMsg.textContent = 'Please enter your email and password.';
+          errorMsg.style.display = 'block';
+          return;
+        }
+
+        try {
+          const { data, error } = await sbClient.auth.signInWithPassword({
+            email,
+            password
+          });
+
+          if (error) {
+            errorMsg.textContent = error.message;
+            errorMsg.style.display = 'block';
+            return;
+          }
+
+          successMsg.style.display = 'block';
+          setTimeout(() => window.location.href = 'index.html', 1500);
+
+        } catch (err) {
+          errorMsg.textContent = 'Something went wrong. Please try again.';
+          errorMsg.style.display = 'block';
+          console.error(err);
+        }
+      }
+
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
