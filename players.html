@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Players | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
     <style>
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
@@ -15,8 +17,9 @@
       header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
 
       .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; }
-      .btn-switch:hover, .btn-login:hover { background-color: #ffffff; color: #000000; }
+      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
+      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
+      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
 
       .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
 
@@ -35,9 +38,7 @@
 
       .profile-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 30px; margin-bottom: 20px; }
       .profile-top { display: flex; align-items: center; gap: 24px; margin-bottom: 30px; flex-wrap: wrap; }
-
       .player-avatar { width: 90px; height: 90px; border-radius: 50%; background-color: #000000; color: #ffffff; font-size: 2.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
       .profile-info h3 { margin: 0 0 4px; font-size: 1.8em; }
       .profile-info .username { color: #888888; font-size: 0.95em; margin-bottom: 4px; }
       .profile-info .location { font-size: 0.9em; color: #555555; }
@@ -59,19 +60,14 @@
         header img { height: 50px; }
         header h1 { font-size: 1.4em; }
         header p { font-size: 0.85em; }
-
         .header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-        .btn-switch, .btn-login { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
-
+        .btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
         .hamburger { display: block; }
-
         nav { display: none; flex-direction: column; gap: 0; padding: 0; }
         nav.open { display: flex; }
         nav a { padding: 14px 20px; border-bottom: 1px solid #333333; font-size: 1em; }
-
         main { padding: 24px 20px; }
         h2 { font-size: 1.3em; }
-
         .key-stats { grid-template-columns: 1fr 1fr; }
         .profile-top { gap: 14px; }
         .player-avatar { width: 70px; height: 70px; font-size: 1.8em; }
@@ -87,9 +83,9 @@
         <h1>Pinnacle Darts League</h1>
         <p>Official League Website</p>
       </div>
-      <div class="header-buttons">
-        <a href="academy.html" class="btn-switch">Switch to Academy</a>
-        <a href="login.html" class="btn-login">Login / Register</a>
+      <a href="academy.html" class="btn-switch">Switch to Academy</a>
+      <div class="header-buttons" style="margin-left: auto;">
+        <div id="authButtons"></div>
         <button class="hamburger" onclick="toggleMenu()">☰</button>
       </div>
     </header>
@@ -146,7 +142,6 @@
           <div class="detail-row"><span class="detail-label">League Rank</span><span class="detail-value" id="profileRank">1</span></div>
         </div>
       </div>
-
     </main>
 
     <script>
@@ -198,6 +193,7 @@
       }
 
       showPlayer("macca");
+      checkAuth();
     </script>
 
   </body>
