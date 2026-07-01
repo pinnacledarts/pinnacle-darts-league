@@ -155,7 +155,7 @@ const sbClient = window.supabase.createClient(
           return;
         }
 
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error } = await sbClient.auth.signUp({
           email,
           password,
           options: {
