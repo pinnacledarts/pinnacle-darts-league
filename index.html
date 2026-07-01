@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
       * { box-sizing: border-box; }
 
@@ -35,7 +36,7 @@
         align-items: center;
       }
 
-      .btn-switch, .btn-login {
+      .btn-switch, .btn-login, .btn-logout {
         color: #ffffff;
         text-decoration: none;
         border: 1px solid #ffffff;
@@ -45,9 +46,21 @@
         white-space: nowrap;
         text-align: center;
         min-width: 160px;
+        cursor: pointer;
+        background: none;
+        font-family: Arial, sans-serif;
       }
 
-      .btn-switch:hover, .btn-login:hover { background-color: #ffffff; color: #000000; }
+      .btn-switch:hover, .btn-login:hover, .btn-logout:hover {
+        background-color: #ffffff;
+        color: #000000;
+      }
+
+      .btn-username {
+        color: #ffffff;
+        font-size: 0.9em;
+        white-space: nowrap;
+      }
 
       .hamburger {
         display: none;
@@ -127,13 +140,8 @@
 
       .see-more a:hover { color: #555555; border-color: #555555; }
 
-      /* ---------- MOBILE STYLES ---------- */
       @media (max-width: 700px) {
-        header {
-          flex-wrap: wrap;
-          padding: 16px 20px;
-        }
-
+        header { flex-wrap: wrap; padding: 16px 20px; }
         header img { height: 50px; }
         header h1 { font-size: 1.4em; }
         header p { font-size: 0.85em; }
@@ -145,24 +153,13 @@
           flex-wrap: wrap;
         }
 
-        .btn-switch, .btn-login { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
+        .btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
 
         .hamburger { display: block; }
 
-        nav {
-          display: none;
-          flex-direction: column;
-          gap: 0;
-          padding: 0;
-        }
-
+        nav { display: none; flex-direction: column; gap: 0; padding: 0; }
         nav.open { display: flex; }
-
-        nav a {
-          padding: 14px 20px;
-          border-bottom: 1px solid #333333;
-          font-size: 1em;
-        }
+        nav a { padding: 14px 20px; border-bottom: 1px solid #333333; font-size: 1em; }
 
         main { padding: 24px 20px; }
         h2 { font-size: 1.3em; }
@@ -179,7 +176,9 @@
       </div>
       <div class="header-buttons">
         <a href="academy.html" class="btn-switch">Switch to Academy</a>
-        <a href="login.html" class="btn-login">Login / Register</a>
+        <div id="authButtons">
+          <a href="login.html" class="btn-login">Login / Register</a>
+        </div>
         <button class="hamburger" onclick="toggleMenu()">☰</button>
       </div>
     </header>
@@ -218,9 +217,39 @@
     </main>
 
     <script>
+      const SUPABASE_URL = 'https://xcygwejfphziercarakq.supabase.co';
+      const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjeWd3ZWpmcGh6aWVyY2FyYWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NDQwNDIsImV4cCI6MjA5ODQyMDA0Mn0.9FZ_OlIohNt0c-5cq4YI9pS1I1V2HvrggXtvZIXfr6U';
+      const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      async function checkAuth() {
+        const { data: { session } } = await sbClient.auth.getSession();
+
+        if (session) {
+          const { data: profile } = await sbClient
+            .from('profiles')
+            .select('username')
+            .eq('id', session.user.id)
+            .single();
+
+          const username = profile ? profile.username : session.user.email;
+
+          document.getElementById('authButtons').innerHTML = `
+            <span class="btn-username">👋 ${username}</span>
+            <button class="btn-logout" onclick="handleLogout()">Logout</button>
+          `;
+        }
+      }
+
+      async function handleLogout() {
+        await sbClient.auth.signOut();
+        window.location.href = 'index.html';
+      }
+
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
+
+      checkAuth();
     </script>
 
   </body>
