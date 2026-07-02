@@ -162,15 +162,15 @@
           }
 
           if (data.user) {
-            const { error: profileError } = await sbClient
-              .from('profiles')
-              .insert([{
-                id: data.user.id,
-                full_name: fullName,
-                username,
-                email
-              }]);
-
+           const { error: profileError } = await sbClient
+  .from('profiles')
+  .insert([{
+    id: data.user.id,
+    full_name: fullName,
+    username,
+    email,
+    created_at: new Date().toISOString()
+  }]);
             if (profileError) {
               console.error('Profile error:', profileError);
             }
