@@ -55,6 +55,8 @@
       .detail-row .detail-label { color: #555555; }
       .detail-row .detail-value { font-weight: bold; text-align: right; }
 
+      .loading { text-align: center; padding: 40px; color: #888888; }
+
       @media (max-width: 700px) {
         header { flex-wrap: wrap; padding: 16px 20px; }
         header img { height: 50px; }
@@ -103,97 +105,128 @@
       <div class="search-box">
         <label>View Player</label>
         <div class="search-controls">
-          <input type="text" id="searchInput" placeholder="Search player..." oninput="searchPlayer()" />
-          <select id="playerDropdown" onchange="selectPlayer()">
-            <option value="macca">Macca</option>
-            <option value="craig">Craig</option>
-            <option value="judd">Judd</option>
+          <input type="text" id="searchInput" placeholder="Search by name or username..." oninput="filterPlayers()" />
+          <select id="playerDropdown" onchange="selectFromDropdown()">
+            <option value="">-- Select a player --</option>
           </select>
         </div>
       </div>
 
-      <div class="profile-card">
+      <div id="profileCard" class="profile-card" style="display:none;">
         <div class="profile-top">
-          <div class="player-avatar" id="profileAvatar">M</div>
+          <div class="player-avatar" id="profileAvatar"></div>
           <div class="profile-info">
-            <h3 id="profileName">Macca</h3>
-            <div class="username" id="profileUsername">@macca</div>
-            <div class="location" id="profileLocation">🏴󠁧󠁢󠁥󠁮󠁧󠁿 England • Barnsley</div>
+            <h3 id="profileName"></h3>
+            <div class="username" id="profileUsername"></div>
+            <div class="location" id="profileLocation"></div>
           </div>
         </div>
 
         <div class="key-stats">
-          <div class="stat-box"><div class="stat-label">Average</div><div class="stat-value" id="profileAverage">87</div></div>
-          <div class="stat-box"><div class="stat-label">Wins</div><div class="stat-value" id="profileWins">1</div></div>
-          <div class="stat-box"><div class="stat-label">Matches</div><div class="stat-value" id="profileMatches">1</div></div>
+          <div class="stat-box"><div class="stat-label">Average</div><div class="stat-value" id="profileAverage">-</div></div>
+          <div class="stat-box"><div class="stat-label">Wins</div><div class="stat-value" id="profileWins">-</div></div>
+          <div class="stat-box"><div class="stat-label">Matches</div><div class="stat-value" id="profileMatches">-</div></div>
         </div>
 
         <div class="details-section">
           <h4>Player Details</h4>
-          <div class="detail-row"><span class="detail-label">Member Since</span><span class="detail-value" id="profileMemberSince">June 2026</span></div>
-          <div class="detail-row"><span class="detail-label">Last 100 Average</span><span class="detail-value" id="profileLast100">87</span></div>
-          <div class="detail-row"><span class="detail-label">Highest Checkout</span><span class="detail-value" id="profileCheckout">116</span></div>
-          <div class="detail-row"><span class="detail-label">Country</span><span class="detail-value" id="profileCountry">England</span></div>
-          <div class="detail-row"><span class="detail-label">Hometown</span><span class="detail-value" id="profileHometown">Barnsley</span></div>
-          <div class="detail-row"><span class="detail-label">Darts Brand</span><span class="detail-value" id="profileBrand">Target</span></div>
-          <div class="detail-row"><span class="detail-label">Dart Weight</span><span class="detail-value" id="profileWeight">24g</span></div>
-          <div class="detail-row"><span class="detail-label">Walkout Song</span><span class="detail-value" id="profileWalkout">Return of the Mac</span></div>
-          <div class="detail-row"><span class="detail-label">Favourite Player</span><span class="detail-value" id="profileFavPlayer">The Asp</span></div>
-          <div class="detail-row"><span class="detail-label">League Rank</span><span class="detail-value" id="profileRank">1</span></div>
+          <div class="detail-row"><span class="detail-label">Member Since</span><span class="detail-value" id="profileMemberSince">-</span></div>
+          <div class="detail-row"><span class="detail-label">Highest Checkout</span><span class="detail-value" id="profileCheckout">-</span></div>
+          <div class="detail-row"><span class="detail-label">Country</span><span class="detail-value" id="profileCountry">-</span></div>
+          <div class="detail-row"><span class="detail-label">Hometown</span><span class="detail-value" id="profileHometown">-</span></div>
+          <div class="detail-row"><span class="detail-label">Darts Brand</span><span class="detail-value" id="profileBrand">-</span></div>
+          <div class="detail-row"><span class="detail-label">Dart Weight</span><span class="detail-value" id="profileWeight">-</span></div>
+          <div class="detail-row"><span class="detail-label">Walkout Song</span><span class="detail-value" id="profileWalkout">-</span></div>
+          <div class="detail-row"><span class="detail-label">Favourite Player</span><span class="detail-value" id="profileFavPlayer">-</span></div>
+          <div class="detail-row"><span class="detail-label">Platform</span><span class="detail-value" id="profilePlatform">-</span></div>
         </div>
       </div>
+
+      <div id="loadingMsg" class="loading">Loading players...</div>
+
     </main>
 
     <script>
-      const players = {
-        macca: { avatar: "M", name: "Macca", username: "@macca", location: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England • Barnsley", average: 87, wins: 1, matches: 1, memberSince: "June 2026", last100: 87, checkout: 116, country: "England", hometown: "Barnsley", brand: "Target", weight: "24g", walkout: "Return of the Mac", favPlayer: "The Asp", rank: 1 },
-        craig: { avatar: "C", name: "Craig", username: "@craig", location: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", average: 74, wins: 0, matches: 1, memberSince: "June 2026", last100: 74, checkout: 96, country: "England", hometown: "TBC", brand: "TBC", weight: "TBC", walkout: "TBC", favPlayer: "TBC", rank: 2 },
-        judd: { avatar: "J", name: "Judd", username: "@judd", location: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 England", average: 0, wins: 0, matches: 0, memberSince: "June 2026", last100: 0, checkout: 0, country: "England", hometown: "TBC", brand: "TBC", weight: "TBC", walkout: "TBC", favPlayer: "TBC", rank: 3 }
-      };
+      let allPlayers = [];
 
-      function showPlayer(key) {
-        const p = players[key];
-        if (!p) return;
-        document.getElementById("profileAvatar").textContent = p.avatar;
-        document.getElementById("profileName").textContent = p.name;
-        document.getElementById("profileUsername").textContent = p.username;
-        document.getElementById("profileLocation").textContent = p.location;
-        document.getElementById("profileAverage").textContent = p.average;
-        document.getElementById("profileWins").textContent = p.wins;
-        document.getElementById("profileMatches").textContent = p.matches;
-        document.getElementById("profileMemberSince").textContent = p.memberSince;
-        document.getElementById("profileLast100").textContent = p.last100;
-        document.getElementById("profileCheckout").textContent = p.checkout;
-        document.getElementById("profileCountry").textContent = p.country;
-        document.getElementById("profileHometown").textContent = p.hometown;
-        document.getElementById("profileBrand").textContent = p.brand;
-        document.getElementById("profileWeight").textContent = p.weight;
-        document.getElementById("profileWalkout").textContent = p.walkout;
-        document.getElementById("profileFavPlayer").textContent = p.favPlayer;
-        document.getElementById("profileRank").textContent = p.rank;
+      async function loadPlayers() {
+        const { data, error } = await sbClient
+          .from('profiles')
+          .select('*')
+          .order('full_name', { ascending: true });
+
+        if (error) {
+          document.getElementById('loadingMsg').textContent = 'Error loading players.';
+          return;
+        }
+
+        allPlayers = data;
+        document.getElementById('loadingMsg').style.display = 'none';
+
+        const dropdown = document.getElementById('playerDropdown');
+        dropdown.innerHTML = '<option value="">-- Select a player --</option>';
+        data.forEach(p => {
+          const option = document.createElement('option');
+          option.value = p.id;
+          option.textContent = p.full_name || p.username;
+          dropdown.appendChild(option);
+        });
+
+        if (data.length > 0) showPlayer(data[0]);
       }
 
-      function searchPlayer() {
-        const val = document.getElementById("searchInput").value.toLowerCase().trim();
-        const match = Object.keys(players).find(k => players[k].name.toLowerCase().startsWith(val) && val.length > 0);
+      function showPlayer(p) {
+        document.getElementById('profileCard').style.display = 'block';
+        document.getElementById('profileAvatar').textContent = (p.full_name || p.username || '?')[0].toUpperCase();
+        document.getElementById('profileName').textContent = p.full_name || p.username || '-';
+        document.getElementById('profileUsername').textContent = p.username ? '@' + p.username : '-';
+        document.getElementById('profileLocation').textContent = [p.country, p.hometown].filter(Boolean).join(' • ') || '-';
+        document.getElementById('profileAverage').textContent = p.average || '-';
+        document.getElementById('profileWins').textContent = p.wins || '-';
+        document.getElementById('profileMatches').textContent = p.matches || '-';
+        document.getElementById('profileMemberSince').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '-';
+        document.getElementById('profileCheckout').textContent = p.highest_checkout || '-';
+        document.getElementById('profileCountry').textContent = p.country || '-';
+        document.getElementById('profileHometown').textContent = p.hometown || '-';
+        document.getElementById('profileBrand').textContent = p.darts_brand || '-';
+        document.getElementById('profileWeight').textContent = p.dart_weight || '-';
+        document.getElementById('profileWalkout').textContent = p.walkout_song || '-';
+        document.getElementById('profileFavPlayer').textContent = p.favourite_player || '-';
+        document.getElementById('profilePlatform').textContent = p.platform ? p.platform.charAt(0).toUpperCase() + p.platform.slice(1) : '-';
+      }
+
+      function filterPlayers() {
+        const val = document.getElementById('searchInput').value.toLowerCase().trim();
+        if (!val) return;
+
+        const match = allPlayers.find(p =>
+          (p.full_name && p.full_name.toLowerCase().startsWith(val)) ||
+          (p.username && p.username.toLowerCase().startsWith(val))
+        );
+
         if (match) {
-          document.getElementById("playerDropdown").value = match;
+          document.getElementById('playerDropdown').value = match.id;
           showPlayer(match);
         }
       }
 
-      function selectPlayer() {
-        const val = document.getElementById("playerDropdown").value;
-        document.getElementById("searchInput").value = players[val] ? players[val].name : "";
-        showPlayer(val);
+      function selectFromDropdown() {
+        const id = document.getElementById('playerDropdown').value;
+        const player = allPlayers.find(p => p.id === id);
+        if (player) {
+          document.getElementById('searchInput').value = player.full_name || player.username;
+          showPlayer(player);
+        }
       }
 
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
 
-      showPlayer("macca");
-      checkAuth();
+      window.addEventListener('load', () => {
+        checkAuth();
+        loadPlayers();
+      });
     </script>
 
   </body>
