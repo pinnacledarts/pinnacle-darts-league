@@ -348,8 +348,10 @@
         document.getElementById('mainNav').classList.toggle('open');
       }
 
-      window.addEventListener('load', () => {
+window.addEventListener('load', async () => {
         checkAuth();
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (session) currentUserId = session.user.id;
         loadPlayers();
       });
     </script>
