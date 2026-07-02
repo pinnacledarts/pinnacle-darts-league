@@ -11,7 +11,7 @@ async function checkAuth() {
   if (session) {
     const { data: profile } = await sbClient
       .from('profiles')
-      .select('username')
+      .select('username, is_admin')
       .eq('id', session.user.id)
       .single();
 
@@ -21,6 +21,19 @@ async function checkAuth() {
       <span class="btn-username">Logged in as ${username}</span>
       <button class="btn-logout" onclick="handleLogout()">Logout</button>
     `;
+
+    // Add admin link to nav if user is admin
+    if (profile && profile.is_admin) {
+      const nav = document.getElementById('mainNav');
+      if (nav && !document.getElementById('adminNavLink')) {
+        const adminLink = document.createElement('a');
+        adminLink.href = 'admin.html';
+        adminLink.id = 'adminNavLink';
+        adminLink.textContent = 'Admin';
+        nav.appendChild(adminLink);
+      }
+    }
+
   } else {
     authButtons.innerHTML = `
       <a href="login.html" class="btn-login">Login / Register</a>
