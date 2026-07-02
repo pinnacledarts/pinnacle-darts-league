@@ -50,10 +50,24 @@
 
       .details-section { border-top: 1px solid #eeeeee; padding-top: 20px; }
       .details-section h4 { font-size: 1em; margin: 0 0 16px; padding-left: 12px; border-left: 4px solid #000000; }
-      .detail-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.95em; }
+
+      .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.95em; }
       .detail-row:last-child { border-bottom: none; }
-      .detail-row .detail-label { color: #555555; }
-      .detail-row .detail-value { font-weight: bold; text-align: right; }
+      .detail-label { color: #555555; flex-shrink: 0; }
+      .detail-value-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; flex: 1; }
+      .detail-value { font-weight: bold; text-align: right; }
+
+      .pencil-btn { background: none; border: none; cursor: pointer; font-size: 0.85em; color: #aaaaaa; padding: 2px 4px; }
+      .pencil-btn:hover { color: #111111; }
+
+      .edit-input { border: 1px solid #dddddd; border-radius: 4px; padding: 4px 8px; font-size: 0.95em; font-family: Arial, sans-serif; width: 160px; }
+      .edit-input:focus { outline: none; border-color: #000000; }
+
+      .save-btn { background-color: #111111; color: #ffffff; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.85em; cursor: pointer; }
+      .save-btn:hover { background-color: #333333; }
+
+      .cancel-btn { background: none; border: 1px solid #dddddd; border-radius: 4px; padding: 4px 10px; font-size: 0.85em; cursor: pointer; }
+      .cancel-btn:hover { background-color: #f5f5f5; }
 
       .loading { text-align: center; padding: 40px; color: #888888; }
 
@@ -130,26 +144,80 @@
 
         <div class="details-section">
           <h4>Player Details</h4>
-          <div class="detail-row"><span class="detail-label">Member Since</span><span class="detail-value" id="profileMemberSince">-</span></div>
-          <div class="detail-row"><span class="detail-label">Highest Checkout</span><span class="detail-value" id="profileCheckout">-</span></div>
-          <div class="detail-row"><span class="detail-label">Country</span><span class="detail-value" id="profileCountry">-</span></div>
-          <div class="detail-row"><span class="detail-label">Hometown</span><span class="detail-value" id="profileHometown">-</span></div>
-          <div class="detail-row"><span class="detail-label">Darts Brand</span><span class="detail-value" id="profileBrand">-</span></div>
-          <div class="detail-row"><span class="detail-label">Dart Weight</span><span class="detail-value" id="profileWeight">-</span></div>
-          <div class="detail-row"><span class="detail-label">Walkout Song</span><span class="detail-value" id="profileWalkout">-</span></div>
-          <div class="detail-row"><span class="detail-label">Favourite Player</span><span class="detail-value" id="profileFavPlayer">-</span></div>
-          <div class="detail-row"><span class="detail-label">Platform</span><span class="detail-value" id="profilePlatform">-</span></div>
+          <div class="detail-row">
+            <span class="detail-label">Member Since</span>
+            <div class="detail-value-wrap"><span class="detail-value" id="profileMemberSince">-</span></div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Highest Checkout</span>
+            <div class="detail-value-wrap">
+              <span class="detail-value" id="profileCheckout">-</span>
+              <button class="pencil-btn" id="pencil-highest_checkout" onclick="startEdit('highest_checkout')" style="display:none;">✏️</button>
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Hometown</span>
+            <div class="detail-value-wrap">
+              <span class="detail-value" id="profileHometown">-</span>
+              <button class="pencil-btn" id="pencil-hometown" onclick="startEdit('hometown')" style="display:none;">✏️</button>
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Darts Brand</span>
+            <div class="detail-value-wrap">
+              <span class="detail-value" id="profileBrand">-</span>
+              <button class="pencil-btn" id="pencil-darts_brand" onclick="startEdit('darts_brand')" style="display:none;">✏️</button>
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Dart Weight</span>
+            <div class="detail-value-wrap">
+              <span class="detail-value" id="profileWeight">-</span>
+              <button class="pencil-btn" id="pencil-dart_weight" onclick="startEdit('dart_weight')" style="display:none;">✏️</button>
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Walkout Song</span>
+            <div class="detail-value-wrap">
+              <span class="detail-value" id="profileWalkout">-</span>
+              <button class="pencil-btn" id="pencil-walkout_song" onclick="startEdit('walkout_song')" style="display:none;">✏️</button>
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Favourite Player</span>
+            <div class="detail-value-wrap">
+              <span class="detail-value" id="profileFavPlayer">-</span>
+              <button class="pencil-btn" id="pencil-favourite_player" onclick="startEdit('favourite_player')" style="display:none;">✏️</button>
+            </div>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Platform</span>
+            <div class="detail-value-wrap"><span class="detail-value" id="profilePlatform">-</span></div>
+          </div>
         </div>
       </div>
 
       <div id="loadingMsg" class="loading">Loading players...</div>
-
     </main>
 
     <script>
       let allPlayers = [];
+      let currentUserId = null;
+      let currentProfileId = null;
+
+      const fieldLabels = {
+        highest_checkout: 'profileCheckout',
+        hometown: 'profileHometown',
+        darts_brand: 'profileBrand',
+        dart_weight: 'profileWeight',
+        walkout_song: 'profileWalkout',
+        favourite_player: 'profileFavPlayer'
+      };
 
       async function loadPlayers() {
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (session) currentUserId = session.user.id;
+
         const { data, error } = await sbClient
           .from('profiles')
           .select('*')
@@ -176,34 +244,91 @@
       }
 
       function showPlayer(p) {
+        currentProfileId = p.id;
+        const isOwnProfile = currentUserId && currentUserId === p.id;
+
         document.getElementById('profileCard').style.display = 'block';
         document.getElementById('profileAvatar').textContent = (p.full_name || p.username || '?')[0].toUpperCase();
         document.getElementById('profileName').textContent = p.full_name || p.username || '-';
         document.getElementById('profileUsername').textContent = p.username ? '@' + p.username : '-';
-        document.getElementById('profileLocation').textContent = [p.country, p.hometown].filter(Boolean).join(' • ') || '-';
+        document.getElementById('profileLocation').textContent = p.hometown || '-';
         document.getElementById('profileAverage').textContent = p.average || '-';
         document.getElementById('profileWins').textContent = p.wins || '-';
         document.getElementById('profileMatches').textContent = p.matches || '-';
         document.getElementById('profileMemberSince').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '-';
         document.getElementById('profileCheckout').textContent = p.highest_checkout || '-';
-        document.getElementById('profileCountry').textContent = p.country || '-';
         document.getElementById('profileHometown').textContent = p.hometown || '-';
         document.getElementById('profileBrand').textContent = p.darts_brand || '-';
         document.getElementById('profileWeight').textContent = p.dart_weight || '-';
         document.getElementById('profileWalkout').textContent = p.walkout_song || '-';
         document.getElementById('profileFavPlayer').textContent = p.favourite_player || '-';
         document.getElementById('profilePlatform').textContent = p.platform ? p.platform.charAt(0).toUpperCase() + p.platform.slice(1) : '-';
+
+        // Show pencil buttons only on own profile
+        Object.keys(fieldLabels).forEach(field => {
+          const pencil = document.getElementById('pencil-' + field);
+          if (pencil) pencil.style.display = isOwnProfile ? 'inline' : 'none';
+        });
+      }
+
+      function startEdit(field) {
+        const valueEl = document.getElementById(fieldLabels[field]);
+        const pencilEl = document.getElementById('pencil-' + field);
+        const currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
+
+        const wrap = valueEl.parentElement;
+        wrap.innerHTML = `
+          <input class="edit-input" id="edit-${field}" value="${currentValue}" />
+          <button class="save-btn" onclick="saveEdit('${field}')">Save</button>
+          <button class="cancel-btn" onclick="cancelEdit('${field}', '${currentValue}')">Cancel</button>
+        `;
+        document.getElementById('edit-' + field).focus();
+      }
+
+      async function saveEdit(field) {
+        const input = document.getElementById('edit-' + field);
+        const newValue = input.value.trim();
+
+        const update = {};
+        update[field] = newValue || null;
+
+        const { error } = await sbClient
+          .from('profiles')
+          .update(update)
+          .eq('id', currentUserId);
+
+        if (error) {
+          alert('Error saving. Please try again.');
+          return;
+        }
+
+        // Update local data
+        const player = allPlayers.find(p => p.id === currentProfileId);
+        if (player) player[field] = newValue;
+
+        // Re-render the field
+        const wrap = document.getElementById('edit-' + field).parentElement;
+        wrap.innerHTML = `
+          <span class="detail-value" id="${fieldLabels[field]}">${newValue || '-'}</span>
+          <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
+        `;
+      }
+
+      function cancelEdit(field, originalValue) {
+        const wrap = document.getElementById('edit-' + field).parentElement;
+        wrap.innerHTML = `
+          <span class="detail-value" id="${fieldLabels[field]}">${originalValue || '-'}</span>
+          <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
+        `;
       }
 
       function filterPlayers() {
         const val = document.getElementById('searchInput').value.toLowerCase().trim();
         if (!val) return;
-
         const match = allPlayers.find(p =>
           (p.full_name && p.full_name.toLowerCase().startsWith(val)) ||
           (p.username && p.username.toLowerCase().startsWith(val))
         );
-
         if (match) {
           document.getElementById('playerDropdown').value = match.id;
           showPlayer(match);
