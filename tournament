@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tournament | Pinnacle Darts League</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
+
+      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+      header img { height: 70px; }
+      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
+      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
+
+      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
+      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
+      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
+
+      .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
+
+      nav { background-color: #222222; display: flex; justify-content: center; gap: 40px; padding: 15px; }
+      nav a { color: #ffffff; text-decoration: none; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+      nav a:hover { color: #aaaaaa; }
+
+      main { padding: 40px; max-width: 900px; margin: 0 auto; }
+
+      .back-link { display: inline-block; margin-bottom: 20px; color: #111111; text-decoration: none; font-size: 0.9em; }
+      .back-link:hover { text-decoration: underline; }
+
+      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
+
+      .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; }
+      .badge-upcoming { background-color: #111111; color: #ffffff; }
+      .badge-active { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
+      .badge-completed { background-color: #dddddd; color: #111111; }
+
+      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
+      .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+      .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
+      .tab:hover { color: #000000; }
+      .tab-content { display: none; }
+      .tab-content.active { display: block; }
+
+      .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+      .info-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 16px; }
+      .info-box .label { font-size: 0.8em; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+      .info-box .value { font-size: 1.1em; font-weight: bold; }
+
+      .description-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 20px; margin-bottom: 20px; }
+      .description-box p { margin: 0; color: #444444; line-height: 1.6; }
+
+      .player-list { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; overflow: hidden; }
+      .player-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #eeeeee; }
+      .player-item:last-child { border-bottom: none; }
+      .player-avatar-small { width: 36px; height: 36px; border-radius: 50%; background-color: #111111; color: #ffffff; font-size: 1em; font-weight: bold; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0; }
+      .player-info { display: flex; align-items: center; flex: 1; }
+      .player-name { font-weight: bold; font-size: 0.95em; }
+      .player-username { color: #888888; font-size: 0.85em; }
+      .btn-remove { background: none; border: 1px solid #cc0000; color: #cc0000; padding: 4px 10px; border-radius: 4px; font-size: 0.8em; cursor: pointer; font-family: Arial, sans-serif; }
+      .btn-remove:hover { background-color: #fff0f0; }
+
+      .coming-soon { text-align: center; padding: 40px; color: #aaaaaa; font-size: 1em; }
+      .loading { text-align: center; padding: 40px; color: #888888; }
+
+      @media (max-width: 700px) {
+        header { flex-wrap: wrap; padding: 16px 20px; }
+        header img { height: 50px; }
+        header h1 { font-size: 1.4em; }
+        header p { font-size: 0.85em; }
+        .header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+        .btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
+        .hamburger { display: block; }
+        nav { display: none; flex-direction: column; gap: 0; padding: 0; }
+        nav.open { display: flex; }
+        nav a { padding: 14px 20px; border-bottom: 1px solid #333333; font-size: 1em; }
+        main { padding: 24px 20px; }
+        .info-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <img src="logo.png" alt="Pinnacle Darts Logo">
+      <div>
+        <h1>Pinnacle Darts League</h1>
+        <p>Official League Website</p>
+      </div>
+      <a href="academy.html" class="btn-switch">Switch to Academy</a>
+      <div class="header-buttons" style="margin-left: auto;">
+        <div id="authButtons"></div>
+        <button class="hamburger" onclick="toggleMenu()">☰</button>
+      </div>
+    </header>
+
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="leagues.html">Leagues</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="players.html">Players</a>
+    </nav>
+
+    <main>
+      <a href="tournaments.html" class="back-link">← Back to Tournaments</a>
+      <div id="tournamentContent"><p class="loading">Loading...</p></div>
+    </main>
+
+    <script>
+      var tournamentId = null;
+      var isAdmin = false;
+      var tournamentFormat = '';
+
+      async function loadTournament() {
+        var params = new URLSearchParams(window.location.search);
+        tournamentId = params.get('id');
+        if (!tournamentId) { window.location.href = 'tournaments.html'; return; }
+
+        var session = await sbClient.auth.getSession();
+        if (session.data.session) {
+          var profile = await sbClient.from('profiles').select('is_admin').eq('id', session.data.session.user.id).single();
+          if (profile.data) { isAdmin = profile.data.is_admin; }
+        }
+
+        var result = await sbClient.from('tournaments').select('*').eq('id', tournamentId).single();
+        if (result.error || !result.data) { window.location.href = 'tournaments.html'; return; }
+
+        var t = result.data;
+        tournamentFormat = t.format;
+
+        var formatLabels = {
+          single_elimination: 'Single Elimination',
+          single_elimination_b: 'Single Elimination + B Bracket',
+          group_knockout: 'Group Stages + Knockout'
+        };
+        var platformLabels = {
+          dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both'
+        };
+
+        var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+        var timeStr = t.time || 'TBC';
+
+        var groupsTab = tournamentFormat === 'group_knockout' ? '<button class="tab" onclick="showTab(\'groups\', event)">Groups</button>' : '';
+        var groupsContent = tournamentFormat === 'group_knockout' ? '<div id="tab-groups" class="tab-content"><p class="coming-soon">Groups will be drawn once all players have registered.</p></div>' : '';
+
+        document.getElementById('tournamentContent').innerHTML =
+          '<span class="badge badge-' + t.status + '">' + (t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : 'Upcoming') + '</span>' +
+          '<h2>' + t.name + '</h2>' +
+          '<div class="tabs">' +
+          '<button class="tab active" onclick="showTab(\'info\', event)">Info</button>' +
+          '<button class="tab" onclick="showTab(\'players\', event)">Participating Players</button>' +
+          groupsTab +
+          '<button class="tab" onclick="showTab(\'knockouts\', event)">Knockouts</button>' +
+          '</div>' +
+          '<div id="tab-info" class="tab-content active">' +
+          '<div class="info-grid">' +
+          '<div class="info-box"><div class="label">Date</div><div class="value">' + dateStr + '</div></div>' +
+          '<div class="info-box"><div class="label">Time</div><div class="value">' + timeStr + '</div></div>' +
+          '<div class="info-box"><div class="label">Format</div><div class="value">' + (formatLabels[t.format] || t.format || 'TBC') + '</div></div>' +
+          '<div class="info-box"><div class="label">Platform</div><div class="value">' + (platformLabels[t.platform] || t.platform || 'TBC') + '</div></div>' +
+          (t.max_players ? '<div class="info-box"><div class="label">Max Players</div><div class="value">' + t.max_players + '</div></div>' : '') +
+          '</div>' +
+          (t.description ? '<div class="description-box"><p>' + t.description + '</p></div>' : '') +
+          '</div>' +
+          '<div id="tab-players" class="tab-content"><div id="playersList"><p class="loading">Loading players...</p></div></div>' +
+          groupsContent +
+          '<div id="tab-knockouts" class="tab-content"><p class="coming-soon">Knockout bracket will appear once the tournament begins.</p></div>';
+
+        loadPlayers();
+      }
+
+      async function loadPlayers() {
+        var result = await sbClient.from('tournament_players').select('player_id, profiles(full_name, username)').eq('tournament_id', tournamentId);
+        var container = document.getElementById('playersList');
+
+        if (!result.data || !result.data.length) {
+          container.innerHTML = '<p class="coming-soon">No players have joined yet.</p>';
+          return;
+        }
+
+        container.innerHTML = '<div class="player-list">' +
+          result.data.map(function(p) {
+            var profile = p.profiles || {};
+            var name = profile.full_name || profile.username || 'Unknown';
+            var username = profile.username ? '@' + profile.username : '';
+            var initial = name[0].toUpperCase();
+            var removeBtn = isAdmin ? '<button class="btn-remove" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button>' : '';
+            return '<div class="player-item">' +
+              '<div class="player-info">' +
+              '<div class="player-avatar-small">' + initial + '</div>' +
+              '<div><div class="player-name">' + name + '</div><div class="player-username">' + username + '</div></div>' +
+              '</div>' +
+              removeBtn +
+              '</div>';
+          }).join('') +
+          '</div>';
+      }
+
+      async function removePlayer(playerId) {
+        if (!confirm('Remove this player from the tournament?')) { return; }
+        await sbClient.from('tournament_players').delete().eq('tournament_id', tournamentId).eq('player_id', playerId);
+        loadPlayers();
+      }
+
+      function showTab(name, event) {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+        event.target.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+        if (name === 'players') { loadPlayers(); }
+      }
+
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+      }
+
+      window.addEventListener('load', function() {
+        checkAuth();
+        loadTournament();
+      });
+    </script>
+
+  </body>
+</html>
