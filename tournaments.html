@@ -105,7 +105,7 @@
           joinedTournaments = joined.data ? joined.data.map(function(j) { return j.tournament_id; }) : [];
         }
 
-        var result = await sbClient.from('tournaments').select('*, tournament_players(count)').order('date', { ascending: true });
+var result = await sbClient.from('tournaments').select('*').order('date', { ascending: true });
         var container = document.getElementById('tournamentsList');
 
         if (!result.data || !result.data.length) {
