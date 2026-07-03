@@ -46,6 +46,7 @@
       .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #000000; background-color: #ffffff; }
 
       .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 
       .btn { padding: 10px 24px; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; font-family: Arial, sans-serif; margin-right: 8px; }
       .btn-primary { background-color: #000000; color: #ffffff; }
@@ -75,7 +76,6 @@
       .badge-completed { background-color: #eeeeee; color: #555555; border: 1px solid #cccccc; }
 
       .empty-state { text-align: center; padding: 20px; color: #aaaaaa; font-size: 0.95em; }
-
       .hidden { display: none; }
 
       .search-bar { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; margin-bottom: 16px; font-family: Arial, sans-serif; }
@@ -99,6 +99,7 @@
         main { padding: 24px 20px; }
         h2 { font-size: 1.3em; }
         .form-row { grid-template-columns: 1fr; }
+        .form-row-3 { grid-template-columns: 1fr; }
         table { font-size: 0.8em; }
         th, td { padding: 8px 6px; }
       }
@@ -138,7 +139,6 @@
 
       <!-- TOURNAMENTS TAB -->
       <div id="tab-tournaments" class="tab-content active">
-
         <div class="card">
           <h3>Create New Tournament</h3>
           <div class="success-msg" id="tournament-success"></div>
@@ -159,12 +159,6 @@
               <input type="text" id="tournamentName" placeholder="e.g. Pinnacle Open" />
             </div>
             <div class="form-group">
-              <label>Date</label>
-              <input type="date" id="tournamentDate" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
               <label>Format</label>
               <select id="tournamentFormat">
                 <option value="single_elimination">Single Elimination</option>
@@ -172,6 +166,22 @@
                 <option value="group_knockout">Group Stages + Knockout</option>
               </select>
             </div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="tournamentDate" />
+            </div>
+            <div class="form-group">
+              <label>Time</label>
+              <input type="time" id="tournamentTime" />
+            </div>
+            <div class="form-group">
+              <label>Max Players</label>
+              <input type="number" id="tournamentMax" placeholder="e.g. 16" />
+            </div>
+          </div>
+          <div class="form-row">
             <div class="form-group">
               <label>Platform</label>
               <select id="tournamentPlatform">
@@ -179,20 +189,6 @@
                 <option value="scolia">Scolia</option>
                 <option value="in_person">In Person</option>
                 <option value="both">Both</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Max Players</label>
-              <input type="number" id="tournamentMax" placeholder="e.g. 16" />
-            </div>
-            <div class="form-group">
-              <label>Status</label>
-              <select id="tournamentStatus">
-                <option value="upcoming">Upcoming</option>
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
               </select>
             </div>
           </div>
@@ -207,10 +203,10 @@
           <h3>Manage Tournaments</h3>
           <table>
             <thead>
-              <tr><th>Name</th><th>Date</th><th>Format</th><th>Platform</th><th>Status</th><th>Actions</th></tr>
+              <tr><th>Name</th><th>Date</th><th>Time</th><th>Format</th><th>Platform</th><th>Status</th><th>Actions</th></tr>
             </thead>
             <tbody id="tournamentsList">
-              <tr><td colspan="6" class="empty-state">Loading...</td></tr>
+              <tr><td colspan="7" class="empty-state">Loading...</td></tr>
             </tbody>
           </table>
         </div>
@@ -218,7 +214,6 @@
 
       <!-- LEAGUES TAB -->
       <div id="tab-leagues" class="tab-content">
-
         <div class="card">
           <h3>Create New League</h3>
           <div class="success-msg" id="league-success"></div>
@@ -284,14 +279,6 @@
             <div class="form-group">
               <label>Players Per Division</label>
               <input type="number" id="leaguePlayersPerDiv" placeholder="e.g. 8" />
-            </div>
-            <div class="form-group">
-              <label>Status</label>
-              <select id="leagueStatus">
-                <option value="upcoming">Upcoming</option>
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-              </select>
             </div>
           </div>
 
@@ -417,7 +404,6 @@
       let leagueTemplates = JSON.parse(localStorage.getItem('leagueTemplates') || '[]');
       let tournamentTemplates = JSON.parse(localStorage.getItem('tournamentTemplates') || '[]');
 
-      // TAB SWITCHING
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -425,13 +411,11 @@
         document.getElementById('tab-' + name).classList.add('active');
       }
 
-      // SWISS OPTIONS
       function toggleSwissOptions() {
         const format = document.getElementById('leagueFormat').value;
         document.getElementById('swissOptions').classList.toggle('hidden', format !== 'swiss');
       }
 
-      // TEMPLATES
       function refreshTemplateSelects() {
         const lt = document.getElementById('leagueTemplateSelect');
         lt.innerHTML = '<option value="">-- Apply a template --</option>';
@@ -454,7 +438,6 @@
           season: document.getElementById('leagueSeason').value,
           format: document.getElementById('leagueFormat').value,
           platform: document.getElementById('leaguePlatform').value,
-          status: document.getElementById('leagueStatus').value,
           playersPerDiv: document.getElementById('leaguePlayersPerDiv').value,
           swissGames: document.getElementById('leagueSwissGames').value
         };
@@ -471,7 +454,6 @@
           name,
           format: document.getElementById('tournamentFormat').value,
           platform: document.getElementById('tournamentPlatform').value,
-          status: document.getElementById('tournamentStatus').value,
           max: document.getElementById('tournamentMax').value
         };
         tournamentTemplates.push(template);
@@ -488,7 +470,6 @@
           document.getElementById('leagueSeason').value = t.season || '';
           document.getElementById('leagueFormat').value = t.format || 'round_robin';
           document.getElementById('leaguePlatform').value = t.platform || 'dartcounter';
-          document.getElementById('leagueStatus').value = t.status || 'upcoming';
           document.getElementById('leaguePlayersPerDiv').value = t.playersPerDiv || '';
           document.getElementById('leagueSwissGames').value = t.swissGames || '';
           toggleSwissOptions();
@@ -498,12 +479,10 @@
           const t = tournamentTemplates[idx];
           document.getElementById('tournamentFormat').value = t.format || 'single_elimination';
           document.getElementById('tournamentPlatform').value = t.platform || 'dartcounter';
-          document.getElementById('tournamentStatus').value = t.status || 'upcoming';
           document.getElementById('tournamentMax').value = t.max || '';
         }
       }
 
-      // TOURNAMENTS
       async function createTournament() {
         const name = document.getElementById('tournamentName').value.trim();
         if (!name) { showMsg('tournament-error', 'Please enter a tournament name.'); return; }
@@ -511,10 +490,11 @@
         const { error } = await sbClient.from('tournaments').insert([{
           name,
           date: document.getElementById('tournamentDate').value || null,
+          time: document.getElementById('tournamentTime').value || null,
           format: document.getElementById('tournamentFormat').value,
           platform: document.getElementById('tournamentPlatform').value,
           max_players: document.getElementById('tournamentMax').value || null,
-          status: document.getElementById('tournamentStatus').value,
+          status: 'upcoming',
           description: document.getElementById('tournamentDesc').value.trim() || null
         }]);
 
@@ -522,17 +502,20 @@
         showMsg('tournament-success', 'Tournament created successfully!');
         document.getElementById('tournamentName').value = '';
         document.getElementById('tournamentDesc').value = '';
+        document.getElementById('tournamentDate').value = '';
+        document.getElementById('tournamentTime').value = '';
         loadTournaments();
       }
 
       async function loadTournaments() {
         const { data } = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
         const tbody = document.getElementById('tournamentsList');
-        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No tournaments yet</td></tr>'; return; }
+        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tournaments yet</td></tr>'; return; }
         tbody.innerHTML = data.map(t => `
           <tr>
             <td>${t.name}</td>
             <td>${t.date || 'TBC'}</td>
+            <td>${t.time || '-'}</td>
             <td>${formatLabel(t.format)}</td>
             <td>${formatLabel(t.platform)}</td>
             <td><span class="badge badge-${t.status}">${t.status}</span></td>
@@ -551,7 +534,6 @@
         loadTournaments();
       }
 
-      // LEAGUES
       async function createLeague() {
         const name = document.getElementById('leagueName').value.trim();
         if (!name) { showMsg('league-error', 'Please enter a league name.'); return; }
@@ -563,7 +545,7 @@
           end_date: document.getElementById('leagueEnd').value || null,
           format: document.getElementById('leagueFormat').value,
           platform: document.getElementById('leaguePlatform').value,
-          status: document.getElementById('leagueStatus').value
+          status: 'upcoming'
         }]);
 
         if (error) { showMsg('league-error', error.message); return; }
@@ -618,7 +600,6 @@
         `).join('');
       }
 
-      // PLAYERS
       async function loadPlayers() {
         const { data } = await sbClient.from('profiles').select('*').order('created_at', { ascending: false });
         allPlayersData = data || [];
@@ -692,7 +673,6 @@
         loadPlayers();
       }
 
-      // NEWS
       async function saveNews() {
         const title = document.getElementById('newsTitle').value.trim();
         const content = document.getElementById('newsContent').value.trim();
@@ -736,23 +716,13 @@
         loadNews();
       }
 
-      // HELPERS
       function formatLabel(val) {
         if (!val) return '-';
         const labels = {
-          dartcounter: 'Dartcounter',
-          scolia: 'Scolia',
-          in_person: 'In Person',
-          both: 'Both',
-          round_robin: 'Round Robin',
-          home_away: 'Home & Away',
-          swiss: 'Swiss System',
-          single_elimination: 'Single Elimination',
-          single_elimination_b: 'Single Elim + B Bracket',
-          group_knockout: 'Group Stages + Knockout',
-          upcoming: 'Upcoming',
-          active: 'Active',
-          completed: 'Completed'
+          dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both',
+          round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System',
+          single_elimination: 'Single Elimination', single_elimination_b: 'Single Elim + B Bracket',
+          group_knockout: 'Group Stages + Knockout', upcoming: 'Upcoming', active: 'Active', completed: 'Completed'
         };
         return labels[val] || val;
       }
