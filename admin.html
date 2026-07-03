@@ -377,11 +377,12 @@
       function saveTournamentTemplate() {
         var name = prompt('Enter a name for this template:');
         if (!name) { return; }
-        var template = {
+      var template = {
           name: name,
           format: document.getElementById('tournamentFormat').value,
           platform: document.getElementById('tournamentPlatform').value,
-          max: document.getElementById('tournamentMax').value
+          max: document.getElementById('tournamentMax').value,
+          description: document.getElementById('tournamentDesc').value
         };
         tournamentTemplates.push(template);
         localStorage.setItem('tournamentTemplates', JSON.stringify(tournamentTemplates));
