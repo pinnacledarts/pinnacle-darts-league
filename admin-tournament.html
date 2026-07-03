@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Tournament | Pinnacle Darts League</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
+
+      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+      header img { height: 70px; }
+      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
+      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
+
+      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
+      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
+      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
+
+      .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
+
+      nav { background-color: #222222; display: flex; justify-content: center; gap: 40px; padding: 15px; }
+      nav a { color: #ffffff; text-decoration: none; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+      nav a:hover { color: #aaaaaa; }
+
+      main { padding: 40px; max-width: 900px; margin: 0 auto; }
+
+      .back-link { display: inline-block; margin-bottom: 20px; color: #111111; text-decoration: none; font-size: 0.9em; }
+      .back-link:hover { text-decoration: underline; }
+
+      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
+
+      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
+      .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+      .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
+      .tab:hover { color: #000000; }
+      .tab-content { display: none; }
+      .tab-content.active { display: block; }
+
+      .card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 24px; margin-bottom: 20px; }
+      .card h3 { margin: 0 0 20px; font-size: 1.1em; padding-left: 12px; border-left: 4px solid #000000; }
+
+      .form-group { margin-bottom: 16px; }
+      .form-group label { display: block; font-size: 0.9em; font-weight: bold; margin-bottom: 6px; color: #333333; }
+      .form-group select { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; font-family: Arial, sans-serif; }
+
+      .btn { padding: 10px 24px; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; font-family: Arial, sans-serif; margin-right: 8px; }
+      .btn-primary { background-color: #000000; color: #ffffff; }
+      .btn-primary:hover { background-color: #333333; }
+      .btn-danger { background-color: #ffffff; color: #cc0000; border: 1px solid #cc0000; }
+      .btn-danger:hover { background-color: #fff0f0; }
+
+      table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.95em; }
+      th { background-color: #111111; color: #ffffff; padding: 10px 12px; text-align: left; }
+      td { padding: 10px 12px; border-bottom: 1px solid #eeeeee; }
+      tr:last-child td { border-bottom: none; }
+
+      .btn-small { padding: 4px 12px; font-size: 0.85em; border-radius: 4px; cursor: pointer; border: 1px solid #dddddd; background: #ffffff; font-family: Arial, sans-serif; }
+      .btn-small:hover { background-color: #f5f5f5; }
+      .btn-small.danger { color: #cc0000; border-color: #cc0000; }
+      .btn-small.danger:hover { background-color: #fff0f0; }
+
+      .score-input { width: 50px; padding: 4px 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; text-align: center; }
+
+      .admin-bar { background-color: #f9f9f9; border: 1px solid #dddddd; border-radius: 6px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+      .admin-bar label { font-size: 0.9em; font-weight: bold; }
+      .admin-bar input { padding: 6px 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; width: 80px; }
+
+      .group-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+      .group-card h3 { margin: 0 0 16px; font-size: 1.1em; padding-left: 12px; border-left: 4px solid #000000; }
+
+      .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #f9f9f9; border: 1px solid #eeeeee; border-radius: 4px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+      .fixture-players { font-size: 0.9em; font-weight: bold; flex: 1; }
+      .fixture-vs { color: #888888; margin: 0 8px; }
+      .score-inputs { display: flex; align-items: center; gap: 6px; }
+      .btn-submit-score { background-color: #111111; color: #ffffff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
+      .btn-submit-score:hover { background-color: #333333; }
+      .score-display { font-weight: bold; font-size: 0.95em; }
+
+      .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
+      .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
+
+      .empty-state { text-align: center; padding: 20px; color: #aaaaaa; font-size: 0.95em; }
+      .loading { text-align: center; padding: 40px; color: #888888; }
+
+      @media (max-width: 700px) {
+        header { flex-wrap: wrap; padding: 16px 20px; }
+        header img { height: 50px; }
+        header h1 { font-size: 1.4em; }
+        header p { font-size: 0.85em; }
+        .header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+        .btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
+        .hamburger { display: block; }
+        nav { display: none; flex-direction: column; gap: 0; padding: 0; }
+        nav.open { display: flex; }
+        nav a { padding: 14px 20px; border-bottom: 1px solid #333333; font-size: 1em; }
+        main { padding: 24px 20px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <img src="logo.png" alt="Pinnacle Darts Logo">
+      <div>
+        <h1>Pinnacle Darts League</h1>
+        <p>Official League Website</p>
+      </div>
+      <a href="academy.html" class="btn-switch">Switch to Academy</a>
+      <div class="header-buttons" style="margin-left: auto;">
+        <div id="authButtons"></div>
+        <button class="hamburger" onclick="toggleMenu()">☰</button>
+      </div>
+    </header>
+
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="leagues.html">Leagues</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="players.html">Players</a>
+    </nav>
+
+    <main>
+      <a href="admin.html" class="back-link">← Back to Admin</a>
+      <div id="pageContent"><p class="loading">Loading...</p></div>
+    </main>
+
+    <script>
+      var tournamentId = null;
+      var tournamentData = null;
+      var allProfiles = [];
+
+      async function init() {
+        var params = new URLSearchParams(window.location.search);
+        tournamentId = params.get('id');
+        if (!tournamentId) { window.location.href = 'admin.html'; return; }
+
+        var session = await sbClient.auth.getSession();
+        if (!session.data.session) { window.location.href = 'login.html'; return; }
+
+        var profile = await sbClient.from('profiles').select('is_admin').eq('id', session.data.session.user.id).single();
+        if (!profile.data || !profile.data.is_admin) { window.location.href = 'index.html'; return; }
+
+        var result = await sbClient.from('tournaments').select('*').eq('id', tournamentId).single();
+        if (result.error || !result.data) { window.location.href = 'admin.html'; return; }
+        tournamentData = result.data;
+
+        var profilesResult = await sbClient.from('profiles').select('id, full_name, username').order('full_name');
+        allProfiles = profilesResult.data || [];
+
+        var formatLabels = {
+          single_elimination: 'Single Elimination',
+          single_elimination_b: 'Single Elimination + B Bracket',
+          group_knockout: 'Group Stages + Knockout'
+        };
+
+        var groupsTab = tournamentData.format === 'group_knockout' ? '<button class="tab" onclick="showTab(\'groups\', event)">Groups & Scores</button>' : '';
+
+        document.getElementById('pageContent').innerHTML =
+          '<h2>⚙️ Managing: ' + tournamentData.name + '</h2>' +
+          '<div class="tabs">' +
+          '<button class="tab active" onclick="showTab(\'players\', event)">Players</button>' +
+          groupsTab +
+          '<button class="tab" onclick="showTab(\'knockouts\', event)">Knockouts</button>' +
+          '</div>' +
+
+          '<div id="tab-players" class="tab-content active">' +
+          '<div class="card">' +
+          '<h3>Add Player</h3>' +
+          '<div class="success-msg" id="add-player-success"></div>' +
+          '<div class="error-msg" id="add-player-error"></div>' +
+          '<div class="form-group">' +
+          '<label>Select Player</label>' +
+          '<select id="addPlayerSelect">' +
+          '<option value="">-- Select a player --</option>' +
+          allProfiles.map(function(p) { return '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>'; }).join('') +
+          '</select>' +
+          '</div>' +
+          '<button class="btn btn-primary" onclick="addPlayer()">Add to Tournament</button>' +
+          '</div>' +
+          '<div class="card">' +
+          '<h3>Registered Players</h3>' +
+          '<div id="playersList"><p class="loading">Loading...</p></div>' +
+          '</div>' +
+          '</div>' +
+
+          (tournamentData.format === 'group_knockout' ?
+          '<div id="tab-groups" class="tab-content">' +
+          '<div class="success-msg" id="groups-success"></div>' +
+          '<div class="error-msg" id="groups-error"></div>' +
+          '<div class="admin-bar">' +
+          '<label>Players per group:</label>' +
+          '<input type="number" id="playersPerGroup" value="4" min="2" max="8" />' +
+          '<button class="btn btn-primary" onclick="generateGroups()">Generate Groups</button>' +
+          '<button class="btn btn-danger" onclick="clearGroups()">Clear Groups</button>' +
+          '</div>' +
+          '<div id="groupsContent"><p class="empty-state">No groups generated yet.</p></div>' +
+          '</div>' : '') +
+
+          '<div id="tab-knockouts" class="tab-content">' +
+          '<div class="card"><p class="empty-state">Knockout management coming soon.</p></div>' +
+          '</div>';
+
+        loadPlayers();
+        if (tournamentData.format === 'group_knockout') { loadGroups(); }
+      }
+
+      async function loadPlayers() {
+        var result = await sbClient.from('tournament_players').select('player_id, profiles(full_name, username)').eq('tournament_id', tournamentId);
+        var container = document.getElementById('playersList');
+        if (!result.data || !result.data.length) {
+          container.innerHTML = '<p class="empty-state">No players yet.</p>';
+          return;
+        }
+        container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Actions</th></tr></thead><tbody>' +
+          result.data.map(function(p) {
+            var profile = p.profiles || {};
+            var name = profile.full_name || profile.username || 'Unknown';
+            var username = profile.username ? '@' + profile.username : '-';
+            return '<tr><td>' + name + '</td><td>' + username + '</td><td><button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
+          }).join('') +
+          '</tbody></table>';
+      }
+
+      async function addPlayer() {
+        var playerId = document.getElementById('addPlayerSelect').value;
+        if (!playerId) { showMsg('add-player-error', 'Please select a player.'); return; }
+
+        var existing = await sbClient.from('tournament_players').select('id').eq('tournament_id', tournamentId).eq('player_id', playerId);
+        if (existing.data && existing.data.length > 0) { showMsg('add-player-error', 'Player is already in this tournament.'); return; }
+
+        var result = await sbClient.from('tournament_players').insert([{
+          tournament_id: parseInt(tournamentId),
+          player_id: playerId
+        }]);
+        if (result.error) { showMsg('add-player-error', result.error.message); return; }
+        showMsg('add-player-success', 'Player added successfully!');
+        loadPlayers();
+      }
+
+      async function removePlayer(playerId) {
+        if (!confirm('Remove this player from the tournament?')) { return; }
+        await sbClient.from('tournament_players').delete().eq('tournament_id', tournamentId).eq('player_id', playerId);
+        loadPlayers();
+      }
+
+      async function generateGroups() {
+        var playersPerGroup = parseInt(document.getElementById('playersPerGroup').value) || 4;
+
+        var existing = await sbClient.from('tournament_groups').select('id').eq('tournament_id', tournamentId);
+        if (existing.data && existing.data.length > 0) {
+          if (!confirm('Groups already exist. Regenerate? This will delete existing groups and results.')) { return; }
+          await sbClient.from('tournament_groups').delete().eq('tournament_id', tournamentId);
+        }
+
+        var playersResult = await sbClient.from('tournament_players').select('player_id, profiles(full_name, username)').eq('tournament_id', tournamentId);
+        if (!playersResult.data || !playersResult.data.length) {
+          showMsg('groups-error', 'No players have joined yet.');
+          return;
+        }
+
+        var players = playersResult.data.slice();
+        for (var i = players.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = players[i]; players[i] = players[j]; players[j] = temp;
+        }
+
+        var numGroups = Math.ceil(players.length / playersPerGroup);
+        var groupNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+        for (var g = 0; g < numGroups; g++) {
+          var groupResult = await sbClient.from('tournament_groups').insert([{
+            tournament_id: parseInt(tournamentId),
+            group_name: 'Group ' + groupNames[g]
+          }]).select();
+
+          if (groupResult.error || !groupResult.data) { continue; }
+          var groupId = groupResult.data[0].id;
+
+          var groupPlayers = [];
+          for (var p = g; p < players.length; p += numGroups) { groupPlayers.push(players[p]); }
+
+          for (var p = 0; p < groupPlayers.length; p++) {
+            await sbClient.from('tournament_group_players').insert([{ group_id: groupId, player_id: groupPlayers[p].player_id }]);
+          }
+
+          for (var p1 = 0; p1 < groupPlayers.length; p1++) {
+            for (var p2 = p1 + 1; p2 < groupPlayers.length; p2++) {
+              await sbClient.from('tournament_matches').insert([{
+                tournament_id: parseInt(tournamentId),
+                group_id: groupId,
+                player1_id: groupPlayers[p1].player_id,
+                player2_id: groupPlayers[p2].player_id,
+                stage: 'group',
+                status: 'pending'
+              }]);
+            }
+          }
+        }
+
+        showMsg('groups-success', 'Groups generated successfully!');
+        loadGroups();
+      }
+
+      async function clearGroups() {
+        if (!confirm('Delete all groups and results for this tournament?')) { return; }
+        await sbClient.from('tournament_groups').delete().eq('tournament_id', tournamentId);
+        document.getElementById('groupsContent').innerHTML = '<p class="empty-state">No groups generated yet.</p>';
+      }
+
+      async function loadGroups() {
+        var groupsResult = await sbClient.from('tournament_groups').select('*, tournament_group_players(player_id, profiles(full_name, username))').eq('tournament_id', tournamentId).order('group_name');
+        var container = document.getElementById('groupsContent');
+        if (!groupsResult.data || !groupsResult.data.length) {
+          container.innerHTML = '<p class="empty-state">No groups generated yet.</p>';
+          return;
+        }
+
+        var matchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'group');
+        var matches = matchesResult.data || [];
+
+        container.innerHTML = groupsResult.data.map(function(group) {
+          var groupPlayers = group.tournament_group_players || [];
+          var playerMap = {};
+          groupPlayers.forEach(function(gp) {
+            var profile = gp.profiles || {};
+            playerMap[gp.player_id] = profile.full_name || profile.username || 'Unknown';
+          });
+
+          var standings = groupPlayers.map(function(gp) {
+            var name = playerMap[gp.player_id];
+            var played = 0, won = 0, lost = 0, pts = 0;
+            matches.forEach(function(m) {
+              if (m.group_id !== group.id || m.status !== 'completed') { return; }
+              if (m.player1_id === gp.player_id) {
+                played++;
+                if (m.player1_score > m.player2_score) { won++; pts += 3; } else { lost++; }
+              } else if (m.player2_id === gp.player_id) {
+                played++;
+                if (m.player2_score > m.player1_score) { won++; pts += 3; } else { lost++; }
+              }
+            });
+            return { name: name, played: played, won: won, lost: lost, pts: pts };
+          }).sort(function(a, b) { return b.pts - a.pts; });
+
+          var groupFixtures = matches.filter(function(m) { return m.group_id === group.id; });
+
+          var fixturesHtml = groupFixtures.map(function(m) {
+            var p1name = playerMap[m.player1_id] || 'Unknown';
+            var p2name = playerMap[m.player2_id] || 'Unknown';
+            if (m.status === 'completed') {
+              return '<div class="fixture-item">' +
+                '<div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div>' +
+                '<div class="score-inputs">' +
+                '<input class="score-input" type="number" id="s1_' + m.id + '" value="' + m.player1_score + '" />' +
+                '<span>-</span>' +
+                '<input class="score-input" type="number" id="s2_' + m.id + '" value="' + m.player2_score + '" />' +
+                '<button class="btn-submit-score" onclick="updateScore(' + m.id + ')">Update</button>' +
+                '</div></div>';
+            }
+            return '<div class="fixture-item">' +
+              '<div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div>' +
+              '<div class="score-inputs">' +
+              '<input class="score-input" type="number" id="s1_' + m.id + '" placeholder="0" />' +
+              '<span>-</span>' +
+              '<input class="score-input" type="number" id="s2_' + m.id + '" placeholder="0" />' +
+              '<button class="btn-submit-score" onclick="updateScore(' + m.id + ')">Submit</button>' +
+              '</div></div>';
+          }).join('');
+
+          return '<div class="group-card"><h3>' + group.group_name + '</h3>' +
+            '<table><thead><tr><th>Player</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>' +
+            standings.map(function(s) {
+              return '<tr><td>' + s.name + '</td><td>' + s.played + '</td><td>' + s.won + '</td><td>' + s.lost + '</td><td><strong>' + s.pts + '</strong></td></tr>';
+            }).join('') +
+            '</tbody></table>' +
+            '<h4 style="margin:16px 0 8px;font-size:0.95em;">Fixtures & Scores</h4>' +
+            fixturesHtml +
+            '</div>';
+        }).join('');
+      }
+
+      async function updateScore(matchId) {
+        var s1 = parseInt(document.getElementById('s1_' + matchId).value);
+        var s2 = parseInt(document.getElementById('s2_' + matchId).value);
+        if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
+        var result = await sbClient.from('tournament_matches').update({
+          player1_score: s1,
+          player2_score: s2,
+          status: 'completed'
+        }).eq('id', matchId);
+        if (result.error) { alert('Error saving score: ' + result.error.message); return; }
+        loadGroups();
+      }
+
+      function showMsg(id, msg) {
+        var el = document.getElementById(id);
+        if (!el) { return; }
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(function() { el.style.display = 'none'; }, 4000);
+      }
+
+      function showTab(name, event) {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+        event.target.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+      }
+
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+      }
+
+      window.addEventListener('load', function() {
+        checkAuth();
+        init();
+      });
+    </script>
+
+  </body>
+</html>
