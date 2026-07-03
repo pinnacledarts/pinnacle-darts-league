@@ -36,9 +36,11 @@
 
       .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; }
       .badge-upcoming { background-color: #111111; color: #ffffff; }
+      .badge-active { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
       .badge-completed { background-color: #dddddd; color: #111111; }
 
       .coming-soon { text-align: center; padding: 60px 20px; color: #aaaaaa; font-size: 1.1em; }
+      .loading { text-align: center; padding: 40px; color: #888888; }
 
       @media (max-width: 700px) {
         header { flex-wrap: wrap; padding: 16px 20px; }
@@ -80,24 +82,53 @@
 
     <main>
       <h2>Tournaments</h2>
-
-      <div class="tournament-card">
-        <span class="badge badge-upcoming">Upcoming</span>
-        <h3>Pinnacle Open — Season 1</h3>
-        <p><strong>Date:</strong> TBC</p>
-        <p><strong>Format:</strong> Single elimination</p>
-        <p><strong>Players:</strong> Open entry</p>
-        <p>Details to be confirmed. Check back soon.</p>
-      </div>
-
-      <div class="coming-soon">🎯 More tournaments coming soon</div>
+      <div id="tournamentsList"><p class="loading">Loading tournaments...</p></div>
     </main>
 
     <script>
+      async function loadTournaments() {
+        var result = await sbClient.from('tournaments').select('*').order('date', { ascending: true });
+        var container = document.getElementById('tournamentsList');
+
+        if (!result.data || !result.data.length) {
+          container.innerHTML = '<p class="coming-soon">🎯 No tournaments yet — check back soon!</p>';
+          return;
+        }
+
+        container.innerHTML = result.data.map(function(t) {
+          var formatLabels = {
+            single_elimination: 'Single Elimination',
+            single_elimination_b: 'Single Elimination + B Bracket',
+            group_knockout: 'Group Stages + Knockout'
+          };
+          var platformLabels = {
+            dartcounter: 'Dartcounter',
+            scolia: 'Scolia',
+            in_person: 'In Person',
+            both: 'Both'
+          };
+          var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+          var timeStr = t.time ? ' at ' + t.time : '';
+          return '<div class="tournament-card">' +
+            '<span class="badge badge-' + t.status + '">' + (t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : 'Upcoming') + '</span>' +
+            '<h3>' + t.name + '</h3>' +
+            '<p><strong>Date:</strong> ' + dateStr + timeStr + '</p>' +
+            '<p><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</p>' +
+            '<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
+            (t.max_players ? '<p><strong>Max Players:</strong> ' + t.max_players + '</p>' : '') +
+            (t.description ? '<p>' + t.description + '</p>' : '') +
+            '</div>';
+        }).join('');
+      }
+
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
-      checkAuth();
+
+      window.addEventListener('load', function() {
+        checkAuth();
+        loadTournaments();
+      });
     </script>
 
   </body>
