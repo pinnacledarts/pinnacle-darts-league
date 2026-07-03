@@ -329,8 +329,6 @@
 
     <script>
       var allPlayersData = [];
-      var leagueTemplates = JSON.parse(localStorage.getItem('leagueTemplates') || '[]');
-      var tournamentTemplates = JSON.parse(localStorage.getItem('tournamentTemplates') || '[]');
 
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
@@ -344,10 +342,11 @@
         document.getElementById('swissOptions').classList.toggle('hidden', format !== 'swiss');
       }
 
-  async function refreshTemplateSelects() {
+      async function refreshTemplateSelects() {
         var result = await sbClient.from('templates').select('*').order('name');
-        var leagueTemps = result.data ? result.data.filter(function(t) { return t.type === 'league'; }) : [];
-        var tournamentTemps = result.data ? result.data.filter(function(t) { return t.type === 'tournament'; }) : [];
+        var data = result.data || [];
+        var leagueTemps = data.filter(function(t) { return t.type === 'league'; });
+        var tournamentTemps = data.filter(function(t) { return t.type === 'tournament'; });
 
         var lt = document.getElementById('leagueTemplateSelect');
         lt.innerHTML = '<option value="">-- Apply a template --</option>';
@@ -365,7 +364,7 @@
       async function saveLeagueTemplate() {
         var name = prompt('Enter a name for this template:');
         if (!name) { return; }
-        var data = {
+        var templateData = {
           season: document.getElementById('leagueSeason').value,
           format: document.getElementById('leagueFormat').value,
           platform: document.getElementById('leaguePlatform').value,
@@ -375,7 +374,7 @@
         var result = await sbClient.from('templates').insert([{
           name: name,
           type: 'league',
-          data: JSON.stringify(data)
+          data: JSON.stringify(templateData)
         }]);
         if (result.error) { showMsg('league-error', result.error.message); return; }
         showMsg('league-success', 'Template saved!');
@@ -385,7 +384,7 @@
       async function saveTournamentTemplate() {
         var name = prompt('Enter a name for this template:');
         if (!name) { return; }
-        var data = {
+        var templateData = {
           format: document.getElementById('tournamentFormat').value,
           platform: document.getElementById('tournamentPlatform').value,
           max: document.getElementById('tournamentMax').value,
@@ -394,7 +393,7 @@
         var result = await sbClient.from('templates').insert([{
           name: name,
           type: 'tournament',
-          data: JSON.stringify(data)
+          data: JSON.stringify(templateData)
         }]);
         if (result.error) { showMsg('tournament-error', result.error.message); return; }
         showMsg('tournament-success', 'Template saved!');
@@ -420,61 +419,6 @@
           var result = await sbClient.from('templates').select('data').eq('id', idx).single();
           if (result.error || !result.data) { return; }
           var t = JSON.parse(result.data.data);
-          document.getElementById('tournamentFormat').value = t.format || 'single_elimination';
-          document.getElementById('tournamentPlatform').value = t.platform || 'dartcounter';
-          document.getElementById('tournamentMax').value = t.max || '';
-          document.getElementById('tournamentDesc').value = t.description || '';
-        }
-      }
-
-      function saveLeagueTemplate() {
-        var name = prompt('Enter a name for this template:');
-        if (!name) { return; }
-        var template = {
-          name: name,
-          season: document.getElementById('leagueSeason').value,
-          format: document.getElementById('leagueFormat').value,
-          platform: document.getElementById('leaguePlatform').value,
-          playersPerDiv: document.getElementById('leaguePlayersPerDiv').value,
-          swissGames: document.getElementById('leagueSwissGames').value
-        };
-        leagueTemplates.push(template);
-        localStorage.setItem('leagueTemplates', JSON.stringify(leagueTemplates));
-        refreshTemplateSelects();
-        showMsg('league-success', 'Template saved!');
-      }
-
-      function saveTournamentTemplate() {
-        var name = prompt('Enter a name for this template:');
-        if (!name) { return; }
-      var template = {
-          name: name,
-          format: document.getElementById('tournamentFormat').value,
-          platform: document.getElementById('tournamentPlatform').value,
-          max: document.getElementById('tournamentMax').value,
-          description: document.getElementById('tournamentDesc').value
-        };
-        tournamentTemplates.push(template);
-        localStorage.setItem('tournamentTemplates', JSON.stringify(tournamentTemplates));
-        refreshTemplateSelects();
-        showMsg('tournament-success', 'Template saved!');
-      }
-
-      function applyTemplate(type) {
-        if (type === 'league') {
-          var idx = document.getElementById('leagueTemplateSelect').value;
-          if (idx === '') { return; }
-          var t = leagueTemplates[parseInt(idx)];
-          document.getElementById('leagueSeason').value = t.season || '';
-          document.getElementById('leagueFormat').value = t.format || 'round_robin';
-          document.getElementById('leaguePlatform').value = t.platform || 'dartcounter';
-          document.getElementById('leaguePlayersPerDiv').value = t.playersPerDiv || '';
-          document.getElementById('leagueSwissGames').value = t.swissGames || '';
-          toggleSwissOptions();
-        } else {
-          var idx = document.getElementById('tournamentTemplateSelect').value;
-          if (idx === '') { return; }
-          var t = tournamentTemplates[parseInt(idx)];
           document.getElementById('tournamentFormat').value = t.format || 'single_elimination';
           document.getElementById('tournamentPlatform').value = t.platform || 'dartcounter';
           document.getElementById('tournamentMax').value = t.max || '';
