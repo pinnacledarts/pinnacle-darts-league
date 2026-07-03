@@ -344,17 +344,87 @@
         document.getElementById('swissOptions').classList.toggle('hidden', format !== 'swiss');
       }
 
-      function refreshTemplateSelects() {
+  async function refreshTemplateSelects() {
+        var result = await sbClient.from('templates').select('*').order('name');
+        var leagueTemps = result.data ? result.data.filter(function(t) { return t.type === 'league'; }) : [];
+        var tournamentTemps = result.data ? result.data.filter(function(t) { return t.type === 'tournament'; }) : [];
+
         var lt = document.getElementById('leagueTemplateSelect');
         lt.innerHTML = '<option value="">-- Apply a template --</option>';
-        leagueTemplates.forEach(function(t, i) {
-          lt.innerHTML += '<option value="' + i + '">' + t.name + '</option>';
+        leagueTemps.forEach(function(t) {
+          lt.innerHTML += '<option value="' + t.id + '">' + t.name + '</option>';
         });
+
         var tt = document.getElementById('tournamentTemplateSelect');
         tt.innerHTML = '<option value="">-- Apply a template --</option>';
-        tournamentTemplates.forEach(function(t, i) {
-          tt.innerHTML += '<option value="' + i + '">' + t.name + '</option>';
+        tournamentTemps.forEach(function(t) {
+          tt.innerHTML += '<option value="' + t.id + '">' + t.name + '</option>';
         });
+      }
+
+      async function saveLeagueTemplate() {
+        var name = prompt('Enter a name for this template:');
+        if (!name) { return; }
+        var data = {
+          season: document.getElementById('leagueSeason').value,
+          format: document.getElementById('leagueFormat').value,
+          platform: document.getElementById('leaguePlatform').value,
+          playersPerDiv: document.getElementById('leaguePlayersPerDiv').value,
+          swissGames: document.getElementById('leagueSwissGames').value
+        };
+        var result = await sbClient.from('templates').insert([{
+          name: name,
+          type: 'league',
+          data: JSON.stringify(data)
+        }]);
+        if (result.error) { showMsg('league-error', result.error.message); return; }
+        showMsg('league-success', 'Template saved!');
+        refreshTemplateSelects();
+      }
+
+      async function saveTournamentTemplate() {
+        var name = prompt('Enter a name for this template:');
+        if (!name) { return; }
+        var data = {
+          format: document.getElementById('tournamentFormat').value,
+          platform: document.getElementById('tournamentPlatform').value,
+          max: document.getElementById('tournamentMax').value,
+          description: document.getElementById('tournamentDesc').value
+        };
+        var result = await sbClient.from('templates').insert([{
+          name: name,
+          type: 'tournament',
+          data: JSON.stringify(data)
+        }]);
+        if (result.error) { showMsg('tournament-error', result.error.message); return; }
+        showMsg('tournament-success', 'Template saved!');
+        refreshTemplateSelects();
+      }
+
+      async function applyTemplate(type) {
+        if (type === 'league') {
+          var idx = document.getElementById('leagueTemplateSelect').value;
+          if (!idx) { return; }
+          var result = await sbClient.from('templates').select('data').eq('id', idx).single();
+          if (result.error || !result.data) { return; }
+          var t = JSON.parse(result.data.data);
+          document.getElementById('leagueSeason').value = t.season || '';
+          document.getElementById('leagueFormat').value = t.format || 'round_robin';
+          document.getElementById('leaguePlatform').value = t.platform || 'dartcounter';
+          document.getElementById('leaguePlayersPerDiv').value = t.playersPerDiv || '';
+          document.getElementById('leagueSwissGames').value = t.swissGames || '';
+          toggleSwissOptions();
+        } else {
+          var idx = document.getElementById('tournamentTemplateSelect').value;
+          if (!idx) { return; }
+          var result = await sbClient.from('templates').select('data').eq('id', idx).single();
+          if (result.error || !result.data) { return; }
+          var t = JSON.parse(result.data.data);
+          document.getElementById('tournamentFormat').value = t.format || 'single_elimination';
+          document.getElementById('tournamentPlatform').value = t.platform || 'dartcounter';
+          document.getElementById('tournamentMax').value = t.max || '';
+          document.getElementById('tournamentDesc').value = t.description || '';
+        }
       }
 
       function saveLeagueTemplate() {
