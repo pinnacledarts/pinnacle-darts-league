@@ -39,6 +39,14 @@
       .badge-active { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
       .badge-completed { background-color: #dddddd; color: #111111; }
 
+      .card-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+      .btn-view { background-color: #111111; color: #ffffff; border: none; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
+      .btn-view:hover { background-color: #333333; }
+      .btn-join { background-color: #ffffff; color: #111111; border: 1px solid #111111; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; cursor: pointer; font-family: Arial, sans-serif; }
+      .btn-join:hover { background-color: #f5f5f5; }
+      .btn-join.joined { background-color: #f0fff0; color: #006600; border-color: #cceecc; cursor: default; }
+      .player-count { font-size: 0.85em; color: #888888; margin-top: 8px; }
+
       .coming-soon { text-align: center; padding: 60px 20px; color: #aaaaaa; font-size: 1.1em; }
       .loading { text-align: center; padding: 40px; color: #888888; }
 
@@ -86,8 +94,18 @@
     </main>
 
     <script>
+      var currentUserId = null;
+      var joinedTournaments = [];
+
       async function loadTournaments() {
-        var result = await sbClient.from('tournaments').select('*').order('date', { ascending: true });
+        var session = await sbClient.auth.getSession();
+        if (session.data.session) {
+          currentUserId = session.data.session.user.id;
+          var joined = await sbClient.from('tournament_players').select('tournament_id').eq('player_id', currentUserId);
+          joinedTournaments = joined.data ? joined.data.map(function(j) { return j.tournament_id; }) : [];
+        }
+
+        var result = await sbClient.from('tournaments').select('*, tournament_players(count)').order('date', { ascending: true });
         var container = document.getElementById('tournamentsList');
 
         if (!result.data || !result.data.length) {
@@ -95,30 +113,65 @@
           return;
         }
 
+        var formatLabels = {
+          single_elimination: 'Single Elimination',
+          single_elimination_b: 'Single Elimination + B Bracket',
+          group_knockout: 'Group Stages + Knockout'
+        };
+        var platformLabels = {
+          dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both'
+        };
+
         container.innerHTML = result.data.map(function(t) {
-          var formatLabels = {
-            single_elimination: 'Single Elimination',
-            single_elimination_b: 'Single Elimination + B Bracket',
-            group_knockout: 'Group Stages + Knockout'
-          };
-          var platformLabels = {
-            dartcounter: 'Dartcounter',
-            scolia: 'Scolia',
-            in_person: 'In Person',
-            both: 'Both'
-          };
           var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
           var timeStr = t.time ? ' at ' + t.time : '';
+          var playerCount = t.tournament_players && t.tournament_players[0] ? t.tournament_players[0].count : 0;
+          var maxStr = t.max_players ? playerCount + ' / ' + t.max_players + ' players' : playerCount + ' players';
+          var hasJoined = joinedTournaments.indexOf(t.id) > -1;
+          var isCompleted = t.status === 'completed';
+
+          var joinBtn = '';
+          if (currentUserId && !isCompleted) {
+            if (hasJoined) {
+              joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
+            } else {
+              joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this)">Join Tournament</button>';
+            }
+          }
+
           return '<div class="tournament-card">' +
             '<span class="badge badge-' + t.status + '">' + (t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : 'Upcoming') + '</span>' +
             '<h3>' + t.name + '</h3>' +
             '<p><strong>Date:</strong> ' + dateStr + timeStr + '</p>' +
             '<p><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</p>' +
             '<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
-            (t.max_players ? '<p><strong>Max Players:</strong> ' + t.max_players + '</p>' : '') +
             (t.description ? '<p>' + t.description + '</p>' : '') +
+            '<p class="player-count">👥 ' + maxStr + '</p>' +
+            '<div class="card-actions">' +
+            '<a href="tournament.html?id=' + t.id + '" class="btn-view">View Tournament</a>' +
+            joinBtn +
+            '</div>' +
             '</div>';
         }).join('');
+      }
+
+      async function joinTournament(tournamentId, btn) {
+        if (!currentUserId) { window.location.href = 'login.html'; return; }
+        btn.disabled = true;
+        btn.textContent = 'Joining...';
+        var result = await sbClient.from('tournament_players').insert([{
+          tournament_id: tournamentId,
+          player_id: currentUserId
+        }]);
+        if (result.error) {
+          btn.disabled = false;
+          btn.textContent = 'Join Tournament';
+          alert('Error joining tournament. Please try again.');
+          return;
+        }
+        btn.className = 'btn-join joined';
+        btn.textContent = '✓ Joined';
+        joinedTournaments.push(tournamentId);
       }
 
       function toggleMenu() {
