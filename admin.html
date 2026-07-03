@@ -64,8 +64,6 @@
       .btn-small:hover { background-color: #f5f5f5; }
       .btn-small.danger { color: #cc0000; border-color: #cc0000; }
       .btn-small.danger:hover { background-color: #fff0f0; }
-      .btn-small.view { color: #000000; border-color: #000000; font-weight: bold; }
-      .btn-small.view:hover { background-color: #f0f0f0; }
 
       .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
       .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
@@ -400,7 +398,7 @@
     </main>
 
     <script>
-let allPlayersData = [];
+      let allPlayersData = [];
       let leagueTemplates = JSON.parse(localStorage.getItem('leagueTemplates') || '[]');
       let tournamentTemplates = JSON.parse(localStorage.getItem('tournamentTemplates') || '[]');
 
@@ -422,7 +420,6 @@ let allPlayersData = [];
         leagueTemplates.forEach((t, i) => {
           lt.innerHTML += `<option value="${i}">${t.name}</option>`;
         });
-
         const tt = document.getElementById('tournamentTemplateSelect');
         tt.innerHTML = '<option value="">-- Apply a template --</option>';
         tournamentTemplates.forEach((t, i) => {
@@ -486,7 +483,6 @@ let allPlayersData = [];
       async function createTournament() {
         const name = document.getElementById('tournamentName').value.trim();
         if (!name) { showMsg('tournament-error', 'Please enter a tournament name.'); return; }
-
         const { error } = await sbClient.from('tournaments').insert([{
           name,
           date: document.getElementById('tournamentDate').value || null,
@@ -497,7 +493,6 @@ let allPlayersData = [];
           status: 'upcoming',
           description: document.getElementById('tournamentDesc').value.trim() || null
         }]);
-
         if (error) { showMsg('tournament-error', error.message); return; }
         showMsg('tournament-success', 'Tournament created successfully!');
         document.getElementById('tournamentName').value = '';
@@ -519,11 +514,7 @@ let allPlayersData = [];
             <td>${formatLabel(t.format)}</td>
             <td>${formatLabel(t.platform)}</td>
             <td><span class="badge badge-${t.status}">${t.status}</span></td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-small danger" onclick="deleteTournament('${t.id}')">Delete</button>
-              </div>
-            </td>
+            <td><div class="action-buttons"><button class="btn-small danger" onclick="deleteTournament('${t.id}')">Delete</button></div></td>
           </tr>
         `).join('');
       }
@@ -537,7 +528,6 @@ let allPlayersData = [];
       async function createLeague() {
         const name = document.getElementById('leagueName').value.trim();
         if (!name) { showMsg('league-error', 'Please enter a league name.'); return; }
-
         const { error } = await sbClient.from('leagues').insert([{
           name,
           season: document.getElementById('leagueSeason').value.trim() || null,
@@ -547,7 +537,6 @@ let allPlayersData = [];
           platform: document.getElementById('leaguePlatform').value,
           status: 'upcoming'
         }]);
-
         if (error) { showMsg('league-error', error.message); return; }
         showMsg('league-success', 'League created successfully!');
         document.getElementById('leagueName').value = '';
@@ -558,7 +547,6 @@ let allPlayersData = [];
         const { data } = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
         const tbody = document.getElementById('leaguesList');
         if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No leagues yet</td></tr>'; return; }
-
         tbody.innerHTML = data.map(l => `
           <tr>
             <td>${l.name}</td>
@@ -566,14 +554,9 @@ let allPlayersData = [];
             <td>${formatLabel(l.format)}</td>
             <td>${formatLabel(l.platform)}</td>
             <td><span class="badge badge-${l.status}">${l.status}</span></td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-small danger" onclick="deleteLeague('${l.id}')">Delete</button>
-              </div>
-            </td>
+            <td><div class="action-buttons"><button class="btn-small danger" onclick="deleteLeague('${l.id}')">Delete</button></div></td>
           </tr>
         `).join('');
-
         const select = document.getElementById('regLeagueSelect');
         select.innerHTML = '<option value="">-- Select a league --</option>';
         data.forEach(l => { select.innerHTML += `<option value="${l.id}">${l.name}</option>`; });
@@ -604,7 +587,6 @@ let allPlayersData = [];
         const { data } = await sbClient.from('profiles').select('*').order('created_at', { ascending: false });
         allPlayersData = data || [];
         renderPlayersList(allPlayersData);
-
         const activePlayers = allPlayersData.filter(p => p.matches && p.matches > 0);
         const activeTbody = document.getElementById('activePlayersList');
         if (!activePlayers.length) {
@@ -677,14 +659,12 @@ let allPlayersData = [];
         const title = document.getElementById('newsTitle').value.trim();
         const content = document.getElementById('newsContent').value.trim();
         if (!title || !content) { showMsg('news-error', 'Please fill in title and content.'); return; }
-
         const { error } = await sbClient.from('news').insert([{
           title,
           content,
           tag: document.getElementById('newsTag').value,
           created_at: new Date().toISOString()
         }]);
-
         if (error) { showMsg('news-error', error.message); return; }
         showMsg('news-success', 'Article published successfully!');
         document.getElementById('newsTitle').value = '';
@@ -701,11 +681,7 @@ let allPlayersData = [];
             <td>${n.title}</td>
             <td>${n.tag}</td>
             <td>${new Date(n.created_at).toLocaleDateString('en-GB')}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-small danger" onclick="deleteNews('${n.id}')">Delete</button>
-              </div>
-            </td>
+            <td><div class="action-buttons"><button class="btn-small danger" onclick="deleteNews('${n.id}')">Delete</button></div></td>
           </tr>
         `).join('');
       }
