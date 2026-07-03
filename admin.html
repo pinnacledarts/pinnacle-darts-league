@@ -10,79 +10,61 @@
     <style>
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-
       header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
       header img { height: 70px; }
       header h1 { margin: 0; color: #ffffff; font-size: 2em; }
       header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-
       .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
       .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
       .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
       .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-
       .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
-
       nav { background-color: #222222; display: flex; justify-content: center; gap: 40px; padding: 15px; }
       nav a { color: #ffffff; text-decoration: none; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
       nav a:hover { color: #aaaaaa; }
-
       main { padding: 40px; max-width: 900px; margin: 0 auto; }
       h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 30px; }
-
       .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
       .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
       .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
       .tab:hover { color: #000000; }
       .tab-content { display: none; }
       .tab-content.active { display: block; }
-
       .card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 24px; margin-bottom: 20px; }
       .card h3 { margin: 0 0 20px; font-size: 1.1em; padding-left: 12px; border-left: 4px solid #000000; }
-
       .form-group { margin-bottom: 16px; }
       .form-group label { display: block; font-size: 0.9em; font-weight: bold; margin-bottom: 6px; color: #333333; }
       .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; font-family: Arial, sans-serif; }
       .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #000000; background-color: #ffffff; }
-
       .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
       .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-
       .btn { padding: 10px 24px; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; font-family: Arial, sans-serif; margin-right: 8px; }
       .btn-primary { background-color: #000000; color: #ffffff; }
       .btn-primary:hover { background-color: #333333; }
       .btn-secondary { background-color: #ffffff; color: #111111; border: 1px solid #dddddd; }
       .btn-secondary:hover { background-color: #f5f5f5; }
-
       table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.95em; }
       th { background-color: #111111; color: #ffffff; padding: 10px 12px; text-align: left; }
       td { padding: 10px 12px; border-bottom: 1px solid #eeeeee; }
       tr:last-child td { border-bottom: none; }
-
       .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
       .btn-small { padding: 4px 12px; font-size: 0.85em; border-radius: 4px; cursor: pointer; border: 1px solid #dddddd; background: #ffffff; font-family: Arial, sans-serif; }
       .btn-small:hover { background-color: #f5f5f5; }
       .btn-small.danger { color: #cc0000; border-color: #cc0000; }
       .btn-small.danger:hover { background-color: #fff0f0; }
-
       .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
       .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
-
       .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; }
       .badge-active { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
       .badge-upcoming { background-color: #f5f5f5; color: #111111; border: 1px solid #dddddd; }
       .badge-completed { background-color: #eeeeee; color: #555555; border: 1px solid #cccccc; }
-
       .empty-state { text-align: center; padding: 20px; color: #aaaaaa; font-size: 0.95em; }
       .hidden { display: none; }
-
       .search-bar { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; margin-bottom: 16px; font-family: Arial, sans-serif; }
       .search-bar:focus { outline: none; border-color: #000000; }
-
       .template-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; padding: 12px; background: #f9f9f9; border: 1px solid #dddddd; border-radius: 6px; flex-wrap: wrap; }
       .template-bar label { font-size: 0.9em; font-weight: bold; margin-right: 4px; }
       .template-bar select { padding: 6px 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; font-family: Arial, sans-serif; }
-
       @media (max-width: 700px) {
         header { flex-wrap: wrap; padding: 16px 20px; }
         header img { height: 50px; }
@@ -104,7 +86,6 @@
     </style>
   </head>
   <body>
-
     <header>
       <img src="logo.png" alt="Pinnacle Darts Logo">
       <div>
@@ -135,22 +116,17 @@
         <button class="tab" onclick="showTab('news', event)">News</button>
       </div>
 
-      <!-- TOURNAMENTS TAB -->
       <div id="tab-tournaments" class="tab-content active">
         <div class="card">
           <h3>Create New Tournament</h3>
           <div class="success-msg" id="tournament-success"></div>
           <div class="error-msg" id="tournament-error"></div>
-
           <div class="template-bar">
             <label>Template:</label>
-            <select id="tournamentTemplateSelect">
-              <option value="">-- Apply a template --</option>
-            </select>
+            <select id="tournamentTemplateSelect"><option value="">-- Apply a template --</option></select>
             <button class="btn btn-secondary" onclick="applyTemplate('tournament')">Apply</button>
             <button class="btn btn-secondary" onclick="saveTournamentTemplate()">Save as Template</button>
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label>Tournament Name</label>
@@ -196,36 +172,26 @@
           </div>
           <button class="btn btn-primary" onclick="createTournament()">Create Tournament</button>
         </div>
-
         <div class="card">
           <h3>Manage Tournaments</h3>
           <table>
-            <thead>
-              <tr><th>Name</th><th>Date</th><th>Time</th><th>Format</th><th>Platform</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="tournamentsList">
-              <tr><td colspan="7" class="empty-state">Loading...</td></tr>
-            </tbody>
+            <thead><tr><th>Name</th><th>Date</th><th>Time</th><th>Format</th><th>Platform</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="tournamentsList"><tr><td colspan="7" class="empty-state">Loading...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- LEAGUES TAB -->
       <div id="tab-leagues" class="tab-content">
         <div class="card">
           <h3>Create New League</h3>
           <div class="success-msg" id="league-success"></div>
           <div class="error-msg" id="league-error"></div>
-
           <div class="template-bar">
             <label>Template:</label>
-            <select id="leagueTemplateSelect">
-              <option value="">-- Apply a template --</option>
-            </select>
+            <select id="leagueTemplateSelect"><option value="">-- Apply a template --</option></select>
             <button class="btn btn-secondary" onclick="applyTemplate('league')">Apply</button>
             <button class="btn btn-secondary" onclick="saveLeagueTemplate()">Save as Template</button>
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label>League Name</label>
@@ -265,96 +231,65 @@
               </select>
             </div>
           </div>
-
           <div id="swissOptions" class="form-row hidden">
             <div class="form-group">
               <label>Games Per Player</label>
               <input type="number" id="leagueSwissGames" placeholder="e.g. 7" />
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label>Players Per Division</label>
               <input type="number" id="leaguePlayersPerDiv" placeholder="e.g. 8" />
             </div>
           </div>
-
           <button class="btn btn-primary" onclick="createLeague()">Create League</button>
         </div>
-
         <div class="card">
           <h3>Manage Leagues</h3>
           <table>
-            <thead>
-              <tr><th>Name</th><th>Season</th><th>Format</th><th>Platform</th><th>Status</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="leaguesList">
-              <tr><td colspan="6" class="empty-state">Loading...</td></tr>
-            </tbody>
+            <thead><tr><th>Name</th><th>Season</th><th>Format</th><th>Platform</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="leaguesList"><tr><td colspan="6" class="empty-state">Loading...</td></tr></tbody>
           </table>
         </div>
-
         <div class="card">
           <h3>View Registrations</h3>
           <div class="form-group">
             <label>Select League</label>
-            <select id="regLeagueSelect" onchange="loadRegistrations()">
-              <option value="">-- Select a league --</option>
-            </select>
+            <select id="regLeagueSelect" onchange="loadRegistrations()"><option value="">-- Select a league --</option></select>
           </div>
           <table>
-            <thead>
-              <tr><th>Player</th><th>Username</th><th>Platform</th><th>Avg</th><th>Registered</th></tr>
-            </thead>
-            <tbody id="registrationsList">
-              <tr><td colspan="5" class="empty-state">Select a league to view registrations</td></tr>
-            </tbody>
+            <thead><tr><th>Player</th><th>Username</th><th>Platform</th><th>Avg</th><th>Registered</th></tr></thead>
+            <tbody id="registrationsList"><tr><td colspan="5" class="empty-state">Select a league to view registrations</td></tr></tbody>
           </table>
         </div>
-
         <div class="card">
           <h3>Overdue Matches</h3>
           <table>
-            <thead>
-              <tr><th>League</th><th>Player 1</th><th>Player 2</th><th>Due Date</th></tr>
-            </thead>
-            <tbody id="overdueList">
-              <tr><td colspan="4" class="empty-state">No overdue matches</td></tr>
-            </tbody>
+            <thead><tr><th>League</th><th>Player 1</th><th>Player 2</th><th>Due Date</th></tr></thead>
+            <tbody id="overdueList"><tr><td colspan="4" class="empty-state">No overdue matches</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- PLAYERS TAB -->
       <div id="tab-players" class="tab-content">
         <div class="card">
           <h3>Registered Players</h3>
           <input type="text" class="search-bar" id="playerSearch" placeholder="Search by name or username..." oninput="filterPlayersList()" />
           <table>
-            <thead>
-              <tr><th>Name</th><th>Username</th><th>Platform</th><th>Access</th><th>Admin</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="playersList">
-              <tr><td colspan="6" class="empty-state">Loading...</td></tr>
-            </tbody>
+            <thead><tr><th>Name</th><th>Username</th><th>Platform</th><th>Access</th><th>Admin</th><th>Actions</th></tr></thead>
+            <tbody id="playersList"><tr><td colspan="6" class="empty-state">Loading...</td></tr></tbody>
           </table>
         </div>
-
         <div class="card">
           <h3>Active Players</h3>
           <table>
-            <thead>
-              <tr><th>Name</th><th>Username</th><th>Platform</th><th>Matches</th><th>Avg</th></tr>
-            </thead>
-            <tbody id="activePlayersList">
-              <tr><td colspan="5" class="empty-state">Loading...</td></tr>
-            </tbody>
+            <thead><tr><th>Name</th><th>Username</th><th>Platform</th><th>Matches</th><th>Avg</th></tr></thead>
+            <tbody id="activePlayersList"><tr><td colspan="5" class="empty-state">Loading...</td></tr></tbody>
           </table>
         </div>
       </div>
 
-      <!-- NEWS TAB -->
       <div id="tab-news" class="tab-content">
         <div class="card">
           <h3>Add News Article</h3>
@@ -381,16 +316,11 @@
           </div>
           <button class="btn btn-primary" onclick="saveNews()">Publish Article</button>
         </div>
-
         <div class="card">
           <h3>Manage News</h3>
           <table>
-            <thead>
-              <tr><th>Title</th><th>Tag</th><th>Date</th><th>Actions</th></tr>
-            </thead>
-            <tbody id="newsList">
-              <tr><td colspan="4" class="empty-state">Loading...</td></tr>
-            </tbody>
+            <thead><tr><th>Title</th><th>Tag</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="newsList"><tr><td colspan="4" class="empty-state">Loading...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -398,40 +328,40 @@
     </main>
 
     <script>
-      let allPlayersData = [];
-      let leagueTemplates = JSON.parse(localStorage.getItem('leagueTemplates') || '[]');
-      let tournamentTemplates = JSON.parse(localStorage.getItem('tournamentTemplates') || '[]');
+      var allPlayersData = [];
+      var leagueTemplates = JSON.parse(localStorage.getItem('leagueTemplates') || '[]');
+      var tournamentTemplates = JSON.parse(localStorage.getItem('tournamentTemplates') || '[]');
 
       function showTab(name, event) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
         event.target.classList.add('active');
         document.getElementById('tab-' + name).classList.add('active');
       }
 
       function toggleSwissOptions() {
-        const format = document.getElementById('leagueFormat').value;
+        var format = document.getElementById('leagueFormat').value;
         document.getElementById('swissOptions').classList.toggle('hidden', format !== 'swiss');
       }
 
       function refreshTemplateSelects() {
-        const lt = document.getElementById('leagueTemplateSelect');
+        var lt = document.getElementById('leagueTemplateSelect');
         lt.innerHTML = '<option value="">-- Apply a template --</option>';
-        leagueTemplates.forEach((t, i) => {
-          lt.innerHTML += `<option value="${i}">${t.name}</option>`;
+        leagueTemplates.forEach(function(t, i) {
+          lt.innerHTML += '<option value="' + i + '">' + t.name + '</option>';
         });
-        const tt = document.getElementById('tournamentTemplateSelect');
+        var tt = document.getElementById('tournamentTemplateSelect');
         tt.innerHTML = '<option value="">-- Apply a template --</option>';
-        tournamentTemplates.forEach((t, i) => {
-          tt.innerHTML += `<option value="${i}">${t.name}</option>`;
+        tournamentTemplates.forEach(function(t, i) {
+          tt.innerHTML += '<option value="' + i + '">' + t.name + '</option>';
         });
       }
 
       function saveLeagueTemplate() {
-        const name = prompt('Enter a name for this template:');
-        if (!name) return;
-        const template = {
-          name,
+        var name = prompt('Enter a name for this template:');
+        if (!name) { return; }
+        var template = {
+          name: name,
           season: document.getElementById('leagueSeason').value,
           format: document.getElementById('leagueFormat').value,
           platform: document.getElementById('leaguePlatform').value,
@@ -445,10 +375,10 @@
       }
 
       function saveTournamentTemplate() {
-        const name = prompt('Enter a name for this template:');
-        if (!name) return;
-        const template = {
-          name,
+        var name = prompt('Enter a name for this template:');
+        if (!name) { return; }
+        var template = {
+          name: name,
           format: document.getElementById('tournamentFormat').value,
           platform: document.getElementById('tournamentPlatform').value,
           max: document.getElementById('tournamentMax').value
@@ -461,9 +391,9 @@
 
       function applyTemplate(type) {
         if (type === 'league') {
-          const idx = document.getElementById('leagueTemplateSelect').value;
-          if (idx === '') return;
-          const t = leagueTemplates[parseInt(idx)];
+          var idx = document.getElementById('leagueTemplateSelect').value;
+          if (idx === '') { return; }
+          var t = leagueTemplates[parseInt(idx)];
           document.getElementById('leagueSeason').value = t.season || '';
           document.getElementById('leagueFormat').value = t.format || 'round_robin';
           document.getElementById('leaguePlatform').value = t.platform || 'dartcounter';
@@ -471,20 +401,20 @@
           document.getElementById('leagueSwissGames').value = t.swissGames || '';
           toggleSwissOptions();
         } else {
-          const idx = document.getElementById('tournamentTemplateSelect').value;
-          if (idx === '') return;
-          const t = tournamentTemplates[parseInt(idx)];
+          var idx = document.getElementById('tournamentTemplateSelect').value;
+          if (idx === '') { return; }
+          var t = tournamentTemplates[parseInt(idx)];
           document.getElementById('tournamentFormat').value = t.format || 'single_elimination';
           document.getElementById('tournamentPlatform').value = t.platform || 'dartcounter';
           document.getElementById('tournamentMax').value = t.max || '';
         }
-        }
+      }
 
       async function createTournament() {
-        const name = document.getElementById('tournamentName').value.trim();
+        var name = document.getElementById('tournamentName').value.trim();
         if (!name) { showMsg('tournament-error', 'Please enter a tournament name.'); return; }
-        const { error } = await sbClient.from('tournaments').insert([{
-          name,
+        var result = await sbClient.from('tournaments').insert([{
+          name: name,
           date: document.getElementById('tournamentDate').value || null,
           time: document.getElementById('tournamentTime').value || null,
           format: document.getElementById('tournamentFormat').value,
@@ -493,7 +423,7 @@
           status: 'upcoming',
           description: document.getElementById('tournamentDesc').value.trim() || null
         }]);
-        if (error) { showMsg('tournament-error', error.message); return; }
+        if (result.error) { showMsg('tournament-error', result.error.message); return; }
         showMsg('tournament-success', 'Tournament created successfully!');
         document.getElementById('tournamentName').value = '';
         document.getElementById('tournamentDesc').value = '';
@@ -503,33 +433,28 @@
       }
 
       async function loadTournaments() {
-        const { data } = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
-        const tbody = document.getElementById('tournamentsList');
-        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tournaments yet</td></tr>'; return; }
-        tbody.innerHTML = data.map(t => `
-          <tr>
-            <td>${t.name}</td>
-            <td>${t.date || 'TBC'}</td>
-            <td>${t.time || '-'}</td>
-            <td>${formatLabel(t.format)}</td>
-            <td>${formatLabel(t.platform)}</td>
-            <td><span class="badge badge-${t.status}">${t.status}</span></td>
-            <td><div class="action-buttons"><button class="btn-small danger" onclick="deleteTournament('${t.id}')">Delete</button></div></td>
-          </tr>
-        `).join('');
+        var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
+        var tbody = document.getElementById('tournamentsList');
+        if (!result.data || !result.data.length) {
+          tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tournaments yet</td></tr>';
+          return;
+        }
+        tbody.innerHTML = result.data.map(function(t) {
+          return '<tr><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td><span class="badge badge-' + t.status + '">' + t.status + '</span></td><td><button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>';
+        }).join('');
       }
 
       async function deleteTournament(id) {
-        if (!confirm('Delete this tournament?')) return;
+        if (!confirm('Delete this tournament?')) { return; }
         await sbClient.from('tournaments').delete().eq('id', id);
         loadTournaments();
       }
 
       async function createLeague() {
-        const name = document.getElementById('leagueName').value.trim();
+        var name = document.getElementById('leagueName').value.trim();
         if (!name) { showMsg('league-error', 'Please enter a league name.'); return; }
-        const { error } = await sbClient.from('leagues').insert([{
-          name,
+        var result = await sbClient.from('leagues').insert([{
+          name: name,
           season: document.getElementById('leagueSeason').value.trim() || null,
           start_date: document.getElementById('leagueStart').value || null,
           end_date: document.getElementById('leagueEnd').value || null,
@@ -537,106 +462,86 @@
           platform: document.getElementById('leaguePlatform').value,
           status: 'upcoming'
         }]);
-        if (error) { showMsg('league-error', error.message); return; }
+        if (result.error) { showMsg('league-error', result.error.message); return; }
         showMsg('league-success', 'League created successfully!');
         document.getElementById('leagueName').value = '';
         loadLeagues();
       }
 
       async function loadLeagues() {
-        const { data } = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
-        const tbody = document.getElementById('leaguesList');
-        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No leagues yet</td></tr>'; return; }
-        tbody.innerHTML = data.map(l => `
-          <tr>
-            <td>${l.name}</td>
-            <td>${l.season || '-'}</td>
-            <td>${formatLabel(l.format)}</td>
-            <td>${formatLabel(l.platform)}</td>
-            <td><span class="badge badge-${l.status}">${l.status}</span></td>
-            <td><div class="action-buttons"><button class="btn-small danger" onclick="deleteLeague('${l.id}')">Delete</button></div></td>
-          </tr>
-        `).join('');
-        const select = document.getElementById('regLeagueSelect');
+        var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
+        var tbody = document.getElementById('leaguesList');
+        if (!result.data || !result.data.length) {
+          tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No leagues yet</td></tr>';
+          return;
+        }
+        tbody.innerHTML = result.data.map(function(l) {
+          return '<tr><td>' + l.name + '</td><td>' + (l.season || '-') + '</td><td>' + formatLabel(l.format) + '</td><td>' + formatLabel(l.platform) + '</td><td><span class="badge badge-' + l.status + '">' + l.status + '</span></td><td><button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button></td></tr>';
+        }).join('');
+        var select = document.getElementById('regLeagueSelect');
         select.innerHTML = '<option value="">-- Select a league --</option>';
-        data.forEach(l => { select.innerHTML += `<option value="${l.id}">${l.name}</option>`; });
+        result.data.forEach(function(l) {
+          select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>';
+        });
       }
 
       async function deleteLeague(id) {
-        if (!confirm('Delete this league?')) return;
+        if (!confirm('Delete this league?')) { return; }
         await sbClient.from('leagues').delete().eq('id', id);
         loadLeagues();
       }
 
       async function loadRegistrations() {
-        const { data } = await sbClient.from('profiles').select('full_name, username, platform, starting_avg, created_at').order('full_name');
-        const tbody = document.getElementById('registrationsList');
-        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No registrations yet</td></tr>'; return; }
-        tbody.innerHTML = data.map(p => `
-          <tr>
-            <td>${p.full_name || '-'}</td>
-            <td>${p.username ? '@' + p.username : '-'}</td>
-            <td>${formatLabel(p.platform)}</td>
-            <td>${p.starting_avg || '-'}</td>
-            <td>${p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB') : '-'}</td>
-          </tr>
-        `).join('');
+        var result = await sbClient.from('profiles').select('full_name, username, platform, starting_avg, created_at').order('full_name');
+        var tbody = document.getElementById('registrationsList');
+        if (!result.data || !result.data.length) {
+          tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No registrations yet</td></tr>';
+          return;
+        }
+        tbody.innerHTML = result.data.map(function(p) {
+          return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + formatLabel(p.platform) + '</td><td>' + (p.starting_avg || '-') + '</td><td>' + (p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB') : '-') + '</td></tr>';
+        }).join('');
       }
 
       async function loadPlayers() {
-        const { data } = await sbClient.from('profiles').select('*').order('created_at', { ascending: false });
-        allPlayersData = data || [];
+        var result = await sbClient.from('profiles').select('*').order('created_at', { ascending: false });
+        allPlayersData = result.data || [];
         renderPlayersList(allPlayersData);
-        const activePlayers = allPlayersData.filter(p => p.matches && p.matches > 0);
-        const activeTbody = document.getElementById('activePlayersList');
+        var activePlayers = allPlayersData.filter(function(p) { return p.matches && p.matches > 0; });
+        var activeTbody = document.getElementById('activePlayersList');
         if (!activePlayers.length) {
           activeTbody.innerHTML = '<tr><td colspan="5" class="empty-state">No active players yet</td></tr>';
         } else {
-          activeTbody.innerHTML = activePlayers.map(p => `
-            <tr>
-              <td>${p.full_name || '-'}</td>
-              <td>${p.username ? '@' + p.username : '-'}</td>
-              <td>${formatLabel(p.platform)}</td>
-              <td>${p.matches || 0}</td>
-              <td>${p.average || '-'}</td>
-            </tr>
-          `).join('');
+          activeTbody.innerHTML = activePlayers.map(function(p) {
+            return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + formatLabel(p.platform) + '</td><td>' + (p.matches || 0) + '</td><td>' + (p.average || '-') + '</td></tr>';
+          }).join('');
         }
       }
 
       function renderPlayersList(data) {
-        const tbody = document.getElementById('playersList');
-        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No players found</td></tr>'; return; }
-        tbody.innerHTML = data.map(p => `
-          <tr>
-            <td>${p.full_name || '-'}</td>
-            <td>${p.username ? '@' + p.username : '-'}</td>
-            <td>${formatLabel(p.platform)}</td>
-            <td>
-              <select onchange="updateAccess('${p.id}', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">
-                <option value="online" ${p.access === 'online' ? 'selected' : ''}>Online</option>
-                <option value="academy" ${p.access === 'academy' ? 'selected' : ''}>Academy</option>
-                <option value="both" ${p.access === 'both' ? 'selected' : ''}>Both</option>
-              </select>
-            </td>
-            <td>${p.is_admin ? '✅ Yes' : '❌ No'}</td>
-            <td>
-              <div class="action-buttons">
-                <button class="btn-small" onclick="toggleAdmin('${p.id}', ${p.is_admin})">${p.is_admin ? 'Remove Admin' : 'Make Admin'}</button>
-                <button class="btn-small danger" onclick="deletePlayer('${p.id}')">Remove</button>
-              </div>
-            </td>
-          </tr>
-        `).join('');
+        var tbody = document.getElementById('playersList');
+        if (!data || !data.length) {
+          tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No players found</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.map(function(p) {
+          var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
+            '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
+            '<option value="academy"' + (p.access === 'academy' ? ' selected' : '') + '>Academy</option>' +
+            '<option value="both"' + (p.access === 'both' ? ' selected' : '') + '>Both</option>' +
+            '</select>';
+          var adminBtn = '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
+          var removeBtn = '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\')">Remove</button>';
+          return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + formatLabel(p.platform) + '</td><td>' + accessSelect + '</td><td>' + (p.is_admin ? 'Yes' : 'No') + '</td><td>' + adminBtn + ' ' + removeBtn + '</td></tr>';
+        }).join('');
       }
 
       function filterPlayersList() {
-        const val = document.getElementById('playerSearch').value.toLowerCase().trim();
+        var val = document.getElementById('playerSearch').value.toLowerCase().trim();
         if (!val) { renderPlayersList(allPlayersData); return; }
-        const filtered = allPlayersData.filter(p =>
-          (p.full_name && p.full_name.toLowerCase().includes(val)) ||
-          (p.username && p.username.toLowerCase().includes(val))
-        );
+        var filtered = allPlayersData.filter(function(p) {
+          return (p.full_name && p.full_name.toLowerCase().includes(val)) || (p.username && p.username.toLowerCase().includes(val));
+        });
         renderPlayersList(filtered);
       }
 
@@ -650,22 +555,22 @@
       }
 
       async function deletePlayer(id) {
-        if (!confirm('Remove this player?')) return;
+        if (!confirm('Remove this player?')) { return; }
         await sbClient.from('profiles').delete().eq('id', id);
         loadPlayers();
       }
 
       async function saveNews() {
-        const title = document.getElementById('newsTitle').value.trim();
-        const content = document.getElementById('newsContent').value.trim();
+        var title = document.getElementById('newsTitle').value.trim();
+        var content = document.getElementById('newsContent').value.trim();
         if (!title || !content) { showMsg('news-error', 'Please fill in title and content.'); return; }
-        const { error } = await sbClient.from('news').insert([{
-          title,
-          content,
+        var result = await sbClient.from('news').insert([{
+          title: title,
+          content: content,
           tag: document.getElementById('newsTag').value,
           created_at: new Date().toISOString()
         }]);
-        if (error) { showMsg('news-error', error.message); return; }
+        if (result.error) { showMsg('news-error', result.error.message); return; }
         showMsg('news-success', 'Article published successfully!');
         document.getElementById('newsTitle').value = '';
         document.getElementById('newsContent').value = '';
@@ -673,28 +578,26 @@
       }
 
       async function loadNews() {
-        const { data } = await sbClient.from('news').select('*').order('created_at', { ascending: false });
-        const tbody = document.getElementById('newsList');
-        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No news articles yet</td></tr>'; return; }
-        tbody.innerHTML = data.map(n => `
-          <tr>
-            <td>${n.title}</td>
-            <td>${n.tag}</td>
-            <td>${new Date(n.created_at).toLocaleDateString('en-GB')}</td>
-            <td><div class="action-buttons"><button class="btn-small danger" onclick="deleteNews('${n.id}')">Delete</button></div></td>
-          </tr>
-        `).join('');
+        var result = await sbClient.from('news').select('*').order('created_at', { ascending: false });
+        var tbody = document.getElementById('newsList');
+        if (!result.data || !result.data.length) {
+          tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No news articles yet</td></tr>';
+          return;
+        }
+        tbody.innerHTML = result.data.map(function(n) {
+          return '<tr><td>' + n.title + '</td><td>' + n.tag + '</td><td>' + new Date(n.created_at).toLocaleDateString('en-GB') + '</td><td><button class="btn-small danger" onclick="deleteNews(\'' + n.id + '\')">Delete</button></td></tr>';
+        }).join('');
       }
 
       async function deleteNews(id) {
-        if (!confirm('Delete this article?')) return;
+        if (!confirm('Delete this article?')) { return; }
         await sbClient.from('news').delete().eq('id', id);
         loadNews();
       }
 
       function formatLabel(val) {
-        if (!val) return '-';
-        const labels = {
+        if (!val) { return '-'; }
+        var labels = {
           dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both',
           round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System',
           single_elimination: 'Single Elimination', single_elimination_b: 'Single Elim + B Bracket',
@@ -704,17 +607,17 @@
       }
 
       function showMsg(id, msg) {
-        const el = document.getElementById(id);
+        var el = document.getElementById(id);
         el.textContent = msg;
         el.style.display = 'block';
-        setTimeout(() => el.style.display = 'none', 4000);
+        setTimeout(function() { el.style.display = 'none'; }, 4000);
       }
 
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
 
-      window.addEventListener('load', () => {
+      window.addEventListener('load', function() {
         checkAuth();
         refreshTemplateSelects();
         loadTournaments();
