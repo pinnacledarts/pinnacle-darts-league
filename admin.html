@@ -482,13 +482,6 @@ function applyTemplate(type) {
     document.getElementById('tournamentMax').value = t.max || '';
   }
 }
-          const idx = document.getElementById('tournamentTemplateSelect').value;
-          if (idx === '') return;
-          const t = tournamentTemplates[idx];
-          document.getElementById('tournamentFormat').value = t.format || 'single_elimination';
-          document.getElementById('tournamentPlatform').value = t.platform || 'dartcounter';
-          document.getElementById('tournamentMax').value = t.max || '';
-        }
       }
 
       async function createTournament() {
