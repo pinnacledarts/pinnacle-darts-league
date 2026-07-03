@@ -393,35 +393,7 @@
         if (result.error) { alert('Error submitting score. Please try again.'); return; }
         loadGroups();
       }
-async function showAddPlayer() {
-  var bar = document.getElementById('addPlayerBar');
-  if (bar.style.display === 'none') {
-    var result = await sbClient.from('profiles').select('id, full_name, username').order('full_name');
-    var select = document.getElementById('addPlayerSelect');
-    select.innerHTML = '<option value="">-- Select player --</option>';
-    if (result.data) {
-      result.data.forEach(function(p) {
-        select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
-      });
-    }
-    bar.style.display = 'block';
-  } else {
-    bar.style.display = 'none';
-  }
-}
 
-async function addPlayerToTournament() {
-  var playerId = document.getElementById('addPlayerSelect').value;
-  if (!playerId) { alert('Please select a player.'); return; }
-  var result = await sbClient.from('tournament_players').insert([{
-    tournament_id: parseInt(tournamentId),
-    player_id: playerId
-  }]);
-  if (result.error) { alert('Error adding player: ' + result.error.message); return; }
-  document.getElementById('addPlayerBar').style.display = 'none';
-  loadPlayers();
-  alert('Player added successfully!');
-}
       function showMsg(id, msg) {
         var el = document.getElementById(id);
         if (!el) { return; }
