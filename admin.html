@@ -462,18 +462,26 @@
         showMsg('tournament-success', 'Template saved!');
       }
 
-      function applyTemplate(type) {
-        if (type === 'league') {
-          const idx = document.getElementById('leagueTemplateSelect').value;
-          if (idx === '') return;
-          const t = leagueTemplates[idx];
-          document.getElementById('leagueSeason').value = t.season || '';
-          document.getElementById('leagueFormat').value = t.format || 'round_robin';
-          document.getElementById('leaguePlatform').value = t.platform || 'dartcounter';
-          document.getElementById('leaguePlayersPerDiv').value = t.playersPerDiv || '';
-          document.getElementById('leagueSwissGames').value = t.swissGames || '';
-          toggleSwissOptions();
-        } else {
+function applyTemplate(type) {
+  if (type === 'league') {
+    const idx = document.getElementById('leagueTemplateSelect').value;
+    if (idx === '') return;
+    const t = leagueTemplates[parseInt(idx)];
+    document.getElementById('leagueSeason').value = t.season || '';
+    document.getElementById('leagueFormat').value = t.format || 'round_robin';
+    document.getElementById('leaguePlatform').value = t.platform || 'dartcounter';
+    document.getElementById('leaguePlayersPerDiv').value = t.playersPerDiv || '';
+    document.getElementById('leagueSwissGames').value = t.swissGames || '';
+    toggleSwissOptions();
+  } else {
+    const idx = document.getElementById('tournamentTemplateSelect').value;
+    if (idx === '') return;
+    const t = tournamentTemplates[parseInt(idx)];
+    document.getElementById('tournamentFormat').value = t.format || 'single_elimination';
+    document.getElementById('tournamentPlatform').value = t.platform || 'dartcounter';
+    document.getElementById('tournamentMax').value = t.max || '';
+  }
+}
           const idx = document.getElementById('tournamentTemplateSelect').value;
           if (idx === '') return;
           const t = tournamentTemplates[idx];
