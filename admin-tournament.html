@@ -254,19 +254,29 @@
         document.getElementById('selectedCount').textContent = checked.length + ' player' + (checked.length !== 1 ? 's' : '') + ' selected';
       }
 
-      async function addSelectedPlayers() {
-        var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
-        if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
-        var added = 0;
-        for (var i = 0; i < checked.length; i++) {
-          var playerId = checked[i].value;
-          var result = await sbClient.from('tournament_players').insert([{ tournament_id: parseInt(tournamentId), player_id: playerId }]);
-          if (!result.error) { added++; }
-        }
-        showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
-        await loadPlayers();
-        buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
-      }
+async function addSelectedPlayers() {
+  var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
+  if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
+
+  if (tournamentData.max_players) {
+    var wouldBeTotal = existingPlayerIds.length + checked.length;
+    if (wouldBeTotal > tournamentData.max_players) {
+      var canAdd = tournamentData.max_players - existingPlayerIds.length;
+      showMsg('add-player-error', 'Max players is ' + tournamentData.max_players + '. You can only add ' + (canAdd > 0 ? canAdd : 0) + ' more.');
+      return;
+    }
+  }
+
+  var added = 0;
+  for (var i = 0; i < checked.length; i++) {
+    var playerId = checked[i].value;
+    var result = await sbClient.from('tournament_players').insert([{ tournament_id: parseInt(tournamentId), player_id: playerId }]);
+    if (!result.error) { added++; }
+  }
+  showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
+  await loadPlayers();
+  buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+}
 
       async function loadPlayers() {
         var result = await sbClient.from('tournament_players').select('player_id, profiles(full_name, username)').eq('tournament_id', tournamentId);
