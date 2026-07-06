@@ -6,11 +6,8 @@
     <title>Leagues | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=2"></script>
+    <script src="auth.js?t=999999"></script>
     <style>
-      .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
-.badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-.badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
       header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
@@ -31,12 +28,16 @@
       .league-card h3 { margin: 0 0 8px; font-size: 1.2em; }
       .league-card p { margin: 4px 0; color: #555555; font-size: 0.95em; }
       .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; }
-      .badge-upcoming { background-color: #111111; color: #ffffff; }
-      .badge-active { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-      .badge-completed { background-color: #dddddd; color: #111111; }
+      .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
+      .badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
+      .badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
       .card-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-      .btn-view { background-color: #111111; color: #ffffff; border: none; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; display: inline-block; }
+      .btn-view { background-color: #111111; color: #ffffff; border: none; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
       .btn-view:hover { background-color: #333333; }
+      .btn-join { background-color: #ffffff; color: #111111; border: 1px solid #111111; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; cursor: pointer; font-family: Arial, sans-serif; }
+      .btn-join:hover { background-color: #f5f5f5; }
+      .btn-join.joined { background-color: #f0fff0; color: #006600; border-color: #cceecc; cursor: default; }
+      .player-count { font-size: 0.85em; color: #888888; margin-top: 8px; }
       .coming-soon { text-align: center; padding: 60px 20px; color: #aaaaaa; font-size: 1.1em; }
       .loading { text-align: center; padding: 40px; color: #888888; }
       @media (max-width: 700px) {
@@ -80,10 +81,21 @@
     <main>
       <h2>Leagues</h2>
       <div id="leaguesList"><p class="loading">Loading leagues...</p></div>
+      <p style="text-align:center;margin-top:20px;"><a href="leagues-archive.html" style="color:#555;font-size:0.9em;">View League Archive →</a></p>
     </main>
 
     <script>
+      var currentUserId = null;
+      var joinedLeagues = [];
+
       async function loadLeagues() {
+        var session = await sbClient.auth.getSession();
+        if (session.data.session) {
+          currentUserId = session.data.session.user.id;
+          var joined = await sbClient.from('league_players').select('league_id').eq('player_id', currentUserId);
+          joinedLeagues = joined.data ? joined.data.map(function(j) { return j.league_id; }) : [];
+        }
+
         var result = await sbClient.from('leagues').select('*').order('start_date', { ascending: true });
         var container = document.getElementById('leaguesList');
 
@@ -92,7 +104,15 @@
           return;
         }
 
-var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System' };
+        var countResult = await sbClient.from('league_players').select('league_id');
+        var playerCounts = {};
+        if (countResult.data) {
+          countResult.data.forEach(function(row) {
+            playerCounts[parseInt(row.league_id)] = (playerCounts[parseInt(row.league_id)] || 0) + 1;
+          });
+        }
+
+        var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System' };
         var platformLabels = { dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both' };
 
         var cardsHtml = [];
@@ -101,6 +121,23 @@ var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss
           var status = await computeLeagueStatus(l);
           var startStr = l.start_date ? new Date(l.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
           var endStr = l.end_date ? new Date(l.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+          var playerCount = playerCounts[parseInt(l.id)] || 0;
+          var maxStr = l.max_players ? playerCount + ' / ' + l.max_players + ' players' : playerCount + ' players';
+          var isFull = l.max_players && playerCount >= l.max_players;
+          var hasJoined = joinedLeagues.indexOf(l.id) > -1;
+          var isCompleted = status === 'completed';
+
+          var joinBtn = '';
+          if (currentUserId && !isCompleted) {
+            if (hasJoined) {
+              joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
+            } else if (isFull) {
+              joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">League Full</button>';
+            } else {
+              joinBtn = '<button class="btn-join" onclick="joinLeague(' + l.id + ', this)">Join League</button>';
+            }
+          }
+
           cardsHtml.push('<div class="league-card">' +
             getStatusBadgeHtml(status) +
             '<h3>' + l.name + '</h3>' +
@@ -108,12 +145,33 @@ var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss
             '<p><strong>Format:</strong> ' + (formatLabels[l.format] || l.format || 'TBC') + (l.playoffs ? ' + Playoffs' : '') + '</p>' +
             '<p><strong>Platform:</strong> ' + (platformLabels[l.platform] || l.platform || 'TBC') + '</p>' +
             '<p><strong>Dates:</strong> ' + startStr + ' — ' + endStr + '</p>' +
+            '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
             '<div class="card-actions">' +
             '<a href="league.html?id=' + l.id + '" class="btn-view">View League</a>' +
+            joinBtn +
             '</div>' +
             '</div>');
         }
         container.innerHTML = cardsHtml.join('');
+      }
+
+      async function joinLeague(leagueId, btn) {
+        if (!currentUserId) { window.location.href = 'login.html'; return; }
+        btn.disabled = true;
+        btn.textContent = 'Joining...';
+        var result = await sbClient.from('league_players').insert([{
+          league_id: leagueId,
+          player_id: currentUserId
+        }]);
+        if (result.error) {
+          btn.disabled = false;
+          btn.textContent = 'Join League';
+          alert('Error joining league. Please try again.');
+          return;
+        }
+        btn.className = 'btn-join joined';
+        btn.textContent = '✓ Joined';
+        joinedLeagues.push(leagueId);
       }
 
       function toggleMenu() {
