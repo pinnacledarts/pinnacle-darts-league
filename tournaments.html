@@ -97,63 +97,74 @@
       var currentUserId = null;
       var joinedTournaments = [];
 
-      async function loadTournaments() {
-        var session = await sbClient.auth.getSession();
-        if (session.data.session) {
-          currentUserId = session.data.session.user.id;
-          var joined = await sbClient.from('tournament_players').select('tournament_id').eq('player_id', currentUserId);
-          joinedTournaments = joined.data ? joined.data.map(function(j) { return j.tournament_id; }) : [];
-        }
+     async function loadTournaments() {
+  var session = await sbClient.auth.getSession();
+  if (session.data.session) {
+    currentUserId = session.data.session.user.id;
+    var joined = await sbClient.from('tournament_players').select('tournament_id').eq('player_id', currentUserId);
+    joinedTournaments = joined.data ? joined.data.map(function(j) { return j.tournament_id; }) : [];
+  }
 
-var result = await sbClient.from('tournaments').select('*').order('date', { ascending: true });
-        var container = document.getElementById('tournamentsList');
+  var result = await sbClient.from('tournaments').select('*').order('date', { ascending: true });
+  var container = document.getElementById('tournamentsList');
 
-        if (!result.data || !result.data.length) {
-          container.innerHTML = '<p class="coming-soon">🎯 No tournaments yet — check back soon!</p>';
-          return;
-        }
+  if (!result.data || !result.data.length) {
+    container.innerHTML = '<p class="coming-soon">🎯 No tournaments yet — check back soon!</p>';
+    return;
+  }
 
-        var formatLabels = {
-          single_elimination: 'Single Elimination',
-          single_elimination_b: 'Single Elimination + B Bracket',
-          group_knockout: 'Group Stages + Knockout'
-        };
-        var platformLabels = {
-          dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both'
-        };
+  var countResult = await sbClient.from('tournament_players').select('tournament_id');
+  var playerCounts = {};
+  if (countResult.data) {
+    countResult.data.forEach(function(row) {
+      playerCounts[row.tournament_id] = (playerCounts[row.tournament_id] || 0) + 1;
+    });
+  }
 
-        container.innerHTML = result.data.map(function(t) {
-          var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
-          var timeStr = t.time ? ' at ' + t.time : '';
-          var playerCount = t.tournament_players && t.tournament_players[0] ? t.tournament_players[0].count : 0;
-          var maxStr = t.max_players ? playerCount + ' / ' + t.max_players + ' players' : playerCount + ' players';
-          var hasJoined = joinedTournaments.indexOf(t.id) > -1;
-          var isCompleted = t.status === 'completed';
+  var formatLabels = {
+    single_elimination: 'Single Elimination',
+    single_elimination_b: 'Single Elimination + B Bracket',
+    group_knockout: 'Group Stages + Knockout'
+  };
+  var platformLabels = {
+    dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both'
+  };
 
-          var joinBtn = '';
-          if (currentUserId && !isCompleted) {
-            if (hasJoined) {
-              joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
-            } else {
-              joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this)">Join Tournament</button>';
-            }
-          }
+  container.innerHTML = result.data.map(function(t) {
+    var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+    var timeStr = t.time ? ' at ' + t.time : '';
+    var playerCount = playerCounts[t.id] || 0;
+    var maxStr = t.max_players ? playerCount + ' / ' + t.max_players + ' players' : playerCount + ' players';
+    var isFull = t.max_players && playerCount >= t.max_players;
+    var hasJoined = joinedTournaments.indexOf(t.id) > -1;
+    var isCompleted = t.status === 'completed';
 
-          return '<div class="tournament-card">' +
-            '<span class="badge badge-' + t.status + '">' + (t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : 'Upcoming') + '</span>' +
-            '<h3>' + t.name + '</h3>' +
-            '<p><strong>Date:</strong> ' + dateStr + timeStr + '</p>' +
-            '<p><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</p>' +
-            '<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
-            (t.description ? '<p>' + t.description + '</p>' : '') +
-            '<p class="player-count">👥 ' + maxStr + '</p>' +
-            '<div class="card-actions">' +
-            '<a href="tournament.html?id=' + t.id + '" class="btn-view">View Tournament</a>' +
-            joinBtn +
-            '</div>' +
-            '</div>';
-        }).join('');
+    var joinBtn = '';
+    if (currentUserId && !isCompleted) {
+      if (hasJoined) {
+        joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
+      } else if (isFull) {
+        joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">Tournament Full</button>';
+      } else {
+        joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this)">Join Tournament</button>';
       }
+    }
+
+    return '<div class="tournament-card">' +
+      '<span class="badge badge-' + t.status + '">' + (t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : 'Upcoming') + '</span>' +
+      '<h3>' + t.name + '</h3>' +
+      '<p><strong>Date:</strong> ' + dateStr + timeStr + '</p>' +
+      '<p><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</p>' +
+      '<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
+      (t.description ? '<p>' + t.description + '</p>' : '') +
+      '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
+      '<div class="card-actions">' +
+      '<a href="tournament.html?id=' + t.id + '" class="btn-view">View Tournament</a>' +
+      joinBtn +
+      '</div>' +
+      '</div>';
+  }).join('');
+}
 
       async function joinTournament(tournamentId, btn) {
         if (!currentUserId) { window.location.href = 'login.html'; return; }
