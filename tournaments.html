@@ -8,40 +8,26 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js"></script>
     <style>
-      .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
-.badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-.badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-
       header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
       header img { height: 70px; }
       header h1 { margin: 0; color: #ffffff; font-size: 2em; }
       header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-
       .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
       .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
       .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
       .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-
       .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
-
       nav { background-color: #222222; display: flex; justify-content: center; gap: 40px; padding: 15px; }
       nav a { color: #ffffff; text-decoration: none; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
       nav a:hover { color: #aaaaaa; }
-
       main { padding: 40px; max-width: 900px; margin: 0 auto; }
       h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; }
-
       .tournament-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 20px; margin-bottom: 16px; }
       .tournament-card h3 { margin: 0 0 8px; font-size: 1.2em; }
       .tournament-card p { margin: 4px 0; color: #555555; font-size: 0.95em; }
-
       .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; }
-      .badge-upcoming { background-color: #111111; color: #ffffff; }
-      .badge-active { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-      .badge-completed { background-color: #dddddd; color: #111111; }
-
       .card-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
       .btn-view { background-color: #111111; color: #ffffff; border: none; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
       .btn-view:hover { background-color: #333333; }
@@ -49,10 +35,11 @@
       .btn-join:hover { background-color: #f5f5f5; }
       .btn-join.joined { background-color: #f0fff0; color: #006600; border-color: #cceecc; cursor: default; }
       .player-count { font-size: 0.85em; color: #888888; margin-top: 8px; }
-
       .coming-soon { text-align: center; padding: 60px 20px; color: #aaaaaa; font-size: 1.1em; }
       .loading { text-align: center; padding: 40px; color: #888888; }
-
+      .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
+      .badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
+      .badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
       @media (max-width: 700px) {
         header { flex-wrap: wrap; padding: 16px 20px; }
         header img { height: 50px; }
@@ -100,93 +87,78 @@
       var currentUserId = null;
       var joinedTournaments = [];
 
-     async function loadTournaments() {
-  var session = await sbClient.auth.getSession();
-  if (session.data.session) {
-    currentUserId = session.data.session.user.id;
-    var joined = await sbClient.from('tournament_players').select('tournament_id').eq('player_id', currentUserId);
-    joinedTournaments = joined.data ? joined.data.map(function(j) { return j.tournament_id; }) : [];
-  }
+      async function loadTournaments() {
+        var session = await sbClient.auth.getSession();
+        if (session.data.session) {
+          currentUserId = session.data.session.user.id;
+          var joined = await sbClient.from('tournament_players').select('tournament_id').eq('player_id', currentUserId);
+          joinedTournaments = joined.data ? joined.data.map(function(j) { return j.tournament_id; }) : [];
+        }
 
-  var result = await sbClient.from('tournaments').select('*').order('date', { ascending: true });
-  var container = document.getElementById('tournamentsList');
+        var result = await sbClient.from('tournaments').select('*').order('date', { ascending: true });
+        var container = document.getElementById('tournamentsList');
 
-  if (!result.data || !result.data.length) {
-    container.innerHTML = '<p class="coming-soon">🎯 No tournaments yet — check back soon!</p>';
-    return;
-  }
+        if (!result.data || !result.data.length) {
+          container.innerHTML = '<p class="coming-soon">🎯 No tournaments yet — check back soon!</p>';
+          return;
+        }
 
-  var countResult = await sbClient.from('tournament_players').select('tournament_id');
-  var playerCounts = {};
-  if (countResult.data) {
-    countResult.data.forEach(function(row) {
-playerCounts[parseInt(row.tournament_id)] = (playerCounts[parseInt(row.tournament_id)] || 0) + 1;
-    });
-  }
+        var countResult = await sbClient.from('tournament_players').select('tournament_id');
+        var playerCounts = {};
+        if (countResult.data) {
+          countResult.data.forEach(function(row) {
+            playerCounts[parseInt(row.tournament_id)] = (playerCounts[parseInt(row.tournament_id)] || 0) + 1;
+          });
+        }
 
-  var formatLabels = {
-    single_elimination: 'Single Elimination',
-    single_elimination_b: 'Single Elimination + B Bracket',
-    group_knockout: 'Group Stages + Knockout'
-  };
-  var platformLabels = {
-    dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both'
-  };
+        var formatLabels = {
+          single_elimination: 'Single Elimination',
+          single_elimination_b: 'Single Elimination + B Bracket',
+          group_knockout: 'Group Stages + Knockout'
+        };
+        var platformLabels = {
+          dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both'
+        };
 
-var cardsHtml = [];
-for (var i = 0; i < result.data.length; i++) {
-  var t = result.data[i];
-  var status = await computeTournamentStatus(t);
-  var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
-  var timeStr = t.time ? ' at ' + t.time : '';
-  var playerCount = playerCounts[parseInt(t.id)] || playerCounts[t.id] || 0;
-  var maxStr = t.max_players ? playerCount + ' / ' + t.max_players + ' players' : playerCount + ' players';
-  var isFull = t.max_players && playerCount >= t.max_players;
-  var hasJoined = joinedTournaments.indexOf(t.id) > -1;
-  var isCompleted = status === 'completed';
+        var cardsHtml = [];
+        for (var i = 0; i < result.data.length; i++) {
+          var t = result.data[i];
+          var status = await computeTournamentStatus(t);
+          var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+          var timeStr = t.time ? ' at ' + t.time : '';
+          var playerCount = playerCounts[parseInt(t.id)] || 0;
+          var maxStr = t.max_players ? playerCount + ' / ' + t.max_players + ' players' : playerCount + ' players';
+          var isFull = t.max_players && playerCount >= t.max_players;
+          var hasJoined = joinedTournaments.indexOf(t.id) > -1;
+          var isCompleted = status === 'completed';
 
-  var joinBtn = '';
-  if (currentUserId && !isCompleted) {
-    if (hasJoined) {
-      joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
-    } else if (isFull) {
-      joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">Tournament Full</button>';
-    } else {
-      joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this)">Join Tournament</button>';
-    }
-  }
+          var joinBtn = '';
+          if (currentUserId && !isCompleted) {
+            if (hasJoined) {
+              joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
+            } else if (isFull) {
+              joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">Tournament Full</button>';
+            } else {
+              joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this)">Join Tournament</button>';
+            }
+          }
 
-  cardsHtml.push('<div class="tournament-card">' +
-    getStatusBadgeHtml(status) +
-    '<h3>' + t.name + '</h3>' +
-    '<p><strong>Date:</strong> ' + dateStr + timeStr + '</p>' +
-    '<p><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</p>' +
-    '<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
-    (t.description ? '<p>' + t.description + '</p>' : '') +
-    '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
-    '<div class="card-actions">' +
-    '<a href="tournament.html?id=' + t.id + '" class="btn-view">View Tournament</a>' +
-    joinBtn +
-    '</div>' +
-    '</div>');
-}
-container.innerHTML = cardsHtml.join('');
-
-    return '<div class="tournament-card">' +
-      '<span class="badge badge-' + t.status + '">' + (t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : 'Upcoming') + '</span>' +
-      '<h3>' + t.name + '</h3>' +
-      '<p><strong>Date:</strong> ' + dateStr + timeStr + '</p>' +
-      '<p><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</p>' +
-      '<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
-      (t.description ? '<p>' + t.description + '</p>' : '') +
-      '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
-      '<div class="card-actions">' +
-      '<a href="tournament.html?id=' + t.id + '" class="btn-view">View Tournament</a>' +
-      joinBtn +
-      '</div>' +
-      '</div>';
-  }).join('');
-}
+          cardsHtml.push('<div class="tournament-card">' +
+            getStatusBadgeHtml(status) +
+            '<h3>' + t.name + '</h3>' +
+            '<p><strong>Date:</strong> ' + dateStr + timeStr + '</p>' +
+            '<p><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</p>' +
+            '<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
+            (t.description ? '<p>' + t.description + '</p>' : '') +
+            '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
+            '<div class="card-actions">' +
+            '<a href="tournament.html?id=' + t.id + '" class="btn-view">View Tournament</a>' +
+            joinBtn +
+            '</div>' +
+            '</div>');
+        }
+        container.innerHTML = cardsHtml.join('');
+      }
 
       async function joinTournament(tournamentId, btn) {
         if (!currentUserId) { window.location.href = 'login.html'; return; }
