@@ -71,18 +71,11 @@
       .score-inputs { display: flex; align-items: center; gap: 6px; }
       .btn-submit-score { background-color: #111111; color: #ffffff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
       .btn-submit-score:hover { background-color: #333333; }
-      .bracket { display: flex; gap: 30px; overflow-x: auto; padding: 20px 0; }
-      .bracket-round { display: flex; flex-direction: column; min-width: 180px; }
-      .bracket-round-title { font-size: 0.8em; font-weight: bold; text-transform: uppercase; color: #888888; margin-bottom: 12px; text-align: center; letter-spacing: 1px; }
-      .bracket-matches { display: flex; flex-direction: column; gap: 16px; justify-content: space-around; flex: 1; }
-      .bracket-match { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; overflow: hidden; }
-      .bracket-player { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #eeeeee; font-size: 0.9em; }
-      .bracket-player:last-child { border-bottom: none; }
-      .bracket-player.winner { font-weight: bold; background-color: #f0fff0; }
-      .bracket-player.tbd { color: #aaaaaa; font-style: italic; }
-      .bracket-score-inputs { display: flex; gap: 4px; align-items: center; }
-      .bracket-score-input { width: 40px; padding: 2px 4px; border: 1px solid #dddddd; border-radius: 3px; font-size: 0.85em; text-align: center; }
-      .btn-save-bracket { background-color: #111111; color: #ffffff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; cursor: pointer; margin-left: 4px; }
+      .score-display { font-weight: bold; font-size: 0.95em; }
+      .winner-text { font-weight: bold; color: #006600; }
+      .round-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+      .round-tab { padding: 8px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
+      .round-tab.active { background: #111111; color: #ffffff; border-color: #111111; font-weight: bold; }
       .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
       .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
       .empty-state { text-align: center; padding: 20px; color: #aaaaaa; font-size: 0.95em; }
@@ -133,6 +126,8 @@
       var tournamentData = null;
       var allProfiles = [];
       var existingPlayerIds = [];
+      var profileMapAdmin = {};
+      var roundOrderFull = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
 
       async function init() {
         var params = new URLSearchParams(window.location.search);
@@ -151,6 +146,7 @@
 
         var profilesResult = await sbClient.from('profiles').select('id, full_name, username').order('full_name');
         allProfiles = profilesResult.data || [];
+        allProfiles.forEach(function(p) { profileMapAdmin[p.id] = p.full_name || p.username || 'Unknown'; });
 
         var isGroupKnockout = tournamentData.format === 'group_knockout';
         var isSingleElim = tournamentData.format === 'single_elimination' || tournamentData.format === 'single_elimination_b';
@@ -298,10 +294,7 @@
         var playersResult = await sbClient.from('tournament_players').select('player_id').eq('tournament_id', tournamentId);
         if (!playersResult.data || !playersResult.data.length) { showMsg('groups-error', 'No players have joined yet.'); return; }
         var players = playersResult.data.slice();
-        for (var i = players.length - 1; i > 0; i--) {
-          var j = Math.floor(Math.random() * (i + 1));
-          var temp = players[i]; players[i] = players[j]; players[j] = temp;
-        }
+        shuffleArray(players);
         var numGroups = Math.ceil(players.length / playersPerGroup);
         var groupNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
         for (var g = 0; g < numGroups; g++) {
@@ -371,6 +364,43 @@
         loadGroups();
       }
 
+      function shuffleArray(arr) {
+        for (var i = arr.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+        }
+      }
+
+      async function createBracketRounds(players) {
+        var paddedLength = 1;
+        while (paddedLength < players.length) { paddedLength *= 2; }
+        while (players.length < paddedLength) { players.push(null); }
+
+        var matchCount = players.length / 2;
+        var firstRoundName = getRoundName(matchCount);
+        for (var i = 0; i < players.length; i += 2) {
+          await sbClient.from('tournament_matches').insert([{
+            tournament_id: parseInt(tournamentId),
+            player1_id: players[i] ? players[i].player_id : null,
+            player2_id: players[i + 1] ? players[i + 1].player_id : null,
+            stage: 'knockout', round: firstRoundName, match_order: i / 2, status: 'pending'
+          }]);
+        }
+
+        var count = matchCount / 2;
+        while (count >= 1) {
+          var rName = getRoundName(count);
+          for (var j = 0; j < count; j++) {
+            await sbClient.from('tournament_matches').insert([{
+              tournament_id: parseInt(tournamentId),
+              player1_id: null, player2_id: null,
+              stage: 'knockout', round: rName, match_order: j, status: 'pending'
+            }]);
+          }
+          count = count / 2;
+        }
+      }
+
       async function generateSingleElimination() {
         var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
         if (existing.data && existing.data.length > 0) {
@@ -380,20 +410,8 @@
         var playersResult = await sbClient.from('tournament_players').select('player_id').eq('tournament_id', tournamentId);
         if (!playersResult.data || !playersResult.data.length) { showMsg('knockouts-error', 'No players have joined yet.'); return; }
         var players = playersResult.data.slice();
-        for (var i = players.length - 1; i > 0; i--) {
-          var j = Math.floor(Math.random() * (i + 1));
-          var temp = players[i]; players[i] = players[j]; players[j] = temp;
-        }
-        while (players.length % 2 !== 0) { players.push(null); }
-        var roundName = getRoundName(players.length / 2);
-        for (var i = 0; i < players.length; i += 2) {
-          await sbClient.from('tournament_matches').insert([{
-            tournament_id: parseInt(tournamentId),
-            player1_id: players[i] ? players[i].player_id : null,
-            player2_id: players[i + 1] ? players[i + 1].player_id : null,
-            stage: 'knockout', round: roundName, match_order: i / 2, status: 'pending'
-          }]);
-        }
+        shuffleArray(players);
+        await createBracketRounds(players);
         showMsg('knockouts-success', 'Bracket generated!');
         loadKnockouts();
       }
@@ -435,16 +453,7 @@
           if (runnersUp[i]) { seeded.push(runnersUp[i]); }
         }
         others.forEach(function(o) { seeded.push(o); });
-        while (seeded.length % 2 !== 0) { seeded.push(null); }
-        var roundName = getRoundName(seeded.length / 2);
-        for (var i = 0; i < seeded.length; i += 2) {
-          await sbClient.from('tournament_matches').insert([{
-            tournament_id: parseInt(tournamentId),
-            player1_id: seeded[i] ? seeded[i].player_id : null,
-            player2_id: seeded[i + 1] ? seeded[i + 1].player_id : null,
-            stage: 'knockout', round: roundName, match_order: i / 2, status: 'pending'
-          }]);
-        }
+        await createBracketRounds(seeded);
         showMsg('knockouts-success', 'Knockout bracket generated!');
         loadKnockouts();
       }
@@ -459,65 +468,73 @@
         var result = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').order('match_order');
         var container = document.getElementById('knockoutsContent');
         if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No bracket yet.</p>'; return; }
-        var profileMap = {};
-        allProfiles.forEach(function(p) { profileMap[p.id] = p.full_name || p.username || 'Unknown'; });
+
         var rounds = {};
         result.data.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
-        var roundOrder = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
-        var html = '<div class="bracket">';
-        roundOrder.forEach(function(round) {
-          if (!rounds[round]) { return; }
-          html += '<div class="bracket-round"><div class="bracket-round-title">' + round + '</div><div class="bracket-matches">';
-          rounds[round].forEach(function(m) {
-            var p1name = m.player1_id ? (profileMap[m.player1_id] || 'Unknown') : 'TBD';
-            var p2name = m.player2_id ? (profileMap[m.player2_id] || 'Unknown') : 'TBD';
+        var roundsPresent = roundOrderFull.filter(function(r) { return rounds[r]; });
+
+        var tabsHtml = '<div class="round-tabs">' + roundsPresent.map(function(r, i) {
+          return '<button class="round-tab' + (i === 0 ? ' active' : '') + '" data-round="' + r + '" onclick="showKnockoutRound(\'' + r + '\', this)">' + r + '</button>';
+        }).join('') + '</div>';
+
+        var contentHtml = roundsPresent.map(function(r, i) {
+          var matches = rounds[r];
+          var matchesHtml = matches.map(function(m) {
+            var p1name = m.player1_id ? (profileMapAdmin[m.player1_id] || 'Unknown') : 'TBD';
+            var p2name = m.player2_id ? (profileMapAdmin[m.player2_id] || 'Unknown') : 'TBD';
             var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
             var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
-            var s1 = m.status === 'completed' ? m.player1_score : '';
-            var s2 = m.status === 'completed' ? m.player2_score : '';
-            html += '<div class="bracket-match">' +
-              '<div class="bracket-player' + (p1winner ? ' winner' : '') + (m.player1_id ? '' : ' tbd') + '">' +
-              '<span>' + p1name + '</span>' +
-              '<div class="bracket-score-inputs"><input class="bracket-score-input" type="number" id="ks1_' + m.id + '" value="' + s1 + '" placeholder="-" /></div>' +
-              '</div>' +
-              '<div class="bracket-player' + (p2winner ? ' winner' : '') + (m.player2_id ? '' : ' tbd') + '">' +
-              '<span>' + p2name + '</span>' +
-              '<div class="bracket-score-inputs"><input class="bracket-score-input" type="number" id="ks2_' + m.id + '" value="' + s2 + '" placeholder="-" /><button class="btn-save-bracket" onclick="saveKnockoutScore(' + m.id + ', \'' + m.round + '\')">✓</button></div>' +
-              '</div>' +
-              '</div>';
-          });
-          html += '</div></div>';
-        });
-        html += '</div>';
-        container.innerHTML = html;
+            var scoreHtml;
+            if (m.status === 'completed') {
+              scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
+            } else if (m.player1_id && m.player2_id) {
+              scoreHtml = '<div class="score-inputs"><input class="score-input" type="number" id="ks1_' + m.id + '" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ks2_' + m.id + '" placeholder="0" /><button class="btn-submit-score" onclick="saveKnockoutScore(' + m.id + ',\'' + r + '\',' + m.match_order + ')">Submit</button></div>';
+            } else {
+              scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
+            }
+            return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span></div>' + scoreHtml + '</div>';
+          }).join('');
+          return '<div class="round-content" data-round="' + r + '" style="' + (i === 0 ? '' : 'display:none;') + '">' + matchesHtml + '</div>';
+        }).join('');
+
+        container.innerHTML = tabsHtml + contentHtml;
       }
 
-      async function saveKnockoutScore(matchId, currentRound) {
+      function showKnockoutRound(round, btn) {
+        document.querySelectorAll('.round-tab').forEach(function(t) { t.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.round-content').forEach(function(c) {
+          c.style.display = c.getAttribute('data-round') === round ? '' : 'none';
+        });
+      }
+
+      async function saveKnockoutScore(matchId, currentRound, matchOrder) {
         var s1 = parseInt(document.getElementById('ks1_' + matchId).value);
         var s2 = parseInt(document.getElementById('ks2_' + matchId).value);
         if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
         if (s1 === s2) { alert('Scores cannot be equal in a knockout match.'); return; }
+
         var result = await sbClient.from('tournament_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
         if (result.error) { alert('Error saving score: ' + result.error.message); return; }
-        var roundMatches = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').eq('round', currentRound).order('match_order');
-        var allComplete = roundMatches.data && roundMatches.data.every(function(m) { return m.status === 'completed'; });
-        if (allComplete && roundMatches.data.length > 1) {
-          var winners = roundMatches.data.map(function(m) { return m.player1_score > m.player2_score ? m.player1_id : m.player2_id; });
-          var nextRound = getNextRoundName(currentRound);
-          if (nextRound) {
-            for (var i = 0; i < winners.length; i += 2) {
-              await sbClient.from('tournament_matches').insert([{
-                tournament_id: parseInt(tournamentId),
-                player1_id: winners[i],
-                player2_id: winners[i + 1] || null,
-                stage: 'knockout', round: nextRound, match_order: i / 2, status: 'pending'
-              }]);
-            }
-            showMsg('knockouts-success', nextRound + ' generated!');
-          } else {
-            showMsg('knockouts-success', '🏆 Tournament complete! We have a winner!');
+
+        var matchRow = (await sbClient.from('tournament_matches').select('*').eq('id', matchId).single()).data;
+        var winnerId = matchRow.player1_score > matchRow.player2_score ? matchRow.player1_id : matchRow.player2_id;
+
+        var nextRound = getNextRoundName(currentRound);
+        if (nextRound) {
+          var nextOrder = Math.floor(matchOrder / 2);
+          var slot = matchOrder % 2 === 0 ? 'player1_id' : 'player2_id';
+          var nextMatch = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout').eq('round', nextRound).eq('match_order', nextOrder).single();
+          if (nextMatch.data) {
+            var update = {};
+            update[slot] = winnerId;
+            await sbClient.from('tournament_matches').update(update).eq('id', nextMatch.data.id);
           }
+          showMsg('knockouts-success', 'Score saved — winner advanced to ' + nextRound + '!');
+        } else {
+          showMsg('knockouts-success', '🏆 Tournament complete! We have a winner!');
         }
+
         loadKnockouts();
       }
 
@@ -531,10 +548,9 @@
       }
 
       function getNextRoundName(currentRound) {
-        var rounds = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
-        var idx = rounds.indexOf(currentRound);
-        if (idx === -1 || idx === rounds.length - 1) { return null; }
-        return rounds[idx + 1];
+        var idx = roundOrderFull.indexOf(currentRound);
+        if (idx === -1 || idx === roundOrderFull.length - 1) { return null; }
+        return roundOrderFull[idx + 1];
       }
 
       function showMsg(id, msg) {
