@@ -164,8 +164,9 @@
           dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both'
         };
 
-        var dateStr = tournamentData.date ? new Date(tournamentData.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+var dateStr = tournamentData.date ? new Date(tournamentData.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
         var timeStr = tournamentData.time || 'TBC';
+        var currentStatus = await computeTournamentStatus(tournamentData);
         var isGroupKnockout = tournamentFormat === 'group_knockout';
         var isSingleElim = tournamentFormat === 'single_elimination' || tournamentFormat === 'single_elimination_b';
 
