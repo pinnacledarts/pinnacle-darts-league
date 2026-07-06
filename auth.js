@@ -6,7 +6,7 @@ async function checkAuth() {
   const { data: { session } } = await sbClient.auth.getSession();
 
   const authButtons = document.getElementById('authButtons');
-  if (!authButtons) return;
+  if (!authButtons) return; 
 
   if (session) {
     const { data: profile } = await sbClient
