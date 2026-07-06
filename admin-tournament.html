@@ -71,7 +71,6 @@
       .bracket-player:last-child { border-bottom: none; }
       .bracket-player.winner { font-weight: bold; background-color: #f0fff0; }
       .bracket-player.tbd { color: #aaaaaa; font-style: italic; }
-      .bracket-score { font-weight: bold; margin-left: 8px; }
       .bracket-score-inputs { display: flex; gap: 4px; align-items: center; }
       .bracket-score-input { width: 40px; padding: 2px 4px; border: 1px solid #dddddd; border-radius: 3px; font-size: 0.85em; text-align: center; }
       .btn-save-bracket { background-color: #111111; color: #ffffff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; cursor: pointer; margin-left: 4px; }
@@ -276,14 +275,13 @@
           var playerMap = {};
           groupPlayers.forEach(function(gp) { var profile = gp.profiles || {}; playerMap[gp.player_id] = profile.full_name || profile.username || 'Unknown'; });
           var standings = groupPlayers.map(function(gp) {
-            var name = playerMap[gp.player_id];
             var played = 0, won = 0, lost = 0, pts = 0;
             matches.forEach(function(m) {
               if (m.group_id !== group.id || m.status !== 'completed') { return; }
               if (m.player1_id === gp.player_id) { played++; if (m.player1_score > m.player2_score) { won++; pts += 3; } else { lost++; } }
               else if (m.player2_id === gp.player_id) { played++; if (m.player2_score > m.player1_score) { won++; pts += 3; } else { lost++; } }
             });
-            return { name: name, id: gp.player_id, played: played, won: won, lost: lost, pts: pts };
+            return { name: playerMap[gp.player_id], played: played, won: won, lost: lost, pts: pts };
           }).sort(function(a, b) { return b.pts - a.pts; });
           var groupFixtures = matches.filter(function(m) { return m.group_id === group.id; });
           var fixturesHtml = groupFixtures.map(function(m) {
@@ -310,19 +308,15 @@
 
       async function generateKnockouts() {
         var progressPerGroup = parseInt(document.getElementById('progressPerGroup').value) || 2;
-
         var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
         if (existing.data && existing.data.length > 0) {
           if (!confirm('Knockout bracket already exists. Regenerate?')) { return; }
           await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
         }
-
-        var groupsResult = await sbClient.from('tournament_groups').select('*, tournament_group_players(player_id, profiles(full_name, username))').eq('tournament_id', tournamentId).order('group_name');
+        var groupsResult = await sbClient.from('tournament_groups').select('*, tournament_group_players(player_id)').eq('tournament_id', tournamentId).order('group_name');
         if (!groupsResult.data || !groupsResult.data.length) { showMsg('knockouts-error', 'No groups found. Generate groups first.'); return; }
-
         var matchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'group');
         var matches = matchesResult.data || [];
-
         var qualifiers = [];
         groupsResult.data.forEach(function(group) {
           var groupPlayers = group.tournament_group_players || [];
@@ -333,41 +327,32 @@
               if (m.player1_id === gp.player_id && m.player1_score > m.player2_score) { pts += 3; won++; }
               else if (m.player2_id === gp.player_id && m.player2_score > m.player1_score) { pts += 3; won++; }
             });
-            return { player_id: gp.player_id, pts: pts, won: won, group: group.group_name };
+            return { player_id: gp.player_id, pts: pts, won: won };
           }).sort(function(a, b) { return b.pts - a.pts || b.won - a.won; });
           for (var i = 0; i < Math.min(progressPerGroup, standings.length); i++) {
-            qualifiers.push({ player_id: standings[i].player_id, seed: i + 1, group: standings[i].group });
+            qualifiers.push({ player_id: standings[i].player_id, seed: i + 1 });
           }
         });
-
         if (qualifiers.length < 2) { showMsg('knockouts-error', 'Not enough players to generate knockouts.'); return; }
-
         var winners = qualifiers.filter(function(q) { return q.seed === 1; });
         var runnersUp = qualifiers.filter(function(q) { return q.seed === 2; });
         var others = qualifiers.filter(function(q) { return q.seed > 2; });
-
         var seeded = [];
         for (var i = 0; i < Math.max(winners.length, runnersUp.length); i++) {
           if (winners[i]) { seeded.push(winners[i]); }
           if (runnersUp[i]) { seeded.push(runnersUp[i]); }
         }
         others.forEach(function(o) { seeded.push(o); });
-
         while (seeded.length % 2 !== 0) { seeded.push(null); }
-
         var roundName = getRoundName(seeded.length / 2);
         for (var i = 0; i < seeded.length; i += 2) {
           await sbClient.from('tournament_matches').insert([{
             tournament_id: parseInt(tournamentId),
             player1_id: seeded[i] ? seeded[i].player_id : null,
             player2_id: seeded[i + 1] ? seeded[i + 1].player_id : null,
-            stage: 'knockout',
-            round: roundName,
-            match_order: i / 2,
-            status: 'pending'
+            stage: 'knockout', round: roundName, match_order: i / 2, status: 'pending'
           }]);
         }
-
         showMsg('knockouts-success', 'Knockout bracket generated!');
         loadKnockouts();
       }
@@ -382,16 +367,10 @@
         var result = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').order('match_order');
         var container = document.getElementById('knockoutsContent');
         if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No knockout bracket yet.</p>'; return; }
-
         var profileMap = {};
         allProfiles.forEach(function(p) { profileMap[p.id] = p.full_name || p.username || 'Unknown'; });
-
         var rounds = {};
-        result.data.forEach(function(m) {
-          if (!rounds[m.round]) { rounds[m.round] = []; }
-          rounds[m.round].push(m);
-        });
-
+        result.data.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
         var roundOrder = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
         var html = '<div class="bracket">';
         roundOrder.forEach(function(round) {
@@ -411,7 +390,7 @@
               '</div>' +
               '<div class="bracket-player' + (p2winner ? ' winner' : '') + (m.player2_id ? '' : ' tbd') + '">' +
               '<span>' + p2name + '</span>' +
-              '<div class="bracket-score-inputs"><input class="bracket-score-input" type="number" id="ks2_' + m.id + '" value="' + s2 + '" placeholder="-" /><button class="btn-save-bracket" onclick="saveKnockoutScore(' + m.id + ')">✓</button></div>' +
+              '<div class="bracket-score-inputs"><input class="bracket-score-input" type="number" id="ks2_' + m.id + '" value="' + s2 + '" placeholder="-" /><button class="btn-save-bracket" onclick="saveKnockoutScore(' + m.id + ', \'' + m.round + '\')">✓</button></div>' +
               '</div>' +
               '</div>';
           });
@@ -421,13 +400,39 @@
         container.innerHTML = html;
       }
 
-      async function saveKnockoutScore(matchId) {
+      async function saveKnockoutScore(matchId, currentRound) {
         var s1 = parseInt(document.getElementById('ks1_' + matchId).value);
         var s2 = parseInt(document.getElementById('ks2_' + matchId).value);
         if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
         if (s1 === s2) { alert('Scores cannot be equal in a knockout match.'); return; }
+
         var result = await sbClient.from('tournament_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
         if (result.error) { alert('Error saving score: ' + result.error.message); return; }
+
+        var roundMatches = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').eq('round', currentRound).order('match_order');
+
+        var allComplete = roundMatches.data && roundMatches.data.every(function(m) { return m.status === 'completed'; });
+
+        if (allComplete && roundMatches.data.length > 1) {
+          var winners = roundMatches.data.map(function(m) {
+            return m.player1_score > m.player2_score ? m.player1_id : m.player2_id;
+          });
+          var nextRound = getNextRoundName(currentRound);
+          if (nextRound) {
+            for (var i = 0; i < winners.length; i += 2) {
+              await sbClient.from('tournament_matches').insert([{
+                tournament_id: parseInt(tournamentId),
+                player1_id: winners[i],
+                player2_id: winners[i + 1] || null,
+                stage: 'knockout', round: nextRound, match_order: i / 2, status: 'pending'
+              }]);
+            }
+            showMsg('knockouts-success', nextRound + ' generated!');
+          } else {
+            showMsg('knockouts-success', '🏆 Tournament complete! We have a winner!');
+          }
+        }
+
         loadKnockouts();
       }
 
@@ -438,6 +443,13 @@
         if (numMatches >= 4) { return 'Quarter Final'; }
         if (numMatches >= 2) { return 'Semi Final'; }
         return 'Final';
+      }
+
+      function getNextRoundName(currentRound) {
+        var rounds = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
+        var idx = rounds.indexOf(currentRound);
+        if (idx === -1 || idx === rounds.length - 1) { return null; }
+        return rounds[idx + 1];
       }
 
       function showMsg(id, msg) {
