@@ -10,83 +10,75 @@
     <style>
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-
       header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
       header img { height: 70px; }
       header h1 { margin: 0; color: #ffffff; font-size: 2em; }
       header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-
       .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
       .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
       .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
       .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-
       .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
-
       nav { background-color: #222222; display: flex; justify-content: center; gap: 40px; padding: 15px; }
       nav a { color: #ffffff; text-decoration: none; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
       nav a:hover { color: #aaaaaa; }
-
       main { padding: 40px; max-width: 900px; margin: 0 auto; }
-
       .back-link { display: inline-block; margin-bottom: 20px; color: #111111; text-decoration: none; font-size: 0.9em; }
       .back-link:hover { text-decoration: underline; }
-
       h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
-
       .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
       .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
       .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
       .tab:hover { color: #000000; }
       .tab-content { display: none; }
       .tab-content.active { display: block; }
-
       .card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 24px; margin-bottom: 20px; }
       .card h3 { margin: 0 0 20px; font-size: 1.1em; padding-left: 12px; border-left: 4px solid #000000; }
-
       .form-group { margin-bottom: 16px; }
       .form-group label { display: block; font-size: 0.9em; font-weight: bold; margin-bottom: 6px; color: #333333; }
-      .form-group select { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; font-family: Arial, sans-serif; }
-
+      .form-group select, .form-group input { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; font-family: Arial, sans-serif; }
       .btn { padding: 10px 24px; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; font-family: Arial, sans-serif; margin-right: 8px; }
       .btn-primary { background-color: #000000; color: #ffffff; }
       .btn-primary:hover { background-color: #333333; }
       .btn-danger { background-color: #ffffff; color: #cc0000; border: 1px solid #cc0000; }
       .btn-danger:hover { background-color: #fff0f0; }
-
       table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.95em; }
       th { background-color: #111111; color: #ffffff; padding: 10px 12px; text-align: left; }
       td { padding: 10px 12px; border-bottom: 1px solid #eeeeee; }
       tr:last-child td { border-bottom: none; }
-
       .btn-small { padding: 4px 12px; font-size: 0.85em; border-radius: 4px; cursor: pointer; border: 1px solid #dddddd; background: #ffffff; font-family: Arial, sans-serif; }
       .btn-small:hover { background-color: #f5f5f5; }
       .btn-small.danger { color: #cc0000; border-color: #cc0000; }
       .btn-small.danger:hover { background-color: #fff0f0; }
-
       .score-input { width: 50px; padding: 4px 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; text-align: center; }
-
       .admin-bar { background-color: #f9f9f9; border: 1px solid #dddddd; border-radius: 6px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
       .admin-bar label { font-size: 0.9em; font-weight: bold; }
       .admin-bar input { padding: 6px 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; width: 80px; }
-
       .group-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
       .group-card h3 { margin: 0 0 16px; font-size: 1.1em; padding-left: 12px; border-left: 4px solid #000000; }
-
       .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #f9f9f9; border: 1px solid #eeeeee; border-radius: 4px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
       .fixture-players { font-size: 0.9em; font-weight: bold; flex: 1; }
       .fixture-vs { color: #888888; margin: 0 8px; }
       .score-inputs { display: flex; align-items: center; gap: 6px; }
       .btn-submit-score { background-color: #111111; color: #ffffff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
       .btn-submit-score:hover { background-color: #333333; }
-      .score-display { font-weight: bold; font-size: 0.95em; }
-
+      .bracket { display: flex; gap: 30px; overflow-x: auto; padding: 20px 0; }
+      .bracket-round { display: flex; flex-direction: column; min-width: 180px; }
+      .bracket-round-title { font-size: 0.8em; font-weight: bold; text-transform: uppercase; color: #888888; margin-bottom: 12px; text-align: center; letter-spacing: 1px; }
+      .bracket-matches { display: flex; flex-direction: column; gap: 16px; justify-content: space-around; flex: 1; }
+      .bracket-match { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; overflow: hidden; }
+      .bracket-player { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #eeeeee; font-size: 0.9em; }
+      .bracket-player:last-child { border-bottom: none; }
+      .bracket-player.winner { font-weight: bold; background-color: #f0fff0; }
+      .bracket-player.tbd { color: #aaaaaa; font-style: italic; }
+      .bracket-score { font-weight: bold; margin-left: 8px; }
+      .bracket-score-inputs { display: flex; gap: 4px; align-items: center; }
+      .bracket-score-input { width: 40px; padding: 2px 4px; border: 1px solid #dddddd; border-radius: 3px; font-size: 0.85em; text-align: center; }
+      .btn-save-bracket { background-color: #111111; color: #ffffff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; cursor: pointer; margin-left: 4px; }
       .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
       .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
-
       .empty-state { text-align: center; padding: 20px; color: #aaaaaa; font-size: 0.95em; }
       .loading { text-align: center; padding: 40px; color: #888888; }
-
       @media (max-width: 700px) {
         header { flex-wrap: wrap; padding: 16px 20px; }
         header img { height: 50px; }
@@ -103,7 +95,6 @@
     </style>
   </head>
   <body>
-
     <header>
       <img src="logo.png" alt="Pinnacle Darts Logo">
       <div>
@@ -152,12 +143,6 @@
         var profilesResult = await sbClient.from('profiles').select('id, full_name, username').order('full_name');
         allProfiles = profilesResult.data || [];
 
-        var formatLabels = {
-          single_elimination: 'Single Elimination',
-          single_elimination_b: 'Single Elimination + B Bracket',
-          group_knockout: 'Group Stages + Knockout'
-        };
-
         var groupsTab = tournamentData.format === 'group_knockout' ? '<button class="tab" onclick="showTab(\'groups\', event)">Groups & Scores</button>' : '';
 
         document.getElementById('pageContent').innerHTML =
@@ -169,23 +154,15 @@
           '</div>' +
 
           '<div id="tab-players" class="tab-content active">' +
-          '<div class="card">' +
-          '<h3>Add Player</h3>' +
+          '<div class="card"><h3>Add Player</h3>' +
           '<div class="success-msg" id="add-player-success"></div>' +
           '<div class="error-msg" id="add-player-error"></div>' +
-          '<div class="form-group">' +
-          '<label>Select Player</label>' +
-          '<select id="addPlayerSelect">' +
-          '<option value="">-- Select a player --</option>' +
+          '<div class="form-group"><label>Select Player</label>' +
+          '<select id="addPlayerSelect"><option value="">-- Select a player --</option>' +
           allProfiles.map(function(p) { return '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>'; }).join('') +
-          '</select>' +
-          '</div>' +
-          '<button class="btn btn-primary" onclick="addPlayer()">Add to Tournament</button>' +
-          '</div>' +
-          '<div class="card">' +
-          '<h3>Registered Players</h3>' +
-          '<div id="playersList"><p class="loading">Loading...</p></div>' +
-          '</div>' +
+          '</select></div>' +
+          '<button class="btn btn-primary" onclick="addPlayer()">Add to Tournament</button></div>' +
+          '<div class="card"><h3>Registered Players</h3><div id="playersList"><p class="loading">Loading...</p></div></div>' +
           '</div>' +
 
           (tournamentData.format === 'group_knockout' ?
@@ -193,8 +170,7 @@
           '<div class="success-msg" id="groups-success"></div>' +
           '<div class="error-msg" id="groups-error"></div>' +
           '<div class="admin-bar">' +
-          '<label>Players per group:</label>' +
-          '<input type="number" id="playersPerGroup" value="4" min="2" max="8" />' +
+          '<label>Players per group:</label><input type="number" id="playersPerGroup" value="4" min="2" max="8" />' +
           '<button class="btn btn-primary" onclick="generateGroups()">Generate Groups</button>' +
           '<button class="btn btn-danger" onclick="clearGroups()">Clear Groups</button>' +
           '</div>' +
@@ -202,41 +178,41 @@
           '</div>' : '') +
 
           '<div id="tab-knockouts" class="tab-content">' +
-          '<div class="card"><p class="empty-state">Knockout management coming soon.</p></div>' +
+          '<div class="success-msg" id="knockouts-success"></div>' +
+          '<div class="error-msg" id="knockouts-error"></div>' +
+          (tournamentData.format === 'group_knockout' ?
+          '<div class="admin-bar">' +
+          '<label>Players per group to progress:</label><input type="number" id="progressPerGroup" value="2" min="1" max="4" />' +
+          '<button class="btn btn-primary" onclick="generateKnockouts()">Generate Knockouts</button>' +
+          '<button class="btn btn-danger" onclick="clearKnockouts()">Clear Knockouts</button>' +
+          '</div>' : '') +
+          '<div id="knockoutsContent"><p class="empty-state">No knockout bracket yet.</p></div>' +
           '</div>';
 
         loadPlayers();
         if (tournamentData.format === 'group_knockout') { loadGroups(); }
+        loadKnockouts();
       }
 
       async function loadPlayers() {
         var result = await sbClient.from('tournament_players').select('player_id, profiles(full_name, username)').eq('tournament_id', tournamentId);
         var container = document.getElementById('playersList');
-        if (!result.data || !result.data.length) {
-          container.innerHTML = '<p class="empty-state">No players yet.</p>';
-          return;
-        }
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
         container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Actions</th></tr></thead><tbody>' +
           result.data.map(function(p) {
             var profile = p.profiles || {};
             var name = profile.full_name || profile.username || 'Unknown';
             var username = profile.username ? '@' + profile.username : '-';
             return '<tr><td>' + name + '</td><td>' + username + '</td><td><button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
-          }).join('') +
-          '</tbody></table>';
+          }).join('') + '</tbody></table>';
       }
 
       async function addPlayer() {
         var playerId = document.getElementById('addPlayerSelect').value;
         if (!playerId) { showMsg('add-player-error', 'Please select a player.'); return; }
-
         var existing = await sbClient.from('tournament_players').select('id').eq('tournament_id', tournamentId).eq('player_id', playerId);
         if (existing.data && existing.data.length > 0) { showMsg('add-player-error', 'Player is already in this tournament.'); return; }
-
-        var result = await sbClient.from('tournament_players').insert([{
-          tournament_id: parseInt(tournamentId),
-          player_id: playerId
-        }]);
+        var result = await sbClient.from('tournament_players').insert([{ tournament_id: parseInt(tournamentId), player_id: playerId }]);
         if (result.error) { showMsg('add-player-error', result.error.message); return; }
         showMsg('add-player-success', 'Player added successfully!');
         loadPlayers();
@@ -250,64 +226,41 @@
 
       async function generateGroups() {
         var playersPerGroup = parseInt(document.getElementById('playersPerGroup').value) || 4;
-
         var existing = await sbClient.from('tournament_groups').select('id').eq('tournament_id', tournamentId);
         if (existing.data && existing.data.length > 0) {
           if (!confirm('Groups already exist. Regenerate? This will delete existing groups and results.')) { return; }
           await sbClient.from('tournament_groups').delete().eq('tournament_id', tournamentId);
         }
-
         var playersResult = await sbClient.from('tournament_players').select('player_id, profiles(full_name, username)').eq('tournament_id', tournamentId);
-        if (!playersResult.data || !playersResult.data.length) {
-          showMsg('groups-error', 'No players have joined yet.');
-          return;
-        }
-
+        if (!playersResult.data || !playersResult.data.length) { showMsg('groups-error', 'No players have joined yet.'); return; }
         var players = playersResult.data.slice();
         for (var i = players.length - 1; i > 0; i--) {
           var j = Math.floor(Math.random() * (i + 1));
           var temp = players[i]; players[i] = players[j]; players[j] = temp;
         }
-
         var numGroups = Math.ceil(players.length / playersPerGroup);
         var groupNames = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
-
         for (var g = 0; g < numGroups; g++) {
-          var groupResult = await sbClient.from('tournament_groups').insert([{
-            tournament_id: parseInt(tournamentId),
-            group_name: 'Group ' + groupNames[g]
-          }]).select();
-
+          var groupResult = await sbClient.from('tournament_groups').insert([{ tournament_id: parseInt(tournamentId), group_name: 'Group ' + groupNames[g] }]).select();
           if (groupResult.error || !groupResult.data) { continue; }
           var groupId = groupResult.data[0].id;
-
           var groupPlayers = [];
           for (var p = g; p < players.length; p += numGroups) { groupPlayers.push(players[p]); }
-
           for (var p = 0; p < groupPlayers.length; p++) {
             await sbClient.from('tournament_group_players').insert([{ group_id: groupId, player_id: groupPlayers[p].player_id }]);
           }
-
           for (var p1 = 0; p1 < groupPlayers.length; p1++) {
             for (var p2 = p1 + 1; p2 < groupPlayers.length; p2++) {
-              await sbClient.from('tournament_matches').insert([{
-                tournament_id: parseInt(tournamentId),
-                group_id: groupId,
-                player1_id: groupPlayers[p1].player_id,
-                player2_id: groupPlayers[p2].player_id,
-                stage: 'group',
-                status: 'pending'
-              }]);
+              await sbClient.from('tournament_matches').insert([{ tournament_id: parseInt(tournamentId), group_id: groupId, player1_id: groupPlayers[p1].player_id, player2_id: groupPlayers[p2].player_id, stage: 'group', status: 'pending' }]);
             }
           }
         }
-
         showMsg('groups-success', 'Groups generated successfully!');
         loadGroups();
       }
 
       async function clearGroups() {
-        if (!confirm('Delete all groups and results for this tournament?')) { return; }
+        if (!confirm('Delete all groups and results?')) { return; }
         await sbClient.from('tournament_groups').delete().eq('tournament_id', tournamentId);
         document.getElementById('groupsContent').innerHTML = '<p class="empty-state">No groups generated yet.</p>';
       }
@@ -315,72 +268,34 @@
       async function loadGroups() {
         var groupsResult = await sbClient.from('tournament_groups').select('*, tournament_group_players(player_id, profiles(full_name, username))').eq('tournament_id', tournamentId).order('group_name');
         var container = document.getElementById('groupsContent');
-        if (!groupsResult.data || !groupsResult.data.length) {
-          container.innerHTML = '<p class="empty-state">No groups generated yet.</p>';
-          return;
-        }
-
+        if (!groupsResult.data || !groupsResult.data.length) { container.innerHTML = '<p class="empty-state">No groups generated yet.</p>'; return; }
         var matchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'group');
         var matches = matchesResult.data || [];
-
         container.innerHTML = groupsResult.data.map(function(group) {
           var groupPlayers = group.tournament_group_players || [];
           var playerMap = {};
-          groupPlayers.forEach(function(gp) {
-            var profile = gp.profiles || {};
-            playerMap[gp.player_id] = profile.full_name || profile.username || 'Unknown';
-          });
-
+          groupPlayers.forEach(function(gp) { var profile = gp.profiles || {}; playerMap[gp.player_id] = profile.full_name || profile.username || 'Unknown'; });
           var standings = groupPlayers.map(function(gp) {
             var name = playerMap[gp.player_id];
             var played = 0, won = 0, lost = 0, pts = 0;
             matches.forEach(function(m) {
               if (m.group_id !== group.id || m.status !== 'completed') { return; }
-              if (m.player1_id === gp.player_id) {
-                played++;
-                if (m.player1_score > m.player2_score) { won++; pts += 3; } else { lost++; }
-              } else if (m.player2_id === gp.player_id) {
-                played++;
-                if (m.player2_score > m.player1_score) { won++; pts += 3; } else { lost++; }
-              }
+              if (m.player1_id === gp.player_id) { played++; if (m.player1_score > m.player2_score) { won++; pts += 3; } else { lost++; } }
+              else if (m.player2_id === gp.player_id) { played++; if (m.player2_score > m.player1_score) { won++; pts += 3; } else { lost++; } }
             });
-            return { name: name, played: played, won: won, lost: lost, pts: pts };
+            return { name: name, id: gp.player_id, played: played, won: won, lost: lost, pts: pts };
           }).sort(function(a, b) { return b.pts - a.pts; });
-
           var groupFixtures = matches.filter(function(m) { return m.group_id === group.id; });
-
           var fixturesHtml = groupFixtures.map(function(m) {
             var p1name = playerMap[m.player1_id] || 'Unknown';
             var p2name = playerMap[m.player2_id] || 'Unknown';
-            if (m.status === 'completed') {
-              return '<div class="fixture-item">' +
-                '<div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div>' +
-                '<div class="score-inputs">' +
-                '<input class="score-input" type="number" id="s1_' + m.id + '" value="' + m.player1_score + '" />' +
-                '<span>-</span>' +
-                '<input class="score-input" type="number" id="s2_' + m.id + '" value="' + m.player2_score + '" />' +
-                '<button class="btn-submit-score" onclick="updateScore(' + m.id + ')">Update</button>' +
-                '</div></div>';
-            }
-            return '<div class="fixture-item">' +
-              '<div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div>' +
-              '<div class="score-inputs">' +
-              '<input class="score-input" type="number" id="s1_' + m.id + '" placeholder="0" />' +
-              '<span>-</span>' +
-              '<input class="score-input" type="number" id="s2_' + m.id + '" placeholder="0" />' +
-              '<button class="btn-submit-score" onclick="updateScore(' + m.id + ')">Submit</button>' +
-              '</div></div>';
+            var s1 = m.status === 'completed' ? m.player1_score : '';
+            var s2 = m.status === 'completed' ? m.player2_score : '';
+            return '<div class="fixture-item"><div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div><div class="score-inputs"><input class="score-input" type="number" id="s1_' + m.id + '" value="' + s1 + '" placeholder="0" /><span>-</span><input class="score-input" type="number" id="s2_' + m.id + '" value="' + s2 + '" placeholder="0" /><button class="btn-submit-score" onclick="updateScore(' + m.id + ')">' + (m.status === 'completed' ? 'Update' : 'Submit') + '</button></div></div>';
           }).join('');
-
-          return '<div class="group-card"><h3>' + group.group_name + '</h3>' +
-            '<table><thead><tr><th>Player</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>' +
-            standings.map(function(s) {
-              return '<tr><td>' + s.name + '</td><td>' + s.played + '</td><td>' + s.won + '</td><td>' + s.lost + '</td><td><strong>' + s.pts + '</strong></td></tr>';
-            }).join('') +
-            '</tbody></table>' +
-            '<h4 style="margin:16px 0 8px;font-size:0.95em;">Fixtures & Scores</h4>' +
-            fixturesHtml +
-            '</div>';
+          return '<div class="group-card"><h3>' + group.group_name + '</h3><table><thead><tr><th>Player</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>' +
+            standings.map(function(s) { return '<tr><td>' + s.name + '</td><td>' + s.played + '</td><td>' + s.won + '</td><td>' + s.lost + '</td><td><strong>' + s.pts + '</strong></td></tr>'; }).join('') +
+            '</tbody></table><h4 style="margin:16px 0 8px;font-size:0.95em;">Fixtures & Scores</h4>' + fixturesHtml + '</div>';
         }).join('');
       }
 
@@ -388,13 +303,141 @@
         var s1 = parseInt(document.getElementById('s1_' + matchId).value);
         var s2 = parseInt(document.getElementById('s2_' + matchId).value);
         if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
-        var result = await sbClient.from('tournament_matches').update({
-          player1_score: s1,
-          player2_score: s2,
-          status: 'completed'
-        }).eq('id', matchId);
+        var result = await sbClient.from('tournament_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
         if (result.error) { alert('Error saving score: ' + result.error.message); return; }
         loadGroups();
+      }
+
+      async function generateKnockouts() {
+        var progressPerGroup = parseInt(document.getElementById('progressPerGroup').value) || 2;
+
+        var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
+        if (existing.data && existing.data.length > 0) {
+          if (!confirm('Knockout bracket already exists. Regenerate?')) { return; }
+          await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
+        }
+
+        var groupsResult = await sbClient.from('tournament_groups').select('*, tournament_group_players(player_id, profiles(full_name, username))').eq('tournament_id', tournamentId).order('group_name');
+        if (!groupsResult.data || !groupsResult.data.length) { showMsg('knockouts-error', 'No groups found. Generate groups first.'); return; }
+
+        var matchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'group');
+        var matches = matchesResult.data || [];
+
+        var qualifiers = [];
+        groupsResult.data.forEach(function(group) {
+          var groupPlayers = group.tournament_group_players || [];
+          var standings = groupPlayers.map(function(gp) {
+            var pts = 0, won = 0;
+            matches.forEach(function(m) {
+              if (m.group_id !== group.id || m.status !== 'completed') { return; }
+              if (m.player1_id === gp.player_id && m.player1_score > m.player2_score) { pts += 3; won++; }
+              else if (m.player2_id === gp.player_id && m.player2_score > m.player1_score) { pts += 3; won++; }
+            });
+            return { player_id: gp.player_id, pts: pts, won: won, group: group.group_name };
+          }).sort(function(a, b) { return b.pts - a.pts || b.won - a.won; });
+          for (var i = 0; i < Math.min(progressPerGroup, standings.length); i++) {
+            qualifiers.push({ player_id: standings[i].player_id, seed: i + 1, group: standings[i].group });
+          }
+        });
+
+        if (qualifiers.length < 2) { showMsg('knockouts-error', 'Not enough players to generate knockouts.'); return; }
+
+        var winners = qualifiers.filter(function(q) { return q.seed === 1; });
+        var runnersUp = qualifiers.filter(function(q) { return q.seed === 2; });
+        var others = qualifiers.filter(function(q) { return q.seed > 2; });
+
+        var seeded = [];
+        for (var i = 0; i < Math.max(winners.length, runnersUp.length); i++) {
+          if (winners[i]) { seeded.push(winners[i]); }
+          if (runnersUp[i]) { seeded.push(runnersUp[i]); }
+        }
+        others.forEach(function(o) { seeded.push(o); });
+
+        while (seeded.length % 2 !== 0) { seeded.push(null); }
+
+        var roundName = getRoundName(seeded.length / 2);
+        for (var i = 0; i < seeded.length; i += 2) {
+          await sbClient.from('tournament_matches').insert([{
+            tournament_id: parseInt(tournamentId),
+            player1_id: seeded[i] ? seeded[i].player_id : null,
+            player2_id: seeded[i + 1] ? seeded[i + 1].player_id : null,
+            stage: 'knockout',
+            round: roundName,
+            match_order: i / 2,
+            status: 'pending'
+          }]);
+        }
+
+        showMsg('knockouts-success', 'Knockout bracket generated!');
+        loadKnockouts();
+      }
+
+      async function clearKnockouts() {
+        if (!confirm('Delete the knockout bracket?')) { return; }
+        await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
+        document.getElementById('knockoutsContent').innerHTML = '<p class="empty-state">No knockout bracket yet.</p>';
+      }
+
+      async function loadKnockouts() {
+        var result = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').order('match_order');
+        var container = document.getElementById('knockoutsContent');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No knockout bracket yet.</p>'; return; }
+
+        var profileMap = {};
+        allProfiles.forEach(function(p) { profileMap[p.id] = p.full_name || p.username || 'Unknown'; });
+
+        var rounds = {};
+        result.data.forEach(function(m) {
+          if (!rounds[m.round]) { rounds[m.round] = []; }
+          rounds[m.round].push(m);
+        });
+
+        var roundOrder = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
+        var html = '<div class="bracket">';
+        roundOrder.forEach(function(round) {
+          if (!rounds[round]) { return; }
+          html += '<div class="bracket-round"><div class="bracket-round-title">' + round + '</div><div class="bracket-matches">';
+          rounds[round].forEach(function(m) {
+            var p1name = m.player1_id ? (profileMap[m.player1_id] || 'Unknown') : 'TBD';
+            var p2name = m.player2_id ? (profileMap[m.player2_id] || 'Unknown') : 'TBD';
+            var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
+            var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
+            var s1 = m.status === 'completed' ? m.player1_score : '';
+            var s2 = m.status === 'completed' ? m.player2_score : '';
+            html += '<div class="bracket-match">' +
+              '<div class="bracket-player' + (p1winner ? ' winner' : '') + (m.player1_id ? '' : ' tbd') + '">' +
+              '<span>' + p1name + '</span>' +
+              '<div class="bracket-score-inputs"><input class="bracket-score-input" type="number" id="ks1_' + m.id + '" value="' + s1 + '" placeholder="-" /></div>' +
+              '</div>' +
+              '<div class="bracket-player' + (p2winner ? ' winner' : '') + (m.player2_id ? '' : ' tbd') + '">' +
+              '<span>' + p2name + '</span>' +
+              '<div class="bracket-score-inputs"><input class="bracket-score-input" type="number" id="ks2_' + m.id + '" value="' + s2 + '" placeholder="-" /><button class="btn-save-bracket" onclick="saveKnockoutScore(' + m.id + ')">✓</button></div>' +
+              '</div>' +
+              '</div>';
+          });
+          html += '</div></div>';
+        });
+        html += '</div>';
+        container.innerHTML = html;
+      }
+
+      async function saveKnockoutScore(matchId) {
+        var s1 = parseInt(document.getElementById('ks1_' + matchId).value);
+        var s2 = parseInt(document.getElementById('ks2_' + matchId).value);
+        if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
+        if (s1 === s2) { alert('Scores cannot be equal in a knockout match.'); return; }
+        var result = await sbClient.from('tournament_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
+        if (result.error) { alert('Error saving score: ' + result.error.message); return; }
+        loadKnockouts();
+      }
+
+      function getRoundName(numMatches) {
+        if (numMatches >= 32) { return 'Round of 64'; }
+        if (numMatches >= 16) { return 'Round of 32'; }
+        if (numMatches >= 8) { return 'Round of 16'; }
+        if (numMatches >= 4) { return 'Quarter Final'; }
+        if (numMatches >= 2) { return 'Semi Final'; }
+        return 'Final';
       }
 
       function showMsg(id, msg) {
