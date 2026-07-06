@@ -117,7 +117,7 @@
   var playerCounts = {};
   if (countResult.data) {
     countResult.data.forEach(function(row) {
-      playerCounts[row.tournament_id] = (playerCounts[row.tournament_id] || 0) + 1;
+playerCounts[parseInt(row.tournament_id)] = (playerCounts[parseInt(row.tournament_id)] || 0) + 1;
     });
   }
 
