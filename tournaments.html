@@ -133,25 +133,44 @@ playerCounts[parseInt(row.tournament_id)] = (playerCounts[parseInt(row.tournamen
     dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both'
   };
 
-  container.innerHTML = result.data.map(function(t) {
-    var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
-    var timeStr = t.time ? ' at ' + t.time : '';
-var playerCount = playerCounts[parseInt(t.id)] || playerCounts[t.id] || 0;
-    var maxStr = t.max_players ? playerCount + ' / ' + t.max_players + ' players' : playerCount + ' players';
-    var isFull = t.max_players && playerCount >= t.max_players;
-    var hasJoined = joinedTournaments.indexOf(t.id) > -1;
-    var isCompleted = t.status === 'completed';
+var cardsHtml = [];
+for (var i = 0; i < result.data.length; i++) {
+  var t = result.data[i];
+  var status = await computeTournamentStatus(t);
+  var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+  var timeStr = t.time ? ' at ' + t.time : '';
+  var playerCount = playerCounts[parseInt(t.id)] || playerCounts[t.id] || 0;
+  var maxStr = t.max_players ? playerCount + ' / ' + t.max_players + ' players' : playerCount + ' players';
+  var isFull = t.max_players && playerCount >= t.max_players;
+  var hasJoined = joinedTournaments.indexOf(t.id) > -1;
+  var isCompleted = status === 'completed';
 
-    var joinBtn = '';
-    if (currentUserId && !isCompleted) {
-      if (hasJoined) {
-        joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
-      } else if (isFull) {
-        joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">Tournament Full</button>';
-      } else {
-        joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this)">Join Tournament</button>';
-      }
+  var joinBtn = '';
+  if (currentUserId && !isCompleted) {
+    if (hasJoined) {
+      joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
+    } else if (isFull) {
+      joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">Tournament Full</button>';
+    } else {
+      joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this)">Join Tournament</button>';
     }
+  }
+
+  cardsHtml.push('<div class="tournament-card">' +
+    getStatusBadgeHtml(status) +
+    '<h3>' + t.name + '</h3>' +
+    '<p><strong>Date:</strong> ' + dateStr + timeStr + '</p>' +
+    '<p><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</p>' +
+    '<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
+    (t.description ? '<p>' + t.description + '</p>' : '') +
+    '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
+    '<div class="card-actions">' +
+    '<a href="tournament.html?id=' + t.id + '" class="btn-view">View Tournament</a>' +
+    joinBtn +
+    '</div>' +
+    '</div>');
+}
+container.innerHTML = cardsHtml.join('');
 
     return '<div class="tournament-card">' +
       '<span class="badge badge-' + t.status + '">' + (t.status ? t.status.charAt(0).toUpperCase() + t.status.slice(1) : 'Upcoming') + '</span>' +
