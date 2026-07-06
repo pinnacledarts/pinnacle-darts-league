@@ -174,7 +174,7 @@ var dateStr = tournamentData.date ? new Date(tournamentData.date).toLocaleDateSt
         var groupsContent = isGroupKnockout ? '<div id="tab-groups" class="tab-content"><div id="groupsContent"><p class="loading">Loading groups...</p></div></div>' : '';
 
         document.getElementById('tournamentContent').innerHTML =
-          '<span class="badge badge-' + tournamentData.status + '">' + (tournamentData.status ? tournamentData.status.charAt(0).toUpperCase() + tournamentData.status.slice(1) : 'Upcoming') + '</span>' +
+        getStatusBadgeHtml(currentStatus) +
           '<h2>' + tournamentData.name + '</h2>' +
           '<div class="tabs">' +
           '<button class="tab active" onclick="showTab(\'info\', event)">Info</button>' +
