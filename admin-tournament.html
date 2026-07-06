@@ -36,7 +36,16 @@
       .card h3 { margin: 0 0 20px; font-size: 1.1em; padding-left: 12px; border-left: 4px solid #000000; }
       .form-group { margin-bottom: 16px; }
       .form-group label { display: block; font-size: 0.9em; font-weight: bold; margin-bottom: 6px; color: #333333; }
-      .form-group select, .form-group input { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; font-family: Arial, sans-serif; }
+      .form-group input { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; font-family: Arial, sans-serif; }
+      .form-group input:focus { outline: none; border-color: #000000; background-color: #ffffff; }
+      .player-checklist { max-height: 250px; overflow-y: auto; border: 1px solid #dddddd; border-radius: 4px; background-color: #f9f9f9; margin-bottom: 12px; }
+      .player-checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #eeeeee; cursor: pointer; }
+      .player-checklist-item:last-child { border-bottom: none; }
+      .player-checklist-item:hover { background-color: #f0f0f0; }
+      .player-checklist-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+      .player-checklist-item label { cursor: pointer; font-size: 0.95em; flex: 1; }
+      .player-checklist-empty { padding: 16px; text-align: center; color: #aaaaaa; font-size: 0.9em; }
+      .selected-count { font-size: 0.85em; color: #555555; margin-bottom: 8px; }
       .btn { padding: 10px 24px; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; font-family: Arial, sans-serif; margin-right: 8px; }
       .btn-primary { background-color: #000000; color: #ffffff; }
       .btn-primary:hover { background-color: #333333; }
@@ -123,6 +132,7 @@
       var tournamentId = null;
       var tournamentData = null;
       var allProfiles = [];
+      var existingPlayerIds = [];
 
       async function init() {
         var params = new URLSearchParams(window.location.search);
@@ -155,14 +165,17 @@
           '</div>' +
 
           '<div id="tab-players" class="tab-content active">' +
-          '<div class="card"><h3>Add Player</h3>' +
+          '<div class="card"><h3>Add Players</h3>' +
           '<div class="success-msg" id="add-player-success"></div>' +
           '<div class="error-msg" id="add-player-error"></div>' +
-          '<div class="form-group"><label>Select Player</label>' +
-          '<select id="addPlayerSelect"><option value="">-- Select a player --</option>' +
-          allProfiles.map(function(p) { return '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>'; }).join('') +
-          '</select></div>' +
-          '<button class="btn btn-primary" onclick="addPlayer()">Add to Tournament</button></div>' +
+          '<div class="form-group">' +
+          '<label>Search Players</label>' +
+          '<input type="text" id="playerSearch" placeholder="Search by name or username..." oninput="filterPlayerChecklist()" />' +
+          '</div>' +
+          '<div class="selected-count" id="selectedCount">0 players selected</div>' +
+          '<div class="player-checklist" id="playerChecklist"><p class="player-checklist-empty">Loading players...</p></div>' +
+          '<button class="btn btn-primary" onclick="addSelectedPlayers()" style="margin-top:8px;">Add Selected Players</button>' +
+          '</div>' +
           '<div class="card"><h3>Registered Players</h3><div id="playersList"><p class="loading">Loading...</p></div></div>' +
           '</div>' +
 
@@ -195,13 +208,68 @@
           '<div id="knockoutsContent"><p class="empty-state">No bracket yet.</p></div>' +
           '</div>';
 
-        loadPlayers();
+        await loadPlayers();
+        buildPlayerChecklist('');
         if (isGroupKnockout) { loadGroups(); }
         loadKnockouts();
       }
 
+      function buildPlayerChecklist(filter) {
+        var checklist = document.getElementById('playerChecklist');
+        var available = allProfiles.filter(function(p) {
+          var alreadyIn = existingPlayerIds.indexOf(p.id) > -1;
+          if (alreadyIn) { return false; }
+          if (!filter) { return true; }
+          var name = (p.full_name || '').toLowerCase();
+          var username = (p.username || '').toLowerCase();
+          return name.includes(filter) || username.includes(filter);
+        });
+        if (!available.length) {
+          checklist.innerHTML = '<p class="player-checklist-empty">No players available</p>';
+          return;
+        }
+        checklist.innerHTML = available.map(function(p) {
+          var label = (p.full_name || p.username || 'Unknown') + (p.username ? ' (@' + p.username + ')' : '');
+          return '<div class="player-checklist-item" onclick="toggleCheck(\'' + p.id + '\')">' +
+            '<input type="checkbox" id="chk_' + p.id + '" value="' + p.id + '" onclick="event.stopPropagation(); updateSelectedCount();" />' +
+            '<label for="chk_' + p.id + '">' + label + '</label>' +
+            '</div>';
+        }).join('');
+        updateSelectedCount();
+      }
+
+      function filterPlayerChecklist() {
+        var val = document.getElementById('playerSearch').value.toLowerCase().trim();
+        buildPlayerChecklist(val);
+      }
+
+      function toggleCheck(playerId) {
+        var chk = document.getElementById('chk_' + playerId);
+        if (chk) { chk.checked = !chk.checked; updateSelectedCount(); }
+      }
+
+      function updateSelectedCount() {
+        var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
+        document.getElementById('selectedCount').textContent = checked.length + ' player' + (checked.length !== 1 ? 's' : '') + ' selected';
+      }
+
+      async function addSelectedPlayers() {
+        var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
+        if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
+        var added = 0;
+        for (var i = 0; i < checked.length; i++) {
+          var playerId = checked[i].value;
+          var result = await sbClient.from('tournament_players').insert([{ tournament_id: parseInt(tournamentId), player_id: playerId }]);
+          if (!result.error) { added++; }
+        }
+        showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
+        await loadPlayers();
+        buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+      }
+
       async function loadPlayers() {
         var result = await sbClient.from('tournament_players').select('player_id, profiles(full_name, username)').eq('tournament_id', tournamentId);
+        existingPlayerIds = result.data ? result.data.map(function(p) { return p.player_id; }) : [];
         var container = document.getElementById('playersList');
         if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
         container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Actions</th></tr></thead><tbody>' +
@@ -213,21 +281,11 @@
           }).join('') + '</tbody></table>';
       }
 
-      async function addPlayer() {
-        var playerId = document.getElementById('addPlayerSelect').value;
-        if (!playerId) { showMsg('add-player-error', 'Please select a player.'); return; }
-        var existing = await sbClient.from('tournament_players').select('id').eq('tournament_id', tournamentId).eq('player_id', playerId);
-        if (existing.data && existing.data.length > 0) { showMsg('add-player-error', 'Player is already in this tournament.'); return; }
-        var result = await sbClient.from('tournament_players').insert([{ tournament_id: parseInt(tournamentId), player_id: playerId }]);
-        if (result.error) { showMsg('add-player-error', result.error.message); return; }
-        showMsg('add-player-success', 'Player added successfully!');
-        loadPlayers();
-      }
-
       async function removePlayer(playerId) {
         if (!confirm('Remove this player from the tournament?')) { return; }
         await sbClient.from('tournament_players').delete().eq('tournament_id', tournamentId).eq('player_id', playerId);
-        loadPlayers();
+        await loadPlayers();
+        buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
 
       async function generateGroups() {
