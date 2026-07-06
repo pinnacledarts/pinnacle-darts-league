@@ -129,10 +129,11 @@
         var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System' };
         var platformLabels = { dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both' };
 
-        var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'playoffs\', event)">Playoffs</button>' : '';
+var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'playoffs\', event)">Playoffs</button>' : '';
+        var currentStatus = await computeLeagueStatus(leagueData);
 
         document.getElementById('leagueContent').innerHTML =
-          '<span class="badge badge-' + leagueData.status + '">' + (leagueData.status ? leagueData.status.charAt(0).toUpperCase() + leagueData.status.slice(1) : 'Upcoming') + '</span>' +
+         getStatusBadgeHtml(currentStatus) +
           '<h2>' + leagueData.name + '</h2>' +
           '<p style="color:#555;margin-top:-16px;">' + (leagueData.season ? leagueData.season + ' — ' : '') + formatLabels[leagueData.format] + ' — ' + platformLabels[leagueData.platform] + '</p>' +
           '<div class="tabs">' +
