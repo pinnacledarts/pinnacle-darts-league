@@ -212,14 +212,15 @@
       let currentUserId = null;
       let currentProfileId = null;
 
-      const fieldLabels = {
-        highest_checkout: 'profileCheckout',
-        hometown: 'profileHometown',
-        darts_brand: 'profileBrand',
-        dart_weight: 'profileWeight',
-        walkout_song: 'profileWalkout',
-        favourite_player: 'profileFavPlayer'
-      };
+const fieldLabels = {
+  highest_checkout: 'profileCheckout',
+  hometown: 'profileHometown',
+  darts_brand: 'profileBrand',
+  dart_weight: 'profileWeight',
+  walkout_song: 'profileWalkout',
+  favourite_player: 'profileFavPlayer',
+  phone: 'profilePhone'
+};
 
       async function loadPlayers() {
         const { data: { session } } = await sbClient.auth.getSession();
