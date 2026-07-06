@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League | Pinnacle Darts League</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
+      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+      header img { height: 70px; }
+      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
+      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
+      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
+      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
+      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
+      .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
+      nav { background-color: #222222; display: flex; justify-content: center; gap: 40px; padding: 15px; }
+      nav a { color: #ffffff; text-decoration: none; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+      nav a:hover { color: #aaaaaa; }
+      main { padding: 40px; max-width: 900px; margin: 0 auto; }
+      .back-link { display: inline-block; margin-bottom: 20px; color: #111111; text-decoration: none; font-size: 0.9em; }
+      .back-link:hover { text-decoration: underline; }
+      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
+      .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; }
+      .badge-upcoming { background-color: #111111; color: #ffffff; }
+      .badge-active { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
+      .badge-completed { background-color: #dddddd; color: #111111; }
+      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
+      .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+      .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
+      .tab:hover { color: #000000; }
+      .tab-content { display: none; }
+      .tab-content.active { display: block; }
+      table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.95em; }
+      th { background-color: #111111; color: #ffffff; padding: 10px 12px; text-align: left; }
+      td { padding: 10px 12px; border-bottom: 1px solid #eeeeee; }
+      tr:last-child td { border-bottom: none; }
+      .key { font-size: 0.85em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
+      .key span { margin-right: 20px; display: inline-block; }
+      .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #ffffff; border: 1px solid #eeeeee; border-radius: 4px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+      .fixture-players { font-size: 0.9em; font-weight: bold; flex: 1; }
+      .fixture-vs { color: #888888; margin: 0 8px; }
+      .score-inputs { display: flex; align-items: center; gap: 6px; }
+      .score-input { width: 50px; padding: 4px 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; text-align: center; }
+      .btn-submit-score { background-color: #111111; color: #ffffff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
+      .btn-submit-score:hover { background-color: #333333; }
+      .score-display { font-weight: bold; font-size: 0.95em; }
+      .winner-text { font-weight: bold; color: #006600; }
+      .round-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+      .round-tab { padding: 8px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
+      .round-tab.active { background: #111111; color: #ffffff; border-color: #111111; font-weight: bold; }
+      .coming-soon { text-align: center; padding: 40px; color: #aaaaaa; font-size: 1em; }
+      .loading { text-align: center; padding: 40px; color: #888888; }
+      @media (max-width: 700px) {
+        header { flex-wrap: wrap; padding: 16px 20px; }
+        header img { height: 50px; }
+        header h1 { font-size: 1.4em; }
+        header p { font-size: 0.85em; }
+        .header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+        .btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
+        .hamburger { display: block; }
+        nav { display: none; flex-direction: column; gap: 0; padding: 0; }
+        nav.open { display: flex; }
+        nav a { padding: 14px 20px; border-bottom: 1px solid #333333; font-size: 1em; }
+        main { padding: 24px 20px; }
+        table { font-size: 0.8em; }
+        th, td { padding: 8px 6px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <img src="logo.png" alt="Pinnacle Darts Logo">
+      <div>
+        <h1>Pinnacle Darts League</h1>
+        <p>Official League Website</p>
+      </div>
+      <a href="academy.html" class="btn-switch">Switch to Academy</a>
+      <div class="header-buttons" style="margin-left: auto;">
+        <div id="authButtons"></div>
+        <button class="hamburger" onclick="toggleMenu()">☰</button>
+      </div>
+    </header>
+
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="leagues.html">Leagues</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="players.html">Players</a>
+    </nav>
+
+    <main>
+      <a href="leagues.html" class="back-link">← Back to Leagues</a>
+      <div id="leagueContent"><p class="loading">Loading...</p></div>
+    </main>
+
+    <script>
+      var leagueId = null;
+      var leagueData = null;
+      var currentUserId = null;
+      var profileMap = {};
+
+      async function loadLeague() {
+        var params = new URLSearchParams(window.location.search);
+        leagueId = params.get('id');
+        if (!leagueId) { window.location.href = 'leagues.html'; return; }
+
+        var session = await sbClient.auth.getSession();
+        if (session.data.session) { currentUserId = session.data.session.user.id; }
+
+        var profilesResult = await sbClient.from('profiles').select('id, full_name, username');
+        if (profilesResult.data) {
+          profilesResult.data.forEach(function(p) { profileMap[p.id] = p.full_name || p.username || 'Unknown'; });
+        }
+
+        var result = await sbClient.from('leagues').select('*').eq('id', leagueId).single();
+        if (result.error || !result.data) { window.location.href = 'leagues.html'; return; }
+        leagueData = result.data;
+
+        var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System' };
+        var platformLabels = { dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both' };
+
+        var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'playoffs\', event)">Playoffs</button>' : '';
+
+        document.getElementById('leagueContent').innerHTML =
+          '<span class="badge badge-' + leagueData.status + '">' + (leagueData.status ? leagueData.status.charAt(0).toUpperCase() + leagueData.status.slice(1) : 'Upcoming') + '</span>' +
+          '<h2>' + leagueData.name + '</h2>' +
+          '<p style="color:#555;margin-top:-16px;">' + (leagueData.season ? leagueData.season + ' — ' : '') + formatLabels[leagueData.format] + ' — ' + platformLabels[leagueData.platform] + '</p>' +
+          '<div class="tabs">' +
+          '<button class="tab active" onclick="showTab(\'standings\', event)">Standings</button>' +
+          '<button class="tab" onclick="showTab(\'fixtures\', event)">Fixtures & Results</button>' +
+          playoffsTab +
+          '</div>' +
+          '<div id="tab-standings" class="tab-content active"><div id="standingsContent"><p class="loading">Loading...</p></div></div>' +
+          '<div id="tab-fixtures" class="tab-content"><div id="fixturesContent"><p class="loading">Loading...</p></div></div>' +
+          (leagueData.playoffs ? '<div id="tab-playoffs" class="tab-content"><div id="playoffsContent"><p class="loading">Loading...</p></div></div>' : '');
+
+        loadStandings();
+        loadFixtures();
+        if (leagueData.playoffs) { loadPlayoffs(); }
+      }
+
+      async function loadStandings() {
+        var playersResult = await sbClient.from('league_players').select('player_id, profiles(full_name, username)').eq('league_id', leagueId);
+        var players = playersResult.data || [];
+        var matchesResult = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular');
+        var matches = matchesResult.data || [];
+
+        var container = document.getElementById('standingsContent');
+        if (!players.length) { container.innerHTML = '<p class="coming-soon">No players registered yet.</p>'; return; }
+
+        var standings = players.map(function(p) {
+          var profile = p.profiles || {};
+          var name = profile.full_name || profile.username || 'Unknown';
+          var played = 0, won = 0, lost = 0, pts = 0, legsFor = 0, legsAgainst = 0;
+          matches.forEach(function(m) {
+            if (m.status !== 'completed') { return; }
+            if (m.player1_id === p.player_id) {
+              played++; legsFor += m.player1_score; legsAgainst += m.player2_score;
+              if (m.player1_score > m.player2_score) { won++; pts += 3; } else { lost++; }
+            } else if (m.player2_id === p.player_id) {
+              played++; legsFor += m.player2_score; legsAgainst += m.player1_score;
+              if (m.player2_score > m.player1_score) { won++; pts += 3; } else { lost++; }
+            }
+          });
+          return { player_id: p.player_id, name: name, played: played, won: won, lost: lost, pts: pts, diff: legsFor - legsAgainst };
+        });
+
+        standings.sort(function(a, b) {
+          if (b.pts !== a.pts) { return b.pts - a.pts; }
+          if (b.diff !== a.diff) { return b.diff - a.diff; }
+          var h2h = matches.find(function(m) {
+            return m.status === 'completed' &&
+              ((m.player1_id === a.player_id && m.player2_id === b.player_id) ||
+               (m.player1_id === b.player_id && m.player2_id === a.player_id));
+          });
+          if (h2h) {
+            var aIsP1 = h2h.player1_id === a.player_id;
+            var aScore = aIsP1 ? h2h.player1_score : h2h.player2_score;
+            var bScore = aIsP1 ? h2h.player2_score : h2h.player1_score;
+            if (aScore !== bScore) { return bScore - aScore; }
+          }
+          return 0;
+        });
+
+        container.innerHTML = '<table><thead><tr><th>Pos</th><th>Player</th><th>P</th><th>W</th><th>L</th><th>+/-</th><th>Pts</th></tr></thead><tbody>' +
+          standings.map(function(s, i) {
+            var diffDisplay = s.diff > 0 ? '<span style="color:#006600;font-weight:bold;">+' + s.diff + '</span>' : s.diff < 0 ? '<span style="color:#cc0000;font-weight:bold;">' + s.diff + '</span>' : '<span style="color:#888888;">0</span>';
+            return '<tr><td>' + (i + 1) + '</td><td>' + s.name + '</td><td>' + s.played + '</td><td>' + s.won + '</td><td>' + s.lost + '</td><td>' + diffDisplay + '</td><td><strong>' + s.pts + '</strong></td></tr>';
+          }).join('') +
+          '</tbody></table>' +
+          '<div class="key">' +
+          '<span><strong>P</strong> = Played</span><span><strong>W</strong> = Won</span><span><strong>L</strong> = Lost</span>' +
+          '<span><strong>+/-</strong> = Leg Difference</span><span><strong>Pts</strong> = Points</span>' +
+          '</div>';
+      }
+
+      async function loadFixtures() {
+        var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular').order('id');
+        var container = document.getElementById('fixturesContent');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">Fixtures have not been generated yet.</p>'; return; }
+
+        if (leagueData.format === 'swiss') {
+          var rounds = {};
+          result.data.forEach(function(m) { var r = m.round || 'Round 1'; if (!rounds[r]) { rounds[r] = []; } rounds[r].push(m); });
+          var roundNames = Object.keys(rounds).sort(function(a, b) { return parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]); });
+          var tabsHtml = '<div class="round-tabs">' + roundNames.map(function(r, i) {
+            return '<button class="round-tab' + (i === roundNames.length - 1 ? ' active' : '') + '" data-round="' + r + '" onclick="showFixtureRound(\'' + r + '\', this)">' + r + '</button>';
+          }).join('') + '</div>';
+          var contentHtml = roundNames.map(function(r, i) {
+            return '<div class="fixture-round-content" data-round="' + r + '" style="' + (i === roundNames.length - 1 ? '' : 'display:none;') + '">' + rounds[r].map(renderFixtureItem).join('') + '</div>';
+          }).join('');
+          container.innerHTML = tabsHtml + contentHtml;
+        } else {
+          container.innerHTML = result.data.map(renderFixtureItem).join('');
+        }
+      }
+
+      function renderFixtureItem(m) {
+        var p1name = profileMap[m.player1_id] || 'Unknown';
+        var p2name = profileMap[m.player2_id] || 'Unknown';
+        if (m.status === 'completed') {
+          return '<div class="fixture-item"><div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div><div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div></div>';
+        }
+        var canSubmit = currentUserId && (currentUserId === m.player1_id || currentUserId === m.player2_id);
+        if (canSubmit) {
+          return '<div class="fixture-item"><div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div><div class="score-inputs"><input class="score-input" type="number" id="fs1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="fs2_' + m.id + '" min="0" placeholder="0" /><button class="btn-submit-score" onclick="submitFixtureScore(' + m.id + ')">Submit</button></div></div>';
+        }
+        return '<div class="fixture-item"><div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div><div class="score-display" style="color:#aaa">Pending</div></div>';
+      }
+
+      function showFixtureRound(round, btn) {
+        document.querySelectorAll('.round-tab').forEach(function(t) { t.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.fixture-round-content').forEach(function(c) {
+          c.style.display = c.getAttribute('data-round') === round ? '' : 'none';
+        });
+      }
+
+      async function submitFixtureScore(matchId) {
+        var s1 = parseInt(document.getElementById('fs1_' + matchId).value);
+        var s2 = parseInt(document.getElementById('fs2_' + matchId).value);
+        if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
+        var result = await sbClient.from('league_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
+        if (result.error) { alert('Error submitting score. Please try again.'); return; }
+        loadFixtures();
+        loadStandings();
+      }
+
+      async function loadPlayoffs() {
+        var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff');
+        var container = document.getElementById('playoffsContent');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">Playoffs will appear once the regular season is complete.</p>'; return; }
+
+        var rounds = {};
+        result.data.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
+        var roundOrder = ['Semi Final', 'Final'];
+
+        container.innerHTML = roundOrder.filter(function(r) { return rounds[r]; }).map(function(r) {
+          var matchesHtml = rounds[r].map(function(m) {
+            var p1name = m.player1_id ? (profileMap[m.player1_id] || 'Unknown') : 'TBD';
+            var p2name = m.player2_id ? (profileMap[m.player2_id] || 'Unknown') : 'TBD';
+            var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
+            var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
+
+            var scoreHtml;
+            if (m.status === 'completed') {
+              scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
+            } else if (m.player1_id && m.player2_id && currentUserId && (currentUserId === m.player1_id || currentUserId === m.player2_id)) {
+              scoreHtml = '<div class="score-inputs"><input class="score-input" type="number" id="ps1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ps2_' + m.id + '" min="0" placeholder="0" /><button class="btn-submit-score" onclick="submitPlayoffScore(' + m.id + ',\'' + r + '\')">Submit</button></div>';
+            } else if (m.player1_id && m.player2_id) {
+              scoreHtml = '<div class="score-display" style="color:#aaa">Pending</div>';
+            } else {
+              scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
+            }
+
+            return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span></div>' + scoreHtml + '</div>';
+          }).join('');
+          return '<h4 style="margin:16px 0 8px;">' + r + '</h4>' + matchesHtml;
+        }).join('');
+      }
+
+      async function submitPlayoffScore(matchId, currentRound) {
+        var s1 = parseInt(document.getElementById('ps1_' + matchId).value);
+        var s2 = parseInt(document.getElementById('ps2_' + matchId).value);
+        if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
+        if (s1 === s2) { alert('Scores cannot be equal in a playoff match.'); return; }
+
+        var result = await sbClient.from('league_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
+        if (result.error) { alert('Error submitting score. Please try again.'); return; }
+
+        if (currentRound === 'Semi Final') {
+          var semis = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff').eq('round', 'Semi Final');
+          var allComplete = semis.data && semis.data.every(function(m) { return m.status === 'completed'; });
+          if (allComplete) {
+            var winners = semis.data.map(function(m) { return m.player1_score > m.player2_score ? m.player1_id : m.player2_id; });
+            var finalMatch = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('stage', 'playoff').eq('round', 'Final').single();
+            if (finalMatch.data) {
+              await sbClient.from('league_matches').update({ player1_id: winners[0], player2_id: winners[1] }).eq('id', finalMatch.data.id);
+            }
+          }
+        }
+
+        loadPlayoffs();
+      }
+
+      function showTab(name, event) {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+        event.target.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+        if (name === 'standings') { loadStandings(); }
+        if (name === 'fixtures') { loadFixtures(); }
+        if (name === 'playoffs') { loadPlayoffs(); }
+      }
+
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+      }
+
+      window.addEventListener('load', function() {
+        checkAuth();
+        loadLeague();
+      });
+    </script>
+
+  </body>
+</html>
