@@ -142,14 +142,16 @@
         var profilesResult = await sbClient.from('profiles').select('id, full_name, username').order('full_name');
         allProfiles = profilesResult.data || [];
 
-        var groupsTab = tournamentData.format === 'group_knockout' ? '<button class="tab" onclick="showTab(\'groups\', event)">Groups & Scores</button>' : '';
+        var isGroupKnockout = tournamentData.format === 'group_knockout';
+        var isSingleElim = tournamentData.format === 'single_elimination' || tournamentData.format === 'single_elimination_b';
+        var groupsTab = isGroupKnockout ? '<button class="tab" onclick="showTab(\'groups\', event)">Groups & Scores</button>' : '';
 
         document.getElementById('pageContent').innerHTML =
           '<h2>⚙️ Managing: ' + tournamentData.name + '</h2>' +
           '<div class="tabs">' +
           '<button class="tab active" onclick="showTab(\'players\', event)">Players</button>' +
           groupsTab +
-          '<button class="tab" onclick="showTab(\'knockouts\', event)">Knockouts</button>' +
+          '<button class="tab" onclick="showTab(\'knockouts\', event)">' + (isSingleElim ? 'Bracket' : 'Knockouts') + '</button>' +
           '</div>' +
 
           '<div id="tab-players" class="tab-content active">' +
@@ -164,7 +166,7 @@
           '<div class="card"><h3>Registered Players</h3><div id="playersList"><p class="loading">Loading...</p></div></div>' +
           '</div>' +
 
-          (tournamentData.format === 'group_knockout' ?
+          (isGroupKnockout ?
           '<div id="tab-groups" class="tab-content">' +
           '<div class="success-msg" id="groups-success"></div>' +
           '<div class="error-msg" id="groups-error"></div>' +
@@ -179,17 +181,22 @@
           '<div id="tab-knockouts" class="tab-content">' +
           '<div class="success-msg" id="knockouts-success"></div>' +
           '<div class="error-msg" id="knockouts-error"></div>' +
-          (tournamentData.format === 'group_knockout' ?
+          (isGroupKnockout ?
           '<div class="admin-bar">' +
           '<label>Players per group to progress:</label><input type="number" id="progressPerGroup" value="2" min="1" max="4" />' +
           '<button class="btn btn-primary" onclick="generateKnockouts()">Generate Knockouts</button>' +
           '<button class="btn btn-danger" onclick="clearKnockouts()">Clear Knockouts</button>' +
           '</div>' : '') +
-          '<div id="knockoutsContent"><p class="empty-state">No knockout bracket yet.</p></div>' +
+          (isSingleElim ?
+          '<div class="admin-bar">' +
+          '<button class="btn btn-primary" onclick="generateSingleElimination()">Generate Bracket</button>' +
+          '<button class="btn btn-danger" onclick="clearKnockouts()">Clear Bracket</button>' +
+          '</div>' : '') +
+          '<div id="knockoutsContent"><p class="empty-state">No bracket yet.</p></div>' +
           '</div>';
 
         loadPlayers();
-        if (tournamentData.format === 'group_knockout') { loadGroups(); }
+        if (isGroupKnockout) { loadGroups(); }
         loadKnockouts();
       }
 
@@ -227,10 +234,10 @@
         var playersPerGroup = parseInt(document.getElementById('playersPerGroup').value) || 4;
         var existing = await sbClient.from('tournament_groups').select('id').eq('tournament_id', tournamentId);
         if (existing.data && existing.data.length > 0) {
-          if (!confirm('Groups already exist. Regenerate? This will delete existing groups and results.')) { return; }
+          if (!confirm('Groups already exist. Regenerate?')) { return; }
           await sbClient.from('tournament_groups').delete().eq('tournament_id', tournamentId);
         }
-        var playersResult = await sbClient.from('tournament_players').select('player_id, profiles(full_name, username)').eq('tournament_id', tournamentId);
+        var playersResult = await sbClient.from('tournament_players').select('player_id').eq('tournament_id', tournamentId);
         if (!playersResult.data || !playersResult.data.length) { showMsg('groups-error', 'No players have joined yet.'); return; }
         var players = playersResult.data.slice();
         for (var i = players.length - 1; i > 0; i--) {
@@ -306,6 +313,33 @@
         loadGroups();
       }
 
+      async function generateSingleElimination() {
+        var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
+        if (existing.data && existing.data.length > 0) {
+          if (!confirm('Bracket already exists. Regenerate?')) { return; }
+          await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
+        }
+        var playersResult = await sbClient.from('tournament_players').select('player_id').eq('tournament_id', tournamentId);
+        if (!playersResult.data || !playersResult.data.length) { showMsg('knockouts-error', 'No players have joined yet.'); return; }
+        var players = playersResult.data.slice();
+        for (var i = players.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var temp = players[i]; players[i] = players[j]; players[j] = temp;
+        }
+        while (players.length % 2 !== 0) { players.push(null); }
+        var roundName = getRoundName(players.length / 2);
+        for (var i = 0; i < players.length; i += 2) {
+          await sbClient.from('tournament_matches').insert([{
+            tournament_id: parseInt(tournamentId),
+            player1_id: players[i] ? players[i].player_id : null,
+            player2_id: players[i + 1] ? players[i + 1].player_id : null,
+            stage: 'knockout', round: roundName, match_order: i / 2, status: 'pending'
+          }]);
+        }
+        showMsg('knockouts-success', 'Bracket generated!');
+        loadKnockouts();
+      }
+
       async function generateKnockouts() {
         var progressPerGroup = parseInt(document.getElementById('progressPerGroup').value) || 2;
         var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
@@ -358,15 +392,15 @@
       }
 
       async function clearKnockouts() {
-        if (!confirm('Delete the knockout bracket?')) { return; }
+        if (!confirm('Delete the bracket?')) { return; }
         await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
-        document.getElementById('knockoutsContent').innerHTML = '<p class="empty-state">No knockout bracket yet.</p>';
+        document.getElementById('knockoutsContent').innerHTML = '<p class="empty-state">No bracket yet.</p>';
       }
 
       async function loadKnockouts() {
         var result = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').order('match_order');
         var container = document.getElementById('knockoutsContent');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No knockout bracket yet.</p>'; return; }
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No bracket yet.</p>'; return; }
         var profileMap = {};
         allProfiles.forEach(function(p) { profileMap[p.id] = p.full_name || p.username || 'Unknown'; });
         var rounds = {};
@@ -405,18 +439,12 @@
         var s2 = parseInt(document.getElementById('ks2_' + matchId).value);
         if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
         if (s1 === s2) { alert('Scores cannot be equal in a knockout match.'); return; }
-
         var result = await sbClient.from('tournament_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
         if (result.error) { alert('Error saving score: ' + result.error.message); return; }
-
         var roundMatches = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').eq('round', currentRound).order('match_order');
-
         var allComplete = roundMatches.data && roundMatches.data.every(function(m) { return m.status === 'completed'; });
-
         if (allComplete && roundMatches.data.length > 1) {
-          var winners = roundMatches.data.map(function(m) {
-            return m.player1_score > m.player2_score ? m.player1_id : m.player2_id;
-          });
+          var winners = roundMatches.data.map(function(m) { return m.player1_score > m.player2_score ? m.player1_id : m.player2_id; });
           var nextRound = getNextRoundName(currentRound);
           if (nextRound) {
             for (var i = 0; i < winners.length; i += 2) {
@@ -432,7 +460,6 @@
             showMsg('knockouts-success', '🏆 Tournament complete! We have a winner!');
           }
         }
-
         loadKnockouts();
       }
 
