@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage League | Pinnacle Darts League</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="auth.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
+      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+      header img { height: 70px; }
+      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
+      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
+      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
+      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
+      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
+      .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
+      nav { background-color: #222222; display: flex; justify-content: center; gap: 40px; padding: 15px; }
+      nav a { color: #ffffff; text-decoration: none; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
+      nav a:hover { color: #aaaaaa; }
+      main { padding: 40px; max-width: 900px; margin: 0 auto; }
+      .back-link { display: inline-block; margin-bottom: 20px; color: #111111; text-decoration: none; font-size: 0.9em; }
+      .back-link:hover { text-decoration: underline; }
+      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
+      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
+      .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+      .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
+      .tab:hover { color: #000000; }
+      .tab-content { display: none; }
+      .tab-content.active { display: block; }
+      .card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 24px; margin-bottom: 20px; }
+      .card h3 { margin: 0 0 20px; font-size: 1.1em; padding-left: 12px; border-left: 4px solid #000000; }
+      .form-group { margin-bottom: 16px; }
+      .form-group label { display: block; font-size: 0.9em; font-weight: bold; margin-bottom: 6px; color: #333333; }
+      .form-group input { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; font-family: Arial, sans-serif; }
+      .form-group input:focus { outline: none; border-color: #000000; background-color: #ffffff; }
+      .player-checklist { max-height: 250px; overflow-y: auto; border: 1px solid #dddddd; border-radius: 4px; background-color: #f9f9f9; margin-bottom: 12px; }
+      .player-checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #eeeeee; cursor: pointer; }
+      .player-checklist-item:last-child { border-bottom: none; }
+      .player-checklist-item:hover { background-color: #f0f0f0; }
+      .player-checklist-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+      .player-checklist-item label { cursor: pointer; font-size: 0.95em; flex: 1; }
+      .player-checklist-empty { padding: 16px; text-align: center; color: #aaaaaa; font-size: 0.9em; }
+      .selected-count { font-size: 0.85em; color: #555555; margin-bottom: 8px; }
+      .btn { padding: 10px 24px; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; font-family: Arial, sans-serif; margin-right: 8px; }
+      .btn-primary { background-color: #000000; color: #ffffff; }
+      .btn-primary:hover { background-color: #333333; }
+      .btn-danger { background-color: #ffffff; color: #cc0000; border: 1px solid #cc0000; }
+      .btn-danger:hover { background-color: #fff0f0; }
+      table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.95em; }
+      th { background-color: #111111; color: #ffffff; padding: 10px 12px; text-align: left; }
+      td { padding: 10px 12px; border-bottom: 1px solid #eeeeee; }
+      tr:last-child td { border-bottom: none; }
+      .btn-small { padding: 4px 12px; font-size: 0.85em; border-radius: 4px; cursor: pointer; border: 1px solid #dddddd; background: #ffffff; font-family: Arial, sans-serif; }
+      .btn-small:hover { background-color: #f5f5f5; }
+      .btn-small.danger { color: #cc0000; border-color: #cc0000; }
+      .btn-small.danger:hover { background-color: #fff0f0; }
+      .score-input { width: 50px; padding: 4px 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; text-align: center; }
+      .admin-bar { background-color: #f9f9f9; border: 1px solid #dddddd; border-radius: 6px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+      .admin-bar label { font-size: 0.9em; font-weight: bold; }
+      .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #f9f9f9; border: 1px solid #eeeeee; border-radius: 4px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+      .fixture-players { font-size: 0.9em; font-weight: bold; flex: 1; }
+      .fixture-vs { color: #888888; margin: 0 8px; }
+      .score-inputs { display: flex; align-items: center; gap: 6px; }
+      .btn-submit-score { background-color: #111111; color: #ffffff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
+      .btn-submit-score:hover { background-color: #333333; }
+      .score-display { font-weight: bold; font-size: 0.95em; display: flex; align-items: center; gap: 8px; }
+      .winner-text { font-weight: bold; color: #006600; }
+      .round-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+      .round-tab { padding: 8px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
+      .round-tab.active { background: #111111; color: #ffffff; border-color: #111111; font-weight: bold; }
+      .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
+      .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
+      .empty-state { text-align: center; padding: 20px; color: #aaaaaa; font-size: 0.95em; }
+      .loading { text-align: center; padding: 40px; color: #888888; }
+      .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; background-color: #f0f0f0; }
+      @media (max-width: 700px) {
+        header { flex-wrap: wrap; padding: 16px 20px; }
+        header img { height: 50px; }
+        header h1 { font-size: 1.4em; }
+        header p { font-size: 0.85em; }
+        .header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
+        .btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
+        .hamburger { display: block; }
+        nav { display: none; flex-direction: column; gap: 0; padding: 0; }
+        nav.open { display: flex; }
+        nav a { padding: 14px 20px; border-bottom: 1px solid #333333; font-size: 1em; }
+        main { padding: 24px 20px; }
+        table { font-size: 0.8em; }
+        th, td { padding: 8px 6px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <img src="logo.png" alt="Pinnacle Darts Logo">
+      <div>
+        <h1>Pinnacle Darts League</h1>
+        <p>Official League Website</p>
+      </div>
+      <a href="academy.html" class="btn-switch">Switch to Academy</a>
+      <div class="header-buttons" style="margin-left: auto;">
+        <div id="authButtons"></div>
+        <button class="hamburger" onclick="toggleMenu()">☰</button>
+      </div>
+    </header>
+
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="leagues.html">Leagues</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="players.html">Players</a>
+    </nav>
+
+    <main>
+      <a href="admin.html" class="back-link">← Back to Admin</a>
+      <div id="pageContent"><p class="loading">Loading...</p></div>
+    </main>
+
+    <script>
+      var leagueId = null;
+      var leagueData = null;
+      var allProfiles = [];
+      var existingPlayerIds = [];
+      var profileMapAdmin = {};
+      var playoffRoundOrder = ['Semi Final', 'Final'];
+
+      async function init() {
+        var params = new URLSearchParams(window.location.search);
+        leagueId = params.get('id');
+        if (!leagueId) { window.location.href = 'admin.html'; return; }
+
+        var session = await sbClient.auth.getSession();
+        if (!session.data.session) { window.location.href = 'login.html'; return; }
+
+        var profile = await sbClient.from('profiles').select('is_admin').eq('id', session.data.session.user.id).single();
+        if (!profile.data || !profile.data.is_admin) { window.location.href = 'index.html'; return; }
+
+        var result = await sbClient.from('leagues').select('*').eq('id', leagueId).single();
+        if (result.error || !result.data) { window.location.href = 'admin.html'; return; }
+        leagueData = result.data;
+
+        var profilesResult = await sbClient.from('profiles').select('id, full_name, username').order('full_name');
+        allProfiles = profilesResult.data || [];
+        allProfiles.forEach(function(p) { profileMapAdmin[p.id] = p.full_name || p.username || 'Unknown'; });
+
+        var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'playoffs\', event)">Playoffs</button>' : '';
+
+        document.getElementById('pageContent').innerHTML =
+          '<h2>⚙️ Managing: ' + leagueData.name + '</h2>' +
+          '<span class="badge">' + formatLabel(leagueData.format) + (leagueData.playoffs ? ' + Playoffs' : '') + '</span>' +
+          '<div class="tabs">' +
+          '<button class="tab active" onclick="showTab(\'players\', event)">Players</button>' +
+          '<button class="tab" onclick="showTab(\'fixtures\', event)">Fixtures & Results</button>' +
+          '<button class="tab" onclick="showTab(\'standings\', event)">Standings</button>' +
+          playoffsTab +
+          '</div>' +
+
+          '<div id="tab-players" class="tab-content active">' +
+          '<div class="card"><h3>Add Players</h3>' +
+          '<div class="success-msg" id="add-player-success"></div>' +
+          '<div class="error-msg" id="add-player-error"></div>' +
+          '<div class="form-group">' +
+          '<label>Search Players</label>' +
+          '<input type="text" id="playerSearch" placeholder="Search by name or username..." oninput="filterPlayerChecklist()" />' +
+          '</div>' +
+          '<div class="selected-count" id="selectedCount">0 players selected</div>' +
+          '<div class="player-checklist" id="playerChecklist"><p class="player-checklist-empty">Loading players...</p></div>' +
+          '<button class="btn btn-primary" onclick="addSelectedPlayers()" style="margin-top:8px;">Add Selected Players</button>' +
+          '</div>' +
+          '<div class="card"><h3>Registered Players</h3><div id="playersList"><p class="loading">Loading...</p></div></div>' +
+          '</div>' +
+
+          '<div id="tab-fixtures" class="tab-content">' +
+          '<div class="success-msg" id="fixtures-success"></div>' +
+          '<div class="error-msg" id="fixtures-error"></div>' +
+          (leagueData.format === 'swiss' ?
+            '<div class="admin-bar"><button class="btn btn-primary" onclick="generateNextSwissRound()">Generate Next Round</button><button class="btn btn-danger" onclick="clearFixtures()">Clear All Fixtures</button></div>' :
+            '<div class="admin-bar"><button class="btn btn-primary" onclick="generateFixtures()">Generate Fixtures</button><button class="btn btn-danger" onclick="clearFixtures()">Clear Fixtures</button></div>') +
+          '<div id="fixturesContent"><p class="empty-state">No fixtures generated yet.</p></div>' +
+          '</div>' +
+
+          '<div id="tab-standings" class="tab-content">' +
+          '<div class="card"><h3>League Standings</h3><div id="standingsContent"><p class="loading">Loading...</p></div></div>' +
+          '</div>' +
+
+          (leagueData.playoffs ?
+          '<div id="tab-playoffs" class="tab-content">' +
+          '<div class="success-msg" id="playoffs-success"></div>' +
+          '<div class="error-msg" id="playoffs-error"></div>' +
+          '<div class="admin-bar"><button class="btn btn-primary" onclick="checkAndGeneratePlayoffs(true)">Check & Generate Playoffs</button><button class="btn btn-danger" onclick="clearPlayoffs()">Clear Playoffs</button></div>' +
+          '<div id="playoffsContent"><p class="empty-state">Playoffs will generate automatically once the regular season is complete.</p></div>' +
+          '</div>' : '');
+
+        await loadPlayers();
+        buildPlayerChecklist('');
+        loadFixtures();
+        loadStandings();
+        if (leagueData.playoffs) { loadPlayoffs(); }
+      }
+
+      function buildPlayerChecklist(filter) {
+        var checklist = document.getElementById('playerChecklist');
+        var available = allProfiles.filter(function(p) {
+          var alreadyIn = existingPlayerIds.indexOf(p.id) > -1;
+          if (alreadyIn) { return false; }
+          if (!filter) { return true; }
+          var name = (p.full_name || '').toLowerCase();
+          var username = (p.username || '').toLowerCase();
+          return name.includes(filter) || username.includes(filter);
+        });
+        if (!available.length) {
+          checklist.innerHTML = '<p class="player-checklist-empty">No players available</p>';
+          return;
+        }
+        checklist.innerHTML = available.map(function(p) {
+          var label = (p.full_name || p.username || 'Unknown') + (p.username ? ' (@' + p.username + ')' : '');
+          return '<div class="player-checklist-item" onclick="toggleCheck(\'' + p.id + '\')">' +
+            '<input type="checkbox" id="chk_' + p.id + '" value="' + p.id + '" onclick="event.stopPropagation(); updateSelectedCount();" />' +
+            '<label for="chk_' + p.id + '">' + label + '</label>' +
+            '</div>';
+        }).join('');
+        updateSelectedCount();
+      }
+
+      function filterPlayerChecklist() {
+        var val = document.getElementById('playerSearch').value.toLowerCase().trim();
+        buildPlayerChecklist(val);
+      }
+
+      function toggleCheck(playerId) {
+        var chk = document.getElementById('chk_' + playerId);
+        if (chk) { chk.checked = !chk.checked; updateSelectedCount(); }
+      }
+
+      function updateSelectedCount() {
+        var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
+        document.getElementById('selectedCount').textContent = checked.length + ' player' + (checked.length !== 1 ? 's' : '') + ' selected';
+      }
+
+      async function addSelectedPlayers() {
+        var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
+        if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
+        var added = 0;
+        for (var i = 0; i < checked.length; i++) {
+          var playerId = checked[i].value;
+          var result = await sbClient.from('league_players').insert([{ league_id: parseInt(leagueId), player_id: playerId }]);
+          if (!result.error) { added++; }
+        }
+        showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
+        await loadPlayers();
+        buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+      }
+
+      async function loadPlayers() {
+        var result = await sbClient.from('league_players').select('player_id, profiles(full_name, username)').eq('league_id', leagueId);
+        existingPlayerIds = result.data ? result.data.map(function(p) { return p.player_id; }) : [];
+        var container = document.getElementById('playersList');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
+        container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Actions</th></tr></thead><tbody>' +
+          result.data.map(function(p) {
+            var profile = p.profiles || {};
+            var name = profile.full_name || profile.username || 'Unknown';
+            var username = profile.username ? '@' + profile.username : '-';
+            return '<tr><td>' + name + '</td><td>' + username + '</td><td><button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+
+      async function removePlayer(playerId) {
+        if (!confirm('Remove this player from the league?')) { return; }
+        await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', playerId);
+        await loadPlayers();
+        buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+      }
+
+      async function generateFixtures() {
+        var existing = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('stage', 'regular');
+        if (existing.data && existing.data.length > 0) {
+          if (!confirm('Fixtures already exist. Regenerate? This will delete existing fixtures and results.')) { return; }
+          await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'regular');
+        }
+        var playersResult = await sbClient.from('league_players').select('player_id').eq('league_id', leagueId);
+        if (!playersResult.data || playersResult.data.length < 2) { showMsg('fixtures-error', 'Need at least 2 players to generate fixtures.'); return; }
+        var players = playersResult.data.map(function(p) { return p.player_id; });
+
+        for (var i = 0; i < players.length; i++) {
+          for (var j = i + 1; j < players.length; j++) {
+            await sbClient.from('league_matches').insert([{
+              league_id: parseInt(leagueId), player1_id: players[i], player2_id: players[j], stage: 'regular', status: 'pending'
+            }]);
+            if (leagueData.format === 'home_away') {
+              await sbClient.from('league_matches').insert([{
+                league_id: parseInt(leagueId), player1_id: players[j], player2_id: players[i], stage: 'regular', status: 'pending'
+              }]);
+            }
+          }
+        }
+        showMsg('fixtures-success', 'Fixtures generated successfully!');
+        loadFixtures();
+      }
+
+      async function generateNextSwissRound() {
+        var maxGames = leagueData.swiss_games || 5;
+        var existingRounds = await sbClient.from('league_matches').select('round').eq('league_id', leagueId).eq('stage', 'regular');
+        var roundNumbers = (existingRounds.data || []).map(function(m) {
+          var match = (m.round || '').match(/\d+/);
+          return match ? parseInt(match[0]) : 0;
+        });
+        var nextRoundNum = roundNumbers.length ? Math.max.apply(null, roundNumbers) + 1 : 1;
+
+        if (nextRoundNum > maxGames) { showMsg('fixtures-error', 'All ' + maxGames + ' rounds have been generated.'); return; }
+
+        var playersResult = await sbClient.from('league_players').select('player_id').eq('league_id', leagueId);
+        if (!playersResult.data || playersResult.data.length < 2) { showMsg('fixtures-error', 'Need at least 2 players.'); return; }
+        var playerIds = playersResult.data.map(function(p) { return p.player_id; });
+
+        var allMatches = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular');
+        var matches = allMatches.data || [];
+
+        var standings = playerIds.map(function(pid) {
+          var pts = 0;
+          matches.forEach(function(m) {
+            if (m.status !== 'completed') { return; }
+            if (m.player1_id === pid && m.player1_score > m.player2_score) { pts += 3; }
+            else if (m.player2_id === pid && m.player2_score > m.player1_score) { pts += 3; }
+          });
+          return { player_id: pid, pts: pts };
+        }).sort(function(a, b) { return b.pts - a.pts; });
+
+        var playedPairs = {};
+        matches.forEach(function(m) {
+          var key = [m.player1_id, m.player2_id].sort().join('-');
+          playedPairs[key] = true;
+        });
+
+        var remaining = standings.slice();
+        var pairs = [];
+        while (remaining.length > 1) {
+          var p1 = remaining.shift();
+          var foundIdx = -1;
+          for (var k = 0; k < remaining.length; k++) {
+            var key = [p1.player_id, remaining[k].player_id].sort().join('-');
+            if (!playedPairs[key]) { foundIdx = k; break; }
+          }
+          if (foundIdx === -1) { foundIdx = 0; }
+          var p2 = remaining.splice(foundIdx, 1)[0];
+          pairs.push([p1.player_id, p2.player_id]);
+        }
+
+        for (var i = 0; i < pairs.length; i++) {
+          await sbClient.from('league_matches').insert([{
+            league_id: parseInt(leagueId), player1_id: pairs[i][0], player2_id: pairs[i][1],
+            stage: 'regular', round: 'Round ' + nextRoundNum, status: 'pending'
+          }]);
+        }
+
+        showMsg('fixtures-success', 'Round ' + nextRoundNum + ' generated!');
+        loadFixtures();
+      }
+
+      async function clearFixtures() {
+        if (!confirm('Delete all fixtures and results for this league?')) { return; }
+        await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'regular');
+        document.getElementById('fixturesContent').innerHTML = '<p class="empty-state">No fixtures generated yet.</p>';
+        loadStandings();
+      }
+
+      async function loadFixtures() {
+        var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular').order('id');
+        var container = document.getElementById('fixturesContent');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No fixtures generated yet.</p>'; return; }
+
+        if (leagueData.format === 'swiss') {
+          var rounds = {};
+          result.data.forEach(function(m) { var r = m.round || 'Round 1'; if (!rounds[r]) { rounds[r] = []; } rounds[r].push(m); });
+          var roundNames = Object.keys(rounds).sort(function(a, b) {
+            return parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]);
+          });
+          var tabsHtml = '<div class="round-tabs">' + roundNames.map(function(r, i) {
+            return '<button class="round-tab' + (i === roundNames.length - 1 ? ' active' : '') + '" data-round="' + r + '" onclick="showFixtureRound(\'' + r + '\', this)">' + r + '</button>';
+          }).join('') + '</div>';
+          var contentHtml = roundNames.map(function(r, i) {
+            return '<div class="fixture-round-content" data-round="' + r + '" style="' + (i === roundNames.length - 1 ? '' : 'display:none;') + '">' + rounds[r].map(renderFixtureItem).join('') + '</div>';
+          }).join('');
+          container.innerHTML = tabsHtml + contentHtml;
+        } else {
+          container.innerHTML = result.data.map(renderFixtureItem).join('');
+        }
+      }
+
+      function renderFixtureItem(m) {
+        var p1name = profileMapAdmin[m.player1_id] || 'Unknown';
+        var p2name = profileMapAdmin[m.player2_id] || 'Unknown';
+        var s1 = m.status === 'completed' ? m.player1_score : '';
+        var s2 = m.status === 'completed' ? m.player2_score : '';
+        return '<div class="fixture-item"><div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div><div class="score-inputs"><input class="score-input" type="number" id="fs1_' + m.id + '" value="' + s1 + '" placeholder="0" /><span>-</span><input class="score-input" type="number" id="fs2_' + m.id + '" value="' + s2 + '" placeholder="0" /><button class="btn-submit-score" onclick="updateFixtureScore(' + m.id + ')">' + (m.status === 'completed' ? 'Update' : 'Submit') + '</button></div></div>';
+      }
+
+      function showFixtureRound(round, btn) {
+        document.querySelectorAll('.round-tab').forEach(function(t) { t.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.fixture-round-content').forEach(function(c) {
+          c.style.display = c.getAttribute('data-round') === round ? '' : 'none';
+        });
+      }
+
+      async function updateFixtureScore(matchId) {
+        var s1 = parseInt(document.getElementById('fs1_' + matchId).value);
+        var s2 = parseInt(document.getElementById('fs2_' + matchId).value);
+        if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
+        var result = await sbClient.from('league_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
+        if (result.error) { alert('Error saving score: ' + result.error.message); return; }
+        loadFixtures();
+        loadStandings();
+        if (leagueData.playoffs) { await checkAndGeneratePlayoffs(false); loadPlayoffs(); }
+      }
+
+      async function computeStandings() {
+        var playersResult = await sbClient.from('league_players').select('player_id, profiles(full_name, username)').eq('league_id', leagueId);
+        var players = playersResult.data || [];
+        var matchesResult = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular');
+        var matches = matchesResult.data || [];
+
+        return players.map(function(p) {
+          var profile = p.profiles || {};
+          var name = profile.full_name || profile.username || 'Unknown';
+          var played = 0, won = 0, lost = 0, pts = 0;
+          matches.forEach(function(m) {
+            if (m.status !== 'completed') { return; }
+            if (m.player1_id === p.player_id) { played++; if (m.player1_score > m.player2_score) { won++; pts += 3; } else { lost++; } }
+            else if (m.player2_id === p.player_id) { played++; if (m.player2_score > m.player1_score) { won++; pts += 3; } else { lost++; } }
+          });
+          return { player_id: p.player_id, name: name, played: played, won: won, lost: lost, pts: pts };
+        }).sort(function(a, b) { return b.pts - a.pts; });
+      }
+
+      async function loadStandings() {
+        var standings = await computeStandings();
+        var container = document.getElementById('standingsContent');
+        if (!standings.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
+        container.innerHTML = '<table><thead><tr><th>Pos</th><th>Player</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>' +
+          standings.map(function(s, i) { return '<tr><td>' + (i + 1) + '</td><td>' + s.name + '</td><td>' + s.played + '</td><td>' + s.won + '</td><td>' + s.lost + '</td><td><strong>' + s.pts + '</strong></td></tr>'; }).join('') +
+          '</tbody></table>';
+      }
+
+      async function checkAndGeneratePlayoffs(manualTrigger) {
+        var allRegular = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular');
+        var regularMatches = allRegular.data || [];
+        if (!regularMatches.length) { if (manualTrigger) showMsg('playoffs-error', 'No regular season fixtures found.'); return; }
+
+        var allComplete = regularMatches.every(function(m) { return m.status === 'completed'; });
+        if (!allComplete) { if (manualTrigger) showMsg('playoffs-error', 'Regular season is not complete yet.'); return; }
+
+        var existingPlayoffs = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('stage', 'playoff');
+        if (existingPlayoffs.data && existingPlayoffs.data.length > 0) { if (manualTrigger) showMsg('playoffs-error', 'Playoffs already generated.'); return; }
+
+        var standings = await computeStandings();
+        if (standings.length < 4) { if (manualTrigger) showMsg('playoffs-error', 'Need at least 4 players for playoffs.'); return; }
+
+        var top4 = standings.slice(0, 4);
+        await sbClient.from('league_matches').insert([{
+          league_id: parseInt(leagueId), player1_id: top4[0].player_id, player2_id: top4[3].player_id,
+          stage: 'playoff', round: 'Semi Final', status: 'pending'
+        }]);
+        await sbClient.from('league_matches').insert([{
+          league_id: parseInt(leagueId), player1_id: top4[1].player_id, player2_id: top4[2].player_id,
+          stage: 'playoff', round: 'Semi Final', status: 'pending'
+        }]);
+        await sbClient.from('league_matches').insert([{
+          league_id: parseInt(leagueId), player1_id: null, player2_id: null,
+          stage: 'playoff', round: 'Final', status: 'pending'
+        }]);
+
+        showMsg('playoffs-success', 'Playoffs generated! 1st vs 4th and 2nd vs 3rd in the Semi Finals.');
+        loadPlayoffs();
+      }
+
+      async function clearPlayoffs() {
+        if (!confirm('Delete the playoff bracket?')) { return; }
+        await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'playoff');
+        document.getElementById('playoffsContent').innerHTML = '<p class="empty-state">Playoffs will generate automatically once the regular season is complete.</p>';
+      }
+
+      async function loadPlayoffs() {
+        var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff');
+        var container = document.getElementById('playoffsContent');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">Playoffs will generate automatically once the regular season is complete.</p>'; return; }
+
+        var rounds = {};
+        result.data.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
+
+        var html = playoffRoundOrder.filter(function(r) { return rounds[r]; }).map(function(r) {
+          var matchesHtml = rounds[r].map(function(m) {
+            var p1name = m.player1_id ? (profileMapAdmin[m.player1_id] || 'Unknown') : 'TBD';
+            var p2name = m.player2_id ? (profileMapAdmin[m.player2_id] || 'Unknown') : 'TBD';
+            var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
+            var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
+            var scoreHtml;
+            if (m.status === 'completed') {
+              scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
+            } else if (m.player1_id && m.player2_id) {
+              scoreHtml = '<div class="score-inputs"><input class="score-input" type="number" id="ps1_' + m.id + '" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ps2_' + m.id + '" placeholder="0" /><button class="btn-submit-score" onclick="savePlayoffScore(' + m.id + ',\'' + r + '\')">Submit</button></div>';
+            } else {
+              scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
+            }
+            return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span></div>' + scoreHtml + '</div>';
+          }).join('');
+          return '<h4 style="margin:16px 0 8px;">' + r + '</h4>' + matchesHtml;
+        }).join('');
+
+        container.innerHTML = html;
+      }
+
+      async function savePlayoffScore(matchId, currentRound) {
+        var s1 = parseInt(document.getElementById('ps1_' + matchId).value);
+        var s2 = parseInt(document.getElementById('ps2_' + matchId).value);
+        if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
+        if (s1 === s2) { alert('Scores cannot be equal in a playoff match.'); return; }
+
+        var result = await sbClient.from('league_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
+        if (result.error) { alert('Error saving score: ' + result.error.message); return; }
+
+        if (currentRound === 'Semi Final') {
+          var semis = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff').eq('round', 'Semi Final');
+          var allComplete = semis.data && semis.data.every(function(m) { return m.status === 'completed'; });
+          if (allComplete) {
+            var winners = semis.data.map(function(m) { return m.player1_score > m.player2_score ? m.player1_id : m.player2_id; });
+            var finalMatch = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('stage', 'playoff').eq('round', 'Final').single();
+            if (finalMatch.data) {
+              await sbClient.from('league_matches').update({ player1_id: winners[0], player2_id: winners[1] }).eq('id', finalMatch.data.id);
+            }
+            showMsg('playoffs-success', 'Both Semi Finals complete! Final is ready.');
+          }
+        } else {
+          showMsg('playoffs-success', '🏆 Playoffs complete! We have a champion!');
+        }
+
+        loadPlayoffs();
+      }
+
+      function formatLabel(val) {
+        if (!val) { return '-'; }
+        var labels = {
+          dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both',
+          round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System'
+        };
+        return labels[val] || val;
+      }
+
+      function showMsg(id, msg) {
+        var el = document.getElementById(id);
+        if (!el) { return; }
+        el.textContent = msg;
+        el.style.display = 'block';
+        setTimeout(function() { el.style.display = 'none'; }, 4000);
+      }
+
+      function showTab(name, event) {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+        event.target.classList.add('active');
+        document.getElementById('tab-' + name).classList.add('active');
+      }
+
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+      }
+
+      window.addEventListener('load', function() {
+        checkAuth();
+        init();
+      });
+    </script>
+
+  </body>
+</html>
