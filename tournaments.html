@@ -133,7 +133,7 @@
   container.innerHTML = result.data.map(function(t) {
     var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
     var timeStr = t.time ? ' at ' + t.time : '';
-    var playerCount = playerCounts[t.id] || 0;
+var playerCount = playerCounts[parseInt(t.id)] || playerCounts[t.id] || 0;
     var maxStr = t.max_players ? playerCount + ' / ' + t.max_players + ' players' : playerCount + ' players';
     var isFull = t.max_players && playerCount >= t.max_players;
     var hasJoined = joinedTournaments.indexOf(t.id) > -1;
