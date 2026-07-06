@@ -65,19 +65,10 @@
       .btn-submit-score { background-color: #111111; color: #ffffff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
       .btn-submit-score:hover { background-color: #333333; }
       .score-display { font-weight: bold; font-size: 0.95em; }
-      .bracket { display: flex; gap: 30px; overflow-x: auto; padding: 20px 0; }
-      .bracket-round { display: flex; flex-direction: column; min-width: 200px; }
-      .bracket-round-title { font-size: 0.8em; font-weight: bold; text-transform: uppercase; color: #888888; margin-bottom: 12px; text-align: center; letter-spacing: 1px; }
-      .bracket-matches { display: flex; flex-direction: column; gap: 16px; justify-content: space-around; flex: 1; }
-      .bracket-match { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; overflow: hidden; }
-      .bracket-player { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; border-bottom: 1px solid #eeeeee; font-size: 0.9em; }
-      .bracket-player:last-child { border-bottom: none; }
-      .bracket-player.winner { font-weight: bold; background-color: #f0fff0; }
-      .bracket-player.tbd { color: #aaaaaa; font-style: italic; }
-      .bracket-score { font-weight: bold; margin-left: 8px; color: #555555; }
-      .bracket-score-inputs { display: flex; gap: 4px; align-items: center; }
-      .bracket-score-input { width: 40px; padding: 2px 4px; border: 1px solid #dddddd; border-radius: 3px; font-size: 0.85em; text-align: center; }
-      .btn-submit-bracket { background-color: #111111; color: #ffffff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 0.8em; cursor: pointer; margin-left: 4px; }
+      .winner-text { font-weight: bold; color: #006600; }
+      .round-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+      .round-tab { padding: 8px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
+      .round-tab.active { background: #111111; color: #ffffff; border-color: #111111; font-weight: bold; }
       .coming-soon { text-align: center; padding: 40px; color: #aaaaaa; font-size: 1em; }
       .loading { text-align: center; padding: 40px; color: #888888; }
       @media (max-width: 700px) {
@@ -129,6 +120,7 @@
       var tournamentFormat = '';
       var tournamentData = null;
       var profileMap = {};
+      var roundOrderFull = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
 
       async function loadTournament() {
         var params = new URLSearchParams(window.location.search);
@@ -277,62 +269,84 @@
       async function loadKnockouts() {
         var result = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').order('match_order');
         var container = document.getElementById('knockoutsContent');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">Knockout bracket will appear once the tournament progresses.</p>'; return; }
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">Bracket will appear here once generated.</p>'; return; }
 
         var rounds = {};
-        result.data.forEach(function(m) {
-          if (!rounds[m.round]) { rounds[m.round] = []; }
-          rounds[m.round].push(m);
-        });
+        result.data.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
+        var roundsPresent = roundOrderFull.filter(function(r) { return rounds[r]; });
 
-        var roundOrder = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
-        var html = '<div class="bracket">';
-        roundOrder.forEach(function(round) {
-          if (!rounds[round]) { return; }
-          html += '<div class="bracket-round"><div class="bracket-round-title">' + round + '</div><div class="bracket-matches">';
-          rounds[round].forEach(function(m) {
+        var tabsHtml = '<div class="round-tabs">' + roundsPresent.map(function(r, i) {
+          return '<button class="round-tab' + (i === 0 ? ' active' : '') + '" data-round="' + r + '" onclick="showKnockoutRound(\'' + r + '\', this)">' + r + '</button>';
+        }).join('') + '</div>';
+
+        var contentHtml = roundsPresent.map(function(r, i) {
+          var matches = rounds[r];
+          var matchesHtml = matches.map(function(m) {
             var p1name = m.player1_id ? (profileMap[m.player1_id] || 'Unknown') : 'TBD';
             var p2name = m.player2_id ? (profileMap[m.player2_id] || 'Unknown') : 'TBD';
             var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
             var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
-            var canSubmit = currentUserId && m.status !== 'completed' &&
+            var canSubmit = currentUserId && m.status !== 'completed' && m.player1_id && m.player2_id &&
               (currentUserId === m.player1_id || currentUserId === m.player2_id);
 
-            var p1content, p2content;
+            var scoreHtml;
             if (m.status === 'completed') {
-              p1content = '<span class="bracket-score">' + m.player1_score + '</span>';
-              p2content = '<span class="bracket-score">' + m.player2_score + '</span>';
+              scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
             } else if (canSubmit) {
-              p1content = '<div class="bracket-score-inputs"><input class="bracket-score-input" type="number" id="ks1_' + m.id + '" placeholder="-" /></div>';
-              p2content = '<div class="bracket-score-inputs"><input class="bracket-score-input" type="number" id="ks2_' + m.id + '" placeholder="-" /><button class="btn-submit-bracket" onclick="submitKnockoutScore(' + m.id + ')">Submit</button></div>';
+              scoreHtml = '<div class="score-inputs"><input class="score-input" type="number" id="ks1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ks2_' + m.id + '" min="0" placeholder="0" /><button class="btn-submit-score" onclick="submitKnockoutScore(' + m.id + ',\'' + r + '\',' + m.match_order + ')">Submit</button></div>';
+            } else if (m.player1_id && m.player2_id) {
+              scoreHtml = '<div class="score-display" style="color:#aaa">Pending</div>';
             } else {
-              p1content = '';
-              p2content = '';
+              scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
             }
 
-            html += '<div class="bracket-match">' +
-              '<div class="bracket-player' + (p1winner ? ' winner' : '') + (m.player1_id ? '' : ' tbd') + '">' +
-              '<span>' + p1name + '</span>' + p1content +
-              '</div>' +
-              '<div class="bracket-player' + (p2winner ? ' winner' : '') + (m.player2_id ? '' : ' tbd') + '">' +
-              '<span>' + p2name + '</span>' + p2content +
-              '</div>' +
-              '</div>';
-          });
-          html += '</div></div>';
-        });
-        html += '</div>';
-        container.innerHTML = html;
+            return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span></div>' + scoreHtml + '</div>';
+          }).join('');
+          return '<div class="round-content" data-round="' + r + '" style="' + (i === 0 ? '' : 'display:none;') + '">' + matchesHtml + '</div>';
+        }).join('');
+
+        container.innerHTML = tabsHtml + contentHtml;
       }
 
-      async function submitKnockoutScore(matchId) {
+      function showKnockoutRound(round, btn) {
+        document.querySelectorAll('.round-tab').forEach(function(t) { t.classList.remove('active'); });
+        btn.classList.add('active');
+        document.querySelectorAll('.round-content').forEach(function(c) {
+          c.style.display = c.getAttribute('data-round') === round ? '' : 'none';
+        });
+      }
+
+      async function submitKnockoutScore(matchId, currentRound, matchOrder) {
         var s1 = parseInt(document.getElementById('ks1_' + matchId).value);
         var s2 = parseInt(document.getElementById('ks2_' + matchId).value);
         if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
         if (s1 === s2) { alert('Scores cannot be equal in a knockout match.'); return; }
+
         var result = await sbClient.from('tournament_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
         if (result.error) { alert('Error submitting score. Please try again.'); return; }
+
+        var matchRow = (await sbClient.from('tournament_matches').select('*').eq('id', matchId).single()).data;
+        var winnerId = matchRow.player1_score > matchRow.player2_score ? matchRow.player1_id : matchRow.player2_id;
+
+        var nextRound = getNextRoundName(currentRound);
+        if (nextRound) {
+          var nextOrder = Math.floor(matchOrder / 2);
+          var slot = matchOrder % 2 === 0 ? 'player1_id' : 'player2_id';
+          var nextMatch = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout').eq('round', nextRound).eq('match_order', nextOrder).single();
+          if (nextMatch.data) {
+            var update = {};
+            update[slot] = winnerId;
+            await sbClient.from('tournament_matches').update(update).eq('id', nextMatch.data.id);
+          }
+        }
+
         loadKnockouts();
+      }
+
+      function getNextRoundName(currentRound) {
+        var idx = roundOrderFull.indexOf(currentRound);
+        if (idx === -1 || idx === roundOrderFull.length - 1) { return null; }
+        return roundOrderFull[idx + 1];
       }
 
       function showTab(name, event) {
