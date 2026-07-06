@@ -480,15 +480,17 @@
       async function createLeague() {
         var name = document.getElementById('leagueName').value.trim();
         if (!name) { showMsg('league-error', 'Please enter a league name.'); return; }
-        var result = await sbClient.from('leagues').insert([{
-          name: name,
-          season: document.getElementById('leagueSeason').value.trim() || null,
-          start_date: document.getElementById('leagueStart').value || null,
-          end_date: document.getElementById('leagueEnd').value || null,
-          format: document.getElementById('leagueFormat').value,
-          platform: document.getElementById('leaguePlatform').value,
-          status: 'upcoming'
-        }]);
+       var result = await sbClient.from('leagues').insert([{
+  name: name,
+  season: document.getElementById('leagueSeason').value.trim() || null,
+  start_date: document.getElementById('leagueStart').value || null,
+  end_date: document.getElementById('leagueEnd').value || null,
+  format: document.getElementById('leagueFormat').value,
+  platform: document.getElementById('leaguePlatform').value,
+  status: 'upcoming',
+  playoffs: document.getElementById('leaguePlayoffs').checked,
+  max_players: document.getElementById('leagueMaxPlayers').value || null
+}]);
         if (result.error) { showMsg('league-error', result.error.message); return; }
         showMsg('league-success', 'League created successfully!');
         document.getElementById('leagueName').value = '';
