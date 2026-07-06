@@ -92,14 +92,17 @@
           return;
         }
 
-        var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System' };
+var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System' };
         var platformLabels = { dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both' };
 
-        container.innerHTML = result.data.map(function(l) {
+        var cardsHtml = [];
+        for (var i = 0; i < result.data.length; i++) {
+          var l = result.data[i];
+          var status = await computeLeagueStatus(l);
           var startStr = l.start_date ? new Date(l.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
           var endStr = l.end_date ? new Date(l.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
-          return '<div class="league-card">' +
-            '<span class="badge badge-' + l.status + '">' + (l.status ? l.status.charAt(0).toUpperCase() + l.status.slice(1) : 'Upcoming') + '</span>' +
+          cardsHtml.push('<div class="league-card">' +
+            getStatusBadgeHtml(status) +
             '<h3>' + l.name + '</h3>' +
             (l.season ? '<p><strong>Season:</strong> ' + l.season + '</p>' : '') +
             '<p><strong>Format:</strong> ' + (formatLabels[l.format] || l.format || 'TBC') + (l.playoffs ? ' + Playoffs' : '') + '</p>' +
@@ -108,8 +111,9 @@
             '<div class="card-actions">' +
             '<a href="league.html?id=' + l.id + '" class="btn-view">View League</a>' +
             '</div>' +
-            '</div>';
-        }).join('');
+            '</div>');
+        }
+        container.innerHTML = cardsHtml.join('');
       }
 
       function toggleMenu() {
