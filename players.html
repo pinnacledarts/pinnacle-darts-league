@@ -248,8 +248,18 @@ const fieldLabels = {
           dropdown.appendChild(option);
         });
 
-        if (data.length > 0) showPlayer(data[0]);
-      }
+if (currentUserId) {
+  const ownProfile = data.find(p => p.id === currentUserId);
+  if (ownProfile) {
+    showPlayer(ownProfile);
+    document.getElementById('searchInput').value = ownProfile.full_name || ownProfile.username;
+    document.getElementById('playerDropdown').value = ownProfile.id;
+  } else if (data.length > 0) {
+    showPlayer(data[0]);
+  }
+} else if (data.length > 0) {
+  showPlayer(data[0]);
+}
 
       function showPlayer(p) {
         currentProfileId = p.id;
