@@ -462,16 +462,20 @@
         loadTournaments();
       }
 
-      async function loadTournaments() {
+    async function loadTournaments() {
         var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
         var tbody = document.getElementById('tournamentsList');
         if (!result.data || !result.data.length) {
           tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tournaments yet</td></tr>';
           return;
         }
-        tbody.innerHTML = result.data.map(function(t) {
-         return '<tr><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td><span class="badge badge-' + t.status + '">' + t.status + '</span></td><td><a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View</a> <button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>';
-        }).join('');
+        var rowsHtml = [];
+        for (var i = 0; i < result.data.length; i++) {
+          var t = result.data[i];
+          var status = await computeTournamentStatus(t);
+          rowsHtml.push('<tr><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View</a> <button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>');
+        }
+        tbody.innerHTML = rowsHtml.join('');
       }
 
       async function deleteTournament(id) {
