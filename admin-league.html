@@ -78,6 +78,8 @@
       .empty-state { text-align: center; padding: 20px; color: #aaaaaa; font-size: 0.95em; }
       .loading { text-align: center; padding: 40px; color: #888888; }
       .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; background-color: #f0f0f0; }
+      .key { font-size: 0.85em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
+      .key span { margin-right: 20px; display: inline-block; }
       @media (max-width: 700px) {
         header { flex-wrap: wrap; padding: 16px 20px; }
         header img { height: 50px; }
@@ -425,26 +427,61 @@
         var matchesResult = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular');
         var matches = matchesResult.data || [];
 
-        return players.map(function(p) {
+        var standings = players.map(function(p) {
           var profile = p.profiles || {};
           var name = profile.full_name || profile.username || 'Unknown';
-          var played = 0, won = 0, lost = 0, pts = 0;
+          var played = 0, won = 0, lost = 0, pts = 0, legsFor = 0, legsAgainst = 0;
           matches.forEach(function(m) {
             if (m.status !== 'completed') { return; }
-            if (m.player1_id === p.player_id) { played++; if (m.player1_score > m.player2_score) { won++; pts += 3; } else { lost++; } }
-            else if (m.player2_id === p.player_id) { played++; if (m.player2_score > m.player1_score) { won++; pts += 3; } else { lost++; } }
+            if (m.player1_id === p.player_id) {
+              played++; legsFor += m.player1_score; legsAgainst += m.player2_score;
+              if (m.player1_score > m.player2_score) { won++; pts += 3; } else { lost++; }
+            } else if (m.player2_id === p.player_id) {
+              played++; legsFor += m.player2_score; legsAgainst += m.player1_score;
+              if (m.player2_score > m.player1_score) { won++; pts += 3; } else { lost++; }
+            }
           });
-          return { player_id: p.player_id, name: name, played: played, won: won, lost: lost, pts: pts };
-        }).sort(function(a, b) { return b.pts - a.pts; });
+          return { player_id: p.player_id, name: name, played: played, won: won, lost: lost, pts: pts, legsFor: legsFor, legsAgainst: legsAgainst, diff: legsFor - legsAgainst };
+        });
+
+        standings.sort(function(a, b) {
+          if (b.pts !== a.pts) { return b.pts - a.pts; }
+          if (b.diff !== a.diff) { return b.diff - a.diff; }
+
+          var h2h = matches.find(function(m) {
+            return m.status === 'completed' &&
+              ((m.player1_id === a.player_id && m.player2_id === b.player_id) ||
+               (m.player1_id === b.player_id && m.player2_id === a.player_id));
+          });
+          if (h2h) {
+            var aIsP1 = h2h.player1_id === a.player_id;
+            var aScore = aIsP1 ? h2h.player1_score : h2h.player2_score;
+            var bScore = aIsP1 ? h2h.player2_score : h2h.player1_score;
+            if (aScore !== bScore) { return bScore - aScore; }
+          }
+          return 0;
+        });
+
+        return standings;
       }
 
       async function loadStandings() {
         var standings = await computeStandings();
         var container = document.getElementById('standingsContent');
         if (!standings.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
-        container.innerHTML = '<table><thead><tr><th>Pos</th><th>Player</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>' +
-          standings.map(function(s, i) { return '<tr><td>' + (i + 1) + '</td><td>' + s.name + '</td><td>' + s.played + '</td><td>' + s.won + '</td><td>' + s.lost + '</td><td><strong>' + s.pts + '</strong></td></tr>'; }).join('') +
-          '</tbody></table>';
+        container.innerHTML = '<table><thead><tr><th>Pos</th><th>Player</th><th>P</th><th>W</th><th>L</th><th>+/-</th><th>Pts</th></tr></thead><tbody>' +
+          standings.map(function(s, i) {
+            var diffDisplay = s.diff > 0 ? '<span style="color:#006600;font-weight:bold;">+' + s.diff + '</span>' : s.diff < 0 ? '<span style="color:#cc0000;font-weight:bold;">' + s.diff + '</span>' : '<span style="color:#888888;">0</span>';
+            return '<tr><td>' + (i + 1) + '</td><td>' + s.name + '</td><td>' + s.played + '</td><td>' + s.won + '</td><td>' + s.lost + '</td><td>' + diffDisplay + '</td><td><strong>' + s.pts + '</strong></td></tr>';
+          }).join('') +
+          '</tbody></table>' +
+          '<div class="key">' +
+          '<span><strong>P</strong> = Played</span>' +
+          '<span><strong>W</strong> = Won</span>' +
+          '<span><strong>L</strong> = Lost</span>' +
+          '<span><strong>+/-</strong> = Leg Difference</span>' +
+          '<span><strong>Pts</strong> = Points</span>' +
+          '</div>';
       }
 
       async function checkAndGeneratePlayoffs(manualTrigger) {
