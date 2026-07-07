@@ -454,12 +454,26 @@ async function loadSponsorEnquiries() {
   var container = document.getElementById('sponsorEnquiriesList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; return; }
 
-  container.innerHTML = '<table><thead><tr><th>Player</th><th>From</th><th>Email</th><th>Phone</th><th>Message</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
+  container.innerHTML = '<table><thead><tr><th>Player</th><th>From</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
     result.data.map(function(e) {
       var player = e.profiles || {};
       var playerName = player.full_name || player.username || 'Unknown';
-      return '<tr><td>' + playerName + '</td><td>' + e.enquirer_name + '</td><td>' + e.enquirer_email + '</td><td>' + (e.enquirer_phone || '-') + '</td><td>' + e.message + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td><td><button class="btn-small danger" onclick="deleteEnquiry(' + e.id + ')">Delete</button></td></tr>';
+      return '<tr style="cursor:pointer;" onclick="toggleEnquiryDetail(' + e.id + ')">' +
+        '<td>' + playerName + '</td><td>' + e.enquirer_name + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
+        '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteEnquiry(' + e.id + ')">Delete</button></td>' +
+        '</tr>' +
+        '<tr id="enquiry-detail-' + e.id + '" style="display:none;background:#f9f9f9;">' +
+        '<td colspan="4" style="padding:16px;">' +
+        '<strong>Email:</strong> ' + e.enquirer_email + '<br>' +
+        '<strong>Phone:</strong> ' + (e.enquirer_phone || '-') + '<br>' +
+        '<strong>Message:</strong><br>' + e.message +
+        '</td></tr>';
     }).join('') + '</tbody></table>';
+}
+
+function toggleEnquiryDetail(id) {
+  var row = document.getElementById('enquiry-detail-' + id);
+  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
 }
 
 async function deleteEnquiry(id) {
