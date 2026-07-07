@@ -371,7 +371,7 @@
         const container = document.getElementById('sponsorLogos');
         if (!data || !data.length) { container.innerHTML = ''; return; }
         container.innerHTML = data.map(s => {
-          const img = `<img src="${s.logo_url}" alt="${s.sponsor_name || 'Sponsor'}" style="height:40px;border-radius:4px;object-fit:contain;" />`;
+const img = `<img src="${s.logo_url}" alt="${s.sponsor_name || 'Sponsor'}" style="height:60px;border-radius:4px;object-fit:contain;" />`;
           return s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${img}</a>` : img;
         }).join('');
       }
