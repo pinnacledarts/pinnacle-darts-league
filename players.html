@@ -127,9 +127,13 @@
       </div>
 
       <div id="profileCard" class="profile-card" style="display:none;">
-        <div class="profile-top">
-          <div class="player-avatar" id="profileAvatar"></div>
-          <div class="profile-info">
+<div class="profile-top">
+  <div class="avatar-wrap" style="position:relative;">
+    <div class="player-avatar" id="profileAvatar"></div>
+    <button class="avatar-edit-btn" id="avatarEditBtn" onclick="document.getElementById('avatarFileInput').click()" style="display:none;position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background-color:#111111;color:#ffffff;border:2px solid #ffffff;cursor:pointer;font-size:0.8em;">✏️</button>
+    <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(event)" />
+  </div>
+  <div class="profile-info">
             <h3 id="profileName"></h3>
             <div class="username" id="profileUsername"></div>
             <div class="location" id="profileLocation"></div>
