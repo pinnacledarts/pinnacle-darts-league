@@ -353,7 +353,7 @@
         document.getElementById('profileName').textContent = p.full_name || p.username || '-';
         document.getElementById('profileUsername').textContent = p.username ? '@' + p.username : '-';
         document.getElementById('profileLocation').textContent = p.hometown || '-';
-        document.getElementById('profileAverage').textContent = p.average || '-';
+document.getElementById('profileAverage').textContent = p.academy_highest_average || '-';
         document.getElementById('profileWins').textContent = p.academy_won || '-';
         document.getElementById('profileMatches').textContent = p.academy_played || '-';
         document.getElementById('profileMemberSince').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '-';
