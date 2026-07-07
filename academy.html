@@ -162,13 +162,39 @@
               <div class="player-avatar" id="profileAvatar"></div>
               <button class="avatar-edit-btn" id="avatarEditBtn" onclick="document.getElementById('avatarFileInput').click()" style="display:none;position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background-color:#111111;color:#ffffff;border:2px solid #ffffff;cursor:pointer;font-size:0.8em;">✏️</button>
               <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(event)" />
-            </div>
-            <div class="profile-info">
-              <h3 id="profileName"></h3>
-              <div class="username" id="profileUsername"></div>
-              <div class="location" id="profileLocation"></div>
-            </div>
-          </div>
+<div class="profile-info">
+  <h3 id="profileName"></h3>
+  <div class="username" id="profileUsername"></div>
+  <div class="location" id="profileLocation"></div>
+</div>
+<div class="sponsor-area" id="sponsorArea" style="margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+  <div id="sponsorLogos" style="display:flex;gap:8px;align-items:center;"></div>
+  <button class="btn-enquire" onclick="openEnquiryForm()" style="background-color:#ffffff;color:#111111;border:1px solid #111111;padding:8px 14px;border-radius:4px;font-size:0.85em;cursor:pointer;font-family:Arial, sans-serif;white-space:nowrap;">💼 Enquire about sponsoring me</button>
+</div>
+</div>
+
+<div id="enquiryFormWrap" style="display:none;background-color:#f9f9f9;border:1px solid #dddddd;border-radius:6px;padding:20px;margin-bottom:20px;">
+  <h4 style="margin:0 0 16px;">Sponsor Enquiry</h4>
+  <div class="success-msg" id="enquiry-success" style="display:none;background:#f0fff0;border:1px solid #cceecc;color:#006600;padding:10px;border-radius:4px;margin-bottom:16px;font-size:0.9em;"></div>
+  <div class="form-group" style="margin-bottom:12px;">
+    <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Name</label>
+    <input type="text" id="enquiryName" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+  </div>
+  <div class="form-group" style="margin-bottom:12px;">
+    <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Email</label>
+    <input type="email" id="enquiryEmail" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+  </div>
+  <div class="form-group" style="margin-bottom:12px;">
+    <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Phone Number (optional)</label>
+    <input type="tel" id="enquiryPhone" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+  </div>
+  <div class="form-group" style="margin-bottom:12px;">
+    <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Message</label>
+    <textarea id="enquiryMessage" rows="3" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;"></textarea>
+  </div>
+  <button onclick="submitEnquiry()" style="background-color:#111111;color:#ffffff;border:none;padding:10px 20px;border-radius:4px;cursor:pointer;">Send Enquiry</button>
+  <button onclick="document.getElementById('enquiryFormWrap').style.display='none'" style="background:none;border:1px solid #dddddd;padding:10px 20px;border-radius:4px;cursor:pointer;margin-left:8px;">Cancel</button>
+</div>
 
           <div class="key-stats">
             <div class="stat-box"><div class="stat-label">Average</div><div class="stat-value" id="profileAverage">-</div></div>
