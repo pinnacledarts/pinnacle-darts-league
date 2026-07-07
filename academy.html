@@ -199,7 +199,13 @@
           </div>
 
           <div class="key-stats">
-            <div class="stat-box"><div class="stat-label">Average</div><div class="stat-value" id="profileAverage">-</div></div>
+<div class="stat-box">
+  <div class="stat-label">Highest Average</div>
+  <div class="stat-value" style="display:flex;align-items:center;justify-content:center;gap:6px;">
+    <span id="profileAverage">-</span>
+    <button class="pencil-btn" id="pencil-academy_highest_average" onclick="startEdit('academy_highest_average')" style="display:none;font-size:0.5em;">✏️</button>
+  </div>
+</div>
             <div class="stat-box"><div class="stat-label">Wins</div><div class="stat-value" id="profileWins">-</div></div>
             <div class="stat-box"><div class="stat-label">Matches</div><div class="stat-value" id="profileMatches">-</div></div>
           </div>
