@@ -28,10 +28,6 @@
       .tab-content { display: none; }
       .tab-content.active { display: block; }
       .news-item { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 24px; margin-bottom: 16px; }
-      .news-item h3 { margin: 0 0 6px; font-size: 1.2em; }
-      .news-date { font-size: 0.85em; color: #888888; margin-bottom: 12px; }
-      .news-item p { margin: 0; color: #444444; line-height: 1.6; }
-      .news-tag { display: inline-block; background-color: #111111; color: #ffffff; font-size: 0.75em; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
       table { width: 100%; border-collapse: collapse; margin-top: 20px; }
       th { background-color: #111111; color: #ffffff; padding: 12px; text-align: left; }
       th abbr { text-decoration: none; cursor: help; border-bottom: 1px dotted #ffffff; }
@@ -68,10 +64,15 @@
       .pencil-btn:hover { color: #111111; }
       .edit-input { border: 1px solid #dddddd; border-radius: 4px; padding: 4px 8px; font-size: 0.95em; font-family: Arial, sans-serif; width: 160px; }
       .edit-input:focus { outline: none; border-color: #000000; }
+      .edit-textarea { border: 1px solid #dddddd; border-radius: 4px; padding: 8px; font-size: 0.95em; font-family: Arial, sans-serif; width: 100%; min-height: 80px; resize: vertical; }
+      .edit-textarea:focus { outline: none; border-color: #000000; }
       .save-btn { background-color: #111111; color: #ffffff; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.85em; cursor: pointer; }
       .save-btn:hover { background-color: #333333; }
       .cancel-btn { background: none; border: 1px solid #dddddd; border-radius: 4px; padding: 4px 10px; font-size: 0.85em; cursor: pointer; }
       .cancel-btn:hover { background-color: #f5f5f5; }
+      .about-me-section { margin-bottom: 20px; }
+      .about-me-section h4 { font-size: 1em; margin: 0 0 12px; padding-left: 12px; border-left: 4px solid #000000; }
+      .about-me-text { margin: 0; font-weight: normal; text-align: left; flex: 1; color: #444444; line-height: 1.5; }
       .loading { text-align: center; padding: 40px; color: #888888; }
       .coming-soon { text-align: center; padding: 60px 20px; color: #aaaaaa; font-size: 1.1em; }
       @media (max-width: 700px) {
@@ -203,6 +204,14 @@
             <div class="stat-box"><div class="stat-label">Matches</div><div class="stat-value" id="profileMatches">-</div></div>
           </div>
 
+          <div class="about-me-section">
+            <h4>About Me</h4>
+            <div style="display:flex;align-items:flex-start;gap:8px;">
+              <p class="about-me-text" id="profileAboutMe">-</p>
+              <button class="pencil-btn" id="pencil-about_me" onclick="startEdit('about_me')" style="display:none;">✏️</button>
+            </div>
+          </div>
+
           <div class="details-section">
             <h4>Player Details</h4>
             <div class="detail-row">
@@ -266,12 +275,14 @@
       const fieldLabels = {
         highest_checkout: 'profileCheckout',
         hometown: 'profileHometown',
-        phone: 'profilePhone',
         darts_brand: 'profileBrand',
         dart_weight: 'profileWeight',
         walkout_song: 'profileWalkout',
-        favourite_player: 'profileFavPlayer'
+        favourite_player: 'profileFavPlayer',
+        about_me: 'profileAboutMe'
       };
+
+      const multilineFields = ['about_me'];
 
       async function loadAcademyPlayers() {
         const { data: { session } } = await sbClient.auth.getSession();
@@ -341,11 +352,11 @@
         document.getElementById('profileMemberSince').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '-';
         document.getElementById('profileCheckout').textContent = p.highest_checkout || '-';
         document.getElementById('profileHometown').textContent = p.hometown || '-';
-        document.getElementById('profilePhone').textContent = p.phone || '-';
         document.getElementById('profileBrand').textContent = p.darts_brand || '-';
         document.getElementById('profileWeight').textContent = p.dart_weight || '-';
         document.getElementById('profileWalkout').textContent = p.walkout_song || '-';
         document.getElementById('profileFavPlayer').textContent = p.favourite_player || '-';
+        document.getElementById('profileAboutMe').textContent = p.about_me || '-';
 
         Object.keys(fieldLabels).forEach(field => {
           const pencil = document.getElementById('pencil-' + field);
@@ -364,7 +375,7 @@
         const container = document.getElementById('sponsorLogos');
         if (!data || !data.length) { container.innerHTML = ''; return; }
         container.innerHTML = data.map(s => {
-const img = `<img src="${s.logo_url}" alt="${s.sponsor_name || 'Sponsor'}" style="height:60px;border-radius:4px;object-fit:contain;" />`;
+          const img = `<img src="${s.logo_url}" alt="${s.sponsor_name || 'Sponsor'}" style="height:60px;border-radius:4px;object-fit:contain;" />`;
           return s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${img}</a>` : img;
         }).join('');
       }
@@ -410,11 +421,25 @@ const img = `<img src="${s.logo_url}" alt="${s.sponsor_name || 'Sponsor'}" style
         const valueEl = document.getElementById(fieldLabels[field]);
         const currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
         const wrap = valueEl.parentElement;
-        wrap.innerHTML = `
-          <input class="edit-input" id="edit-${field}" value="${currentValue}" />
-          <button class="save-btn" onclick="saveEdit('${field}')">Save</button>
-          <button class="cancel-btn" onclick="cancelEdit('${field}', '${currentValue}')">Cancel</button>
-        `;
+        const isMultiline = multilineFields.includes(field);
+
+        if (isMultiline) {
+          wrap.innerHTML = `
+            <div style="width:100%;">
+              <textarea class="edit-textarea" id="edit-${field}">${currentValue}</textarea>
+              <div style="margin-top:8px;">
+                <button class="save-btn" onclick="saveEdit('${field}')">Save</button>
+                <button class="cancel-btn" onclick="cancelEdit('${field}', '${currentValue.replace(/'/g, "\\'")}')">Cancel</button>
+              </div>
+            </div>
+          `;
+        } else {
+          wrap.innerHTML = `
+            <input class="edit-input" id="edit-${field}" value="${currentValue}" />
+            <button class="save-btn" onclick="saveEdit('${field}')">Save</button>
+            <button class="cancel-btn" onclick="cancelEdit('${field}', '${currentValue}')">Cancel</button>
+          `;
+        }
         document.getElementById('edit-' + field).focus();
       }
 
@@ -423,6 +448,7 @@ const img = `<img src="${s.logo_url}" alt="${s.sponsor_name || 'Sponsor'}" style
         const newValue = input.value.trim();
         const update = {};
         update[field] = newValue || null;
+        const isMultiline = multilineFields.includes(field);
 
         const { error } = await sbClient.from('profiles').update(update).eq('id', currentUserId);
         if (error) { alert('Error saving. Please try again.'); return; }
@@ -430,19 +456,39 @@ const img = `<img src="${s.logo_url}" alt="${s.sponsor_name || 'Sponsor'}" style
         const player = allPlayers.find(p => p.id === currentProfileId);
         if (player) player[field] = newValue;
 
-        const wrap = document.getElementById('edit-' + field).parentElement;
-        wrap.innerHTML = `
-          <span class="detail-value" id="${fieldLabels[field]}">${newValue || '-'}</span>
-          <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
-        `;
+        const wrap = document.getElementById('edit-' + field).parentElement.parentElement.classList.contains('about-me-section') ? null : null;
+
+        if (isMultiline) {
+          const parentDiv = document.getElementById('edit-' + field).closest('div[style*="align-items:flex-start"]') || document.getElementById('edit-' + field).parentElement.parentElement;
+          parentDiv.innerHTML = `
+            <p class="about-me-text" id="${fieldLabels[field]}">${newValue || '-'}</p>
+            <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
+          `;
+        } else {
+          const wrapEl = document.getElementById('edit-' + field).parentElement;
+          wrapEl.innerHTML = `
+            <span class="detail-value" id="${fieldLabels[field]}">${newValue || '-'}</span>
+            <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
+          `;
+        }
       }
 
       function cancelEdit(field, originalValue) {
-        const wrap = document.getElementById('edit-' + field).parentElement;
-        wrap.innerHTML = `
-          <span class="detail-value" id="${fieldLabels[field]}">${originalValue || '-'}</span>
-          <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
-        `;
+        const isMultiline = multilineFields.includes(field);
+
+        if (isMultiline) {
+          const parentDiv = document.getElementById('edit-' + field).closest('div[style*="align-items:flex-start"]') || document.getElementById('edit-' + field).parentElement.parentElement;
+          parentDiv.innerHTML = `
+            <p class="about-me-text" id="${fieldLabels[field]}">${originalValue || '-'}</p>
+            <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
+          `;
+        } else {
+          const wrap = document.getElementById('edit-' + field).parentElement;
+          wrap.innerHTML = `
+            <span class="detail-value" id="${fieldLabels[field]}">${originalValue || '-'}</span>
+            <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
+          `;
+        }
       }
 
       async function uploadAvatar(event) {
