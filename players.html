@@ -299,6 +299,9 @@ if (p.avatar_url) {
           const pencil = document.getElementById('pencil-' + field);
           if (pencil) pencil.style.display = isOwnProfile ? 'inline' : 'none';
         });
+        document.getElementById('avatarEditBtn').style.display = isOwnProfile ? 'flex' : 'none';
+document.getElementById('avatarEditBtn').style.alignItems = 'center';
+document.getElementById('avatarEditBtn').style.justifyContent = 'center';
       }
 
       function startEdit(field) {
