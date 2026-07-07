@@ -429,7 +429,17 @@ document.getElementById('profileAverage').textContent = p.academy_highest_averag
         const currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
         const wrap = valueEl.parentElement;
         const isMultiline = multilineFields.includes(field);
-
+if (field === 'academy_highest_average') {
+  const valueEl = document.getElementById('profileAverage');
+  const currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
+  const wrap = valueEl.parentElement;
+  wrap.innerHTML = `
+    <input class="edit-input" id="edit-academy_highest_average" value="${currentValue}" style="width:70px;text-align:center;" />
+    <button class="save-btn" onclick="saveEdit('academy_highest_average')" style="font-size:0.6em;">Save</button>
+  `;
+  document.getElementById('edit-academy_highest_average').focus();
+  return;
+}
         if (isMultiline) {
           wrap.innerHTML = `
             <div style="width:100%;">
