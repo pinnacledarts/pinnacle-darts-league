@@ -303,7 +303,41 @@ if (p.avatar_url) {
 document.getElementById('avatarEditBtn').style.alignItems = 'center';
 document.getElementById('avatarEditBtn').style.justifyContent = 'center';
       }
+async function uploadAvatar(event) {
+  const file = event.target.files[0];
+  if (!file) return;
 
+  const fileExt = file.name.split('.').pop();
+  const fileName = `${currentUserId}.${fileExt}`;
+
+  const { error: uploadError } = await sbClient.storage
+    .from('avatars')
+    .upload(fileName, file, { upsert: true });
+
+  if (uploadError) {
+    alert('Error uploading photo: ' + uploadError.message);
+    return;
+  }
+
+  const { data: urlData } = sbClient.storage.from('avatars').getPublicUrl(fileName);
+  const avatarUrl = urlData.publicUrl + '?t=' + Date.now();
+
+  const { error: updateError } = await sbClient
+    .from('profiles')
+    .update({ avatar_url: avatarUrl })
+    .eq('id', currentUserId);
+
+  if (updateError) {
+    alert('Photo uploaded but failed to save. Please try again.');
+    return;
+  }
+
+  const player = allPlayers.find(p => p.id === currentUserId);
+  if (player) player.avatar_url = avatarUrl;
+
+  document.getElementById('profileAvatar').textContent = '';
+  document.getElementById('profileAvatar').style.backgroundImage = `url(${avatarUrl})`;
+}
       function startEdit(field) {
         const valueEl = document.getElementById(fieldLabels[field]);
         const currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
