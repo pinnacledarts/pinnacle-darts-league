@@ -385,7 +385,88 @@
 
     <script>
       var allPlayersData = [];
+async function loadSponsorPlayerSelect() {
+  var result = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
+  var select = document.getElementById('sponsorPlayerSelect');
+  select.innerHTML = '';
+  (result.data || []).forEach(function(p) {
+    select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
+  });
+  if (result.data && result.data.length) { loadSponsorsForSelectedPlayer(); }
+  select.onchange = loadSponsorsForSelectedPlayer;
+}
 
+async function loadSponsorsForSelectedPlayer() {
+  var playerId = document.getElementById('sponsorPlayerSelect').value;
+  if (!playerId) { return; }
+  var result = await sbClient.from('player_sponsors').select('*').eq('player_id', playerId);
+  var container = document.getElementById('sponsorsListForPlayer');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No sponsors added for this player yet.</p>'; return; }
+  container.innerHTML = '<table><thead><tr><th>Sponsor</th><th>Link</th><th>Action</th></tr></thead><tbody>' +
+    result.data.map(function(s) {
+      return '<tr><td>' + (s.sponsor_name || '-') + '</td><td>' + (s.link || '-') + '</td><td><button class="btn-small danger" onclick="deleteSponsor(' + s.id + ')">Remove</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+async function addSponsor() {
+  var playerId = document.getElementById('sponsorPlayerSelect').value;
+  var name = document.getElementById('sponsorName').value.trim();
+  var link = document.getElementById('sponsorLink').value.trim();
+  var fileInput = document.getElementById('sponsorLogoFile');
+  var file = fileInput.files[0];
+
+  if (!playerId) { alert('Please select a player.'); return; }
+  if (!file) { alert('Please select a logo file.'); return; }
+
+  var fileExt = file.name.split('.').pop();
+  var fileName = playerId + '_' + Date.now() + '.' + fileExt;
+
+  var uploadResult = await sbClient.storage.from('sponsor-logos').upload(fileName, file);
+  if (uploadResult.error) { alert('Error uploading logo: ' + uploadResult.error.message); return; }
+
+  var urlData = sbClient.storage.from('sponsor-logos').getPublicUrl(fileName);
+  var logoUrl = urlData.data.publicUrl;
+
+  var result = await sbClient.from('player_sponsors').insert([{
+    player_id: playerId,
+    sponsor_name: name || null,
+    link: link || null,
+    logo_url: logoUrl
+  }]);
+
+  if (result.error) { alert('Error saving sponsor: ' + result.error.message); return; }
+
+  alert('Sponsor added!');
+  document.getElementById('sponsorName').value = '';
+  document.getElementById('sponsorLink').value = '';
+  fileInput.value = '';
+  loadSponsorsForSelectedPlayer();
+}
+
+async function deleteSponsor(id) {
+  if (!confirm('Remove this sponsor?')) { return; }
+  await sbClient.from('player_sponsors').delete().eq('id', id);
+  loadSponsorsForSelectedPlayer();
+}
+
+async function loadSponsorEnquiries() {
+  var result = await sbClient.from('sponsor_enquiries').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
+  var container = document.getElementById('sponsorEnquiriesList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; return; }
+
+  container.innerHTML = '<table><thead><tr><th>Player</th><th>From</th><th>Email</th><th>Phone</th><th>Message</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
+    result.data.map(function(e) {
+      var player = e.profiles || {};
+      var playerName = player.full_name || player.username || 'Unknown';
+      return '<tr><td>' + playerName + '</td><td>' + e.enquirer_name + '</td><td>' + e.enquirer_email + '</td><td>' + (e.enquirer_phone || '-') + '</td><td>' + e.message + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td><td><button class="btn-small danger" onclick="deleteEnquiry(' + e.id + ')">Delete</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+async function deleteEnquiry(id) {
+  if (!confirm('Delete this enquiry?')) { return; }
+  await sbClient.from('sponsor_enquiries').delete().eq('id', id);
+  loadSponsorEnquiries();
+}
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
