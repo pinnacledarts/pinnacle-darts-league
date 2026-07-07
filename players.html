@@ -282,7 +282,6 @@ if (p.avatar_url) {
         document.getElementById('profileMemberSince').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '-';
         document.getElementById('profileCheckout').textContent = p.highest_checkout || '-';
         document.getElementById('profileHometown').textContent = p.hometown || '-';
-        document.getElementById('profilePhone').textContent = p.phone || '-';
         document.getElementById('profileBrand').textContent = p.darts_brand || '-';
         document.getElementById('profileWeight').textContent = p.dart_weight || '-';
         document.getElementById('profileWalkout').textContent = p.walkout_song || '-';
