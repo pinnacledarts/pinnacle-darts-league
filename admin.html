@@ -6,11 +6,8 @@
     <title>Admin | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=2"></script>
+    <script src="auth.js?t=999999"></script>
     <style>
-      .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
-.badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-.badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
       header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
@@ -46,22 +43,23 @@
       .btn-primary:hover { background-color: #333333; }
       .btn-secondary { background-color: #ffffff; color: #111111; border: 1px solid #dddddd; }
       .btn-secondary:hover { background-color: #f5f5f5; }
+      .btn-danger { background-color: #ffffff; color: #cc0000; border: 1px solid #cc0000; }
+      .btn-danger:hover { background-color: #fff0f0; }
       table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.95em; }
       th { background-color: #111111; color: #ffffff; padding: 10px 12px; text-align: left; }
       td { padding: 10px 12px; border-bottom: 1px solid #eeeeee; }
       tr:last-child td { border-bottom: none; }
-      .action-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
       .btn-small { padding: 4px 12px; font-size: 0.85em; border-radius: 4px; cursor: pointer; border: 1px solid #dddddd; background: #ffffff; font-family: Arial, sans-serif; }
       .btn-small:hover { background-color: #f5f5f5; }
       .btn-small.danger { color: #cc0000; border-color: #cc0000; }
       .btn-small.danger:hover { background-color: #fff0f0; }
-      a.btn-small { display: inline-block; text-decoration: none; }
+      .score-input { width: 60px; padding: 4px 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; text-align: center; }
       .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
       .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
       .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; }
-      .badge-active { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-      .badge-upcoming { background-color: #f5f5f5; color: #111111; border: 1px solid #dddddd; }
-      .badge-completed { background-color: #eeeeee; color: #555555; border: 1px solid #cccccc; }
+      .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
+      .badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
+      .badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
       .empty-state { text-align: center; padding: 20px; color: #aaaaaa; font-size: 0.95em; }
       .hidden { display: none; }
       .search-bar { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; margin-bottom: 16px; font-family: Arial, sans-serif; }
@@ -84,8 +82,8 @@
         h2 { font-size: 1.3em; }
         .form-row { grid-template-columns: 1fr; }
         .form-row-3 { grid-template-columns: 1fr; }
-        table { font-size: 0.8em; }
-        th, td { padding: 8px 6px; }
+        table { font-size: 0.75em; }
+        th, td { padding: 6px 4px; }
       }
     </style>
   </head>
@@ -113,25 +111,28 @@
     <main>
       <h2>Admin Dashboard</h2>
 
-<div class="tabs">
-  <button class="tab active" onclick="showTab('tournaments', event)">Tournaments</button>
-  <button class="tab" onclick="showTab('leagues', event)">Leagues</button>
-  <button class="tab" onclick="showTab('players', event)">Players</button>
-  <button class="tab" onclick="showTab('academy', event)">Academy</button>
-  <button class="tab" onclick="showTab('news', event)">News</button>
-</div>
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('tournaments', event)">Tournaments</button>
+        <button class="tab" onclick="showTab('leagues', event)">Leagues</button>
+        <button class="tab" onclick="showTab('players', event)">Players</button>
+        <button class="tab" onclick="showTab('academy', event)">Academy</button>
+        <button class="tab" onclick="showTab('news', event)">News</button>
+      </div>
 
+      <!-- TOURNAMENTS TAB -->
       <div id="tab-tournaments" class="tab-content active">
         <div class="card">
           <h3>Create New Tournament</h3>
           <div class="success-msg" id="tournament-success"></div>
           <div class="error-msg" id="tournament-error"></div>
+
           <div class="template-bar">
             <label>Template:</label>
             <select id="tournamentTemplateSelect"><option value="">-- Apply a template --</option></select>
             <button class="btn btn-secondary" onclick="applyTemplate('tournament')">Apply</button>
             <button class="btn btn-secondary" onclick="saveTournamentTemplate()">Save as Template</button>
           </div>
+
           <div class="form-row">
             <div class="form-group">
               <label>Tournament Name</label>
@@ -177,6 +178,7 @@
           </div>
           <button class="btn btn-primary" onclick="createTournament()">Create Tournament</button>
         </div>
+
         <div class="card">
           <h3>Manage Tournaments</h3>
           <table>
@@ -186,17 +188,20 @@
         </div>
       </div>
 
+      <!-- LEAGUES TAB -->
       <div id="tab-leagues" class="tab-content">
         <div class="card">
           <h3>Create New League</h3>
           <div class="success-msg" id="league-success"></div>
           <div class="error-msg" id="league-error"></div>
+
           <div class="template-bar">
             <label>Template:</label>
             <select id="leagueTemplateSelect"><option value="">-- Apply a template --</option></select>
             <button class="btn btn-secondary" onclick="applyTemplate('league')">Apply</button>
             <button class="btn btn-secondary" onclick="saveLeagueTemplate()">Save as Template</button>
           </div>
+
           <div class="form-row">
             <div class="form-group">
               <label>League Name</label>
@@ -236,30 +241,34 @@
               </select>
             </div>
           </div>
+
           <div id="swissOptions" class="form-row hidden">
             <div class="form-group">
               <label>Games Per Player</label>
               <input type="number" id="leagueSwissGames" placeholder="e.g. 7" />
             </div>
           </div>
-<div class="form-row">
-  <div class="form-group">
-    <label>Players Per Division</label>
-    <input type="number" id="leaguePlayersPerDiv" placeholder="e.g. 8" />
-  </div>
-  <div class="form-group">
-    <label>Max Players</label>
-    <input type="number" id="leagueMaxPlayers" placeholder="e.g. 16" />
-  </div>
-</div>
-<div class="form-row">
-  <div class="form-group" style="display:flex; align-items:center; gap:8px;">
-    <input type="checkbox" id="leaguePlayoffs" style="width:18px; height:18px;" />
-    <label style="margin:0;">Add Playoff Rounds (Top 4)</label>
-  </div>
-</div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Players Per Division</label>
+              <input type="number" id="leaguePlayersPerDiv" placeholder="e.g. 8" />
+            </div>
+            <div class="form-group">
+              <label>Max Players</label>
+              <input type="number" id="leagueMaxPlayers" placeholder="e.g. 16" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" id="leaguePlayoffs" style="width:18px; height:18px;" />
+              <label style="margin:0;">Add Playoff Rounds (Top 4)</label>
+            </div>
+          </div>
+
           <button class="btn btn-primary" onclick="createLeague()">Create League</button>
         </div>
+
         <div class="card">
           <h3>Manage Leagues</h3>
           <table>
@@ -267,6 +276,7 @@
             <tbody id="leaguesList"><tr><td colspan="6" class="empty-state">Loading...</td></tr></tbody>
           </table>
         </div>
+
         <div class="card">
           <h3>View Registrations</h3>
           <div class="form-group">
@@ -278,15 +288,9 @@
             <tbody id="registrationsList"><tr><td colspan="5" class="empty-state">Select a league to view registrations</td></tr></tbody>
           </table>
         </div>
-        <div class="card">
-          <h3>Overdue Matches</h3>
-          <table>
-            <thead><tr><th>League</th><th>Player 1</th><th>Player 2</th><th>Due Date</th></tr></thead>
-            <tbody id="overdueList"><tr><td colspan="4" class="empty-state">No overdue matches</td></tr></tbody>
-          </table>
-        </div>
       </div>
 
+      <!-- PLAYERS TAB -->
       <div id="tab-players" class="tab-content">
         <div class="card">
           <h3>Registered Players</h3>
@@ -296,15 +300,18 @@
             <tbody id="playersList"><tr><td colspan="6" class="empty-state">Loading...</td></tr></tbody>
           </table>
         </div>
+      </div>
+
+      <!-- ACADEMY TAB -->
+      <div id="tab-academy" class="tab-content">
         <div class="card">
-          <h3>Active Players</h3>
-          <table>
-            <thead><tr><th>Name</th><th>Username</th><th>Platform</th><th>Matches</th><th>Avg</th></tr></thead>
-            <tbody id="activePlayersList"><tr><td colspan="5" class="empty-state">Loading...</td></tr></tbody>
-          </table>
+          <h3>Academy Player Stats</h3>
+          <p style="color:#666;font-size:0.9em;margin-top:-8px;">Manually update each academy player's stats. Standings on the Academy page calculate automatically.</p>
+          <div id="academyStatsList"><p class="empty-state">Loading...</p></div>
         </div>
       </div>
 
+      <!-- NEWS TAB -->
       <div id="tab-news" class="tab-content">
         <div class="card">
           <h3>Add News Article</h3>
@@ -331,6 +338,7 @@
           </div>
           <button class="btn btn-primary" onclick="saveNews()">Publish Article</button>
         </div>
+
         <div class="card">
           <h3>Manage News</h3>
           <table>
@@ -365,15 +373,11 @@
 
         var lt = document.getElementById('leagueTemplateSelect');
         lt.innerHTML = '<option value="">-- Apply a template --</option>';
-        leagueTemps.forEach(function(t) {
-          lt.innerHTML += '<option value="' + t.id + '">' + t.name + '</option>';
-        });
+        leagueTemps.forEach(function(t) { lt.innerHTML += '<option value="' + t.id + '">' + t.name + '</option>'; });
 
         var tt = document.getElementById('tournamentTemplateSelect');
         tt.innerHTML = '<option value="">-- Apply a template --</option>';
-        tournamentTemps.forEach(function(t) {
-          tt.innerHTML += '<option value="' + t.id + '">' + t.name + '</option>';
-        });
+        tournamentTemps.forEach(function(t) { tt.innerHTML += '<option value="' + t.id + '">' + t.name + '</option>'; });
       }
 
       async function saveLeagueTemplate() {
@@ -384,13 +388,10 @@
           format: document.getElementById('leagueFormat').value,
           platform: document.getElementById('leaguePlatform').value,
           playersPerDiv: document.getElementById('leaguePlayersPerDiv').value,
-          swissGames: document.getElementById('leagueSwissGames').value
+          swissGames: document.getElementById('leagueSwissGames').value,
+          maxPlayers: document.getElementById('leagueMaxPlayers').value
         };
-        var result = await sbClient.from('templates').insert([{
-          name: name,
-          type: 'league',
-          data: JSON.stringify(templateData)
-        }]);
+        var result = await sbClient.from('templates').insert([{ name: name, type: 'league', data: JSON.stringify(templateData) }]);
         if (result.error) { showMsg('league-error', result.error.message); return; }
         showMsg('league-success', 'Template saved!');
         refreshTemplateSelects();
@@ -405,11 +406,7 @@
           max: document.getElementById('tournamentMax').value,
           description: document.getElementById('tournamentDesc').value
         };
-        var result = await sbClient.from('templates').insert([{
-          name: name,
-          type: 'tournament',
-          data: JSON.stringify(templateData)
-        }]);
+        var result = await sbClient.from('templates').insert([{ name: name, type: 'tournament', data: JSON.stringify(templateData) }]);
         if (result.error) { showMsg('tournament-error', result.error.message); return; }
         showMsg('tournament-success', 'Template saved!');
         refreshTemplateSelects();
@@ -427,6 +424,7 @@
           document.getElementById('leaguePlatform').value = t.platform || 'dartcounter';
           document.getElementById('leaguePlayersPerDiv').value = t.playersPerDiv || '';
           document.getElementById('leagueSwissGames').value = t.swissGames || '';
+          document.getElementById('leagueMaxPlayers').value = t.maxPlayers || '';
           toggleSwissOptions();
         } else {
           var idx = document.getElementById('tournamentTemplateSelect').value;
@@ -463,13 +461,10 @@
         loadTournaments();
       }
 
-    async function loadTournaments() {
+      async function loadTournaments() {
         var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
         var tbody = document.getElementById('tournamentsList');
-        if (!result.data || !result.data.length) {
-          tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tournaments yet</td></tr>';
-          return;
-        }
+        if (!result.data || !result.data.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tournaments yet</td></tr>'; return; }
         var rowsHtml = [];
         for (var i = 0; i < result.data.length; i++) {
           var t = result.data[i];
@@ -488,17 +483,19 @@
       async function createLeague() {
         var name = document.getElementById('leagueName').value.trim();
         if (!name) { showMsg('league-error', 'Please enter a league name.'); return; }
-       var result = await sbClient.from('leagues').insert([{
-  name: name,
-  season: document.getElementById('leagueSeason').value.trim() || null,
-  start_date: document.getElementById('leagueStart').value || null,
-  end_date: document.getElementById('leagueEnd').value || null,
-  format: document.getElementById('leagueFormat').value,
-  platform: document.getElementById('leaguePlatform').value,
-  status: 'upcoming',
-  playoffs: document.getElementById('leaguePlayoffs').checked,
-  max_players: document.getElementById('leagueMaxPlayers').value || null
-}]);
+        var result = await sbClient.from('leagues').insert([{
+          name: name,
+          season: document.getElementById('leagueSeason').value.trim() || null,
+          start_date: document.getElementById('leagueStart').value || null,
+          end_date: document.getElementById('leagueEnd').value || null,
+          format: document.getElementById('leagueFormat').value,
+          platform: document.getElementById('leaguePlatform').value,
+          status: 'upcoming',
+          playoffs: document.getElementById('leaguePlayoffs').checked,
+          players_per_division: document.getElementById('leaguePlayersPerDiv').value || null,
+          swiss_games: document.getElementById('leagueSwissGames').value || null,
+          max_players: document.getElementById('leagueMaxPlayers').value || null
+        }]);
         if (result.error) { showMsg('league-error', result.error.message); return; }
         showMsg('league-success', 'League created successfully!');
         document.getElementById('leagueName').value = '';
@@ -508,10 +505,7 @@
       async function loadLeagues() {
         var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
         var tbody = document.getElementById('leaguesList');
-        if (!result.data || !result.data.length) {
-          tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No leagues yet</td></tr>';
-          return;
-        }
+        if (!result.data || !result.data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No leagues yet</td></tr>'; return; }
         var rowsHtml = [];
         for (var i = 0; i < result.data.length; i++) {
           var l = result.data[i];
@@ -521,9 +515,7 @@
         tbody.innerHTML = rowsHtml.join('');
         var select = document.getElementById('regLeagueSelect');
         select.innerHTML = '<option value="">-- Select a league --</option>';
-        result.data.forEach(function(l) {
-          select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>';
-        });
+        result.data.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
       }
 
       async function deleteLeague(id) {
@@ -533,14 +525,14 @@
       }
 
       async function loadRegistrations() {
-        var result = await sbClient.from('profiles').select('full_name, username, platform, starting_avg, created_at').order('full_name');
+        var leagueId = document.getElementById('regLeagueSelect').value;
+        if (!leagueId) { return; }
+        var result = await sbClient.from('league_players').select('player_id, profiles(full_name, username, platform, created_at)').eq('league_id', leagueId);
         var tbody = document.getElementById('registrationsList');
-        if (!result.data || !result.data.length) {
-          tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No registrations yet</td></tr>';
-          return;
-        }
-        tbody.innerHTML = result.data.map(function(p) {
-          return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + formatLabel(p.platform) + '</td><td>' + (p.starting_avg || '-') + '</td><td>' + (p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB') : '-') + '</td></tr>';
+        if (!result.data || !result.data.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No registrations yet</td></tr>'; return; }
+        tbody.innerHTML = result.data.map(function(rp) {
+          var p = rp.profiles || {};
+          return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + formatLabel(p.platform) + '</td><td>-</td><td>' + (p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB') : '-') + '</td></tr>';
         }).join('');
       }
 
@@ -548,23 +540,11 @@
         var result = await sbClient.from('profiles').select('*').order('created_at', { ascending: false });
         allPlayersData = result.data || [];
         renderPlayersList(allPlayersData);
-        var activePlayers = allPlayersData.filter(function(p) { return p.matches && p.matches > 0; });
-        var activeTbody = document.getElementById('activePlayersList');
-        if (!activePlayers.length) {
-          activeTbody.innerHTML = '<tr><td colspan="5" class="empty-state">No active players yet</td></tr>';
-        } else {
-          activeTbody.innerHTML = activePlayers.map(function(p) {
-            return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + formatLabel(p.platform) + '</td><td>' + (p.matches || 0) + '</td><td>' + (p.average || '-') + '</td></tr>';
-          }).join('');
-        }
       }
 
       function renderPlayersList(data) {
         var tbody = document.getElementById('playersList');
-        if (!data || !data.length) {
-          tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No players found</td></tr>';
-          return;
-        }
+        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No players found</td></tr>'; return; }
         tbody.innerHTML = data.map(function(p) {
           var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
             '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
@@ -601,15 +581,51 @@
         loadPlayers();
       }
 
+      async function loadAcademyStats() {
+        var result = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
+        var container = document.getElementById('academyStatsList');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No academy players yet.</p>'; return; }
+
+        container.innerHTML = '<table><thead><tr><th>Player</th><th>Played</th><th>Won</th><th>Lost</th><th>Legs For</th><th>Legs Against</th><th>Action</th></tr></thead><tbody>' +
+          result.data.map(function(p) {
+            var name = p.full_name || p.username || 'Unknown';
+            return '<tr>' +
+              '<td>' + name + '</td>' +
+              '<td><input class="score-input" type="number" id="ap_' + p.id + '" value="' + (p.academy_played || 0) + '" /></td>' +
+              '<td><input class="score-input" type="number" id="aw_' + p.id + '" value="' + (p.academy_won || 0) + '" /></td>' +
+              '<td><input class="score-input" type="number" id="al_' + p.id + '" value="' + (p.academy_lost || 0) + '" /></td>' +
+              '<td><input class="score-input" type="number" id="alf_' + p.id + '" value="' + (p.academy_legs_for || 0) + '" /></td>' +
+              '<td><input class="score-input" type="number" id="ala_' + p.id + '" value="' + (p.academy_legs_against || 0) + '" /></td>' +
+              '<td><button class="btn-small" onclick="saveAcademyStats(\'' + p.id + '\')">Save</button></td>' +
+              '</tr>';
+          }).join('') + '</tbody></table>';
+      }
+
+      async function saveAcademyStats(playerId) {
+        var played = parseInt(document.getElementById('ap_' + playerId).value) || 0;
+        var won = parseInt(document.getElementById('aw_' + playerId).value) || 0;
+        var lost = parseInt(document.getElementById('al_' + playerId).value) || 0;
+        var legsFor = parseInt(document.getElementById('alf_' + playerId).value) || 0;
+        var legsAgainst = parseInt(document.getElementById('ala_' + playerId).value) || 0;
+
+        var result = await sbClient.from('profiles').update({
+          academy_played: played,
+          academy_won: won,
+          academy_lost: lost,
+          academy_legs_for: legsFor,
+          academy_legs_against: legsAgainst
+        }).eq('id', playerId);
+
+        if (result.error) { alert('Error saving: ' + result.error.message); return; }
+        alert('Stats saved!');
+      }
+
       async function saveNews() {
         var title = document.getElementById('newsTitle').value.trim();
         var content = document.getElementById('newsContent').value.trim();
         if (!title || !content) { showMsg('news-error', 'Please fill in title and content.'); return; }
         var result = await sbClient.from('news').insert([{
-          title: title,
-          content: content,
-          tag: document.getElementById('newsTag').value,
-          created_at: new Date().toISOString()
+          title: title, content: content, tag: document.getElementById('newsTag').value, created_at: new Date().toISOString()
         }]);
         if (result.error) { showMsg('news-error', result.error.message); return; }
         showMsg('news-success', 'Article published successfully!');
@@ -621,10 +637,7 @@
       async function loadNews() {
         var result = await sbClient.from('news').select('*').order('created_at', { ascending: false });
         var tbody = document.getElementById('newsList');
-        if (!result.data || !result.data.length) {
-          tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No news articles yet</td></tr>';
-          return;
-        }
+        if (!result.data || !result.data.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No news articles yet</td></tr>'; return; }
         tbody.innerHTML = result.data.map(function(n) {
           return '<tr><td>' + n.title + '</td><td>' + n.tag + '</td><td>' + new Date(n.created_at).toLocaleDateString('en-GB') + '</td><td><button class="btn-small danger" onclick="deleteNews(\'' + n.id + '\')">Delete</button></td></tr>';
         }).join('');
@@ -642,7 +655,7 @@
           dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both',
           round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System',
           single_elimination: 'Single Elimination', single_elimination_b: 'Single Elim + B Bracket',
-          group_knockout: 'Group Stages + Knockout', upcoming: 'Upcoming', active: 'Active', completed: 'Completed'
+          group_knockout: 'Group Stages + Knockout'
         };
         return labels[val] || val;
       }
@@ -664,6 +677,7 @@
         loadTournaments();
         loadLeagues();
         loadPlayers();
+        loadAcademyStats();
         loadNews();
       });
     </script>
