@@ -271,7 +271,14 @@
         const isOwnProfile = currentUserId && currentUserId === p.id;
 
         document.getElementById('profileCard').style.display = 'block';
-        document.getElementById('profileAvatar').textContent = (p.full_name || p.username || '?')[0].toUpperCase();
+const avatarEl = document.getElementById('profileAvatar');
+if (p.avatar_url) {
+  avatarEl.textContent = '';
+  avatarEl.style.backgroundImage = `url(${p.avatar_url})`;
+} else {
+  avatarEl.style.backgroundImage = '';
+  avatarEl.textContent = (p.full_name || p.username || '?')[0].toUpperCase();
+}
         document.getElementById('profileName').textContent = p.full_name || p.username || '-';
         document.getElementById('profileUsername').textContent = p.username ? '@' + p.username : '-';
         document.getElementById('profileLocation').textContent = p.hometown || '-';
