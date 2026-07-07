@@ -466,7 +466,20 @@ if (field === 'academy_highest_average') {
         const update = {};
         update[field] = newValue || null;
         const isMultiline = multilineFields.includes(field);
-
+if (field === 'academy_highest_average') {
+  const input = document.getElementById('edit-academy_highest_average');
+  const newValue = input.value.trim();
+  const { error } = await sbClient.from('profiles').update({ academy_highest_average: newValue || null }).eq('id', currentUserId);
+  if (error) { alert('Error saving.'); return; }
+  const player = allPlayers.find(p => p.id === currentProfileId);
+  if (player) player.academy_highest_average = newValue;
+  const wrap = document.getElementById('edit-academy_highest_average').parentElement;
+  wrap.innerHTML = `
+    <span id="profileAverage">${newValue || '-'}</span>
+    <button class="pencil-btn" id="pencil-academy_highest_average" onclick="startEdit('academy_highest_average')" style="font-size:0.5em;">✏️</button>
+  `;
+  return;
+}
         const { error } = await sbClient.from('profiles').update(update).eq('id', currentUserId);
         if (error) { alert('Error saving. Please try again.'); return; }
 
