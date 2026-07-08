@@ -317,7 +317,16 @@
       let currentUserId = null;
       let currentProfileId = null;
       let allAcademyLeagues = [];
-
+async function loadDivisionSponsors(leagueId) {
+  const container = document.getElementById('divisionSponsorLogos');
+  if (!leagueId) { container.innerHTML = ''; return; }
+  const { data } = await sbClient.from('academy_league_sponsors').select('*').eq('academy_league_id', leagueId);
+  if (!data || !data.length) { container.innerHTML = ''; return; }
+  container.innerHTML = data.map(s => {
+    const img = `<img src="${s.logo_url}" alt="${s.sponsor_name || 'Sponsor'}" style="height:50px;border-radius:4px;object-fit:contain;" />`;
+    return s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${img}</a>` : img;
+  }).join('');
+}
       const fieldLabels = {
         highest_checkout: 'profileCheckout',
         hometown: 'profileHometown',
