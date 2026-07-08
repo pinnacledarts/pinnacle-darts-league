@@ -6,7 +6,7 @@
     <title>Players | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=2"></script>
+    <script src="auth.js?t=999999"></script>
     <style>
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
@@ -38,7 +38,7 @@
 
       .profile-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 30px; margin-bottom: 20px; }
       .profile-top { display: flex; align-items: center; gap: 24px; margin-bottom: 30px; flex-wrap: wrap; }
-     .player-avatar { width: 90px; height: 90px; border-radius: 50%; background-color: #000000; color: #ffffff; font-size: 2.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; background-size: cover; background-position: center; }
+      .player-avatar { width: 90px; height: 90px; border-radius: 50%; background-color: #000000; color: #ffffff; font-size: 2.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; background-size: cover; background-position: center; }
       .profile-info h3 { margin: 0 0 4px; font-size: 1.8em; }
       .profile-info .username { color: #888888; font-size: 0.95em; margin-bottom: 4px; }
       .profile-info .location { font-size: 0.9em; color: #555555; }
@@ -127,13 +127,13 @@
       </div>
 
       <div id="profileCard" class="profile-card" style="display:none;">
-<div class="profile-top">
-  <div class="avatar-wrap" style="position:relative;">
-    <div class="player-avatar" id="profileAvatar"></div>
-    <button class="avatar-edit-btn" id="avatarEditBtn" onclick="document.getElementById('avatarFileInput').click()" style="display:none;position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background-color:#111111;color:#ffffff;border:2px solid #ffffff;cursor:pointer;font-size:0.8em;">✏️</button>
-    <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(event)" />
-  </div>
-  <div class="profile-info">
+        <div class="profile-top">
+          <div class="avatar-wrap" style="position:relative;">
+            <div class="player-avatar" id="profileAvatar"></div>
+            <button class="avatar-edit-btn" id="avatarEditBtn" onclick="document.getElementById('avatarFileInput').click()" style="display:none;position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background-color:#111111;color:#ffffff;border:2px solid #ffffff;cursor:pointer;font-size:0.8em;">✏️</button>
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(event)" />
+          </div>
+          <div class="profile-info">
             <h3 id="profileName"></h3>
             <div class="username" id="profileUsername"></div>
             <div class="location" id="profileLocation"></div>
@@ -166,7 +166,6 @@
               <button class="pencil-btn" id="pencil-hometown" onclick="startEdit('hometown')" style="display:none;">✏️</button>
             </div>
           </div>
-
           <div class="detail-row">
             <span class="detail-label">Darts Brand</span>
             <div class="detail-value-wrap">
@@ -209,11 +208,11 @@
       let allPlayers = [];
       let currentUserId = null;
       let currentProfileId = null;
+      let isCurrentUserAdmin = false;
 
       const fieldLabels = {
         highest_checkout: 'profileCheckout',
         hometown: 'profileHometown',
-        phone: 'profilePhone',
         darts_brand: 'profileBrand',
         dart_weight: 'profileWeight',
         walkout_song: 'profileWalkout',
@@ -222,7 +221,11 @@
 
       async function loadPlayers() {
         const { data: { session } } = await sbClient.auth.getSession();
-        if (session) currentUserId = session.user.id;
+        if (session) {
+          currentUserId = session.user.id;
+          const { data: profile } = await sbClient.from('profiles').select('is_admin').eq('id', currentUserId).single();
+          isCurrentUserAdmin = profile ? profile.is_admin : false;
+        }
 
         const { data, error } = await sbClient
           .from('profiles')
@@ -262,17 +265,18 @@
 
       function showPlayer(p) {
         currentProfileId = p.id;
-        const isOwnProfile = currentUserId && currentUserId === p.id;
+        const isOwnProfile = currentUserId && (currentUserId === p.id || isCurrentUserAdmin);
+
+        const avatarEl = document.getElementById('profileAvatar');
+        if (p.avatar_url) {
+          avatarEl.textContent = '';
+          avatarEl.style.backgroundImage = `url(${p.avatar_url})`;
+        } else {
+          avatarEl.style.backgroundImage = '';
+          avatarEl.textContent = (p.full_name || p.username || '?')[0].toUpperCase();
+        }
 
         document.getElementById('profileCard').style.display = 'block';
-const avatarEl = document.getElementById('profileAvatar');
-if (p.avatar_url) {
-  avatarEl.textContent = '';
-  avatarEl.style.backgroundImage = `url(${p.avatar_url})`;
-} else {
-  avatarEl.style.backgroundImage = '';
-  avatarEl.textContent = (p.full_name || p.username || '?')[0].toUpperCase();
-}
         document.getElementById('profileName').textContent = p.full_name || p.username || '-';
         document.getElementById('profileUsername').textContent = p.username ? '@' + p.username : '-';
         document.getElementById('profileLocation').textContent = p.hometown || '-';
@@ -292,45 +296,12 @@ if (p.avatar_url) {
           const pencil = document.getElementById('pencil-' + field);
           if (pencil) pencil.style.display = isOwnProfile ? 'inline' : 'none';
         });
+
         document.getElementById('avatarEditBtn').style.display = isOwnProfile ? 'flex' : 'none';
-document.getElementById('avatarEditBtn').style.alignItems = 'center';
-document.getElementById('avatarEditBtn').style.justifyContent = 'center';
+        document.getElementById('avatarEditBtn').style.alignItems = 'center';
+        document.getElementById('avatarEditBtn').style.justifyContent = 'center';
       }
-async function uploadAvatar(event) {
-  const file = event.target.files[0];
-  if (!file) return;
 
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${currentUserId}.${fileExt}`;
-
-  const { error: uploadError } = await sbClient.storage
-    .from('avatars')
-    .upload(fileName, file, { upsert: true });
-
-  if (uploadError) {
-    alert('Error uploading photo: ' + uploadError.message);
-    return;
-  }
-
-  const { data: urlData } = sbClient.storage.from('avatars').getPublicUrl(fileName);
-  const avatarUrl = urlData.publicUrl + '?t=' + Date.now();
-
-  const { error: updateError } = await sbClient
-    .from('profiles')
-    .update({ avatar_url: avatarUrl })
-    .eq('id', currentUserId);
-
-  if (updateError) {
-    alert('Photo uploaded but failed to save. Please try again.');
-    return;
-  }
-
-  const player = allPlayers.find(p => p.id === currentUserId);
-  if (player) player.avatar_url = avatarUrl;
-
-  document.getElementById('profileAvatar').textContent = '';
-  document.getElementById('profileAvatar').style.backgroundImage = `url(${avatarUrl})`;
-}
       function startEdit(field) {
         const valueEl = document.getElementById(fieldLabels[field]);
         const currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
@@ -354,7 +325,7 @@ async function uploadAvatar(event) {
         const { error } = await sbClient
           .from('profiles')
           .update(update)
-          .eq('id', currentUserId);
+          .eq('id', currentProfileId);
 
         if (error) {
           alert('Error saving. Please try again.');
@@ -377,6 +348,42 @@ async function uploadAvatar(event) {
           <span class="detail-value" id="${fieldLabels[field]}">${originalValue || '-'}</span>
           <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
         `;
+      }
+
+      async function uploadAvatar(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${currentProfileId}.${fileExt}`;
+
+        const { error: uploadError } = await sbClient.storage
+          .from('avatars')
+          .upload(fileName, file, { upsert: true });
+
+        if (uploadError) {
+          alert('Error uploading photo: ' + uploadError.message);
+          return;
+        }
+
+        const { data: urlData } = sbClient.storage.from('avatars').getPublicUrl(fileName);
+        const avatarUrl = urlData.publicUrl + '?t=' + Date.now();
+
+        const { error: updateError } = await sbClient
+          .from('profiles')
+          .update({ avatar_url: avatarUrl })
+          .eq('id', currentProfileId);
+
+        if (updateError) {
+          alert('Photo uploaded but failed to save. Please try again.');
+          return;
+        }
+
+        const player = allPlayers.find(p => p.id === currentProfileId);
+        if (player) player.avatar_url = avatarUrl;
+
+        document.getElementById('profileAvatar').textContent = '';
+        document.getElementById('profileAvatar').style.backgroundImage = `url(${avatarUrl})`;
       }
 
       function filterPlayers() {
