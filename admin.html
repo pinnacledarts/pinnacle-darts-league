@@ -305,6 +305,42 @@
       <!-- ACADEMY TAB -->
       <div id="tab-academy" class="tab-content">
         <div class="card">
+  <h3>Academy Leagues (Groups)</h3>
+  <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a group (e.g. Tuesday Prodigy) and add players to it.</p>
+  <div class="success-msg" id="academyleague-success"></div>
+  <div class="error-msg" id="academyleague-error"></div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>New Group Name</label>
+      <input type="text" id="academyLeagueName" placeholder="e.g. Tuesday Prodigy" />
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="createAcademyLeague()">Create Group</button>
+
+  <div style="margin-top:24px;">
+    <div class="form-group">
+      <label>Manage Group</label>
+      <select id="academyLeagueSelect" onchange="loadAcademyLeaguePlayers()"></select>
+    </div>
+    <button class="btn btn-danger" onclick="deleteAcademyLeague()">Delete This Group</button>
+  </div>
+
+  <div class="form-row" style="margin-top:16px;">
+    <div class="form-group">
+      <label>Add Player to Group</label>
+      <select id="academyLeaguePlayerSelect"></select>
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="addPlayerToAcademyLeague()">Add Player</button>
+
+  <div id="academyLeaguePlayersList" style="margin-top:16px;"></div>
+</div>
+
+<div class="card">
+  <h3>Division Sponsor Enquiries</h3>
+  <div id="divisionEnquiriesList"><p class="empty-state">Loading...</p></div>
+</div>
+        <div class="card">
           <h3>Submit Session Results</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Enter the scores from a completed session sheet for a player.</p>
           <div class="success-msg" id="session-success"></div>
