@@ -828,23 +828,37 @@ async function deleteDivisionSponsor(id) {
         loadPlayers();
       }
 
-      async function loadAcademyLeagueSelects() {
-        var result = await sbClient.from('academy_leagues').select('*').order('name');
-        var groups = result.data || [];
+async function loadAcademyLeagueSelects() {
+  var result = await sbClient.from('academy_leagues').select('*').order('name');
+  var allGroups = result.data || [];
+  var activeGroups = allGroups.filter(function(g) { return g.status !== 'completed'; });
 
-        var manageSelect = document.getElementById('academyLeagueSelect');
-        manageSelect.innerHTML = '';
-        groups.forEach(function(g) { manageSelect.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>'; });
+  var manageSelect = document.getElementById('academyLeagueSelect');
+  manageSelect.innerHTML = '';
+  allGroups.forEach(function(g) {
+    manageSelect.innerHTML += '<option value="' + g.id + '">' + g.name + (g.status === 'completed' ? ' (Completed)' : '') + '</option>';
+  });
 
-        var sessionSelect = document.getElementById('sessionAcademyLeague');
-        sessionSelect.innerHTML = '';
-        groups.forEach(function(g) { sessionSelect.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>'; });
+  var sessionSelect = document.getElementById('sessionAcademyLeague');
+  sessionSelect.innerHTML = '';
+  activeGroups.forEach(function(g) { sessionSelect.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>'; });
 
-        if (groups.length) {
-          loadAcademyLeaguePlayers();
-          loadSessionPlayerSelect();
-        }
-      }
+  if (allGroups.length) {
+    loadAcademyLeaguePlayers();
+  }
+  if (activeGroups.length) {
+    loadSessionPlayerSelect();
+  }
+}
+
+async function endAcademySeason() {
+  var id = document.getElementById('academyLeagueSelect').value;
+  if (!id) { return; }
+  if (!confirm('End the season for this group? It will move to completed and no longer accept new sessions.')) { return; }
+  await sbClient.from('academy_leagues').update({ status: 'completed' }).eq('id', id);
+  showMsg('academyleague-success', 'Season ended!');
+  loadAcademyLeagueSelects();
+}
 
       async function createAcademyLeague() {
         var name = document.getElementById('academyLeagueName').value.trim();
