@@ -345,16 +345,22 @@
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Enter the scores from a completed session sheet for a player.</p>
           <div class="success-msg" id="session-success"></div>
           <div class="error-msg" id="session-error"></div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Player</label>
-              <select id="sessionPlayer"></select>
-            </div>
-            <div class="form-group">
-              <label>Session Date</label>
-              <input type="date" id="sessionDate" />
-            </div>
-          </div>
+<div class="form-row">
+  <div class="form-group">
+    <label>Academy Group</label>
+    <select id="sessionAcademyLeague" onchange="loadSessionPlayerSelect()"></select>
+  </div>
+  <div class="form-group">
+    <label>Player</label>
+    <select id="sessionPlayer"></select>
+  </div>
+</div>
+<div class="form-row">
+  <div class="form-group">
+    <label>Session Date</label>
+    <input type="date" id="sessionDate" />
+  </div>
+</div>
           <div class="form-row">
             <div class="form-group">
               <label>Attendance</label>
