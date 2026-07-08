@@ -863,30 +863,80 @@ async function deleteDivisionSponsor(id) {
         loadAcademyLeagueSelects();
       }
 
-      async function loadAcademyLeaguePlayers() {
-        var leagueId = document.getElementById('academyLeagueSelect').value;
-        if (!leagueId) { return; }
+     var academyLeagueAvailablePlayers = [];
 
-        var allPlayersResult = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
-        var allAcademyPlayers = allPlayersResult.data || [];
+async function loadAcademyLeaguePlayers() {
+  var leagueId = document.getElementById('academyLeagueSelect').value;
+  if (!leagueId) { return; }
 
-        var currentResult = await sbClient.from('academy_league_players').select('player_id').eq('academy_league_id', leagueId);
-        var currentIds = (currentResult.data || []).map(function(p) { return p.player_id; });
+  var allPlayersResult = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
+  var allAcademyPlayers = allPlayersResult.data || [];
 
-        var addSelect = document.getElementById('academyLeaguePlayerSelect');
-        addSelect.innerHTML = '';
-        allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) === -1; }).forEach(function(p) {
-          addSelect.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
-        });
+  var currentResult = await sbClient.from('academy_league_players').select('player_id').eq('academy_league_id', leagueId);
+  var currentIds = (currentResult.data || []).map(function(p) { return p.player_id; });
 
-        var container = document.getElementById('academyLeaguePlayersList');
-        var currentPlayers = allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) > -1; });
-        if (!currentPlayers.length) { container.innerHTML = '<p class="empty-state">No players in this group yet.</p>'; return; }
-        container.innerHTML = '<table><thead><tr><th>Player</th><th>Action</th></tr></thead><tbody>' +
-          currentPlayers.map(function(p) {
-            return '<tr><td>' + (p.full_name || p.username) + '</td><td><button class="btn-small danger" onclick="removePlayerFromAcademyLeague(\'' + p.id + '\')">Remove</button></td></tr>';
-          }).join('') + '</tbody></table>';
-      }
+  academyLeagueAvailablePlayers = allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) === -1; });
+  buildAcademyLeagueChecklist('');
+
+  var container = document.getElementById('academyLeaguePlayersList');
+  var currentPlayers = allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) > -1; });
+  if (!currentPlayers.length) { container.innerHTML = '<p class="empty-state">No players in this group yet.</p>'; return; }
+  container.innerHTML = '<table><thead><tr><th>Player</th><th>Action</th></tr></thead><tbody>' +
+    currentPlayers.map(function(p) {
+      return '<tr><td>' + (p.full_name || p.username) + '</td><td><button class="btn-small danger" onclick="removePlayerFromAcademyLeague(\'' + p.id + '\')">Remove</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+function buildAcademyLeagueChecklist(filter) {
+  var checklist = document.getElementById('academyLeaguePlayerChecklist');
+  var available = academyLeagueAvailablePlayers.filter(function(p) {
+    if (!filter) { return true; }
+    var name = (p.full_name || '').toLowerCase();
+    var username = (p.username || '').toLowerCase();
+    return name.includes(filter) || username.includes(filter);
+  });
+  if (!available.length) {
+    checklist.innerHTML = '<p class="player-checklist-empty">No players available</p>';
+    return;
+  }
+  checklist.innerHTML = available.map(function(p) {
+    var label = (p.full_name || p.username || 'Unknown') + (p.username ? ' (@' + p.username + ')' : '');
+    return '<div class="player-checklist-item" onclick="toggleAcademyLeagueCheck(\'' + p.id + '\')">' +
+      '<input type="checkbox" id="alchk_' + p.id + '" value="' + p.id + '" onclick="event.stopPropagation(); updateAcademySelectedCount();" />' +
+      '<label for="alchk_' + p.id + '">' + label + '</label>' +
+      '</div>';
+  }).join('');
+  updateAcademySelectedCount();
+}
+
+function filterAcademyLeagueChecklist() {
+  var val = document.getElementById('academyLeaguePlayerSearch').value.toLowerCase().trim();
+  buildAcademyLeagueChecklist(val);
+}
+
+function toggleAcademyLeagueCheck(playerId) {
+  var chk = document.getElementById('alchk_' + playerId);
+  if (chk) { chk.checked = !chk.checked; updateAcademySelectedCount(); }
+}
+
+function updateAcademySelectedCount() {
+  var checked = document.querySelectorAll('#academyLeaguePlayerChecklist input[type="checkbox"]:checked');
+  document.getElementById('academySelectedCount').textContent = checked.length + ' player' + (checked.length !== 1 ? 's' : '') + ' selected';
+}
+
+async function addSelectedPlayersToAcademyLeague() {
+  var leagueId = document.getElementById('academyLeagueSelect').value;
+  var checked = document.querySelectorAll('#academyLeaguePlayerChecklist input[type="checkbox"]:checked');
+  if (!checked.length) { showMsg('academyleague-error', 'Please select at least one player.'); return; }
+
+  for (var i = 0; i < checked.length; i++) {
+    await sbClient.from('academy_league_players').insert([{ academy_league_id: leagueId, player_id: checked[i].value }]);
+  }
+
+  showMsg('academyleague-success', checked.length + ' player(s) added!');
+  document.getElementById('academyLeaguePlayerSearch').value = '';
+  loadAcademyLeaguePlayers();
+}
 
       async function addPlayerToAcademyLeague() {
         var leagueId = document.getElementById('academyLeagueSelect').value;
