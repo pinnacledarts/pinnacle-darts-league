@@ -1,12 +1,12 @@
 const SUPABASE_URL = 'https://xcygwejfphziercarakq.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjeWd3ZWpmcGh6aWVyY2FyYWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NDQwNDIsImV4cCI6MjA5ODQyMDA0Mn0.9FZ_OlIohNt0c-5cq4YI9pS1I1V2HvrggXtvZIXfr6U';
-const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); 
+const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function checkAuth() {
   const { data: { session } } = await sbClient.auth.getSession();
 
   const authButtons = document.getElementById('authButtons');
-  if (!authButtons) return; 
+  if (!authButtons) return;
 
   if (session) {
     const { data: profile } = await sbClient
@@ -22,26 +22,17 @@ async function checkAuth() {
       <button class="btn-logout" onclick="handleLogout()">Logout</button>
     `;
 
-if (profile && profile.is_admin) {
-  const nav = document.getElementById('mainNav');
-  if (nav && !document.getElementById('adminNavLink')) {
-    const adminLink = document.createElement('a');
-    adminLink.href = 'admin.html';
-    adminLink.id = 'adminNavLink';
-    adminLink.textContent = 'Admin';
-    nav.appendChild(adminLink);
-  }
-
-  const switchBtn = document.querySelector('.btn-switch');
-  if (switchBtn && !document.getElementById('adminHeaderLink')) {
-    const adminHeaderLink = document.createElement('a');
-    adminHeaderLink.href = 'admin.html';
-    adminHeaderLink.id = 'adminHeaderLink';
-    adminHeaderLink.className = 'btn-switch';
-    adminHeaderLink.textContent = 'Admin';
-    switchBtn.insertAdjacentElement('afterend', adminHeaderLink);
-  }
-}
+    if (profile && profile.is_admin) {
+      const switchBtn = document.querySelector('.btn-switch');
+      if (switchBtn && !document.getElementById('adminHeaderLink')) {
+        const adminHeaderLink = document.createElement('a');
+        adminHeaderLink.href = 'admin.html';
+        adminHeaderLink.id = 'adminHeaderLink';
+        adminHeaderLink.className = 'btn-switch';
+        adminHeaderLink.textContent = 'Admin';
+        switchBtn.insertAdjacentElement('afterend', adminHeaderLink);
+      }
+    }
 
   } else {
     authButtons.innerHTML = `
