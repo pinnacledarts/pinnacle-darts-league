@@ -1073,10 +1073,10 @@ async function saveSessionEdit(id) {
   document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
 }
 
-      function toggleSessionDetail(id) {
-        var row = document.getElementById('session-detail-' + id);
-        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
-      }
+function toggleSessionDetail(id) {
+  var row = document.getElementById('session-detail-' + id);
+  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
 
       function filterSessionLog() {
         var playerVal = document.getElementById('sessionSearch').value;
