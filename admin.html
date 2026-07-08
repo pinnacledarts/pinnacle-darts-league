@@ -8,14 +8,6 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
     <style>
-      .player-checklist { max-height: 250px; overflow-y: auto; border: 1px solid #dddddd; border-radius: 4px; background-color: #f9f9f9; margin-bottom: 12px; }
-.player-checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #eeeeee; cursor: pointer; }
-.player-checklist-item:last-child { border-bottom: none; }
-.player-checklist-item:hover { background-color: #f0f0f0; }
-.player-checklist-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
-.player-checklist-item label { cursor: pointer; font-size: 0.95em; flex: 1; }
-.player-checklist-empty { padding: 16px; text-align: center; color: #aaaaaa; font-size: 0.9em; }
-.selected-count { font-size: 0.85em; color: #555555; margin-bottom: 8px; }
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
       header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
@@ -75,6 +67,14 @@
       .template-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; padding: 12px; background: #f9f9f9; border: 1px solid #dddddd; border-radius: 6px; flex-wrap: wrap; }
       .template-bar label { font-size: 0.9em; font-weight: bold; margin-right: 4px; }
       .template-bar select { padding: 6px 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; font-family: Arial, sans-serif; }
+      .player-checklist { max-height: 250px; overflow-y: auto; border: 1px solid #dddddd; border-radius: 4px; background-color: #f9f9f9; margin-bottom: 12px; }
+      .player-checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #eeeeee; cursor: pointer; }
+      .player-checklist-item:last-child { border-bottom: none; }
+      .player-checklist-item:hover { background-color: #f0f0f0; }
+      .player-checklist-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; flex-shrink: 0; }
+      .player-checklist-item label { cursor: pointer; font-size: 0.95em; flex: 1; }
+      .player-checklist-empty { padding: 16px; text-align: center; color: #aaaaaa; font-size: 0.9em; }
+      .selected-count { font-size: 0.85em; color: #555555; margin-bottom: 8px; }
       @media (max-width: 700px) {
         header { flex-wrap: wrap; padding: 16px 20px; }
         header img { height: 50px; }
@@ -102,7 +102,7 @@
         <h1>Pinnacle Darts League</h1>
         <p>Official League Website</p>
       </div>
-<a href="academy.html" class="btn-switch" id="switchBtn">Switch to Academy</a>
+      <a href="academy.html" class="btn-switch" id="switchBtn">Switch to Academy</a>
       <div class="header-buttons" style="margin-left: auto;">
         <div id="authButtons"></div>
         <button class="hamburger" onclick="toggleMenu()">☰</button>
@@ -325,24 +325,24 @@
           </div>
           <button class="btn btn-primary" onclick="createAcademyLeague()">Create Group</button>
 
-<div style="margin-top:24px;">
-  <div class="form-group">
-    <label>Manage Group</label>
-    <select id="academyLeagueSelect" onchange="loadAcademyLeaguePlayers()"></select>
-  </div>
-  <button class="btn btn-secondary" onclick="endAcademySeason()">End Season</button>
-  <button class="btn btn-danger" onclick="deleteAcademyLeague()">Delete This Group</button>
-</div>
+          <div style="margin-top:24px;">
+            <div class="form-group">
+              <label>Manage Group</label>
+              <select id="academyLeagueSelect" onchange="loadAcademyLeaguePlayers()"></select>
+            </div>
+            <button class="btn btn-secondary" onclick="endAcademySeason()">End Season</button>
+            <button class="btn btn-danger" onclick="deleteAcademyLeague()">Delete This Group</button>
+          </div>
 
-<div style="margin-top:16px;">
-  <div class="form-group">
-    <label>Search Players to Add</label>
-    <input type="text" id="academyLeaguePlayerSearch" placeholder="Search by name or username..." oninput="filterAcademyLeagueChecklist()" />
-  </div>
-  <div class="selected-count" id="academySelectedCount">0 players selected</div>
-  <div class="player-checklist" id="academyLeaguePlayerChecklist"><p class="player-checklist-empty">Loading players...</p></div>
-  <button class="btn btn-primary" onclick="addSelectedPlayersToAcademyLeague()" style="margin-top:8px;">Add Selected Players</button>
-</div>
+          <div style="margin-top:16px;">
+            <div class="form-group">
+              <label>Search Players to Add</label>
+              <input type="text" id="academyLeaguePlayerSearch" placeholder="Search by name or username..." oninput="filterAcademyLeagueChecklist()" />
+            </div>
+            <div class="selected-count" id="academySelectedCount">0 players selected</div>
+            <div class="player-checklist" id="academyLeaguePlayerChecklist"><p class="player-checklist-empty">Loading players...</p></div>
+            <button class="btn btn-primary" onclick="addSelectedPlayersToAcademyLeague()" style="margin-top:8px;">Add Selected Players</button>
+          </div>
 
           <div id="academyLeaguePlayersList" style="margin-top:16px;"></div>
         </div>
@@ -457,38 +457,46 @@
         </div>
 
         <div class="card">
+          <h3>Division Sponsor Logos</h3>
+          <p style="color:#666;font-size:0.9em;margin-top:-8px;">Add sponsor logos for an academy division/group.</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Select Group</label>
+              <select id="divisionSponsorLeagueSelect"></select>
+            </div>
+            <div class="form-group">
+              <label>Sponsor Name</label>
+              <input type="text" id="divisionSponsorName" placeholder="e.g. Double Out Designs" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Sponsor Website Link</label>
+              <input type="text" id="divisionSponsorLink" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label>Logo File</label>
+              <input type="file" id="divisionSponsorLogoFile" accept="image/*" />
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addDivisionSponsor()">Add Sponsor</button>
+          <div id="divisionSponsorsList" style="margin-top:16px;"></div>
+        </div>
+
+        <div class="card">
           <h3>Sponsor Enquiries (Players)</h3>
           <div id="sponsorEnquiriesList"><p class="empty-state">Loading...</p></div>
         </div>
-<div class="card">
-  <h3>Division Sponsor Logos</h3>
-  <p style="color:#666;font-size:0.9em;margin-top:-8px;">Add sponsor logos for an academy division/group.</p>
-  <div class="form-row">
-    <div class="form-group">
-      <label>Select Group</label>
-      <select id="divisionSponsorLeagueSelect"></select>
-    </div>
-    <div class="form-group">
-      <label>Sponsor Name</label>
-      <input type="text" id="divisionSponsorName" placeholder="e.g. Double Out Designs" />
-    </div>
-  </div>
-  <div class="form-row">
-    <div class="form-group">
-      <label>Sponsor Website Link</label>
-      <input type="text" id="divisionSponsorLink" placeholder="https://..." />
-    </div>
-    <div class="form-group">
-      <label>Logo File</label>
-      <input type="file" id="divisionSponsorLogoFile" accept="image/*" />
-    </div>
-  </div>
-  <button class="btn btn-primary" onclick="addDivisionSponsor()">Add Sponsor</button>
-  <div id="divisionSponsorsList" style="margin-top:16px;"></div>
-</div>
+
         <div class="card">
           <h3>Division Sponsor Enquiries</h3>
           <div id="divisionEnquiriesList"><p class="empty-state">Loading...</p></div>
+        </div>
+
+        <div class="card">
+          <h3>Archived Groups</h3>
+          <p style="color:#666;font-size:0.9em;margin-top:-8px;">Completed seasons. Reactivate a group to make it manageable again.</p>
+          <div id="archivedGroupsList"><p class="empty-state">Loading...</p></div>
         </div>
       </div>
 
@@ -534,79 +542,20 @@
     <script>
       var allPlayersData = [];
       var allSessionsData = [];
-if (document.referrer.includes('academy.html')) {
-  document.getElementById('switchBtn').textContent = 'Switch to Online';
-  document.getElementById('switchBtn').href = 'index.html';
-}
+      var academyLeagueAvailablePlayers = [];
+
+      if (document.referrer.includes('academy.html')) {
+        document.getElementById('switchBtn').textContent = 'Switch to Online';
+        document.getElementById('switchBtn').href = 'index.html';
+      }
+
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
         event.target.classList.add('active');
         document.getElementById('tab-' + name).classList.add('active');
       }
-async function loadDivisionSponsorSelect() {
-  var result = await sbClient.from('academy_leagues').select('*').order('name');
-  var select = document.getElementById('divisionSponsorLeagueSelect');
-  select.innerHTML = '';
-  (result.data || []).forEach(function(g) {
-    select.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>';
-  });
-  if (result.data && result.data.length) { loadDivisionSponsorsForSelected(); }
-  select.onchange = loadDivisionSponsorsForSelected;
-}
 
-async function loadDivisionSponsorsForSelected() {
-  var leagueId = document.getElementById('divisionSponsorLeagueSelect').value;
-  if (!leagueId) { return; }
-  var result = await sbClient.from('academy_league_sponsors').select('*').eq('academy_league_id', leagueId);
-  var container = document.getElementById('divisionSponsorsList');
-  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No sponsors added for this group yet.</p>'; return; }
-  container.innerHTML = '<table><thead><tr><th>Sponsor</th><th>Link</th><th>Action</th></tr></thead><tbody>' +
-    result.data.map(function(s) {
-      return '<tr><td>' + (s.sponsor_name || '-') + '</td><td>' + (s.link || '-') + '</td><td><button class="btn-small danger" onclick="deleteDivisionSponsor(' + s.id + ')">Remove</button></td></tr>';
-    }).join('') + '</tbody></table>';
-}
-
-async function addDivisionSponsor() {
-  var leagueId = document.getElementById('divisionSponsorLeagueSelect').value;
-  var name = document.getElementById('divisionSponsorName').value.trim();
-  var link = document.getElementById('divisionSponsorLink').value.trim();
-  var fileInput = document.getElementById('divisionSponsorLogoFile');
-  var file = fileInput.files[0];
-
-  if (!leagueId) { alert('Please select a group.'); return; }
-  if (!file) { alert('Please select a logo file.'); return; }
-
-  var fileExt = file.name.split('.').pop();
-  var fileName = 'division_' + leagueId + '_' + Date.now() + '.' + fileExt;
-
-  var uploadResult = await sbClient.storage.from('sponsor-logos').upload(fileName, file);
-  if (uploadResult.error) { alert('Error uploading logo: ' + uploadResult.error.message); return; }
-
-  var urlData = sbClient.storage.from('sponsor-logos').getPublicUrl(fileName);
-  var logoUrl = urlData.data.publicUrl;
-
-  var result = await sbClient.from('academy_league_sponsors').insert([{
-    academy_league_id: leagueId,
-    sponsor_name: name || null,
-    link: link || null,
-    logo_url: logoUrl
-  }]);
-
-  if (result.error) { alert('Error saving sponsor: ' + result.error.message); return; }
-
-  alert('Sponsor added!');
-  document.getElementById('divisionSponsorName').value = '';
-  document.getElementById('divisionSponsorLink').value = '';
-  fileInput.value = '';
-  loadDivisionSponsorsForSelected();
-}
-
-async function deleteDivisionSponsor(id) {
-  if (!confirm('Remove this sponsor?')) { return; }
-  await sbClient.from('academy_league_sponsors').delete().eq('id', id);
-  loadDivisionSponsorsForSelected();
-}
       function toggleSwissOptions() {
         var format = document.getElementById('leagueFormat').value;
         document.getElementById('swissOptions').classList.toggle('hidden', format !== 'swiss');
@@ -828,45 +777,66 @@ async function deleteDivisionSponsor(id) {
         loadPlayers();
       }
 
-async function loadAcademyLeagueSelects() {
-  var result = await sbClient.from('academy_leagues').select('*').order('name');
-  var allGroups = result.data || [];
-  var activeGroups = allGroups.filter(function(g) { return g.status !== 'completed'; });
+      async function loadAcademyLeagueSelects() {
+        var result = await sbClient.from('academy_leagues').select('*').order('name');
+        var allGroups = result.data || [];
+        var activeGroups = allGroups.filter(function(g) { return g.status !== 'completed'; });
 
-  var manageSelect = document.getElementById('academyLeagueSelect');
-  manageSelect.innerHTML = '';
-  allGroups.forEach(function(g) {
-    manageSelect.innerHTML += '<option value="' + g.id + '">' + g.name + (g.status === 'completed' ? ' (Completed)' : '') + '</option>';
-  });
+        var manageSelect = document.getElementById('academyLeagueSelect');
+        manageSelect.innerHTML = '';
+        activeGroups.forEach(function(g) { manageSelect.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>'; });
 
-  var sessionSelect = document.getElementById('sessionAcademyLeague');
-  sessionSelect.innerHTML = '';
-  activeGroups.forEach(function(g) { sessionSelect.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>'; });
+        var sessionSelect = document.getElementById('sessionAcademyLeague');
+        sessionSelect.innerHTML = '';
+        activeGroups.forEach(function(g) { sessionSelect.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>'; });
 
-  if (allGroups.length) {
-    loadAcademyLeaguePlayers();
-  }
-  if (activeGroups.length) {
-    loadSessionPlayerSelect();
-  }
-}
+        if (activeGroups.length) {
+          loadAcademyLeaguePlayers();
+          loadSessionPlayerSelect();
+        } else {
+          document.getElementById('academyLeaguePlayersList').innerHTML = '<p class="empty-state">No active groups.</p>';
+        }
 
-async function endAcademySeason() {
-  var id = document.getElementById('academyLeagueSelect').value;
-  if (!id) { return; }
-  if (!confirm('End the season for this group? It will move to completed and no longer accept new sessions.')) { return; }
-  await sbClient.from('academy_leagues').update({ status: 'completed' }).eq('id', id);
-  showMsg('academyleague-success', 'Season ended!');
-  loadAcademyLeagueSelects();
-}
+        loadArchivedGroups(allGroups.filter(function(g) { return g.status === 'completed'; }));
+      }
+
+      function loadArchivedGroups(archivedGroups) {
+        var container = document.getElementById('archivedGroupsList');
+        if (!archivedGroups.length) { container.innerHTML = '<p class="empty-state">No archived groups yet.</p>'; return; }
+        container.innerHTML = '<table><thead><tr><th>Group</th><th>Action</th></tr></thead><tbody>' +
+          archivedGroups.map(function(g) {
+            return '<tr><td>' + g.name + '</td><td><button class="btn-small" onclick="reactivateAcademyGroup(' + g.id + ')">Reactivate</button> <button class="btn-small danger" onclick="permanentlyDeleteAcademyGroup(' + g.id + ')">Delete Permanently</button></td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+
+      async function reactivateAcademyGroup(id) {
+        if (!confirm('Reactivate this group?')) { return; }
+        await sbClient.from('academy_leagues').update({ status: 'active' }).eq('id', id);
+        loadAcademyLeagueSelects();
+      }
+
+      async function permanentlyDeleteAcademyGroup(id) {
+        if (!confirm('Permanently delete this group and all its data? This cannot be undone.')) { return; }
+        await sbClient.from('academy_leagues').delete().eq('id', id);
+        loadAcademyLeagueSelects();
+      }
 
       async function createAcademyLeague() {
         var name = document.getElementById('academyLeagueName').value.trim();
         if (!name) { showMsg('academyleague-error', 'Please enter a group name.'); return; }
-        var result = await sbClient.from('academy_leagues').insert([{ name: name }]);
+        var result = await sbClient.from('academy_leagues').insert([{ name: name, status: 'active' }]);
         if (result.error) { showMsg('academyleague-error', result.error.message); return; }
         showMsg('academyleague-success', 'Group created!');
         document.getElementById('academyLeagueName').value = '';
+        loadAcademyLeagueSelects();
+      }
+
+      async function endAcademySeason() {
+        var id = document.getElementById('academyLeagueSelect').value;
+        if (!id) { return; }
+        if (!confirm('End the season for this group? It will move to Archived Groups.')) { return; }
+        await sbClient.from('academy_leagues').update({ status: 'completed' }).eq('id', id);
+        showMsg('academyleague-success', 'Season ended!');
         loadAcademyLeagueSelects();
       }
 
@@ -878,82 +848,78 @@ async function endAcademySeason() {
         loadAcademyLeagueSelects();
       }
 
-     var academyLeagueAvailablePlayers = [];
+      async function loadAcademyLeaguePlayers() {
+        var leagueId = document.getElementById('academyLeagueSelect').value;
+        if (!leagueId) { return; }
 
-async function loadAcademyLeaguePlayers() {
-  var leagueId = document.getElementById('academyLeagueSelect').value;
-  if (!leagueId) { return; }
+        var allPlayersResult = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
+        var allAcademyPlayers = allPlayersResult.data || [];
 
-  var allPlayersResult = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
-  var allAcademyPlayers = allPlayersResult.data || [];
+        var currentResult = await sbClient.from('academy_league_players').select('player_id').eq('academy_league_id', leagueId);
+        var currentIds = (currentResult.data || []).map(function(p) { return p.player_id; });
 
-  var currentResult = await sbClient.from('academy_league_players').select('player_id').eq('academy_league_id', leagueId);
-  var currentIds = (currentResult.data || []).map(function(p) { return p.player_id; });
+        academyLeagueAvailablePlayers = allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) === -1; });
+        buildAcademyLeagueChecklist('');
 
-  academyLeagueAvailablePlayers = allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) === -1; });
-  buildAcademyLeagueChecklist('');
+        var container = document.getElementById('academyLeaguePlayersList');
+        var currentPlayers = allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) > -1; });
+        if (!currentPlayers.length) { container.innerHTML = '<p class="empty-state">No players in this group yet.</p>'; return; }
+        container.innerHTML = '<table><thead><tr><th>Player</th><th>Action</th></tr></thead><tbody>' +
+          currentPlayers.map(function(p) {
+            return '<tr><td>' + (p.full_name || p.username) + '</td><td><button class="btn-small danger" onclick="removePlayerFromAcademyLeague(\'' + p.id + '\')">Remove</button></td></tr>';
+          }).join('') + '</tbody></table>';
+      }
 
-  var container = document.getElementById('academyLeaguePlayersList');
-  var currentPlayers = allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) > -1; });
-  if (!currentPlayers.length) { container.innerHTML = '<p class="empty-state">No players in this group yet.</p>'; return; }
-  container.innerHTML = '<table><thead><tr><th>Player</th><th>Action</th></tr></thead><tbody>' +
-    currentPlayers.map(function(p) {
-      return '<tr><td>' + (p.full_name || p.username) + '</td><td><button class="btn-small danger" onclick="removePlayerFromAcademyLeague(\'' + p.id + '\')">Remove</button></td></tr>';
-    }).join('') + '</tbody></table>';
-}
+      function buildAcademyLeagueChecklist(filter) {
+        var checklist = document.getElementById('academyLeaguePlayerChecklist');
+        var available = academyLeagueAvailablePlayers.filter(function(p) {
+          if (!filter) { return true; }
+          var name = (p.full_name || '').toLowerCase();
+          var username = (p.username || '').toLowerCase();
+          return name.includes(filter) || username.includes(filter);
+        });
+        if (!available.length) {
+          checklist.innerHTML = '<p class="player-checklist-empty">No players available</p>';
+          return;
+        }
+        checklist.innerHTML = available.map(function(p) {
+          var label = (p.full_name || p.username || 'Unknown') + (p.username ? ' (@' + p.username + ')' : '');
+          return '<div class="player-checklist-item" onclick="toggleAcademyLeagueCheck(\'' + p.id + '\')">' +
+            '<input type="checkbox" id="alchk_' + p.id + '" value="' + p.id + '" onclick="event.stopPropagation(); updateAcademySelectedCount();" />' +
+            '<label for="alchk_' + p.id + '">' + label + '</label>' +
+            '</div>';
+        }).join('');
+        updateAcademySelectedCount();
+      }
 
-function buildAcademyLeagueChecklist(filter) {
-  var checklist = document.getElementById('academyLeaguePlayerChecklist');
-  var available = academyLeagueAvailablePlayers.filter(function(p) {
-    if (!filter) { return true; }
-    var name = (p.full_name || '').toLowerCase();
-    var username = (p.username || '').toLowerCase();
-    return name.includes(filter) || username.includes(filter);
-  });
-  if (!available.length) {
-    checklist.innerHTML = '<p class="player-checklist-empty">No players available</p>';
-    return;
-  }
-  checklist.innerHTML = available.map(function(p) {
-    var label = (p.full_name || p.username || 'Unknown') + (p.username ? ' (@' + p.username + ')' : '');
-    return '<div class="player-checklist-item" onclick="toggleAcademyLeagueCheck(\'' + p.id + '\')">' +
-      '<input type="checkbox" id="alchk_' + p.id + '" value="' + p.id + '" onclick="event.stopPropagation(); updateAcademySelectedCount();" />' +
-      '<label for="alchk_' + p.id + '">' + label + '</label>' +
-      '</div>';
-  }).join('');
-  updateAcademySelectedCount();
-}
+      function filterAcademyLeagueChecklist() {
+        var val = document.getElementById('academyLeaguePlayerSearch').value.toLowerCase().trim();
+        buildAcademyLeagueChecklist(val);
+      }
 
-function filterAcademyLeagueChecklist() {
-  var val = document.getElementById('academyLeaguePlayerSearch').value.toLowerCase().trim();
-  buildAcademyLeagueChecklist(val);
-}
+      function toggleAcademyLeagueCheck(playerId) {
+        var chk = document.getElementById('alchk_' + playerId);
+        if (chk) { chk.checked = !chk.checked; updateAcademySelectedCount(); }
+      }
 
-function toggleAcademyLeagueCheck(playerId) {
-  var chk = document.getElementById('alchk_' + playerId);
-  if (chk) { chk.checked = !chk.checked; updateAcademySelectedCount(); }
-}
+      function updateAcademySelectedCount() {
+        var checked = document.querySelectorAll('#academyLeaguePlayerChecklist input[type="checkbox"]:checked');
+        document.getElementById('academySelectedCount').textContent = checked.length + ' player' + (checked.length !== 1 ? 's' : '') + ' selected';
+      }
 
-function updateAcademySelectedCount() {
-  var checked = document.querySelectorAll('#academyLeaguePlayerChecklist input[type="checkbox"]:checked');
-  document.getElementById('academySelectedCount').textContent = checked.length + ' player' + (checked.length !== 1 ? 's' : '') + ' selected';
-}
+      async function addSelectedPlayersToAcademyLeague() {
+        var leagueId = document.getElementById('academyLeagueSelect').value;
+        var checked = document.querySelectorAll('#academyLeaguePlayerChecklist input[type="checkbox"]:checked');
+        if (!checked.length) { showMsg('academyleague-error', 'Please select at least one player.'); return; }
 
-async function addSelectedPlayersToAcademyLeague() {
-  var leagueId = document.getElementById('academyLeagueSelect').value;
-  var checked = document.querySelectorAll('#academyLeaguePlayerChecklist input[type="checkbox"]:checked');
-  if (!checked.length) { showMsg('academyleague-error', 'Please select at least one player.'); return; }
+        for (var i = 0; i < checked.length; i++) {
+          await sbClient.from('academy_league_players').insert([{ academy_league_id: leagueId, player_id: checked[i].value }]);
+        }
 
-  for (var i = 0; i < checked.length; i++) {
-    await sbClient.from('academy_league_players').insert([{ academy_league_id: leagueId, player_id: checked[i].value }]);
-  }
-
-  showMsg('academyleague-success', checked.length + ' player(s) added!');
-  document.getElementById('academyLeaguePlayerSearch').value = '';
-  loadAcademyLeaguePlayers();
-}
-
-
+        showMsg('academyleague-success', checked.length + ' player(s) added!');
+        document.getElementById('academyLeaguePlayerSearch').value = '';
+        loadAcademyLeaguePlayers();
+      }
 
       async function removePlayerFromAcademyLeague(playerId) {
         var leagueId = document.getElementById('academyLeagueSelect').value;
@@ -1142,6 +1108,70 @@ async function addSelectedPlayersToAcademyLeague() {
         loadSponsorsForSelectedPlayer();
       }
 
+      async function loadDivisionSponsorSelect() {
+        var result = await sbClient.from('academy_leagues').select('*').eq('status', 'active').order('name');
+        var select = document.getElementById('divisionSponsorLeagueSelect');
+        select.innerHTML = '';
+        (result.data || []).forEach(function(g) {
+          select.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>';
+        });
+        if (result.data && result.data.length) { loadDivisionSponsorsForSelected(); }
+        select.onchange = loadDivisionSponsorsForSelected;
+      }
+
+      async function loadDivisionSponsorsForSelected() {
+        var leagueId = document.getElementById('divisionSponsorLeagueSelect').value;
+        if (!leagueId) { return; }
+        var result = await sbClient.from('academy_league_sponsors').select('*').eq('academy_league_id', leagueId);
+        var container = document.getElementById('divisionSponsorsList');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No sponsors added for this group yet.</p>'; return; }
+        container.innerHTML = '<table><thead><tr><th>Sponsor</th><th>Link</th><th>Action</th></tr></thead><tbody>' +
+          result.data.map(function(s) {
+            return '<tr><td>' + (s.sponsor_name || '-') + '</td><td>' + (s.link || '-') + '</td><td><button class="btn-small danger" onclick="deleteDivisionSponsor(' + s.id + ')">Remove</button></td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+
+      async function addDivisionSponsor() {
+        var leagueId = document.getElementById('divisionSponsorLeagueSelect').value;
+        var name = document.getElementById('divisionSponsorName').value.trim();
+        var link = document.getElementById('divisionSponsorLink').value.trim();
+        var fileInput = document.getElementById('divisionSponsorLogoFile');
+        var file = fileInput.files[0];
+
+        if (!leagueId) { alert('Please select a group.'); return; }
+        if (!file) { alert('Please select a logo file.'); return; }
+
+        var fileExt = file.name.split('.').pop();
+        var fileName = 'division_' + leagueId + '_' + Date.now() + '.' + fileExt;
+
+        var uploadResult = await sbClient.storage.from('sponsor-logos').upload(fileName, file);
+        if (uploadResult.error) { alert('Error uploading logo: ' + uploadResult.error.message); return; }
+
+        var urlData = sbClient.storage.from('sponsor-logos').getPublicUrl(fileName);
+        var logoUrl = urlData.data.publicUrl;
+
+        var result = await sbClient.from('academy_league_sponsors').insert([{
+          academy_league_id: leagueId,
+          sponsor_name: name || null,
+          link: link || null,
+          logo_url: logoUrl
+        }]);
+
+        if (result.error) { alert('Error saving sponsor: ' + result.error.message); return; }
+
+        alert('Sponsor added!');
+        document.getElementById('divisionSponsorName').value = '';
+        document.getElementById('divisionSponsorLink').value = '';
+        fileInput.value = '';
+        loadDivisionSponsorsForSelected();
+      }
+
+      async function deleteDivisionSponsor(id) {
+        if (!confirm('Remove this sponsor?')) { return; }
+        await sbClient.from('academy_league_sponsors').delete().eq('id', id);
+        loadDivisionSponsorsForSelected();
+      }
+
       async function loadSponsorEnquiries() {
         var result = await sbClient.from('sponsor_enquiries').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
         var container = document.getElementById('sponsorEnquiriesList');
@@ -1269,7 +1299,8 @@ async function addSelectedPlayersToAcademyLeague() {
         loadSponsorPlayerSelect();
         loadSponsorEnquiries();
         loadDivisionEnquiries();
-        loadDivisionSponsorSelect();
+        loadDivisionSponsors: loadDivisionSponsorSelect();
+        loadDivisionEnquiries();
         loadNews();
       });
     </script>
