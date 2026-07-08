@@ -30,11 +30,13 @@
       .news-item { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 24px; margin-bottom: 16px; }
       table { width: 100%; border-collapse: collapse; margin-top: 20px; }
       th { background-color: #111111; color: #ffffff; padding: 10px 8px; text-align: left; font-size: 0.85em; }
-      th:last-child, td:last-child { position: sticky; right: 0; background-color: #ffffff; box-shadow: -2px 0 4px rgba(0,0,0,0.1); }
-th:last-child { background-color: #111111; }
       th abbr { text-decoration: none; cursor: help; border-bottom: 1px dotted #ffffff; }
       td { padding: 10px 8px; border-bottom: 1px solid #dddddd; font-size: 0.9em; }
       tr:nth-child(4n+1), tr:nth-child(4n+2) { background-color: #eeeeee; }
+      th:last-child, td:last-child { position: sticky; right: 0; background-color: #ffffff; box-shadow: -2px 0 4px rgba(0,0,0,0.1); }
+      th:last-child { background-color: #111111; }
+      th:nth-child(2), td:nth-child(2) { position: sticky; left: 0; background-color: #ffffff; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+      th:nth-child(2) { background-color: #111111; }
       .key { font-size: 0.8em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
       .key span { margin-right: 16px; display: inline-block; }
       .search-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
@@ -120,6 +122,10 @@ th:last-child { background-color: #111111; }
       </div>
 
       <div id="tab-table" class="tab-content">
+        <div class="search-box" style="margin-bottom:20px;">
+          <label>View Group</label>
+          <select id="academyLeagueViewSelect" onchange="renderAcademyStandings()" style="width:100%;padding:10px 14px;border:1px solid #dddddd;border-radius:4px;font-size:1em;background-color:#f9f9f9;"></select>
+        </div>
         <div style="overflow-x:auto;">
         <table style="min-width:800px;">
           <thead>
@@ -148,6 +154,33 @@ th:last-child { background-color: #111111; }
           <span><strong>9DC</strong> = 9 Dart Challenge</span>
           <span><strong>100+</strong> = Over 100 Checkout</span>
           <span><strong>171+</strong> = 171+ Scored</span>
+        </div>
+
+        <div style="text-align:center;margin-top:16px;">
+          <button onclick="openDivisionEnquiryForm()" style="background-color:#ffffff;color:#111111;border:1px solid #111111;padding:10px 20px;border-radius:4px;font-size:0.9em;cursor:pointer;font-family:Arial, sans-serif;">💼 Sponsor this Division</button>
+        </div>
+
+        <div id="divisionEnquiryFormWrap" style="display:none;background-color:#f9f9f9;border:1px solid #dddddd;border-radius:6px;padding:20px;margin-top:16px;">
+          <h4 style="margin:0 0 16px;">Division Sponsor Enquiry</h4>
+          <div class="success-msg" id="division-enquiry-success" style="display:none;background:#f0fff0;border:1px solid #cceecc;color:#006600;padding:10px;border-radius:4px;margin-bottom:16px;font-size:0.9em;"></div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Name</label>
+            <input type="text" id="divisionEnquiryName" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+          </div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Email</label>
+            <input type="email" id="divisionEnquiryEmail" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+          </div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Phone Number (optional)</label>
+            <input type="tel" id="divisionEnquiryPhone" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+          </div>
+          <div class="form-group" style="margin-bottom:12px;">
+            <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Message</label>
+            <textarea id="divisionEnquiryMessage" rows="3" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;"></textarea>
+          </div>
+          <button onclick="submitDivisionEnquiry()" style="background-color:#111111;color:#ffffff;border:none;padding:10px 20px;border-radius:4px;cursor:pointer;">Send Enquiry</button>
+          <button onclick="document.getElementById('divisionEnquiryFormWrap').style.display='none'" style="background:none;border:1px solid #dddddd;padding:10px 20px;border-radius:4px;cursor:pointer;margin-left:8px;">Cancel</button>
         </div>
       </div>
 
@@ -282,6 +315,7 @@ th:last-child { background-color: #111111; }
       let allPlayers = [];
       let currentUserId = null;
       let currentProfileId = null;
+      let allAcademyLeagues = [];
 
       const fieldLabels = {
         highest_checkout: 'profileCheckout',
@@ -335,6 +369,31 @@ th:last-child { background-color: #111111; }
           showPlayer(allPlayers[0]);
         }
 
+        await loadAcademyLeagueOptions();
+      }
+
+      async function loadAcademyLeagueOptions() {
+        const leaguesResult = await sbClient.from('academy_leagues').select('*').order('name');
+        allAcademyLeagues = leaguesResult.data || [];
+
+        const select = document.getElementById('academyLeagueViewSelect');
+        select.innerHTML = '';
+        allAcademyLeagues.forEach(l => {
+          select.innerHTML += `<option value="${l.id}">${l.name}</option>`;
+        });
+
+        if (!allAcademyLeagues.length) {
+          renderAcademyStandings();
+          return;
+        }
+
+        let defaultLeagueId = allAcademyLeagues[0].id;
+        if (currentUserId) {
+          const ownLink = await sbClient.from('academy_league_players').select('academy_league_id').eq('player_id', currentUserId).limit(1).single();
+          if (ownLink.data) { defaultLeagueId = ownLink.data.academy_league_id; }
+        }
+
+        select.value = defaultLeagueId;
         renderAcademyStandings();
       }
 
@@ -429,6 +488,45 @@ th:last-child { background-color: #111111; }
         document.getElementById('enquiryEmail').value = '';
         document.getElementById('enquiryPhone').value = '';
         document.getElementById('enquiryMessage').value = '';
+      }
+
+      function openDivisionEnquiryForm() {
+        document.getElementById('divisionEnquiryFormWrap').style.display = 'block';
+        document.getElementById('division-enquiry-success').style.display = 'none';
+      }
+
+      async function submitDivisionEnquiry() {
+        const leagueId = document.getElementById('academyLeagueViewSelect').value;
+        const name = document.getElementById('divisionEnquiryName').value.trim();
+        const email = document.getElementById('divisionEnquiryEmail').value.trim();
+        const phone = document.getElementById('divisionEnquiryPhone').value.trim();
+        const message = document.getElementById('divisionEnquiryMessage').value.trim();
+
+        if (!leagueId) { alert('Please select a group first.'); return; }
+        if (!name || !email || !message) {
+          alert('Please fill in your name, email and message.');
+          return;
+        }
+
+        const { error } = await sbClient.from('division_sponsor_enquiries').insert([{
+          academy_league_id: leagueId,
+          enquirer_name: name,
+          enquirer_email: email,
+          enquirer_phone: phone || null,
+          message: message
+        }]);
+
+        if (error) {
+          alert('Error sending enquiry. Please try again.');
+          return;
+        }
+
+        document.getElementById('division-enquiry-success').textContent = 'Thank you! Your enquiry has been sent.';
+        document.getElementById('division-enquiry-success').style.display = 'block';
+        document.getElementById('divisionEnquiryName').value = '';
+        document.getElementById('divisionEnquiryEmail').value = '';
+        document.getElementById('divisionEnquiryPhone').value = '';
+        document.getElementById('divisionEnquiryMessage').value = '';
       }
 
       function startEdit(field) {
@@ -589,11 +687,24 @@ th:last-child { background-color: #111111; }
       }
 
       async function renderAcademyStandings() {
-        const result = await sbClient.from('academy_sessions').select('*');
-        const sessions = result.data || [];
+        const leagueId = document.getElementById('academyLeagueViewSelect').value;
+        const tbody = document.getElementById('academyStandingsBody');
 
-        const standings = allPlayers.map(p => {
-          const playerSessions = sessions.filter(s => s.player_id === p.id);
+        if (!leagueId) {
+          tbody.innerHTML = '<tr><td colspan="10" class="loading">No academy groups yet.</td></tr>';
+          return;
+        }
+
+        const linkResult = await sbClient.from('academy_league_players').select('player_id, profiles(full_name, username)').eq('academy_league_id', leagueId);
+        const groupPlayers = linkResult.data || [];
+
+        const sessionsResult = await sbClient.from('academy_sessions').select('*').eq('academy_league_id', leagueId);
+        const sessions = sessionsResult.data || [];
+
+        const standings = groupPlayers.map(gp => {
+          const profile = gp.profiles || {};
+          const name = profile.full_name || profile.username || 'Unknown';
+          const playerSessions = sessions.filter(s => s.player_id === gp.player_id);
           const totals = {
             attendance: 0, attitude: 0, matchWin: 0, breakThrow: 0,
             nineDart: 0, over100: 0, score171: 0, bonus: 0
@@ -609,16 +720,11 @@ th:last-child { background-color: #111111; }
             totals.bonus += s.bonus_points || 0;
           });
           const total = totals.attendance + totals.attitude + totals.matchWin + totals.breakThrow + totals.nineDart + totals.over100 + totals.score171 + totals.bonus;
-          return {
-            name: p.full_name || p.username || 'Unknown',
-            ...totals,
-            total
-          };
+          return { name, ...totals, total };
         }).sort((a, b) => b.total - a.total);
 
-        const tbody = document.getElementById('academyStandingsBody');
         if (!standings.length) {
-          tbody.innerHTML = '<tr><td colspan="10" class="loading">No academy players yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="10" class="loading">No players in this group yet.</td></tr>';
           return;
         }
 
