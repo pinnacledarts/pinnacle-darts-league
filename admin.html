@@ -861,12 +861,7 @@ async function deleteEnquiry(id) {
           }).join('') + '</tbody></table>';
       }
 
-      async function saveAcademyStats(playerId) {
-        var played = parseInt(document.getElementById('ap_' + playerId).value) || 0;
-        var won = parseInt(document.getElementById('aw_' + playerId).value) || 0;
-        var lost = parseInt(document.getElementById('al_' + playerId).value) || 0;
-        var legsFor = parseInt(document.getElementById('alf_' + playerId).value) || 0;
-        var legsAgainst = parseInt(document.getElementById('ala_' + playerId).value) || 0;
+
 
         var result = await sbClient.from('profiles').update({
           academy_played: played,
