@@ -844,10 +844,7 @@ async function deleteEnquiry(id) {
         loadPlayers();
       }
 
-      async function loadAcademyStats() {
-        var result = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
-        var container = document.getElementById('academyStatsList');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No academy players yet.</p>'; return; }
+
 
         container.innerHTML = '<table><thead><tr><th>Player</th><th>Played</th><th>Won</th><th>Lost</th><th>Legs For</th><th>Legs Against</th><th>Action</th></tr></thead><tbody>' +
           result.data.map(function(p) {
