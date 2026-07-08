@@ -325,13 +325,15 @@
             <button class="btn btn-danger" onclick="deleteAcademyLeague()">Delete This Group</button>
           </div>
 
-          <div class="form-row" style="margin-top:16px;">
-            <div class="form-group">
-              <label>Add Player to Group</label>
-              <select id="academyLeaguePlayerSelect"></select>
-            </div>
-          </div>
-          <button class="btn btn-primary" onclick="addPlayerToAcademyLeague()">Add Player</button>
+<div style="margin-top:16px;">
+  <div class="form-group">
+    <label>Search Players to Add</label>
+    <input type="text" id="academyLeaguePlayerSearch" placeholder="Search by name or username..." oninput="filterAcademyLeagueChecklist()" />
+  </div>
+  <div class="selected-count" id="academySelectedCount">0 players selected</div>
+  <div class="player-checklist" id="academyLeaguePlayerChecklist"><p class="player-checklist-empty">Loading players...</p></div>
+  <button class="btn btn-primary" onclick="addSelectedPlayersToAcademyLeague()" style="margin-top:8px;">Add Selected Players</button>
+</div>
 
           <div id="academyLeaguePlayersList" style="margin-top:16px;"></div>
         </div>
