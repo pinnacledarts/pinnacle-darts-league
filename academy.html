@@ -690,6 +690,7 @@
       async function renderAcademyStandings() {
         const leagueId = document.getElementById('academyLeagueViewSelect').value;
         const tbody = document.getElementById('academyStandingsBody');
+        loadDivisionSponsors(leagueId);
 
         if (!leagueId) {
           tbody.innerHTML = '<tr><td colspan="10" class="loading">No academy groups yet.</td></tr>';
