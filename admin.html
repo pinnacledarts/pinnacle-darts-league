@@ -533,7 +533,69 @@ if (document.referrer.includes('academy.html')) {
         event.target.classList.add('active');
         document.getElementById('tab-' + name).classList.add('active');
       }
+async function loadDivisionSponsorSelect() {
+  var result = await sbClient.from('academy_leagues').select('*').order('name');
+  var select = document.getElementById('divisionSponsorLeagueSelect');
+  select.innerHTML = '';
+  (result.data || []).forEach(function(g) {
+    select.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>';
+  });
+  if (result.data && result.data.length) { loadDivisionSponsorsForSelected(); }
+  select.onchange = loadDivisionSponsorsForSelected;
+}
 
+async function loadDivisionSponsorsForSelected() {
+  var leagueId = document.getElementById('divisionSponsorLeagueSelect').value;
+  if (!leagueId) { return; }
+  var result = await sbClient.from('academy_league_sponsors').select('*').eq('academy_league_id', leagueId);
+  var container = document.getElementById('divisionSponsorsList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No sponsors added for this group yet.</p>'; return; }
+  container.innerHTML = '<table><thead><tr><th>Sponsor</th><th>Link</th><th>Action</th></tr></thead><tbody>' +
+    result.data.map(function(s) {
+      return '<tr><td>' + (s.sponsor_name || '-') + '</td><td>' + (s.link || '-') + '</td><td><button class="btn-small danger" onclick="deleteDivisionSponsor(' + s.id + ')">Remove</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+async function addDivisionSponsor() {
+  var leagueId = document.getElementById('divisionSponsorLeagueSelect').value;
+  var name = document.getElementById('divisionSponsorName').value.trim();
+  var link = document.getElementById('divisionSponsorLink').value.trim();
+  var fileInput = document.getElementById('divisionSponsorLogoFile');
+  var file = fileInput.files[0];
+
+  if (!leagueId) { alert('Please select a group.'); return; }
+  if (!file) { alert('Please select a logo file.'); return; }
+
+  var fileExt = file.name.split('.').pop();
+  var fileName = 'division_' + leagueId + '_' + Date.now() + '.' + fileExt;
+
+  var uploadResult = await sbClient.storage.from('sponsor-logos').upload(fileName, file);
+  if (uploadResult.error) { alert('Error uploading logo: ' + uploadResult.error.message); return; }
+
+  var urlData = sbClient.storage.from('sponsor-logos').getPublicUrl(fileName);
+  var logoUrl = urlData.data.publicUrl;
+
+  var result = await sbClient.from('academy_league_sponsors').insert([{
+    academy_league_id: leagueId,
+    sponsor_name: name || null,
+    link: link || null,
+    logo_url: logoUrl
+  }]);
+
+  if (result.error) { alert('Error saving sponsor: ' + result.error.message); return; }
+
+  alert('Sponsor added!');
+  document.getElementById('divisionSponsorName').value = '';
+  document.getElementById('divisionSponsorLink').value = '';
+  fileInput.value = '';
+  loadDivisionSponsorsForSelected();
+}
+
+async function deleteDivisionSponsor(id) {
+  if (!confirm('Remove this sponsor?')) { return; }
+  await sbClient.from('academy_league_sponsors').delete().eq('id', id);
+  loadDivisionSponsorsForSelected();
+}
       function toggleSwissOptions() {
         var format = document.getElementById('leagueFormat').value;
         document.getElementById('swissOptions').classList.toggle('hidden', format !== 'swiss');
@@ -1138,6 +1200,7 @@ if (document.referrer.includes('academy.html')) {
         loadSponsorPlayerSelect();
         loadSponsorEnquiries();
         loadDivisionEnquiries();
+        loadDivisionSponsorSelect();
         loadNews();
       });
     </script>
