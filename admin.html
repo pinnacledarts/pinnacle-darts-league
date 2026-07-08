@@ -454,7 +454,83 @@ async function loadSponsorPlayerSelect() {
   if (result.data && result.data.length) { loadSponsorsForSelectedPlayer(); }
   select.onchange = loadSponsorsForSelectedPlayer;
 }
+var allSessionsData = [];
 
+async function loadSessionPlayerSelect() {
+  var result = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
+  var select = document.getElementById('sessionPlayer');
+  select.innerHTML = '';
+  (result.data || []).forEach(function(p) {
+    select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
+  });
+}
+
+async function submitSession() {
+  var playerId = document.getElementById('sessionPlayer').value;
+  if (!playerId) { showMsg('session-error', 'Please select a player.'); return; }
+
+  var result = await sbClient.from('academy_sessions').insert([{
+    player_id: playerId,
+    session_date: document.getElementById('sessionDate').value || null,
+    attendance: parseInt(document.getElementById('sessionAttendance').value) || 0,
+    attitude: parseInt(document.getElementById('sessionAttitude').value) || 0,
+    match_win: parseInt(document.getElementById('sessionMatchWin').value) || 0,
+    break_throw: parseInt(document.getElementById('sessionBreakThrow').value) || 0,
+    nine_dart_challenge: parseInt(document.getElementById('sessionNineDart').value) || 0,
+    over_100_checkout: parseInt(document.getElementById('sessionOver100').value) || 0,
+    score_171_plus: parseInt(document.getElementById('session171').value) || 0,
+    bonus_points: parseInt(document.getElementById('sessionBonus').value) || 0
+  }]);
+
+  if (result.error) { showMsg('session-error', result.error.message); return; }
+
+  showMsg('session-success', 'Session submitted successfully!');
+  document.getElementById('sessionAttendance').value = 0;
+  document.getElementById('sessionAttitude').value = 0;
+  document.getElementById('sessionMatchWin').value = 0;
+  document.getElementById('sessionBreakThrow').value = 0;
+  document.getElementById('sessionNineDart').value = 0;
+  document.getElementById('sessionOver100').value = 0;
+  document.getElementById('session171').value = 0;
+  document.getElementById('sessionBonus').value = 0;
+  loadSessionLog();
+}
+
+async function loadSessionLog() {
+  var result = await sbClient.from('academy_sessions').select('*, profiles(full_name, username)').order('session_date', { ascending: false });
+  allSessionsData = result.data || [];
+  renderSessionLog(allSessionsData);
+}
+
+function renderSessionLog(data) {
+  var container = document.getElementById('sessionLogList');
+  if (!data.length) { container.innerHTML = '<p class="empty-state">No sessions logged yet.</p>'; return; }
+
+  container.innerHTML = '<table><thead><tr><th>Player</th><th>Date</th><th>Total</th><th>Action</th></tr></thead><tbody>' +
+    data.map(function(s) {
+      var player = s.profiles || {};
+      var name = player.full_name || player.username || 'Unknown';
+      var total = (s.attendance || 0) + (s.attitude || 0) + (s.match_win || 0) + (s.break_throw || 0) + (s.nine_dart_challenge || 0) + (s.over_100_checkout || 0) + (s.score_171_plus || 0) + (s.bonus_points || 0);
+      return '<tr><td>' + name + '</td><td>' + (s.session_date || '-') + '</td><td><strong>' + total + '</strong></td><td><button class="btn-small danger" onclick="deleteSession(' + s.id + ')">Delete</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+function filterSessionLog() {
+  var val = document.getElementById('sessionSearch').value.toLowerCase().trim();
+  if (!val) { renderSessionLog(allSessionsData); return; }
+  var filtered = allSessionsData.filter(function(s) {
+    var player = s.profiles || {};
+    var name = (player.full_name || player.username || '').toLowerCase();
+    return name.includes(val);
+  });
+  renderSessionLog(filtered);
+}
+
+async function deleteSession(id) {
+  if (!confirm('Delete this session entry?')) { return; }
+  await sbClient.from('academy_sessions').delete().eq('id', id);
+  loadSessionLog();
+}
 async function loadSponsorsForSelectedPlayer() {
   var playerId = document.getElementById('sponsorPlayerSelect').value;
   if (!playerId) { return; }
