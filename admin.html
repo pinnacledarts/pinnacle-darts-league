@@ -498,7 +498,10 @@
     <script>
       var allPlayersData = [];
       var allSessionsData = [];
-
+if (document.referrer.includes('academy.html')) {
+  document.getElementById('switchBtn').textContent = 'Switch to Online';
+  document.getElementById('switchBtn').href = 'index.html';
+}
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
