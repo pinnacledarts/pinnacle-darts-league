@@ -449,7 +449,32 @@
           <h3>Sponsor Enquiries (Players)</h3>
           <div id="sponsorEnquiriesList"><p class="empty-state">Loading...</p></div>
         </div>
-
+<div class="card">
+  <h3>Division Sponsor Logos</h3>
+  <p style="color:#666;font-size:0.9em;margin-top:-8px;">Add sponsor logos for an academy division/group.</p>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Select Group</label>
+      <select id="divisionSponsorLeagueSelect"></select>
+    </div>
+    <div class="form-group">
+      <label>Sponsor Name</label>
+      <input type="text" id="divisionSponsorName" placeholder="e.g. Double Out Designs" />
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Sponsor Website Link</label>
+      <input type="text" id="divisionSponsorLink" placeholder="https://..." />
+    </div>
+    <div class="form-group">
+      <label>Logo File</label>
+      <input type="file" id="divisionSponsorLogoFile" accept="image/*" />
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="addDivisionSponsor()">Add Sponsor</button>
+  <div id="divisionSponsorsList" style="margin-top:16px;"></div>
+</div>
         <div class="card">
           <h3>Division Sponsor Enquiries</h3>
           <div id="divisionEnquiriesList"><p class="empty-state">Loading...</p></div>
