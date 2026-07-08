@@ -22,16 +22,26 @@ async function checkAuth() {
       <button class="btn-logout" onclick="handleLogout()">Logout</button>
     `;
 
-    if (profile && profile.is_admin) {
-      const nav = document.getElementById('mainNav');
-      if (nav && !document.getElementById('adminNavLink')) {
-        const adminLink = document.createElement('a');
-        adminLink.href = 'admin.html';
-        adminLink.id = 'adminNavLink';
-        adminLink.textContent = 'Admin';
-        nav.appendChild(adminLink);
-      }
-    }
+if (profile && profile.is_admin) {
+  const nav = document.getElementById('mainNav');
+  if (nav && !document.getElementById('adminNavLink')) {
+    const adminLink = document.createElement('a');
+    adminLink.href = 'admin.html';
+    adminLink.id = 'adminNavLink';
+    adminLink.textContent = 'Admin';
+    nav.appendChild(adminLink);
+  }
+
+  const switchBtn = document.querySelector('.btn-switch');
+  if (switchBtn && !document.getElementById('adminHeaderLink')) {
+    const adminHeaderLink = document.createElement('a');
+    adminHeaderLink.href = 'admin.html';
+    adminHeaderLink.id = 'adminHeaderLink';
+    adminHeaderLink.className = 'btn-switch';
+    adminHeaderLink.textContent = 'Admin';
+    switchBtn.insertAdjacentElement('afterend', adminHeaderLink);
+  }
+}
 
   } else {
     authButtons.innerHTML = `
