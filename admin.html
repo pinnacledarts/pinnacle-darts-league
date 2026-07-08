@@ -987,32 +987,91 @@
         renderSessionLog(allSessionsData);
       }
 
-      function renderSessionLog(data) {
-        var container = document.getElementById('sessionLogList');
-        if (!data.length) { container.innerHTML = '<p class="empty-state">No sessions logged yet.</p>'; return; }
+function renderSessionLog(data) {
+  var container = document.getElementById('sessionLogList');
+  if (!data.length) { container.innerHTML = '<p class="empty-state">No sessions logged yet.</p>'; return; }
 
-        container.innerHTML = '<table><thead><tr><th>Player</th><th>Date</th><th>Total</th><th>Action</th></tr></thead><tbody>' +
-          data.map(function(s) {
-            var player = s.profiles || {};
-            var name = player.full_name || player.username || 'Unknown';
-            var total = (s.attendance || 0) + (s.attitude || 0) + (s.match_win || 0) + (s.break_throw || 0) + (s.nine_dart_challenge || 0) + (s.over_100_checkout || 0) + (s.score_171_plus || 0) + (s.bonus_points || 0);
-            return '<tr style="cursor:pointer;" onclick="toggleSessionDetail(' + s.id + ')">' +
-              '<td>' + name + '</td><td>' + (s.session_date || '-') + '</td><td><strong>' + total + '</strong></td>' +
-              '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteSession(' + s.id + ')">Delete</button></td>' +
-              '</tr>' +
-              '<tr id="session-detail-' + s.id + '" style="display:none;background:#f9f9f9;">' +
-              '<td colspan="4" style="padding:16px;">' +
-              '<strong>Attendance:</strong> ' + (s.attendance || 0) + '<br>' +
-              '<strong>Attitude:</strong> ' + (s.attitude || 0) + '<br>' +
-              '<strong>Match Win:</strong> ' + (s.match_win || 0) + '<br>' +
-              '<strong>Break Throw in Last Leg Decider:</strong> ' + (s.break_throw || 0) + '<br>' +
-              '<strong>9 Dart Challenge Score:</strong> ' + (s.nine_dart_challenge || 0) + '<br>' +
-              '<strong>Over 100 Checkout Within Session:</strong> ' + (s.over_100_checkout || 0) + '<br>' +
-              '<strong>171+ Scored in a Match:</strong> ' + (s.score_171_plus || 0) + '<br>' +
-              '<strong>Bonus Points:</strong> ' + (s.bonus_points || 0) +
-              '</td></tr>';
-          }).join('') + '</tbody></table>';
-      }
+  container.innerHTML = '<table><thead><tr><th>Player</th><th>Date</th><th>Total</th><th>Action</th></tr></thead><tbody>' +
+    data.map(function(s) {
+      var player = s.profiles || {};
+      var name = player.full_name || player.username || 'Unknown';
+      var total = (s.attendance || 0) + (s.attitude || 0) + (s.match_win || 0) + (s.break_throw || 0) + (s.nine_dart_challenge || 0) + (s.over_100_checkout || 0) + (s.score_171_plus || 0) + (s.bonus_points || 0);
+      return '<tr style="cursor:pointer;" onclick="toggleSessionDetail(' + s.id + ')">' +
+        '<td>' + name + '</td><td>' + (s.session_date || '-') + '</td><td><strong id="session-total-' + s.id + '">' + total + '</strong></td>' +
+        '<td><button class="btn-small" onclick="event.stopPropagation(); editSession(' + s.id + ')">Edit</button> <button class="btn-small danger" onclick="event.stopPropagation(); deleteSession(' + s.id + ')">Delete</button></td>' +
+        '</tr>' +
+        '<tr id="session-detail-' + s.id + '" style="display:none;background:#f9f9f9;">' +
+        '<td colspan="4" style="padding:16px;" id="session-detail-content-' + s.id + '">' +
+        renderSessionDetailView(s) +
+        '</td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+function renderSessionDetailView(s) {
+  return '<strong>Attendance:</strong> ' + (s.attendance || 0) + '<br>' +
+    '<strong>Attitude:</strong> ' + (s.attitude || 0) + '<br>' +
+    '<strong>Match Win:</strong> ' + (s.match_win || 0) + '<br>' +
+    '<strong>Break Throw in Last Leg Decider:</strong> ' + (s.break_throw || 0) + '<br>' +
+    '<strong>9 Dart Challenge Score:</strong> ' + (s.nine_dart_challenge || 0) + '<br>' +
+    '<strong>Over 100 Checkout Within Session:</strong> ' + (s.over_100_checkout || 0) + '<br>' +
+    '<strong>171+ Scored in a Match:</strong> ' + (s.score_171_plus || 0) + '<br>' +
+    '<strong>Bonus Points:</strong> ' + (s.bonus_points || 0);
+}
+
+function renderSessionEditView(s) {
+  return '<div class="form-row-3">' +
+    '<div class="form-group"><label>Attendance</label><input class="score-input" type="number" id="edit-att-' + s.id + '" value="' + (s.attendance || 0) + '" /></div>' +
+    '<div class="form-group"><label>Attitude</label><input class="score-input" type="number" id="edit-atd-' + s.id + '" value="' + (s.attitude || 0) + '" /></div>' +
+    '<div class="form-group"><label>Match Win</label><input class="score-input" type="number" id="edit-mw-' + s.id + '" value="' + (s.match_win || 0) + '" /></div>' +
+    '</div>' +
+    '<div class="form-row-3">' +
+    '<div class="form-group"><label>Break Throw</label><input class="score-input" type="number" id="edit-bt-' + s.id + '" value="' + (s.break_throw || 0) + '" /></div>' +
+    '<div class="form-group"><label>9 Dart Challenge</label><input class="score-input" type="number" id="edit-9dc-' + s.id + '" value="' + (s.nine_dart_challenge || 0) + '" /></div>' +
+    '<div class="form-group"><label>Over 100 Checkout</label><input class="score-input" type="number" id="edit-100-' + s.id + '" value="' + (s.over_100_checkout || 0) + '" /></div>' +
+    '</div>' +
+    '<div class="form-row-3">' +
+    '<div class="form-group"><label>171+ Scored</label><input class="score-input" type="number" id="edit-171-' + s.id + '" value="' + (s.score_171_plus || 0) + '" /></div>' +
+    '<div class="form-group"><label>Bonus Points</label><input class="score-input" type="number" id="edit-bonus-' + s.id + '" value="' + (s.bonus_points || 0) + '" /></div>' +
+    '</div>' +
+    '<button class="btn btn-primary" onclick="saveSessionEdit(' + s.id + ')">Save Changes</button>' +
+    '<button class="btn btn-secondary" onclick="cancelSessionEdit(' + s.id + ')">Cancel</button>';
+}
+
+function editSession(id) {
+  var session = allSessionsData.find(function(s) { return s.id === id; });
+  if (!session) { return; }
+  document.getElementById('session-detail-' + id).style.display = 'table-row';
+  document.getElementById('session-detail-content-' + id).innerHTML = renderSessionEditView(session);
+}
+
+function cancelSessionEdit(id) {
+  var session = allSessionsData.find(function(s) { return s.id === id; });
+  if (!session) { return; }
+  document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
+}
+
+async function saveSessionEdit(id) {
+  var updated = {
+    attendance: parseInt(document.getElementById('edit-att-' + id).value) || 0,
+    attitude: parseInt(document.getElementById('edit-atd-' + id).value) || 0,
+    match_win: parseInt(document.getElementById('edit-mw-' + id).value) || 0,
+    break_throw: parseInt(document.getElementById('edit-bt-' + id).value) || 0,
+    nine_dart_challenge: parseInt(document.getElementById('edit-9dc-' + id).value) || 0,
+    over_100_checkout: parseInt(document.getElementById('edit-100-' + id).value) || 0,
+    score_171_plus: parseInt(document.getElementById('edit-171-' + id).value) || 0,
+    bonus_points: parseInt(document.getElementById('edit-bonus-' + id).value) || 0
+  };
+
+  var result = await sbClient.from('academy_sessions').update(updated).eq('id', id);
+  if (result.error) { alert('Error saving: ' + result.error.message); return; }
+
+  var session = allSessionsData.find(function(s) { return s.id === id; });
+  if (session) { Object.assign(session, updated); }
+
+  var total = updated.attendance + updated.attitude + updated.match_win + updated.break_throw + updated.nine_dart_challenge + updated.over_100_checkout + updated.score_171_plus + updated.bonus_points;
+  document.getElementById('session-total-' + id).textContent = total;
+  document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
+}
 
       function toggleSessionDetail(id) {
         var row = document.getElementById('session-detail-' + id);
