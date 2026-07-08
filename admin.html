@@ -760,16 +760,26 @@ function toggleSessionDetail(id) {
   row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
 }
 
-      function filterSessionLog() {
-        var val = document.getElementById('sessionSearch').value.toLowerCase().trim();
-        if (!val) { renderSessionLog(allSessionsData); return; }
-        var filtered = allSessionsData.filter(function(s) {
-          var player = s.profiles || {};
-          var name = (player.full_name || player.username || '').toLowerCase();
-          return name.includes(val);
-        });
-        renderSessionLog(filtered);
-      }
+function filterSessionLog() {
+  var nameVal = document.getElementById('sessionSearch').value.toLowerCase().trim();
+  var dateVal = document.getElementById('sessionDateFilter').value;
+
+  var filtered = allSessionsData.filter(function(s) {
+    var player = s.profiles || {};
+    var name = (player.full_name || player.username || '').toLowerCase();
+    var nameMatch = !nameVal || name.includes(nameVal);
+    var dateMatch = !dateVal || s.session_date === dateVal;
+    return nameMatch && dateMatch;
+  });
+
+  renderSessionLog(filtered);
+}
+
+function clearSessionFilters() {
+  document.getElementById('sessionSearch').value = '';
+  document.getElementById('sessionDateFilter').value = '';
+  renderSessionLog(allSessionsData);
+}
 
       async function deleteSession(id) {
         if (!confirm('Delete this session entry?')) { return; }
