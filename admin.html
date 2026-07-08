@@ -362,11 +362,21 @@
           <button class="btn btn-primary" onclick="submitSession()">Submit Session</button>
         </div>
 
-        <div class="card">
-          <h3>Session Log</h3>
-          <input type="text" class="search-bar" id="sessionSearch" placeholder="Search by player name..." oninput="filterSessionLog()" />
-          <div id="sessionLogList"><p class="empty-state">Loading...</p></div>
-        </div>
+<div class="card">
+  <h3>Session Log</h3>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Search by Player</label>
+      <input type="text" id="sessionSearch" placeholder="Search by player name..." oninput="filterSessionLog()" />
+    </div>
+    <div class="form-group">
+      <label>Filter by Date</label>
+      <input type="date" id="sessionDateFilter" onchange="filterSessionLog()" />
+    </div>
+  </div>
+  <button class="btn btn-secondary" onclick="clearSessionFilters()" style="margin-bottom:16px;">Clear Filters</button>
+  <div id="sessionLogList"><p class="empty-state">Loading...</p></div>
+</div>
 
         <div class="card">
           <h3>Sponsor Logos</h3>
