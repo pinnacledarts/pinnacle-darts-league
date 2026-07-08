@@ -29,15 +29,12 @@
       .tab-content.active { display: block; }
       .news-item { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 24px; margin-bottom: 16px; }
       table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-      th { background-color: #111111; color: #ffffff; padding: 12px; text-align: left; }
+      th { background-color: #111111; color: #ffffff; padding: 10px 8px; text-align: left; font-size: 0.85em; }
       th abbr { text-decoration: none; cursor: help; border-bottom: 1px dotted #ffffff; }
-      td { padding: 12px; border-bottom: 1px solid #dddddd; }
-      tr:nth-child(even) { background-color: #eeeeee; }
-      .positive { color: #006600; font-weight: bold; }
-      .negative { color: #cc0000; font-weight: bold; }
-      .neutral { color: #888888; }
-      .key { font-size: 0.85em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
-      .key span { margin-right: 20px; display: inline-block; }
+      td { padding: 10px 8px; border-bottom: 1px solid #dddddd; font-size: 0.9em; }
+      tr:nth-child(4n+1), tr:nth-child(4n+2) { background-color: #eeeeee; }
+      .key { font-size: 0.8em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
+      .key span { margin-right: 16px; display: inline-block; }
       .search-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
       .search-box label { font-weight: bold; display: block; margin-bottom: 10px; }
       .search-controls { display: flex; gap: 12px; flex-wrap: wrap; }
@@ -85,8 +82,6 @@
         .hamburger { display: block; }
         main { padding: 24px 20px; }
         h2 { font-size: 1.3em; }
-        table { font-size: 0.85em; }
-        th, td { padding: 8px 6px; }
         .key-stats { grid-template-columns: 1fr 1fr; }
         .profile-top { gap: 14px; }
         .player-avatar { width: 70px; height: 70px; font-size: 1.8em; }
@@ -123,26 +118,34 @@
       </div>
 
       <div id="tab-table" class="tab-content">
-        <table>
+        <div style="overflow-x:auto;">
+        <table style="min-width:800px;">
           <thead>
             <tr>
               <th>Pos</th>
               <th>Player</th>
-              <th><abbr title="Matches Played">P</abbr></th>
-              <th><abbr title="Matches Won">W</abbr></th>
-              <th><abbr title="Matches Lost">L</abbr></th>
-              <th><abbr title="Leg Difference">+/-</abbr></th>
-              <th><abbr title="Points">Pts</abbr></th>
+              <th><abbr title="Attendance">Att</abbr></th>
+              <th><abbr title="Attitude">Atd</abbr></th>
+              <th><abbr title="Match Win">MW</abbr></th>
+              <th><abbr title="Break Throw in Last Leg Decider">BT</abbr></th>
+              <th><abbr title="9 Dart Challenge Score">9DC</abbr></th>
+              <th><abbr title="Over 100 Checkout Within Session">100+</abbr></th>
+              <th><abbr title="171+ Scored in a Match">171+</abbr></th>
+              <th><abbr title="Bonus Points">Bonus</abbr></th>
+              <th><abbr title="Total Points">Total</abbr></th>
             </tr>
           </thead>
-          <tbody id="academyStandingsBody"><tr><td colspan="7" class="loading">Loading...</td></tr></tbody>
+          <tbody id="academyStandingsBody"><tr><td colspan="10" class="loading">Loading...</td></tr></tbody>
         </table>
+        </div>
         <div class="key">
-          <span><strong>P</strong> = Played</span>
-          <span><strong>W</strong> = Won</span>
-          <span><strong>L</strong> = Lost</span>
-          <span><strong>+/-</strong> = Leg Difference</span>
-          <span><strong>Pts</strong> = Points</span>
+          <span><strong>Att</strong> = Attendance</span>
+          <span><strong>Atd</strong> = Attitude</span>
+          <span><strong>MW</strong> = Match Win</span>
+          <span><strong>BT</strong> = Break Throw</span>
+          <span><strong>9DC</strong> = 9 Dart Challenge</span>
+          <span><strong>100+</strong> = Over 100 Checkout</span>
+          <span><strong>171+</strong> = 171+ Scored</span>
         </div>
       </div>
 
@@ -199,13 +202,13 @@
           </div>
 
           <div class="key-stats">
-<div class="stat-box">
-  <div class="stat-label">Highest Average</div>
-  <div class="stat-value" style="display:flex;align-items:center;justify-content:center;gap:6px;">
-    <span id="profileAverage">-</span>
-    <button class="pencil-btn" id="pencil-academy_highest_average" onclick="startEdit('academy_highest_average')" style="display:none;font-size:0.5em;">✏️</button>
-  </div>
-</div>
+            <div class="stat-box">
+              <div class="stat-label">Highest Average</div>
+              <div class="stat-value" style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                <span id="profileAverage">-</span>
+                <button class="pencil-btn" id="pencil-academy_highest_average" onclick="startEdit('academy_highest_average')" style="display:none;font-size:0.5em;">✏️</button>
+              </div>
+            </div>
             <div class="stat-box"><div class="stat-label">Wins</div><div class="stat-value" id="profileWins">-</div></div>
             <div class="stat-box"><div class="stat-label">Matches</div><div class="stat-value" id="profileMatches">-</div></div>
           </div>
@@ -285,8 +288,7 @@
         dart_weight: 'profileWeight',
         walkout_song: 'profileWalkout',
         favourite_player: 'profileFavPlayer',
-about_me: 'profileAboutMe',
-        academy_highest_average: 'profileAverage'
+        about_me: 'profileAboutMe'
       };
 
       const multilineFields = ['about_me'];
@@ -353,7 +355,7 @@ about_me: 'profileAboutMe',
         document.getElementById('profileName').textContent = p.full_name || p.username || '-';
         document.getElementById('profileUsername').textContent = p.username ? '@' + p.username : '-';
         document.getElementById('profileLocation').textContent = p.hometown || '-';
-document.getElementById('profileAverage').textContent = p.academy_highest_average || '-';
+        document.getElementById('profileAverage').textContent = p.academy_highest_average || '-';
         document.getElementById('profileWins').textContent = p.academy_won || '-';
         document.getElementById('profileMatches').textContent = p.academy_played || '-';
         document.getElementById('profileMemberSince').textContent = p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' }) : '-';
@@ -369,6 +371,9 @@ document.getElementById('profileAverage').textContent = p.academy_highest_averag
           const pencil = document.getElementById('pencil-' + field);
           if (pencil) pencil.style.display = isOwnProfile ? 'inline' : 'none';
         });
+
+        const avgPencil = document.getElementById('pencil-academy_highest_average');
+        if (avgPencil) avgPencil.style.display = isOwnProfile ? 'inline' : 'none';
 
         document.getElementById('avatarEditBtn').style.display = isOwnProfile ? 'flex' : 'none';
         document.getElementById('avatarEditBtn').style.alignItems = 'center';
@@ -425,21 +430,23 @@ document.getElementById('profileAverage').textContent = p.academy_highest_averag
       }
 
       function startEdit(field) {
+        if (field === 'academy_highest_average') {
+          const valueEl = document.getElementById('profileAverage');
+          const currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
+          const wrap = valueEl.parentElement;
+          wrap.innerHTML = `
+            <input class="edit-input" id="edit-academy_highest_average" value="${currentValue}" style="width:70px;text-align:center;" />
+            <button class="save-btn" onclick="saveEdit('academy_highest_average')" style="font-size:0.6em;">Save</button>
+          `;
+          document.getElementById('edit-academy_highest_average').focus();
+          return;
+        }
+
         const valueEl = document.getElementById(fieldLabels[field]);
         const currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
         const wrap = valueEl.parentElement;
         const isMultiline = multilineFields.includes(field);
-if (field === 'academy_highest_average') {
-  const valueEl = document.getElementById('profileAverage');
-  const currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
-  const wrap = valueEl.parentElement;
-  wrap.innerHTML = `
-    <input class="edit-input" id="edit-academy_highest_average" value="${currentValue}" style="width:70px;text-align:center;" />
-    <button class="save-btn" onclick="saveEdit('academy_highest_average')" style="font-size:0.6em;">Save</button>
-  `;
-  document.getElementById('edit-academy_highest_average').focus();
-  return;
-}
+
         if (isMultiline) {
           wrap.innerHTML = `
             <div style="width:100%;">
@@ -461,32 +468,32 @@ if (field === 'academy_highest_average') {
       }
 
       async function saveEdit(field) {
+        if (field === 'academy_highest_average') {
+          const input = document.getElementById('edit-academy_highest_average');
+          const newValue = input.value.trim();
+          const { error } = await sbClient.from('profiles').update({ academy_highest_average: newValue || null }).eq('id', currentUserId);
+          if (error) { alert('Error saving.'); return; }
+          const player = allPlayers.find(p => p.id === currentProfileId);
+          if (player) player.academy_highest_average = newValue;
+          const wrap = document.getElementById('edit-academy_highest_average').parentElement;
+          wrap.innerHTML = `
+            <span id="profileAverage">${newValue || '-'}</span>
+            <button class="pencil-btn" id="pencil-academy_highest_average" onclick="startEdit('academy_highest_average')" style="font-size:0.5em;">✏️</button>
+          `;
+          return;
+        }
+
         const input = document.getElementById('edit-' + field);
         const newValue = input.value.trim();
         const update = {};
         update[field] = newValue || null;
         const isMultiline = multilineFields.includes(field);
-if (field === 'academy_highest_average') {
-  const input = document.getElementById('edit-academy_highest_average');
-  const newValue = input.value.trim();
-  const { error } = await sbClient.from('profiles').update({ academy_highest_average: newValue || null }).eq('id', currentUserId);
-  if (error) { alert('Error saving.'); return; }
-  const player = allPlayers.find(p => p.id === currentProfileId);
-  if (player) player.academy_highest_average = newValue;
-  const wrap = document.getElementById('edit-academy_highest_average').parentElement;
-  wrap.innerHTML = `
-    <span id="profileAverage">${newValue || '-'}</span>
-    <button class="pencil-btn" id="pencil-academy_highest_average" onclick="startEdit('academy_highest_average')" style="font-size:0.5em;">✏️</button>
-  `;
-  return;
-}
+
         const { error } = await sbClient.from('profiles').update(update).eq('id', currentUserId);
         if (error) { alert('Error saving. Please try again.'); return; }
 
         const player = allPlayers.find(p => p.id === currentProfileId);
         if (player) player[field] = newValue;
-
-        const wrap = document.getElementById('edit-' + field).parentElement.parentElement.classList.contains('about-me-section') ? null : null;
 
         if (isMultiline) {
           const parentDiv = document.getElementById('edit-' + field).closest('div[style*="align-items:flex-start"]') || document.getElementById('edit-' + field).parentElement.parentElement;
@@ -579,35 +586,42 @@ if (field === 'academy_highest_average') {
         }
       }
 
-      function renderAcademyStandings() {
+      async function renderAcademyStandings() {
+        const result = await sbClient.from('academy_sessions').select('*');
+        const sessions = result.data || [];
+
         const standings = allPlayers.map(p => {
-          const played = p.academy_played || 0;
-          const won = p.academy_won || 0;
-          const lost = p.academy_lost || 0;
-          const legsFor = p.academy_legs_for || 0;
-          const legsAgainst = p.academy_legs_against || 0;
+          const playerSessions = sessions.filter(s => s.player_id === p.id);
+          const totals = {
+            attendance: 0, attitude: 0, matchWin: 0, breakThrow: 0,
+            nineDart: 0, over100: 0, score171: 0, bonus: 0
+          };
+          playerSessions.forEach(s => {
+            totals.attendance += s.attendance || 0;
+            totals.attitude += s.attitude || 0;
+            totals.matchWin += s.match_win || 0;
+            totals.breakThrow += s.break_throw || 0;
+            totals.nineDart += s.nine_dart_challenge || 0;
+            totals.over100 += s.over_100_checkout || 0;
+            totals.score171 += s.score_171_plus || 0;
+            totals.bonus += s.bonus_points || 0;
+          });
+          const total = totals.attendance + totals.attitude + totals.matchWin + totals.breakThrow + totals.nineDart + totals.over100 + totals.score171 + totals.bonus;
           return {
             name: p.full_name || p.username || 'Unknown',
-            played, won, lost, legsFor, legsAgainst,
-            pts: won * 3
+            ...totals,
+            total
           };
-        }).sort((a, b) => {
-          if (b.pts !== a.pts) return b.pts - a.pts;
-          const aDiff = a.legsFor - a.legsAgainst;
-          const bDiff = b.legsFor - b.legsAgainst;
-          return bDiff - aDiff;
-        });
+        }).sort((a, b) => b.total - a.total);
 
         const tbody = document.getElementById('academyStandingsBody');
         if (!standings.length) {
-          tbody.innerHTML = '<tr><td colspan="7" class="loading">No academy players yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="10" class="loading">No academy players yet.</td></tr>';
           return;
         }
 
         tbody.innerHTML = standings.map((p, i) => {
-          const diff = p.legsFor - p.legsAgainst;
-          const diffDisplay = diff > 0 ? `<span class="positive">+${diff}</span>` : diff < 0 ? `<span class="negative">${diff}</span>` : `<span class="neutral">0</span>`;
-          return `<tr><td>${i + 1}</td><td>${p.name}</td><td>${p.played}</td><td>${p.won}</td><td>${p.lost}</td><td>${diffDisplay}</td><td><strong>${p.pts}</strong></td></tr>`;
+          return `<tr><td>${i + 1}</td><td>${p.name}</td><td>${p.attendance}</td><td>${p.attitude}</td><td>${p.matchWin}</td><td>${p.breakThrow}</td><td>${p.nineDart}</td><td>${p.over100}</td><td>${p.score171}</td><td>${p.bonus}</td><td><strong>${p.total}</strong></td></tr>`;
         }).join('');
       }
 
