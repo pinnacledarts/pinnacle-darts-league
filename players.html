@@ -134,8 +134,14 @@
             <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(event)" />
           </div>
           <div class="profile-info">
-            <h3 id="profileName"></h3>
-            <div class="username" id="profileUsername"></div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <h3 id="profileName" style="margin:0;"></h3>
+              <button class="pencil-btn" id="pencil-full_name" onclick="startEdit('full_name')" style="display:none;">✏️</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div class="username" id="profileUsername"></div>
+              <button class="pencil-btn" id="pencil-username" onclick="startEdit('username')" style="display:none;">✏️</button>
+            </div>
             <div class="location" id="profileLocation"></div>
           </div>
         </div>
@@ -216,7 +222,9 @@
         darts_brand: 'profileBrand',
         dart_weight: 'profileWeight',
         walkout_song: 'profileWalkout',
-        favourite_player: 'profileFavPlayer'
+        favourite_player: 'profileFavPlayer',
+        full_name: 'profileName',
+        username: 'profileUsername'
       };
 
       async function loadPlayers() {
@@ -304,7 +312,8 @@
 
       function startEdit(field) {
         const valueEl = document.getElementById(fieldLabels[field]);
-        const currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
+        let currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
+        if (field === 'username' && currentValue.startsWith('@')) { currentValue = currentValue.slice(1); }
 
         const wrap = valueEl.parentElement;
         wrap.innerHTML = `
@@ -336,16 +345,20 @@
         if (player) player[field] = newValue;
 
         const wrap = document.getElementById('edit-' + field).parentElement;
+        const displayValue = field === 'username' && newValue ? '@' + newValue : (newValue || '-');
+        const spanClass = (field === 'full_name' || field === 'username') ? '' : 'class="detail-value"';
         wrap.innerHTML = `
-          <span class="detail-value" id="${fieldLabels[field]}">${newValue || '-'}</span>
+          <span ${spanClass} id="${fieldLabels[field]}">${displayValue}</span>
           <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
         `;
       }
 
       function cancelEdit(field, originalValue) {
         const wrap = document.getElementById('edit-' + field).parentElement;
+        const displayValue = field === 'username' && originalValue ? '@' + originalValue : (originalValue || '-');
+        const spanClass = (field === 'full_name' || field === 'username') ? '' : 'class="detail-value"';
         wrap.innerHTML = `
-          <span class="detail-value" id="${fieldLabels[field]}">${originalValue || '-'}</span>
+          <span ${spanClass} id="${fieldLabels[field]}">${displayValue}</span>
           <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
         `;
       }
