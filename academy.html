@@ -126,6 +126,9 @@
           <label>View Group</label>
           <select id="academyLeagueViewSelect" onchange="renderAcademyStandings()" style="width:100%;padding:10px 14px;border:1px solid #dddddd;border-radius:4px;font-size:1em;background-color:#f9f9f9;"></select>
         </div>
+
+        <div id="divisionSponsorLogos" style="display:flex;gap:16px;align-items:center;justify-content:center;margin-bottom:20px;flex-wrap:wrap;"></div>
+
         <div style="overflow-x:auto;">
         <table style="min-width:800px;">
           <thead>
@@ -156,10 +159,9 @@
           <span><strong>171+</strong> = 171+ Scored</span>
         </div>
 
-<div style="text-align:center;margin-top:16px;">
-  <div id="divisionSponsorLogos" style="display:flex;gap:10px;align-items:center;justify-content:center;margin-bottom:12px;flex-wrap:wrap;"></div>
-  <button onclick="openDivisionEnquiryForm()" style="background-color:#ffffff;color:#111111;border:1px solid #111111;padding:10px 20px;border-radius:4px;font-size:0.9em;cursor:pointer;font-family:Arial, sans-serif;">💼 Sponsor this Division</button>
-</div>
+        <div style="text-align:center;margin-top:16px;">
+          <button onclick="openDivisionEnquiryForm()" style="background-color:#ffffff;color:#111111;border:1px solid #111111;padding:10px 20px;border-radius:4px;font-size:0.9em;cursor:pointer;font-family:Arial, sans-serif;">💼 Sponsor this Division</button>
+        </div>
 
         <div id="divisionEnquiryFormWrap" style="display:none;background-color:#f9f9f9;border:1px solid #dddddd;border-radius:6px;padding:20px;margin-top:16px;">
           <h4 style="margin:0 0 16px;">Division Sponsor Enquiry</h4>
@@ -317,16 +319,7 @@
       let currentUserId = null;
       let currentProfileId = null;
       let allAcademyLeagues = [];
-async function loadDivisionSponsors(leagueId) {
-  const container = document.getElementById('divisionSponsorLogos');
-  if (!leagueId) { container.innerHTML = ''; return; }
-  const { data } = await sbClient.from('academy_league_sponsors').select('*').eq('academy_league_id', leagueId);
-  if (!data || !data.length) { container.innerHTML = ''; return; }
-  container.innerHTML = data.map(s => {
-    const img = `<img src="${s.logo_url}" alt="${s.sponsor_name || 'Sponsor'}" style="height:50px;border-radius:4px;object-fit:contain;" />`;
-    return s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${img}</a>` : img;
-  }).join('');
-}
+
       const fieldLabels = {
         highest_checkout: 'profileCheckout',
         hometown: 'profileHometown',
@@ -459,6 +452,17 @@ async function loadDivisionSponsors(leagueId) {
         if (!data || !data.length) { container.innerHTML = ''; return; }
         container.innerHTML = data.map(s => {
           const img = `<img src="${s.logo_url}" alt="${s.sponsor_name || 'Sponsor'}" style="height:60px;border-radius:4px;object-fit:contain;" />`;
+          return s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${img}</a>` : img;
+        }).join('');
+      }
+
+      async function loadDivisionSponsors(leagueId) {
+        const container = document.getElementById('divisionSponsorLogos');
+        if (!leagueId) { container.innerHTML = ''; return; }
+        const { data } = await sbClient.from('academy_league_sponsors').select('*').eq('academy_league_id', leagueId);
+        if (!data || !data.length) { container.innerHTML = ''; return; }
+        container.innerHTML = data.map(s => {
+          const img = `<img src="${s.logo_url}" alt="${s.sponsor_name || 'Sponsor'}" style="height:80px;border-radius:4px;object-fit:contain;" />`;
           return s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${img}</a>` : img;
         }).join('');
       }
@@ -699,6 +703,7 @@ async function loadDivisionSponsors(leagueId) {
       async function renderAcademyStandings() {
         const leagueId = document.getElementById('academyLeagueViewSelect').value;
         const tbody = document.getElementById('academyStandingsBody');
+
         loadDivisionSponsors(leagueId);
 
         if (!leagueId) {
