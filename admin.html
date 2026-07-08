@@ -305,62 +305,58 @@
       <!-- ACADEMY TAB -->
       <div id="tab-academy" class="tab-content">
         <div class="card">
-  <h3>Academy Leagues (Groups)</h3>
-  <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a group (e.g. Tuesday Prodigy) and add players to it.</p>
-  <div class="success-msg" id="academyleague-success"></div>
-  <div class="error-msg" id="academyleague-error"></div>
-  <div class="form-row">
-    <div class="form-group">
-      <label>New Group Name</label>
-      <input type="text" id="academyLeagueName" placeholder="e.g. Tuesday Prodigy" />
-    </div>
-  </div>
-  <button class="btn btn-primary" onclick="createAcademyLeague()">Create Group</button>
+          <h3>Academy Leagues (Groups)</h3>
+          <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a group (e.g. Tuesday Prodigy) and add players to it.</p>
+          <div class="success-msg" id="academyleague-success"></div>
+          <div class="error-msg" id="academyleague-error"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>New Group Name</label>
+              <input type="text" id="academyLeagueName" placeholder="e.g. Tuesday Prodigy" />
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="createAcademyLeague()">Create Group</button>
 
-  <div style="margin-top:24px;">
-    <div class="form-group">
-      <label>Manage Group</label>
-      <select id="academyLeagueSelect" onchange="loadAcademyLeaguePlayers()"></select>
-    </div>
-    <button class="btn btn-danger" onclick="deleteAcademyLeague()">Delete This Group</button>
-  </div>
+          <div style="margin-top:24px;">
+            <div class="form-group">
+              <label>Manage Group</label>
+              <select id="academyLeagueSelect" onchange="loadAcademyLeaguePlayers()"></select>
+            </div>
+            <button class="btn btn-danger" onclick="deleteAcademyLeague()">Delete This Group</button>
+          </div>
 
-  <div class="form-row" style="margin-top:16px;">
-    <div class="form-group">
-      <label>Add Player to Group</label>
-      <select id="academyLeaguePlayerSelect"></select>
-    </div>
-  </div>
-  <button class="btn btn-primary" onclick="addPlayerToAcademyLeague()">Add Player</button>
+          <div class="form-row" style="margin-top:16px;">
+            <div class="form-group">
+              <label>Add Player to Group</label>
+              <select id="academyLeaguePlayerSelect"></select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addPlayerToAcademyLeague()">Add Player</button>
 
-  <div id="academyLeaguePlayersList" style="margin-top:16px;"></div>
-</div>
+          <div id="academyLeaguePlayersList" style="margin-top:16px;"></div>
+        </div>
 
-<div class="card">
-  <h3>Division Sponsor Enquiries</h3>
-  <div id="divisionEnquiriesList"><p class="empty-state">Loading...</p></div>
-</div>
         <div class="card">
           <h3>Submit Session Results</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Enter the scores from a completed session sheet for a player.</p>
           <div class="success-msg" id="session-success"></div>
           <div class="error-msg" id="session-error"></div>
-<div class="form-row">
-  <div class="form-group">
-    <label>Academy Group</label>
-    <select id="sessionAcademyLeague" onchange="loadSessionPlayerSelect()"></select>
-  </div>
-  <div class="form-group">
-    <label>Player</label>
-    <select id="sessionPlayer"></select>
-  </div>
-</div>
-<div class="form-row">
-  <div class="form-group">
-    <label>Session Date</label>
-    <input type="date" id="sessionDate" />
-  </div>
-</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Academy Group</label>
+              <select id="sessionAcademyLeague" onchange="loadSessionPlayerSelect()"></select>
+            </div>
+            <div class="form-group">
+              <label>Player</label>
+              <select id="sessionPlayer"></select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Session Date</label>
+              <input type="date" id="sessionDate" />
+            </div>
+          </div>
           <div class="form-row">
             <div class="form-group">
               <label>Attendance</label>
@@ -450,8 +446,13 @@
         </div>
 
         <div class="card">
-          <h3>Sponsor Enquiries</h3>
+          <h3>Sponsor Enquiries (Players)</h3>
           <div id="sponsorEnquiriesList"><p class="empty-state">Loading...</p></div>
+        </div>
+
+        <div class="card">
+          <h3>Division Sponsor Enquiries</h3>
+          <div id="divisionEnquiriesList"><p class="empty-state">Loading...</p></div>
         </div>
       </div>
 
@@ -726,17 +727,98 @@
         loadPlayers();
       }
 
+      async function loadAcademyLeagueSelects() {
+        var result = await sbClient.from('academy_leagues').select('*').order('name');
+        var groups = result.data || [];
+
+        var manageSelect = document.getElementById('academyLeagueSelect');
+        manageSelect.innerHTML = '';
+        groups.forEach(function(g) { manageSelect.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>'; });
+
+        var sessionSelect = document.getElementById('sessionAcademyLeague');
+        sessionSelect.innerHTML = '';
+        groups.forEach(function(g) { sessionSelect.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>'; });
+
+        if (groups.length) {
+          loadAcademyLeaguePlayers();
+          loadSessionPlayerSelect();
+        }
+      }
+
+      async function createAcademyLeague() {
+        var name = document.getElementById('academyLeagueName').value.trim();
+        if (!name) { showMsg('academyleague-error', 'Please enter a group name.'); return; }
+        var result = await sbClient.from('academy_leagues').insert([{ name: name }]);
+        if (result.error) { showMsg('academyleague-error', result.error.message); return; }
+        showMsg('academyleague-success', 'Group created!');
+        document.getElementById('academyLeagueName').value = '';
+        loadAcademyLeagueSelects();
+      }
+
+      async function deleteAcademyLeague() {
+        var id = document.getElementById('academyLeagueSelect').value;
+        if (!id) { return; }
+        if (!confirm('Delete this group? This will remove all its players and session data.')) { return; }
+        await sbClient.from('academy_leagues').delete().eq('id', id);
+        loadAcademyLeagueSelects();
+      }
+
+      async function loadAcademyLeaguePlayers() {
+        var leagueId = document.getElementById('academyLeagueSelect').value;
+        if (!leagueId) { return; }
+
+        var allPlayersResult = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
+        var allAcademyPlayers = allPlayersResult.data || [];
+
+        var currentResult = await sbClient.from('academy_league_players').select('player_id').eq('academy_league_id', leagueId);
+        var currentIds = (currentResult.data || []).map(function(p) { return p.player_id; });
+
+        var addSelect = document.getElementById('academyLeaguePlayerSelect');
+        addSelect.innerHTML = '';
+        allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) === -1; }).forEach(function(p) {
+          addSelect.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
+        });
+
+        var container = document.getElementById('academyLeaguePlayersList');
+        var currentPlayers = allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) > -1; });
+        if (!currentPlayers.length) { container.innerHTML = '<p class="empty-state">No players in this group yet.</p>'; return; }
+        container.innerHTML = '<table><thead><tr><th>Player</th><th>Action</th></tr></thead><tbody>' +
+          currentPlayers.map(function(p) {
+            return '<tr><td>' + (p.full_name || p.username) + '</td><td><button class="btn-small danger" onclick="removePlayerFromAcademyLeague(\'' + p.id + '\')">Remove</button></td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+
+      async function addPlayerToAcademyLeague() {
+        var leagueId = document.getElementById('academyLeagueSelect').value;
+        var playerId = document.getElementById('academyLeaguePlayerSelect').value;
+        if (!leagueId || !playerId) { return; }
+        await sbClient.from('academy_league_players').insert([{ academy_league_id: leagueId, player_id: playerId }]);
+        loadAcademyLeaguePlayers();
+      }
+
+      async function removePlayerFromAcademyLeague(playerId) {
+        var leagueId = document.getElementById('academyLeagueSelect').value;
+        if (!confirm('Remove this player from the group?')) { return; }
+        await sbClient.from('academy_league_players').delete().eq('academy_league_id', leagueId).eq('player_id', playerId);
+        loadAcademyLeaguePlayers();
+      }
+
       async function loadSessionPlayerSelect() {
-        var result = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
+        var leagueId = document.getElementById('sessionAcademyLeague').value;
+        if (!leagueId) { return; }
+
+        var linkResult = await sbClient.from('academy_league_players').select('player_id, profiles(full_name, username)').eq('academy_league_id', leagueId);
+        var players = (linkResult.data || []).map(function(l) { return l.profiles ? { id: l.player_id, full_name: l.profiles.full_name, username: l.profiles.username } : null; }).filter(Boolean);
+
         var select = document.getElementById('sessionPlayer');
         select.innerHTML = '';
-        (result.data || []).forEach(function(p) {
+        players.forEach(function(p) {
           select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
         });
 
         var filterSelect = document.getElementById('sessionSearch');
         filterSelect.innerHTML = '<option value="">-- All Players --</option>';
-        (result.data || []).forEach(function(p) {
+        players.forEach(function(p) {
           filterSelect.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
         });
       }
@@ -744,9 +826,11 @@
       async function submitSession() {
         var playerId = document.getElementById('sessionPlayer').value;
         if (!playerId) { showMsg('session-error', 'Please select a player.'); return; }
+        var leagueId = document.getElementById('sessionAcademyLeague').value;
 
         var result = await sbClient.from('academy_sessions').insert([{
           player_id: playerId,
+          academy_league_id: leagueId || null,
           session_date: document.getElementById('sessionDate').value || null,
           attendance: parseInt(document.getElementById('sessionAttendance').value) || 0,
           attitude: parseInt(document.getElementById('sessionAttitude').value) || 0,
@@ -932,6 +1016,38 @@
         loadSponsorEnquiries();
       }
 
+      async function loadDivisionEnquiries() {
+        var result = await sbClient.from('division_sponsor_enquiries').select('*, academy_leagues(name)').order('created_at', { ascending: false });
+        var container = document.getElementById('divisionEnquiriesList');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; return; }
+
+        container.innerHTML = '<table><thead><tr><th>Group</th><th>From</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
+          result.data.map(function(e) {
+            var group = e.academy_leagues || {};
+            return '<tr style="cursor:pointer;" onclick="toggleDivisionEnquiryDetail(' + e.id + ')">' +
+              '<td>' + (group.name || 'Unknown') + '</td><td>' + e.enquirer_name + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
+              '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteDivisionEnquiry(' + e.id + ')">Delete</button></td>' +
+              '</tr>' +
+              '<tr id="division-enquiry-detail-' + e.id + '" style="display:none;background:#f9f9f9;">' +
+              '<td colspan="4" style="padding:16px;">' +
+              '<strong>Email:</strong> ' + e.enquirer_email + '<br>' +
+              '<strong>Phone:</strong> ' + (e.enquirer_phone || '-') + '<br>' +
+              '<strong>Message:</strong><br>' + e.message +
+              '</td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+
+      function toggleDivisionEnquiryDetail(id) {
+        var row = document.getElementById('division-enquiry-detail-' + id);
+        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+      }
+
+      async function deleteDivisionEnquiry(id) {
+        if (!confirm('Delete this enquiry?')) { return; }
+        await sbClient.from('division_sponsor_enquiries').delete().eq('id', id);
+        loadDivisionEnquiries();
+      }
+
       async function saveNews() {
         var title = document.getElementById('newsTitle').value.trim();
         var content = document.getElementById('newsContent').value.trim();
@@ -989,10 +1105,11 @@
         loadTournaments();
         loadLeagues();
         loadPlayers();
-        loadSessionPlayerSelect();
+        loadAcademyLeagueSelects();
         loadSessionLog();
         loadSponsorPlayerSelect();
         loadSponsorEnquiries();
+        loadDivisionEnquiries();
         loadNews();
       });
     </script>
