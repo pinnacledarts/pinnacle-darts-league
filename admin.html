@@ -6,7 +6,7 @@
     <title>Admin | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="auth.js?t=1000000"></script>
+    <script src="auth.js?t=999999"></script>
     <style>
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
@@ -303,105 +303,103 @@
       </div>
 
       <!-- ACADEMY TAB -->
-<!-- ACADEMY TAB -->
-<!-- ACADEMY TAB -->
-<div id="tab-academy" class="tab-content">
-  <div class="card">
-    <h3>Submit Session Results</h3>
-    <p style="color:#666;font-size:0.9em;margin-top:-8px;">Enter the scores from a completed session sheet for a player.</p>
-    <div class="success-msg" id="session-success"></div>
-    <div class="error-msg" id="session-error"></div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Player</label>
-        <select id="sessionPlayer"></select>
-      </div>
-      <div class="form-group">
-        <label>Session Date</label>
-        <input type="date" id="sessionDate" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Attendance</label>
-        <input type="number" id="sessionAttendance" value="0" />
-      </div>
-      <div class="form-group">
-        <label>Attitude</label>
-        <input type="number" id="sessionAttitude" value="0" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Match Win</label>
-        <input type="number" id="sessionMatchWin" value="0" />
-      </div>
-      <div class="form-group">
-        <label>Break Throw in Last Leg Decider</label>
-        <input type="number" id="sessionBreakThrow" value="0" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>9 Dart Challenge Score</label>
-        <input type="number" id="sessionNineDart" value="0" />
-      </div>
-      <div class="form-group">
-        <label>Over 100 Checkout Within Session</label>
-        <input type="number" id="sessionOver100" value="0" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>171+ Scored in a Match</label>
-        <input type="number" id="session171" value="0" />
-      </div>
-      <div class="form-group">
-        <label>Bonus Points</label>
-        <input type="number" id="sessionBonus" value="0" />
-      </div>
-    </div>
-    <button class="btn btn-primary" onclick="submitSession()">Submit Session</button>
-  </div>
+      <div id="tab-academy" class="tab-content">
+        <div class="card">
+          <h3>Submit Session Results</h3>
+          <p style="color:#666;font-size:0.9em;margin-top:-8px;">Enter the scores from a completed session sheet for a player.</p>
+          <div class="success-msg" id="session-success"></div>
+          <div class="error-msg" id="session-error"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Player</label>
+              <select id="sessionPlayer"></select>
+            </div>
+            <div class="form-group">
+              <label>Session Date</label>
+              <input type="date" id="sessionDate" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Attendance</label>
+              <input type="number" id="sessionAttendance" value="0" />
+            </div>
+            <div class="form-group">
+              <label>Attitude</label>
+              <input type="number" id="sessionAttitude" value="0" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Match Win</label>
+              <input type="number" id="sessionMatchWin" value="0" />
+            </div>
+            <div class="form-group">
+              <label>Break Throw in Last Leg Decider</label>
+              <input type="number" id="sessionBreakThrow" value="0" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>9 Dart Challenge Score</label>
+              <input type="number" id="sessionNineDart" value="0" />
+            </div>
+            <div class="form-group">
+              <label>Over 100 Checkout Within Session</label>
+              <input type="number" id="sessionOver100" value="0" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>171+ Scored in a Match</label>
+              <input type="number" id="session171" value="0" />
+            </div>
+            <div class="form-group">
+              <label>Bonus Points</label>
+              <input type="number" id="sessionBonus" value="0" />
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="submitSession()">Submit Session</button>
+        </div>
 
-  <div class="card">
-    <h3>Session Log</h3>
-    <input type="text" class="search-bar" id="sessionSearch" placeholder="Search by player name..." oninput="filterSessionLog()" />
-    <div id="sessionLogList"><p class="empty-state">Loading...</p></div>
-  </div>
+        <div class="card">
+          <h3>Session Log</h3>
+          <input type="text" class="search-bar" id="sessionSearch" placeholder="Search by player name..." oninput="filterSessionLog()" />
+          <div id="sessionLogList"><p class="empty-state">Loading...</p></div>
+        </div>
 
-  <div class="card">
-    <h3>Sponsor Logos</h3>
-    <p style="color:#666;font-size:0.9em;margin-top:-8px;">Add sponsor logos for academy players.</p>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Select Player</label>
-        <select id="sponsorPlayerSelect"></select>
-      </div>
-      <div class="form-group">
-        <label>Sponsor Name</label>
-        <input type="text" id="sponsorName" placeholder="e.g. Double Out Designs" />
-      </div>
-    </div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Sponsor Website Link</label>
-        <input type="text" id="sponsorLink" placeholder="https://..." />
-      </div>
-      <div class="form-group">
-        <label>Logo File</label>
-        <input type="file" id="sponsorLogoFile" accept="image/*" />
-      </div>
-    </div>
-    <button class="btn btn-primary" onclick="addSponsor()">Add Sponsor</button>
-    <div id="sponsorsListForPlayer" style="margin-top:16px;"></div>
-  </div>
+        <div class="card">
+          <h3>Sponsor Logos</h3>
+          <p style="color:#666;font-size:0.9em;margin-top:-8px;">Add sponsor logos for academy players.</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Select Player</label>
+              <select id="sponsorPlayerSelect"></select>
+            </div>
+            <div class="form-group">
+              <label>Sponsor Name</label>
+              <input type="text" id="sponsorName" placeholder="e.g. Double Out Designs" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Sponsor Website Link</label>
+              <input type="text" id="sponsorLink" placeholder="https://..." />
+            </div>
+            <div class="form-group">
+              <label>Logo File</label>
+              <input type="file" id="sponsorLogoFile" accept="image/*" />
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addSponsor()">Add Sponsor</button>
+          <div id="sponsorsListForPlayer" style="margin-top:16px;"></div>
+        </div>
 
-  <div class="card">
-    <h3>Sponsor Enquiries</h3>
-    <div id="sponsorEnquiriesList"><p class="empty-state">Loading...</p></div>
-  </div>
-</div>
+        <div class="card">
+          <h3>Sponsor Enquiries</h3>
+          <div id="sponsorEnquiriesList"><p class="empty-state">Loading...</p></div>
+        </div>
+      </div>
 
       <!-- NEWS TAB -->
       <div id="tab-news" class="tab-content">
@@ -444,178 +442,8 @@
 
     <script>
       var allPlayersData = [];
-async function loadSponsorPlayerSelect() {
-  var result = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
-  var select = document.getElementById('sponsorPlayerSelect');
-  select.innerHTML = '';
-  (result.data || []).forEach(function(p) {
-    select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
-  });
-  if (result.data && result.data.length) { loadSponsorsForSelectedPlayer(); }
-  select.onchange = loadSponsorsForSelectedPlayer;
-}
-var allSessionsData = [];
+      var allSessionsData = [];
 
-async function loadSessionPlayerSelect() {
-  var result = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
-  var select = document.getElementById('sessionPlayer');
-  select.innerHTML = '';
-  (result.data || []).forEach(function(p) {
-    select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
-  });
-}
-
-async function submitSession() {
-  var playerId = document.getElementById('sessionPlayer').value;
-  if (!playerId) { showMsg('session-error', 'Please select a player.'); return; }
-
-  var result = await sbClient.from('academy_sessions').insert([{
-    player_id: playerId,
-    session_date: document.getElementById('sessionDate').value || null,
-    attendance: parseInt(document.getElementById('sessionAttendance').value) || 0,
-    attitude: parseInt(document.getElementById('sessionAttitude').value) || 0,
-    match_win: parseInt(document.getElementById('sessionMatchWin').value) || 0,
-    break_throw: parseInt(document.getElementById('sessionBreakThrow').value) || 0,
-    nine_dart_challenge: parseInt(document.getElementById('sessionNineDart').value) || 0,
-    over_100_checkout: parseInt(document.getElementById('sessionOver100').value) || 0,
-    score_171_plus: parseInt(document.getElementById('session171').value) || 0,
-    bonus_points: parseInt(document.getElementById('sessionBonus').value) || 0
-  }]);
-
-  if (result.error) { showMsg('session-error', result.error.message); return; }
-
-  showMsg('session-success', 'Session submitted successfully!');
-  document.getElementById('sessionAttendance').value = 0;
-  document.getElementById('sessionAttitude').value = 0;
-  document.getElementById('sessionMatchWin').value = 0;
-  document.getElementById('sessionBreakThrow').value = 0;
-  document.getElementById('sessionNineDart').value = 0;
-  document.getElementById('sessionOver100').value = 0;
-  document.getElementById('session171').value = 0;
-  document.getElementById('sessionBonus').value = 0;
-  loadSessionLog();
-}
-
-async function loadSessionLog() {
-  var result = await sbClient.from('academy_sessions').select('*, profiles(full_name, username)').order('session_date', { ascending: false });
-  allSessionsData = result.data || [];
-  renderSessionLog(allSessionsData);
-}
-
-function renderSessionLog(data) {
-  var container = document.getElementById('sessionLogList');
-  if (!data.length) { container.innerHTML = '<p class="empty-state">No sessions logged yet.</p>'; return; }
-
-  container.innerHTML = '<table><thead><tr><th>Player</th><th>Date</th><th>Total</th><th>Action</th></tr></thead><tbody>' +
-    data.map(function(s) {
-      var player = s.profiles || {};
-      var name = player.full_name || player.username || 'Unknown';
-      var total = (s.attendance || 0) + (s.attitude || 0) + (s.match_win || 0) + (s.break_throw || 0) + (s.nine_dart_challenge || 0) + (s.over_100_checkout || 0) + (s.score_171_plus || 0) + (s.bonus_points || 0);
-      return '<tr><td>' + name + '</td><td>' + (s.session_date || '-') + '</td><td><strong>' + total + '</strong></td><td><button class="btn-small danger" onclick="deleteSession(' + s.id + ')">Delete</button></td></tr>';
-    }).join('') + '</tbody></table>';
-}
-
-function filterSessionLog() {
-  var val = document.getElementById('sessionSearch').value.toLowerCase().trim();
-  if (!val) { renderSessionLog(allSessionsData); return; }
-  var filtered = allSessionsData.filter(function(s) {
-    var player = s.profiles || {};
-    var name = (player.full_name || player.username || '').toLowerCase();
-    return name.includes(val);
-  });
-  renderSessionLog(filtered);
-}
-
-async function deleteSession(id) {
-  if (!confirm('Delete this session entry?')) { return; }
-  await sbClient.from('academy_sessions').delete().eq('id', id);
-  loadSessionLog();
-}
-async function loadSponsorsForSelectedPlayer() {
-  var playerId = document.getElementById('sponsorPlayerSelect').value;
-  if (!playerId) { return; }
-  var result = await sbClient.from('player_sponsors').select('*').eq('player_id', playerId);
-  var container = document.getElementById('sponsorsListForPlayer');
-  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No sponsors added for this player yet.</p>'; return; }
-  container.innerHTML = '<table><thead><tr><th>Sponsor</th><th>Link</th><th>Action</th></tr></thead><tbody>' +
-    result.data.map(function(s) {
-      return '<tr><td>' + (s.sponsor_name || '-') + '</td><td>' + (s.link || '-') + '</td><td><button class="btn-small danger" onclick="deleteSponsor(' + s.id + ')">Remove</button></td></tr>';
-    }).join('') + '</tbody></table>';
-}
-
-async function addSponsor() {
-  var playerId = document.getElementById('sponsorPlayerSelect').value;
-  var name = document.getElementById('sponsorName').value.trim();
-  var link = document.getElementById('sponsorLink').value.trim();
-  var fileInput = document.getElementById('sponsorLogoFile');
-  var file = fileInput.files[0];
-
-  if (!playerId) { alert('Please select a player.'); return; }
-  if (!file) { alert('Please select a logo file.'); return; }
-
-  var fileExt = file.name.split('.').pop();
-  var fileName = playerId + '_' + Date.now() + '.' + fileExt;
-
-  var uploadResult = await sbClient.storage.from('sponsor-logos').upload(fileName, file);
-  if (uploadResult.error) { alert('Error uploading logo: ' + uploadResult.error.message); return; }
-
-  var urlData = sbClient.storage.from('sponsor-logos').getPublicUrl(fileName);
-  var logoUrl = urlData.data.publicUrl;
-
-  var result = await sbClient.from('player_sponsors').insert([{
-    player_id: playerId,
-    sponsor_name: name || null,
-    link: link || null,
-    logo_url: logoUrl
-  }]);
-
-  if (result.error) { alert('Error saving sponsor: ' + result.error.message); return; }
-
-  alert('Sponsor added!');
-  document.getElementById('sponsorName').value = '';
-  document.getElementById('sponsorLink').value = '';
-  fileInput.value = '';
-  loadSponsorsForSelectedPlayer();
-}
-
-async function deleteSponsor(id) {
-  if (!confirm('Remove this sponsor?')) { return; }
-  await sbClient.from('player_sponsors').delete().eq('id', id);
-  loadSponsorsForSelectedPlayer();
-}
-
-async function loadSponsorEnquiries() {
-  var result = await sbClient.from('sponsor_enquiries').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
-  var container = document.getElementById('sponsorEnquiriesList');
-  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; return; }
-
-  container.innerHTML = '<table><thead><tr><th>Player</th><th>From</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
-    result.data.map(function(e) {
-      var player = e.profiles || {};
-      var playerName = player.full_name || player.username || 'Unknown';
-      return '<tr style="cursor:pointer;" onclick="toggleEnquiryDetail(' + e.id + ')">' +
-        '<td>' + playerName + '</td><td>' + e.enquirer_name + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
-        '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteEnquiry(' + e.id + ')">Delete</button></td>' +
-        '</tr>' +
-        '<tr id="enquiry-detail-' + e.id + '" style="display:none;background:#f9f9f9;">' +
-        '<td colspan="4" style="padding:16px;">' +
-        '<strong>Email:</strong> ' + e.enquirer_email + '<br>' +
-        '<strong>Phone:</strong> ' + (e.enquirer_phone || '-') + '<br>' +
-        '<strong>Message:</strong><br>' + e.message +
-        '</td></tr>';
-    }).join('') + '</tbody></table>';
-}
-
-function toggleEnquiryDetail(id) {
-  var row = document.getElementById('enquiry-detail-' + id);
-  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
-}
-
-async function deleteEnquiry(id) {
-  if (!confirm('Delete this enquiry?')) { return; }
-  await sbClient.from('sponsor_enquiries').delete().eq('id', id);
-  loadSponsorEnquiries();
-}
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
@@ -844,35 +672,177 @@ async function deleteEnquiry(id) {
         loadPlayers();
       }
 
+      async function loadSessionPlayerSelect() {
+        var result = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
+        var select = document.getElementById('sessionPlayer');
+        select.innerHTML = '';
+        (result.data || []).forEach(function(p) {
+          select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
+        });
+      }
 
+      async function submitSession() {
+        var playerId = document.getElementById('sessionPlayer').value;
+        if (!playerId) { showMsg('session-error', 'Please select a player.'); return; }
 
-        container.innerHTML = '<table><thead><tr><th>Player</th><th>Played</th><th>Won</th><th>Lost</th><th>Legs For</th><th>Legs Against</th><th>Action</th></tr></thead><tbody>' +
-          result.data.map(function(p) {
-            var name = p.full_name || p.username || 'Unknown';
-            return '<tr>' +
-              '<td>' + name + '</td>' +
-              '<td><input class="score-input" type="number" id="ap_' + p.id + '" value="' + (p.academy_played || 0) + '" /></td>' +
-              '<td><input class="score-input" type="number" id="aw_' + p.id + '" value="' + (p.academy_won || 0) + '" /></td>' +
-              '<td><input class="score-input" type="number" id="al_' + p.id + '" value="' + (p.academy_lost || 0) + '" /></td>' +
-              '<td><input class="score-input" type="number" id="alf_' + p.id + '" value="' + (p.academy_legs_for || 0) + '" /></td>' +
-              '<td><input class="score-input" type="number" id="ala_' + p.id + '" value="' + (p.academy_legs_against || 0) + '" /></td>' +
-              '<td><button class="btn-small" onclick="saveAcademyStats(\'' + p.id + '\')">Save</button></td>' +
-              '</tr>';
+        var result = await sbClient.from('academy_sessions').insert([{
+          player_id: playerId,
+          session_date: document.getElementById('sessionDate').value || null,
+          attendance: parseInt(document.getElementById('sessionAttendance').value) || 0,
+          attitude: parseInt(document.getElementById('sessionAttitude').value) || 0,
+          match_win: parseInt(document.getElementById('sessionMatchWin').value) || 0,
+          break_throw: parseInt(document.getElementById('sessionBreakThrow').value) || 0,
+          nine_dart_challenge: parseInt(document.getElementById('sessionNineDart').value) || 0,
+          over_100_checkout: parseInt(document.getElementById('sessionOver100').value) || 0,
+          score_171_plus: parseInt(document.getElementById('session171').value) || 0,
+          bonus_points: parseInt(document.getElementById('sessionBonus').value) || 0
+        }]);
+
+        if (result.error) { showMsg('session-error', result.error.message); return; }
+
+        showMsg('session-success', 'Session submitted successfully!');
+        document.getElementById('sessionAttendance').value = 0;
+        document.getElementById('sessionAttitude').value = 0;
+        document.getElementById('sessionMatchWin').value = 0;
+        document.getElementById('sessionBreakThrow').value = 0;
+        document.getElementById('sessionNineDart').value = 0;
+        document.getElementById('sessionOver100').value = 0;
+        document.getElementById('session171').value = 0;
+        document.getElementById('sessionBonus').value = 0;
+        loadSessionLog();
+      }
+
+      async function loadSessionLog() {
+        var result = await sbClient.from('academy_sessions').select('*, profiles(full_name, username)').order('session_date', { ascending: false });
+        allSessionsData = result.data || [];
+        renderSessionLog(allSessionsData);
+      }
+
+      function renderSessionLog(data) {
+        var container = document.getElementById('sessionLogList');
+        if (!data.length) { container.innerHTML = '<p class="empty-state">No sessions logged yet.</p>'; return; }
+
+        container.innerHTML = '<table><thead><tr><th>Player</th><th>Date</th><th>Total</th><th>Action</th></tr></thead><tbody>' +
+          data.map(function(s) {
+            var player = s.profiles || {};
+            var name = player.full_name || player.username || 'Unknown';
+            var total = (s.attendance || 0) + (s.attitude || 0) + (s.match_win || 0) + (s.break_throw || 0) + (s.nine_dart_challenge || 0) + (s.over_100_checkout || 0) + (s.score_171_plus || 0) + (s.bonus_points || 0);
+            return '<tr><td>' + name + '</td><td>' + (s.session_date || '-') + '</td><td><strong>' + total + '</strong></td><td><button class="btn-small danger" onclick="deleteSession(' + s.id + ')">Delete</button></td></tr>';
           }).join('') + '</tbody></table>';
       }
 
+      function filterSessionLog() {
+        var val = document.getElementById('sessionSearch').value.toLowerCase().trim();
+        if (!val) { renderSessionLog(allSessionsData); return; }
+        var filtered = allSessionsData.filter(function(s) {
+          var player = s.profiles || {};
+          var name = (player.full_name || player.username || '').toLowerCase();
+          return name.includes(val);
+        });
+        renderSessionLog(filtered);
+      }
 
+      async function deleteSession(id) {
+        if (!confirm('Delete this session entry?')) { return; }
+        await sbClient.from('academy_sessions').delete().eq('id', id);
+        loadSessionLog();
+      }
 
-        var result = await sbClient.from('profiles').update({
-          academy_played: played,
-          academy_won: won,
-          academy_lost: lost,
-          academy_legs_for: legsFor,
-          academy_legs_against: legsAgainst
-        }).eq('id', playerId);
+      async function loadSponsorPlayerSelect() {
+        var result = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
+        var select = document.getElementById('sponsorPlayerSelect');
+        select.innerHTML = '';
+        (result.data || []).forEach(function(p) {
+          select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
+        });
+        if (result.data && result.data.length) { loadSponsorsForSelectedPlayer(); }
+        select.onchange = loadSponsorsForSelectedPlayer;
+      }
 
-        if (result.error) { alert('Error saving: ' + result.error.message); return; }
-        alert('Stats saved!');
+      async function loadSponsorsForSelectedPlayer() {
+        var playerId = document.getElementById('sponsorPlayerSelect').value;
+        if (!playerId) { return; }
+        var result = await sbClient.from('player_sponsors').select('*').eq('player_id', playerId);
+        var container = document.getElementById('sponsorsListForPlayer');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No sponsors added for this player yet.</p>'; return; }
+        container.innerHTML = '<table><thead><tr><th>Sponsor</th><th>Link</th><th>Action</th></tr></thead><tbody>' +
+          result.data.map(function(s) {
+            return '<tr><td>' + (s.sponsor_name || '-') + '</td><td>' + (s.link || '-') + '</td><td><button class="btn-small danger" onclick="deleteSponsor(' + s.id + ')">Remove</button></td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+
+      async function addSponsor() {
+        var playerId = document.getElementById('sponsorPlayerSelect').value;
+        var name = document.getElementById('sponsorName').value.trim();
+        var link = document.getElementById('sponsorLink').value.trim();
+        var fileInput = document.getElementById('sponsorLogoFile');
+        var file = fileInput.files[0];
+
+        if (!playerId) { alert('Please select a player.'); return; }
+        if (!file) { alert('Please select a logo file.'); return; }
+
+        var fileExt = file.name.split('.').pop();
+        var fileName = playerId + '_' + Date.now() + '.' + fileExt;
+
+        var uploadResult = await sbClient.storage.from('sponsor-logos').upload(fileName, file);
+        if (uploadResult.error) { alert('Error uploading logo: ' + uploadResult.error.message); return; }
+
+        var urlData = sbClient.storage.from('sponsor-logos').getPublicUrl(fileName);
+        var logoUrl = urlData.data.publicUrl;
+
+        var result = await sbClient.from('player_sponsors').insert([{
+          player_id: playerId,
+          sponsor_name: name || null,
+          link: link || null,
+          logo_url: logoUrl
+        }]);
+
+        if (result.error) { alert('Error saving sponsor: ' + result.error.message); return; }
+
+        alert('Sponsor added!');
+        document.getElementById('sponsorName').value = '';
+        document.getElementById('sponsorLink').value = '';
+        fileInput.value = '';
+        loadSponsorsForSelectedPlayer();
+      }
+
+      async function deleteSponsor(id) {
+        if (!confirm('Remove this sponsor?')) { return; }
+        await sbClient.from('player_sponsors').delete().eq('id', id);
+        loadSponsorsForSelectedPlayer();
+      }
+
+      async function loadSponsorEnquiries() {
+        var result = await sbClient.from('sponsor_enquiries').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
+        var container = document.getElementById('sponsorEnquiriesList');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; return; }
+
+        container.innerHTML = '<table><thead><tr><th>Player</th><th>From</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
+          result.data.map(function(e) {
+            var player = e.profiles || {};
+            var playerName = player.full_name || player.username || 'Unknown';
+            return '<tr style="cursor:pointer;" onclick="toggleEnquiryDetail(' + e.id + ')">' +
+              '<td>' + playerName + '</td><td>' + e.enquirer_name + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
+              '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteEnquiry(' + e.id + ')">Delete</button></td>' +
+              '</tr>' +
+              '<tr id="enquiry-detail-' + e.id + '" style="display:none;background:#f9f9f9;">' +
+              '<td colspan="4" style="padding:16px;">' +
+              '<strong>Email:</strong> ' + e.enquirer_email + '<br>' +
+              '<strong>Phone:</strong> ' + (e.enquirer_phone || '-') + '<br>' +
+              '<strong>Message:</strong><br>' + e.message +
+              '</td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+
+      function toggleEnquiryDetail(id) {
+        var row = document.getElementById('enquiry-detail-' + id);
+        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+      }
+
+      async function deleteEnquiry(id) {
+        if (!confirm('Delete this enquiry?')) { return; }
+        await sbClient.from('sponsor_enquiries').delete().eq('id', id);
+        loadSponsorEnquiries();
       }
 
       async function saveNews() {
@@ -933,7 +903,7 @@ async function deleteEnquiry(id) {
         loadLeagues();
         loadPlayers();
         loadSessionPlayerSelect();
-loadSessionLog();
+        loadSessionLog();
         loadSponsorPlayerSelect();
         loadSponsorEnquiries();
         loadNews();
