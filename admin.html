@@ -938,13 +938,7 @@ async function addSelectedPlayersToAcademyLeague() {
   loadAcademyLeaguePlayers();
 }
 
-      async function addPlayerToAcademyLeague() {
-        var leagueId = document.getElementById('academyLeagueSelect').value;
-        var playerId = document.getElementById('academyLeaguePlayerSelect').value;
-        if (!leagueId || !playerId) { return; }
-        await sbClient.from('academy_league_players').insert([{ academy_league_id: leagueId, player_id: playerId }]);
-        loadAcademyLeaguePlayers();
-      }
+
 
       async function removePlayerFromAcademyLeague(playerId) {
         var leagueId = document.getElementById('academyLeagueSelect').value;
