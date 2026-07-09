@@ -312,19 +312,35 @@ const fieldLabels = {
         document.getElementById('avatarEditBtn').style.justifyContent = 'center';
       }
 
-      function startEdit(field) {
-        const valueEl = document.getElementById(fieldLabels[field]);
-        let currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
-        if (field === 'username' && currentValue.startsWith('@')) { currentValue = currentValue.slice(1); }
+function startEdit(field) {
+  const valueEl = document.getElementById(fieldLabels[field]);
+  let currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
+  if (field === 'username' && currentValue.startsWith('@')) { currentValue = currentValue.slice(1); }
 
-        const wrap = valueEl.parentElement;
-        wrap.innerHTML = `
-          <input class="edit-input" id="edit-${field}" value="${currentValue}" />
-          <button class="save-btn" onclick="saveEdit('${field}')">Save</button>
-          <button class="cancel-btn" onclick="cancelEdit('${field}', '${currentValue}')">Cancel</button>
-        `;
-        document.getElementById('edit-' + field).focus();
-      }
+  const wrap = valueEl.parentElement;
+
+  if (field === 'platform') {
+    const player = allPlayers.find(p => p.id === currentProfileId);
+    const rawValue = player ? player.platform : '';
+    wrap.innerHTML = `
+      <select class="edit-input" id="edit-platform">
+        <option value="dartcounter" ${rawValue === 'dartcounter' ? 'selected' : ''}>Dartcounter</option>
+        <option value="scolia" ${rawValue === 'scolia' ? 'selected' : ''}>Scolia</option>
+        <option value="both" ${rawValue === 'both' ? 'selected' : ''}>Both</option>
+      </select>
+      <button class="save-btn" onclick="saveEdit('platform')">Save</button>
+      <button class="cancel-btn" onclick="cancelEdit('platform', '${currentValue}')">Cancel</button>
+    `;
+    return;
+  }
+
+  wrap.innerHTML = `
+    <input class="edit-input" id="edit-${field}" value="${currentValue}" />
+    <button class="save-btn" onclick="saveEdit('${field}')">Save</button>
+    <button class="cancel-btn" onclick="cancelEdit('${field}', '${currentValue}')">Cancel</button>
+  `;
+  document.getElementById('edit-' + field).focus();
+}
 
       async function saveEdit(field) {
         const input = document.getElementById('edit-' + field);
