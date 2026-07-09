@@ -741,21 +741,62 @@ async function saveTournamentRow(id) {
         loadLeagues();
       }
 
-      async function loadLeagues() {
-        var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
-        var tbody = document.getElementById('leaguesList');
-        if (!result.data || !result.data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No leagues yet</td></tr>'; return; }
-        var rowsHtml = [];
-        for (var i = 0; i < result.data.length; i++) {
-          var l = result.data[i];
-          var status = await computeLeagueStatus(l);
-          rowsHtml.push('<tr><td>' + l.name + '</td><td>' + (l.season || '-') + '</td><td>' + formatLabel(l.format) + '</td><td>' + formatLabel(l.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><div class="action-buttons"><a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a> <button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button></div></td></tr>');
-        }
-        tbody.innerHTML = rowsHtml.join('');
-        var select = document.getElementById('regLeagueSelect');
-        select.innerHTML = '<option value="">-- Select a league --</option>';
-        result.data.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
-      }
+var allLeaguesData = [];
+
+async function loadLeagues() {
+  var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
+  allLeaguesData = result.data || [];
+  var tbody = document.getElementById('leaguesList');
+  if (!allLeaguesData.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No leagues yet</td></tr>'; return; }
+  var rowsHtml = [];
+  for (var i = 0; i < allLeaguesData.length; i++) {
+    var l = allLeaguesData[i];
+    var status = await computeLeagueStatus(l);
+    rowsHtml.push(renderLeagueRow(l, status));
+  }
+  tbody.innerHTML = rowsHtml.join('');
+  var select = document.getElementById('regLeagueSelect');
+  select.innerHTML = '<option value="">-- Select a league --</option>';
+  allLeaguesData.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
+}
+
+function renderLeagueRow(l, status) {
+  return '<tr id="lrow-' + l.id + '"><td>' + l.name + '</td><td>' + (l.season || '-') + '</td><td>' + formatLabel(l.format) + '</td><td>' + formatLabel(l.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><div class="action-buttons"><a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a> <button class="btn-small" onclick="editLeagueRow(' + l.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button></div></td></tr>';
+}
+
+function editLeagueRow(id) {
+  var l = allLeaguesData.find(function(x) { return x.id === id; });
+  if (!l) { return; }
+  var row = document.getElementById('lrow-' + id);
+  row.innerHTML =
+    '<td><input class="edit-input" id="el-name-' + id + '" value="' + (l.name || '') + '" style="width:130px;" /></td>' +
+    '<td><input class="edit-input" id="el-season-' + id + '" value="' + (l.season || '') + '" style="width:80px;" /></td>' +
+    '<td><select id="el-format-' + id + '" style="width:120px;">' +
+    '<option value="round_robin"' + (l.format === 'round_robin' ? ' selected' : '') + '>Round Robin</option>' +
+    '<option value="home_away"' + (l.format === 'home_away' ? ' selected' : '') + '>Home & Away</option>' +
+    '<option value="swiss"' + (l.format === 'swiss' ? ' selected' : '') + '>Swiss</option>' +
+    '</select></td>' +
+    '<td><select id="el-platform-' + id + '" style="width:110px;">' +
+    '<option value="dartcounter"' + (l.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
+    '<option value="scolia"' + (l.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
+    '<option value="in_person"' + (l.platform === 'in_person' ? ' selected' : '') + '>In Person</option>' +
+    '<option value="both"' + (l.platform === 'both' ? ' selected' : '') + '>Both</option>' +
+    '</select></td>' +
+    '<td>-</td>' +
+    '<td><button class="btn-small" onclick="saveLeagueRow(' + id + ')">Save</button> <button class="btn-small" onclick="loadLeagues()">Cancel</button></td>';
+}
+
+async function saveLeagueRow(id) {
+  var update = {
+    name: document.getElementById('el-name-' + id).value.trim(),
+    season: document.getElementById('el-season-' + id).value.trim() || null,
+    format: document.getElementById('el-format-' + id).value,
+    platform: document.getElementById('el-platform-' + id).value
+  };
+  var result = await sbClient.from('leagues').update(update).eq('id', id);
+  if (result.error) { alert('Error saving: ' + result.error.message); return; }
+  loadLeagues();
+}
 
       async function deleteLeague(id) {
         if (!confirm('Delete this league?')) { return; }
