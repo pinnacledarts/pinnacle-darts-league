@@ -1315,27 +1315,30 @@ function toggleSessionDetail(id) {
         loadDivisionSponsorsForSelected();
       }
 
-      async function loadSponsorEnquiries() {
-        var result = await sbClient.from('sponsor_enquiries').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
-        var container = document.getElementById('sponsorEnquiriesList');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; return; }
+async function loadSponsorEnquiries() {
+  var result = await sbClient.from('sponsor_enquiries').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
+  var container = document.getElementById('sponsorEnquiriesList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
 
-        container.innerHTML = '<table><thead><tr><th>Player</th><th>From</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
-          result.data.map(function(e) {
-            var player = e.profiles || {};
-            var playerName = player.full_name || player.username || 'Unknown';
-            return '<tr style="cursor:pointer;" onclick="toggleEnquiryDetail(' + e.id + ')">' +
-              '<td>' + playerName + '</td><td>' + e.enquirer_name + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
-              '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteEnquiry(' + e.id + ')">Delete</button></td>' +
-              '</tr>' +
-              '<tr id="enquiry-detail-' + e.id + '" style="display:none;background:#f9f9f9;">' +
-              '<td colspan="4" style="padding:16px;">' +
-              '<strong>Email:</strong> ' + e.enquirer_email + '<br>' +
-              '<strong>Phone:</strong> ' + (e.enquirer_phone || '-') + '<br>' +
-              '<strong>Message:</strong><br>' + e.message +
-              '</td></tr>';
-          }).join('') + '</tbody></table>';
-      }
+  container.innerHTML = '<table><thead><tr><th>Player</th><th>From</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
+    result.data.map(function(e) {
+      var player = e.profiles || {};
+      var playerName = player.full_name || player.username || 'Unknown';
+      var unreadMark = !e.is_read ? ' 🔴' : '';
+      return '<tr style="cursor:pointer;" onclick="toggleEnquiryDetail(' + e.id + ', \'player\')">' +
+        '<td>' + playerName + unreadMark + '</td><td>' + e.enquirer_name + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
+        '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteEnquiry(' + e.id + ')">Delete</button></td>' +
+        '</tr>' +
+        '<tr id="enquiry-detail-' + e.id + '" style="display:none;background:#f9f9f9;">' +
+        '<td colspan="4" style="padding:16px;">' +
+        '<strong>Email:</strong> ' + e.enquirer_email + '<br>' +
+        '<strong>Phone:</strong> ' + (e.enquirer_phone || '-') + '<br>' +
+        '<strong>Message:</strong><br>' + e.message +
+        '</td></tr>';
+    }).join('') + '</tbody></table>';
+
+  updateAcademyBadge();
+}
 
       function toggleEnquiryDetail(id) {
         var row = document.getElementById('enquiry-detail-' + id);
