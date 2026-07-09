@@ -657,18 +657,61 @@
         loadTournaments();
       }
 
-      async function loadTournaments() {
-        var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
-        var tbody = document.getElementById('tournamentsList');
-        if (!result.data || !result.data.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tournaments yet</td></tr>'; return; }
-        var rowsHtml = [];
-        for (var i = 0; i < result.data.length; i++) {
-          var t = result.data[i];
-          var status = await computeTournamentStatus(t);
-          rowsHtml.push('<tr><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View</a> <button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>');
-        }
-        tbody.innerHTML = rowsHtml.join('');
-      }
+var allTournamentsData = [];
+
+async function loadTournaments() {
+  var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
+  allTournamentsData = result.data || [];
+  var tbody = document.getElementById('tournamentsList');
+  if (!allTournamentsData.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tournaments yet</td></tr>'; return; }
+  var rowsHtml = [];
+  for (var i = 0; i < allTournamentsData.length; i++) {
+    var t = allTournamentsData[i];
+    var status = await computeTournamentStatus(t);
+    rowsHtml.push(renderTournamentRow(t, status));
+  }
+  tbody.innerHTML = rowsHtml.join('');
+}
+
+function renderTournamentRow(t, status) {
+  return '<tr id="trow-' + t.id + '"><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View</a> <button class="btn-small" onclick="editTournamentRow(' + t.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>';
+}
+
+function editTournamentRow(id) {
+  var t = allTournamentsData.find(function(x) { return x.id === id; });
+  if (!t) { return; }
+  var row = document.getElementById('trow-' + id);
+  row.innerHTML =
+    '<td><input class="edit-input" id="et-name-' + id + '" value="' + (t.name || '') + '" style="width:120px;" /></td>' +
+    '<td><input class="edit-input" type="date" id="et-date-' + id + '" value="' + (t.date || '') + '" style="width:130px;" /></td>' +
+    '<td><input class="edit-input" type="time" id="et-time-' + id + '" value="' + (t.time || '') + '" style="width:100px;" /></td>' +
+    '<td><select id="et-format-' + id + '" style="width:130px;">' +
+    '<option value="single_elimination"' + (t.format === 'single_elimination' ? ' selected' : '') + '>Single Elim</option>' +
+    '<option value="single_elimination_b"' + (t.format === 'single_elimination_b' ? ' selected' : '') + '>Single Elim + B</option>' +
+    '<option value="group_knockout"' + (t.format === 'group_knockout' ? ' selected' : '') + '>Group + Knockout</option>' +
+    '</select></td>' +
+    '<td><select id="et-platform-' + id + '" style="width:110px;">' +
+    '<option value="dartcounter"' + (t.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
+    '<option value="scolia"' + (t.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
+    '<option value="in_person"' + (t.platform === 'in_person' ? ' selected' : '') + '>In Person</option>' +
+    '<option value="both"' + (t.platform === 'both' ? ' selected' : '') + '>Both</option>' +
+    '</select></td>' +
+    '<td>-</td>' +
+    '<td><button class="btn-small" onclick="saveTournamentRow(' + id + ')">Save</button> <button class="btn-small" onclick="loadTournaments()">Cancel</button></td>';
+}
+
+async function saveTournamentRow(id) {
+  var update = {
+    name: document.getElementById('et-name-' + id).value.trim(),
+    date: document.getElementById('et-date-' + id).value || null,
+    time: document.getElementById('et-time-' + id).value || null,
+    format: document.getElementById('et-format-' + id).value,
+    platform: document.getElementById('et-platform-' + id).value
+  };
+  var result = await sbClient.from('tournaments').update(update).eq('id', id);
+  if (result.error) { alert('Error saving: ' + result.error.message); return; }
+  loadTournaments();
+}
 
       async function deleteTournament(id) {
         if (!confirm('Delete this tournament?')) { return; }
