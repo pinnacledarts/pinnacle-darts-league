@@ -853,7 +853,10 @@ function renderPlayersList(data) {
       async function updateAccess(id, value) {
         await sbClient.from('profiles').update({ access: value }).eq('id', id);
       }
-
+      
+async function updatePlatform(id, value) {
+  await sbClient.from('profiles').update({ platform: value || null }).eq('id', id);
+}
       async function toggleAdmin(id, currentStatus) {
         await sbClient.from('profiles').update({ is_admin: !currentStatus }).eq('id', id);
         loadPlayers();
