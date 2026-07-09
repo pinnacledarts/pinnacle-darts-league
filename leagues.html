@@ -90,10 +90,13 @@
 
       async function loadLeagues() {
         var session = await sbClient.auth.getSession();
+        var playerPlatform = null;
         if (session.data.session) {
           currentUserId = session.data.session.user.id;
           var joined = await sbClient.from('league_players').select('league_id').eq('player_id', currentUserId);
           joinedLeagues = joined.data ? joined.data.map(function(j) { return j.league_id; }) : [];
+          var profileResult = await sbClient.from('profiles').select('platform').eq('id', currentUserId).single();
+          playerPlatform = profileResult.data ? profileResult.data.platform : null;
         }
 
         var result = await sbClient.from('leagues').select('*').order('start_date', { ascending: true });
@@ -120,6 +123,10 @@
           var l = result.data[i];
           var status = await computeLeagueStatus(l);
           if (status === 'completed') { continue; }
+
+          if (playerPlatform && playerPlatform !== 'both' && l.platform !== 'in_person' && l.platform !== 'both' && l.platform !== playerPlatform) {
+            continue;
+          }
 
           var startStr = l.start_date ? new Date(l.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
           var endStr = l.end_date ? new Date(l.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
