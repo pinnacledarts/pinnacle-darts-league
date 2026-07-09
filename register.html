@@ -6,7 +6,7 @@
     <title>Register | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=2"></script>
+    <script src="auth.js?t=999999"></script>
     <style>
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
@@ -33,8 +33,8 @@
       .form-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 30px; margin-top: 30px; }
       .form-group { margin-bottom: 16px; }
       .form-group label { display: block; font-size: 0.9em; font-weight: bold; margin-bottom: 6px; color: #333333; }
-      .form-group input { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; }
-      .form-group input:focus { outline: none; border-color: #111111; background-color: #ffffff; }
+      .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; font-family: Arial, sans-serif; }
+      .form-group input:focus, .form-group select:focus { outline: none; border-color: #111111; background-color: #ffffff; }
       .form-group .hint { font-size: 0.8em; color: #888888; margin-top: 4px; }
       .btn-submit { width: 100%; padding: 12px; background-color: #111111; color: #ffffff; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; margin-top: 8px; }
       .btn-submit:hover { background-color: #333333; }
@@ -107,20 +107,20 @@
           <div class="hint">Used so opponents can message you via WhatsApp about matches.</div>
         </div>
         <div class="form-group">
-  <label>Platform</label>
-  <select id="platform">
-    <option value="">-- Select your platform --</option>
-    <option value="dartcounter">Dartcounter</option>
-    <option value="scolia">Scolia</option>
-    <option value="in_person">In Person</option>
-    <option value="both">Both (Dartcounter & Scolia)</option>
-  </select>
-</div>
+          <label>Platform</label>
+          <select id="platform">
+            <option value="">-- Select your platform --</option>
+            <option value="dartcounter">Dartcounter</option>
+            <option value="scolia">Scolia</option>
+            <option value="in_person">In Person</option>
+            <option value="both">Both (Dartcounter & Scolia)</option>
+          </select>
+        </div>
         <div class="form-group">
-  <label>Date of Birth</label>
-  <input type="date" id="dob" />
-  <div class="hint">Used only to identify players under 18 for safeguarding purposes and is never shown publicly.</div>
-</div>
+          <label>Date of Birth</label>
+          <input type="date" id="dob" />
+          <div class="hint">Used only to identify players under 18 for safeguarding purposes and is never shown publicly.</div>
+        </div>
         <div class="form-group">
           <label>Password</label>
           <input type="password" id="password" placeholder="Choose a password" />
@@ -152,7 +152,7 @@
         errorMsg.style.display = 'none';
         successMsg.style.display = 'none';
 
-if (!fullName || !username || !email || !phone || !dob || !platform || !password) {
+        if (!fullName || !username || !email || !phone || !dob || !platform || !password) {
           errorMsg.textContent = 'Please fill in all fields.';
           errorMsg.style.display = 'block';
           return;
@@ -195,6 +195,7 @@ if (!fullName || !username || !email || !phone || !dob || !platform || !password
                 email,
                 phone,
                 date_of_birth: dob,
+                platform,
                 created_at: new Date().toISOString()
               }]);
 
