@@ -820,20 +820,26 @@
         renderPlayersList(allPlayersData);
       }
 
-      function renderPlayersList(data) {
-        var tbody = document.getElementById('playersList');
-        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No players found</td></tr>'; return; }
-        tbody.innerHTML = data.map(function(p) {
-          var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
-            '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
-            '<option value="academy"' + (p.access === 'academy' ? ' selected' : '') + '>Academy</option>' +
-            '<option value="both"' + (p.access === 'both' ? ' selected' : '') + '>Both</option>' +
-            '</select>';
-          var adminBtn = '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
-          var removeBtn = '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\')">Remove</button>';
-          return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + formatLabel(p.platform) + '</td><td>' + accessSelect + '</td><td>' + (p.is_admin ? 'Yes' : 'No') + '</td><td>' + adminBtn + ' ' + removeBtn + '</td></tr>';
-        }).join('');
-      }
+function renderPlayersList(data) {
+  var tbody = document.getElementById('playersList');
+  if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No players found</td></tr>'; return; }
+  tbody.innerHTML = data.map(function(p) {
+    var platformSelect = '<select onchange="updatePlatform(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
+      '<option value=""' + (!p.platform ? ' selected' : '') + '>-</option>' +
+      '<option value="dartcounter"' + (p.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
+      '<option value="scolia"' + (p.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
+      '<option value="both"' + (p.platform === 'both' ? ' selected' : '') + '>Both</option>' +
+      '</select>';
+    var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
+      '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
+      '<option value="academy"' + (p.access === 'academy' ? ' selected' : '') + '>Academy</option>' +
+      '<option value="both"' + (p.access === 'both' ? ' selected' : '') + '>Both</option>' +
+      '</select>';
+    var adminBtn = '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
+    var removeBtn = '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\')">Remove</button>';
+    return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + platformSelect + '</td><td>' + accessSelect + '</td><td>' + (p.is_admin ? 'Yes' : 'No') + '</td><td>' + adminBtn + ' ' + removeBtn + '</td></tr>';
+  }).join('');
+}
 
       function filterPlayersList() {
         var val = document.getElementById('playerSearch').value.toLowerCase().trim();
