@@ -206,8 +206,14 @@
               <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(event)" />
             </div>
             <div class="profile-info">
-              <h3 id="profileName"></h3>
-              <div class="username" id="profileUsername"></div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <h3 id="profileName" style="margin:0;"></h3>
+                <button class="pencil-btn" id="pencil-full_name" onclick="startEdit('full_name')" style="display:none;">✏️</button>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div class="username" id="profileUsername"></div>
+                <button class="pencil-btn" id="pencil-username" onclick="startEdit('username')" style="display:none;">✏️</button>
+              </div>
               <div class="location" id="profileLocation"></div>
             </div>
             <div class="sponsor-area" id="sponsorArea" style="margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -319,6 +325,7 @@
       let currentUserId = null;
       let currentProfileId = null;
       let allAcademyLeagues = [];
+      let isCurrentUserAdmin = false;
 
       const fieldLabels = {
         highest_checkout: 'profileCheckout',
@@ -327,14 +334,20 @@
         dart_weight: 'profileWeight',
         walkout_song: 'profileWalkout',
         favourite_player: 'profileFavPlayer',
-        about_me: 'profileAboutMe'
+        about_me: 'profileAboutMe',
+        full_name: 'profileName',
+        username: 'profileUsername'
       };
 
       const multilineFields = ['about_me'];
 
       async function loadAcademyPlayers() {
         const { data: { session } } = await sbClient.auth.getSession();
-        if (session) currentUserId = session.user.id;
+        if (session) {
+          currentUserId = session.user.id;
+          const { data: profile } = await sbClient.from('profiles').select('is_admin').eq('id', currentUserId).single();
+          isCurrentUserAdmin = profile ? profile.is_admin : false;
+        }
 
         const { data, error } = await sbClient
           .from('profiles')
@@ -376,7 +389,7 @@
       }
 
       async function loadAcademyLeagueOptions() {
-        const leaguesResult = await sbClient.from('academy_leagues').select('*').order('name');
+        const leaguesResult = await sbClient.from('academy_leagues').select('*').eq('status', 'active').order('name');
         allAcademyLeagues = leaguesResult.data || [];
 
         const select = document.getElementById('academyLeagueViewSelect');
@@ -402,7 +415,7 @@
 
       function showPlayer(p) {
         currentProfileId = p.id;
-        const isOwnProfile = currentUserId && currentUserId === p.id;
+        const isOwnProfile = currentUserId && (currentUserId === p.id || isCurrentUserAdmin);
 
         document.getElementById('profileCard').style.display = 'block';
         document.getElementById('enquiryFormWrap').style.display = 'none';
@@ -557,7 +570,8 @@
         }
 
         const valueEl = document.getElementById(fieldLabels[field]);
-        const currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
+        let currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
+        if (field === 'username' && currentValue.startsWith('@')) { currentValue = currentValue.slice(1); }
         const wrap = valueEl.parentElement;
         const isMultiline = multilineFields.includes(field);
 
@@ -585,7 +599,7 @@
         if (field === 'academy_highest_average') {
           const input = document.getElementById('edit-academy_highest_average');
           const newValue = input.value.trim();
-          const { error } = await sbClient.from('profiles').update({ academy_highest_average: newValue || null }).eq('id', currentUserId);
+          const { error } = await sbClient.from('profiles').update({ academy_highest_average: newValue || null }).eq('id', currentProfileId);
           if (error) { alert('Error saving.'); return; }
           const player = allPlayers.find(p => p.id === currentProfileId);
           if (player) player.academy_highest_average = newValue;
@@ -603,7 +617,7 @@
         update[field] = newValue || null;
         const isMultiline = multilineFields.includes(field);
 
-        const { error } = await sbClient.from('profiles').update(update).eq('id', currentUserId);
+        const { error } = await sbClient.from('profiles').update(update).eq('id', currentProfileId);
         if (error) { alert('Error saving. Please try again.'); return; }
 
         const player = allPlayers.find(p => p.id === currentProfileId);
@@ -617,8 +631,10 @@
           `;
         } else {
           const wrapEl = document.getElementById('edit-' + field).parentElement;
+          const displayValue = field === 'username' && newValue ? '@' + newValue : (newValue || '-');
+          const spanClass = (field === 'full_name' || field === 'username') ? '' : 'class="detail-value"';
           wrapEl.innerHTML = `
-            <span class="detail-value" id="${fieldLabels[field]}">${newValue || '-'}</span>
+            <span ${spanClass} id="${fieldLabels[field]}">${displayValue}</span>
             <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
           `;
         }
@@ -635,8 +651,10 @@
           `;
         } else {
           const wrap = document.getElementById('edit-' + field).parentElement;
+          const displayValue = field === 'username' && originalValue ? '@' + originalValue : (originalValue || '-');
+          const spanClass = (field === 'full_name' || field === 'username') ? '' : 'class="detail-value"';
           wrap.innerHTML = `
-            <span class="detail-value" id="${fieldLabels[field]}">${originalValue || '-'}</span>
+            <span ${spanClass} id="${fieldLabels[field]}">${displayValue}</span>
             <button class="pencil-btn" id="pencil-${field}" onclick="startEdit('${field}')">✏️</button>
           `;
         }
@@ -647,7 +665,7 @@
         if (!file) return;
 
         const fileExt = file.name.split('.').pop();
-        const fileName = `${currentUserId}.${fileExt}`;
+        const fileName = `${currentProfileId}.${fileExt}`;
 
         const { error: uploadError } = await sbClient.storage
           .from('avatars')
@@ -664,14 +682,14 @@
         const { error: updateError } = await sbClient
           .from('profiles')
           .update({ avatar_url: avatarUrl })
-          .eq('id', currentUserId);
+          .eq('id', currentProfileId);
 
         if (updateError) {
           alert('Photo uploaded but failed to save. Please try again.');
           return;
         }
 
-        const player = allPlayers.find(p => p.id === currentUserId);
+        const player = allPlayers.find(p => p.id === currentProfileId);
         if (player) player.avatar_url = avatarUrl;
 
         document.getElementById('profileAvatar').textContent = '';
