@@ -1338,15 +1338,15 @@
         updateAcademyBadge();
       }
 
-      async function toggleEnquiryDetail(id) {
-        var row = document.getElementById('enquiry-detail-' + id);
-        var opening = row.style.display === 'none';
-        row.style.display = opening ? 'table-row' : 'none';
-        if (opening) {
-          await sbClient.from('sponsor_enquiries').update({ is_read: true }).eq('id', id);
-          loadSponsorEnquiries();
-        }
-      }
+async function toggleEnquiryDetail(id) {
+  var row = document.getElementById('enquiry-detail-' + id);
+  var opening = row.style.display === 'none';
+  row.style.display = opening ? 'table-row' : 'none';
+  if (opening) {
+    await sbClient.from('sponsor_enquiries').update({ is_read: true }).eq('id', id);
+    updateAcademyBadge();
+  }
+}
 
       async function deleteEnquiry(id) {
         if (!confirm('Delete this enquiry?')) { return; }
@@ -1378,15 +1378,15 @@
         updateAcademyBadge();
       }
 
-      async function toggleDivisionEnquiryDetail(id) {
-        var row = document.getElementById('division-enquiry-detail-' + id);
-        var opening = row.style.display === 'none';
-        row.style.display = opening ? 'table-row' : 'none';
-        if (opening) {
-          await sbClient.from('division_sponsor_enquiries').update({ is_read: true }).eq('id', id);
-          loadDivisionEnquiries();
-        }
-      }
+async function toggleDivisionEnquiryDetail(id) {
+  var row = document.getElementById('division-enquiry-detail-' + id);
+  var opening = row.style.display === 'none';
+  row.style.display = opening ? 'table-row' : 'none';
+  if (opening) {
+    await sbClient.from('division_sponsor_enquiries').update({ is_read: true }).eq('id', id);
+    updateAcademyBadge();
+  }
+}
 
       async function deleteDivisionEnquiry(id) {
         if (!confirm('Delete this enquiry?')) { return; }
