@@ -217,17 +217,17 @@
       let currentProfileId = null;
       let isCurrentUserAdmin = false;
 
-      const fieldLabels = {
-        highest_checkout: 'profileCheckout',
-        hometown: 'profileHometown',
-        darts_brand: 'profileBrand',
-        dart_weight: 'profileWeight',
-        walkout_song: 'profileWalkout',
-        favourite_player: 'profileFavPlayer',
-        full_name: 'profileName',
-        username: 'profileUsername'
-        platform: 'profilePlatform'
-      };
+const fieldLabels = {
+  highest_checkout: 'profileCheckout',
+  hometown: 'profileHometown',
+  darts_brand: 'profileBrand',
+  dart_weight: 'profileWeight',
+  walkout_song: 'profileWalkout',
+  favourite_player: 'profileFavPlayer',
+  full_name: 'profileName',
+  username: 'profileUsername',
+  platform: 'profilePlatform'
+};
 
       async function loadPlayers() {
         const { data: { session } } = await sbClient.auth.getSession();
