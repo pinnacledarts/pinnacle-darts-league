@@ -521,6 +521,19 @@
               </select>
             </div>
           </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Section</label>
+              <select id="newsSection">
+                <option value="online">Online</option>
+                <option value="academy">Academy</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Image (optional)</label>
+              <input type="file" id="newsImageFile" accept="image/*" />
+            </div>
+          </div>
           <div class="form-group">
             <label>Content</label>
             <textarea id="newsContent" rows="4" placeholder="Write your news article here..."></textarea>
@@ -531,8 +544,8 @@
         <div class="card">
           <h3>Manage News</h3>
           <table>
-            <thead><tr><th>Title</th><th>Tag</th><th>Date</th><th>Actions</th></tr></thead>
-            <tbody id="newsList"><tr><td colspan="4" class="empty-state">Loading...</td></tr></tbody>
+            <thead><tr><th>Title</th><th>Tag</th><th>Section</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="newsList"><tr><td colspan="5" class="empty-state">Loading...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -820,26 +833,26 @@
         renderPlayersList(allPlayersData);
       }
 
-function renderPlayersList(data) {
-  var tbody = document.getElementById('playersList');
-  if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No players found</td></tr>'; return; }
-  tbody.innerHTML = data.map(function(p) {
-    var platformSelect = '<select onchange="updatePlatform(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
-      '<option value=""' + (!p.platform ? ' selected' : '') + '>-</option>' +
-      '<option value="dartcounter"' + (p.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
-      '<option value="scolia"' + (p.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
-      '<option value="both"' + (p.platform === 'both' ? ' selected' : '') + '>Both</option>' +
-      '</select>';
-    var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
-      '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
-      '<option value="academy"' + (p.access === 'academy' ? ' selected' : '') + '>Academy</option>' +
-      '<option value="both"' + (p.access === 'both' ? ' selected' : '') + '>Both</option>' +
-      '</select>';
-    var adminBtn = '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
-    var removeBtn = '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\')">Remove</button>';
-    return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + platformSelect + '</td><td>' + accessSelect + '</td><td>' + (p.is_admin ? 'Yes' : 'No') + '</td><td>' + adminBtn + ' ' + removeBtn + '</td></tr>';
-  }).join('');
-}
+      function renderPlayersList(data) {
+        var tbody = document.getElementById('playersList');
+        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No players found</td></tr>'; return; }
+        tbody.innerHTML = data.map(function(p) {
+          var platformSelect = '<select onchange="updatePlatform(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
+            '<option value=""' + (!p.platform ? ' selected' : '') + '>-</option>' +
+            '<option value="dartcounter"' + (p.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
+            '<option value="scolia"' + (p.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
+            '<option value="both"' + (p.platform === 'both' ? ' selected' : '') + '>Both</option>' +
+            '</select>';
+          var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
+            '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
+            '<option value="academy"' + (p.access === 'academy' ? ' selected' : '') + '>Academy</option>' +
+            '<option value="both"' + (p.access === 'both' ? ' selected' : '') + '>Both</option>' +
+            '</select>';
+          var adminBtn = '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
+          var removeBtn = '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\')">Remove</button>';
+          return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + platformSelect + '</td><td>' + accessSelect + '</td><td>' + (p.is_admin ? 'Yes' : 'No') + '</td><td>' + adminBtn + ' ' + removeBtn + '</td></tr>';
+        }).join('');
+      }
 
       function filterPlayersList() {
         var val = document.getElementById('playerSearch').value.toLowerCase().trim();
@@ -853,10 +866,11 @@ function renderPlayersList(data) {
       async function updateAccess(id, value) {
         await sbClient.from('profiles').update({ access: value }).eq('id', id);
       }
-      
-async function updatePlatform(id, value) {
-  await sbClient.from('profiles').update({ platform: value || null }).eq('id', id);
-}
+
+      async function updatePlatform(id, value) {
+        await sbClient.from('profiles').update({ platform: value || null }).eq('id', id);
+      }
+
       async function toggleAdmin(id, currentStatus) {
         await sbClient.from('profiles').update({ is_admin: !currentStatus }).eq('id', id);
         loadPlayers();
@@ -1347,15 +1361,15 @@ async function updatePlatform(id, value) {
         updateAcademyBadge();
       }
 
-async function toggleEnquiryDetail(id) {
-  var row = document.getElementById('enquiry-detail-' + id);
-  var opening = row.style.display === 'none';
-  row.style.display = opening ? 'table-row' : 'none';
-  if (opening) {
-    await sbClient.from('sponsor_enquiries').update({ is_read: true }).eq('id', id);
-    updateAcademyBadge();
-  }
-}
+      async function toggleEnquiryDetail(id) {
+        var row = document.getElementById('enquiry-detail-' + id);
+        var opening = row.style.display === 'none';
+        row.style.display = opening ? 'table-row' : 'none';
+        if (opening) {
+          await sbClient.from('sponsor_enquiries').update({ is_read: true }).eq('id', id);
+          updateAcademyBadge();
+        }
+      }
 
       async function deleteEnquiry(id) {
         if (!confirm('Delete this enquiry?')) { return; }
@@ -1387,15 +1401,15 @@ async function toggleEnquiryDetail(id) {
         updateAcademyBadge();
       }
 
-async function toggleDivisionEnquiryDetail(id) {
-  var row = document.getElementById('division-enquiry-detail-' + id);
-  var opening = row.style.display === 'none';
-  row.style.display = opening ? 'table-row' : 'none';
-  if (opening) {
-    await sbClient.from('division_sponsor_enquiries').update({ is_read: true }).eq('id', id);
-    updateAcademyBadge();
-  }
-}
+      async function toggleDivisionEnquiryDetail(id) {
+        var row = document.getElementById('division-enquiry-detail-' + id);
+        var opening = row.style.display === 'none';
+        row.style.display = opening ? 'table-row' : 'none';
+        if (opening) {
+          await sbClient.from('division_sponsor_enquiries').update({ is_read: true }).eq('id', id);
+          updateAcademyBadge();
+        }
+      }
 
       async function deleteDivisionEnquiry(id) {
         if (!confirm('Delete this enquiry?')) { return; }
@@ -1415,22 +1429,41 @@ async function toggleDivisionEnquiryDetail(id) {
         var title = document.getElementById('newsTitle').value.trim();
         var content = document.getElementById('newsContent').value.trim();
         if (!title || !content) { showMsg('news-error', 'Please fill in title and content.'); return; }
+
+        var imageUrl = null;
+        var fileInput = document.getElementById('newsImageFile');
+        var file = fileInput.files[0];
+        if (file) {
+          var fileExt = file.name.split('.').pop();
+          var fileName = 'news_' + Date.now() + '.' + fileExt;
+          var uploadResult = await sbClient.storage.from('news-images').upload(fileName, file);
+          if (uploadResult.error) { showMsg('news-error', 'Error uploading image: ' + uploadResult.error.message); return; }
+          var urlData = sbClient.storage.from('news-images').getPublicUrl(fileName);
+          imageUrl = urlData.data.publicUrl;
+        }
+
         var result = await sbClient.from('news').insert([{
-          title: title, content: content, tag: document.getElementById('newsTag').value, created_at: new Date().toISOString()
+          title: title,
+          content: content,
+          tag: document.getElementById('newsTag').value,
+          section: document.getElementById('newsSection').value,
+          image_url: imageUrl,
+          created_at: new Date().toISOString()
         }]);
         if (result.error) { showMsg('news-error', result.error.message); return; }
         showMsg('news-success', 'Article published successfully!');
         document.getElementById('newsTitle').value = '';
         document.getElementById('newsContent').value = '';
+        fileInput.value = '';
         loadNews();
       }
 
       async function loadNews() {
         var result = await sbClient.from('news').select('*').order('created_at', { ascending: false });
         var tbody = document.getElementById('newsList');
-        if (!result.data || !result.data.length) { tbody.innerHTML = '<tr><td colspan="4" class="empty-state">No news articles yet</td></tr>'; return; }
+        if (!result.data || !result.data.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No news articles yet</td></tr>'; return; }
         tbody.innerHTML = result.data.map(function(n) {
-          return '<tr><td>' + n.title + '</td><td>' + n.tag + '</td><td>' + new Date(n.created_at).toLocaleDateString('en-GB') + '</td><td><button class="btn-small danger" onclick="deleteNews(\'' + n.id + '\')">Delete</button></td></tr>';
+          return '<tr><td>' + n.title + '</td><td>' + n.tag + '</td><td>' + (n.section === 'academy' ? 'Academy' : 'Online') + '</td><td>' + new Date(n.created_at).toLocaleDateString('en-GB') + '</td><td><button class="btn-small danger" onclick="deleteNews(\'' + n.id + '\')">Delete</button></td></tr>';
         }).join('');
       }
 
