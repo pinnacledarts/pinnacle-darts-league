@@ -123,7 +123,7 @@
         <button class="tab active" onclick="showTab('tournaments', event)">Tournaments</button>
         <button class="tab" onclick="showTab('leagues', event)">Leagues</button>
         <button class="tab" onclick="showTab('players', event)">Players</button>
-<button class="tab" onclick="showTab('academy', event)" id="academyTabBtn">Academy</button>
+        <button class="tab" onclick="showTab('academy', event)" id="academyTabBtn">Academy</button>
         <button class="tab" onclick="showTab('news', event)">News</button>
       </div>
 
@@ -543,6 +543,8 @@
       var allPlayersData = [];
       var allSessionsData = [];
       var academyLeagueAvailablePlayers = [];
+      var allTournamentsData = [];
+      var allLeaguesData = [];
 
       if (document.referrer.includes('academy.html')) {
         document.getElementById('switchBtn').textContent = 'Switch to Online';
@@ -657,61 +659,59 @@
         loadTournaments();
       }
 
-var allTournamentsData = [];
+      async function loadTournaments() {
+        var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
+        allTournamentsData = result.data || [];
+        var tbody = document.getElementById('tournamentsList');
+        if (!allTournamentsData.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tournaments yet</td></tr>'; return; }
+        var rowsHtml = [];
+        for (var i = 0; i < allTournamentsData.length; i++) {
+          var t = allTournamentsData[i];
+          var status = await computeTournamentStatus(t);
+          rowsHtml.push(renderTournamentRow(t, status));
+        }
+        tbody.innerHTML = rowsHtml.join('');
+      }
 
-async function loadTournaments() {
-  var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
-  allTournamentsData = result.data || [];
-  var tbody = document.getElementById('tournamentsList');
-  if (!allTournamentsData.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tournaments yet</td></tr>'; return; }
-  var rowsHtml = [];
-  for (var i = 0; i < allTournamentsData.length; i++) {
-    var t = allTournamentsData[i];
-    var status = await computeTournamentStatus(t);
-    rowsHtml.push(renderTournamentRow(t, status));
-  }
-  tbody.innerHTML = rowsHtml.join('');
-}
+      function renderTournamentRow(t, status) {
+        return '<tr id="trow-' + t.id + '"><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View</a> <button class="btn-small" onclick="editTournamentRow(' + t.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>';
+      }
 
-function renderTournamentRow(t, status) {
-  return '<tr id="trow-' + t.id + '"><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View</a> <button class="btn-small" onclick="editTournamentRow(' + t.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>';
-}
+      function editTournamentRow(id) {
+        var t = allTournamentsData.find(function(x) { return x.id === id; });
+        if (!t) { return; }
+        var row = document.getElementById('trow-' + id);
+        row.innerHTML =
+          '<td><input class="edit-input" id="et-name-' + id + '" value="' + (t.name || '') + '" style="width:120px;" /></td>' +
+          '<td><input class="edit-input" type="date" id="et-date-' + id + '" value="' + (t.date || '') + '" style="width:130px;" /></td>' +
+          '<td><input class="edit-input" type="time" id="et-time-' + id + '" value="' + (t.time || '') + '" style="width:100px;" /></td>' +
+          '<td><select id="et-format-' + id + '" style="width:130px;">' +
+          '<option value="single_elimination"' + (t.format === 'single_elimination' ? ' selected' : '') + '>Single Elim</option>' +
+          '<option value="single_elimination_b"' + (t.format === 'single_elimination_b' ? ' selected' : '') + '>Single Elim + B</option>' +
+          '<option value="group_knockout"' + (t.format === 'group_knockout' ? ' selected' : '') + '>Group + Knockout</option>' +
+          '</select></td>' +
+          '<td><select id="et-platform-' + id + '" style="width:110px;">' +
+          '<option value="dartcounter"' + (t.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
+          '<option value="scolia"' + (t.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
+          '<option value="in_person"' + (t.platform === 'in_person' ? ' selected' : '') + '>In Person</option>' +
+          '<option value="both"' + (t.platform === 'both' ? ' selected' : '') + '>Both</option>' +
+          '</select></td>' +
+          '<td>-</td>' +
+          '<td><button class="btn-small" onclick="saveTournamentRow(' + id + ')">Save</button> <button class="btn-small" onclick="loadTournaments()">Cancel</button></td>';
+      }
 
-function editTournamentRow(id) {
-  var t = allTournamentsData.find(function(x) { return x.id === id; });
-  if (!t) { return; }
-  var row = document.getElementById('trow-' + id);
-  row.innerHTML =
-    '<td><input class="edit-input" id="et-name-' + id + '" value="' + (t.name || '') + '" style="width:120px;" /></td>' +
-    '<td><input class="edit-input" type="date" id="et-date-' + id + '" value="' + (t.date || '') + '" style="width:130px;" /></td>' +
-    '<td><input class="edit-input" type="time" id="et-time-' + id + '" value="' + (t.time || '') + '" style="width:100px;" /></td>' +
-    '<td><select id="et-format-' + id + '" style="width:130px;">' +
-    '<option value="single_elimination"' + (t.format === 'single_elimination' ? ' selected' : '') + '>Single Elim</option>' +
-    '<option value="single_elimination_b"' + (t.format === 'single_elimination_b' ? ' selected' : '') + '>Single Elim + B</option>' +
-    '<option value="group_knockout"' + (t.format === 'group_knockout' ? ' selected' : '') + '>Group + Knockout</option>' +
-    '</select></td>' +
-    '<td><select id="et-platform-' + id + '" style="width:110px;">' +
-    '<option value="dartcounter"' + (t.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
-    '<option value="scolia"' + (t.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
-    '<option value="in_person"' + (t.platform === 'in_person' ? ' selected' : '') + '>In Person</option>' +
-    '<option value="both"' + (t.platform === 'both' ? ' selected' : '') + '>Both</option>' +
-    '</select></td>' +
-    '<td>-</td>' +
-    '<td><button class="btn-small" onclick="saveTournamentRow(' + id + ')">Save</button> <button class="btn-small" onclick="loadTournaments()">Cancel</button></td>';
-}
-
-async function saveTournamentRow(id) {
-  var update = {
-    name: document.getElementById('et-name-' + id).value.trim(),
-    date: document.getElementById('et-date-' + id).value || null,
-    time: document.getElementById('et-time-' + id).value || null,
-    format: document.getElementById('et-format-' + id).value,
-    platform: document.getElementById('et-platform-' + id).value
-  };
-  var result = await sbClient.from('tournaments').update(update).eq('id', id);
-  if (result.error) { alert('Error saving: ' + result.error.message); return; }
-  loadTournaments();
-}
+      async function saveTournamentRow(id) {
+        var update = {
+          name: document.getElementById('et-name-' + id).value.trim(),
+          date: document.getElementById('et-date-' + id).value || null,
+          time: document.getElementById('et-time-' + id).value || null,
+          format: document.getElementById('et-format-' + id).value,
+          platform: document.getElementById('et-platform-' + id).value
+        };
+        var result = await sbClient.from('tournaments').update(update).eq('id', id);
+        if (result.error) { alert('Error saving: ' + result.error.message); return; }
+        loadTournaments();
+      }
 
       async function deleteTournament(id) {
         if (!confirm('Delete this tournament?')) { return; }
@@ -741,62 +741,60 @@ async function saveTournamentRow(id) {
         loadLeagues();
       }
 
-var allLeaguesData = [];
+      async function loadLeagues() {
+        var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
+        allLeaguesData = result.data || [];
+        var tbody = document.getElementById('leaguesList');
+        if (!allLeaguesData.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No leagues yet</td></tr>'; return; }
+        var rowsHtml = [];
+        for (var i = 0; i < allLeaguesData.length; i++) {
+          var l = allLeaguesData[i];
+          var status = await computeLeagueStatus(l);
+          rowsHtml.push(renderLeagueRow(l, status));
+        }
+        tbody.innerHTML = rowsHtml.join('');
+        var select = document.getElementById('regLeagueSelect');
+        select.innerHTML = '<option value="">-- Select a league --</option>';
+        allLeaguesData.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
+      }
 
-async function loadLeagues() {
-  var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
-  allLeaguesData = result.data || [];
-  var tbody = document.getElementById('leaguesList');
-  if (!allLeaguesData.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No leagues yet</td></tr>'; return; }
-  var rowsHtml = [];
-  for (var i = 0; i < allLeaguesData.length; i++) {
-    var l = allLeaguesData[i];
-    var status = await computeLeagueStatus(l);
-    rowsHtml.push(renderLeagueRow(l, status));
-  }
-  tbody.innerHTML = rowsHtml.join('');
-  var select = document.getElementById('regLeagueSelect');
-  select.innerHTML = '<option value="">-- Select a league --</option>';
-  allLeaguesData.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
-}
+      function renderLeagueRow(l, status) {
+        return '<tr id="lrow-' + l.id + '"><td>' + l.name + '</td><td>' + (l.season || '-') + '</td><td>' + formatLabel(l.format) + '</td><td>' + formatLabel(l.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><div class="action-buttons"><a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a> <button class="btn-small" onclick="editLeagueRow(' + l.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button></div></td></tr>';
+      }
 
-function renderLeagueRow(l, status) {
-  return '<tr id="lrow-' + l.id + '"><td>' + l.name + '</td><td>' + (l.season || '-') + '</td><td>' + formatLabel(l.format) + '</td><td>' + formatLabel(l.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><div class="action-buttons"><a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a> <button class="btn-small" onclick="editLeagueRow(' + l.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button></div></td></tr>';
-}
+      function editLeagueRow(id) {
+        var l = allLeaguesData.find(function(x) { return x.id === id; });
+        if (!l) { return; }
+        var row = document.getElementById('lrow-' + id);
+        row.innerHTML =
+          '<td><input class="edit-input" id="el-name-' + id + '" value="' + (l.name || '') + '" style="width:130px;" /></td>' +
+          '<td><input class="edit-input" id="el-season-' + id + '" value="' + (l.season || '') + '" style="width:80px;" /></td>' +
+          '<td><select id="el-format-' + id + '" style="width:120px;">' +
+          '<option value="round_robin"' + (l.format === 'round_robin' ? ' selected' : '') + '>Round Robin</option>' +
+          '<option value="home_away"' + (l.format === 'home_away' ? ' selected' : '') + '>Home & Away</option>' +
+          '<option value="swiss"' + (l.format === 'swiss' ? ' selected' : '') + '>Swiss</option>' +
+          '</select></td>' +
+          '<td><select id="el-platform-' + id + '" style="width:110px;">' +
+          '<option value="dartcounter"' + (l.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
+          '<option value="scolia"' + (l.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
+          '<option value="in_person"' + (l.platform === 'in_person' ? ' selected' : '') + '>In Person</option>' +
+          '<option value="both"' + (l.platform === 'both' ? ' selected' : '') + '>Both</option>' +
+          '</select></td>' +
+          '<td>-</td>' +
+          '<td><button class="btn-small" onclick="saveLeagueRow(' + id + ')">Save</button> <button class="btn-small" onclick="loadLeagues()">Cancel</button></td>';
+      }
 
-function editLeagueRow(id) {
-  var l = allLeaguesData.find(function(x) { return x.id === id; });
-  if (!l) { return; }
-  var row = document.getElementById('lrow-' + id);
-  row.innerHTML =
-    '<td><input class="edit-input" id="el-name-' + id + '" value="' + (l.name || '') + '" style="width:130px;" /></td>' +
-    '<td><input class="edit-input" id="el-season-' + id + '" value="' + (l.season || '') + '" style="width:80px;" /></td>' +
-    '<td><select id="el-format-' + id + '" style="width:120px;">' +
-    '<option value="round_robin"' + (l.format === 'round_robin' ? ' selected' : '') + '>Round Robin</option>' +
-    '<option value="home_away"' + (l.format === 'home_away' ? ' selected' : '') + '>Home & Away</option>' +
-    '<option value="swiss"' + (l.format === 'swiss' ? ' selected' : '') + '>Swiss</option>' +
-    '</select></td>' +
-    '<td><select id="el-platform-' + id + '" style="width:110px;">' +
-    '<option value="dartcounter"' + (l.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
-    '<option value="scolia"' + (l.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
-    '<option value="in_person"' + (l.platform === 'in_person' ? ' selected' : '') + '>In Person</option>' +
-    '<option value="both"' + (l.platform === 'both' ? ' selected' : '') + '>Both</option>' +
-    '</select></td>' +
-    '<td>-</td>' +
-    '<td><button class="btn-small" onclick="saveLeagueRow(' + id + ')">Save</button> <button class="btn-small" onclick="loadLeagues()">Cancel</button></td>';
-}
-
-async function saveLeagueRow(id) {
-  var update = {
-    name: document.getElementById('el-name-' + id).value.trim(),
-    season: document.getElementById('el-season-' + id).value.trim() || null,
-    format: document.getElementById('el-format-' + id).value,
-    platform: document.getElementById('el-platform-' + id).value
-  };
-  var result = await sbClient.from('leagues').update(update).eq('id', id);
-  if (result.error) { alert('Error saving: ' + result.error.message); return; }
-  loadLeagues();
-}
+      async function saveLeagueRow(id) {
+        var update = {
+          name: document.getElementById('el-name-' + id).value.trim(),
+          season: document.getElementById('el-season-' + id).value.trim() || null,
+          format: document.getElementById('el-format-' + id).value,
+          platform: document.getElementById('el-platform-' + id).value
+        };
+        var result = await sbClient.from('leagues').update(update).eq('id', id);
+        if (result.error) { alert('Error saving: ' + result.error.message); return; }
+        loadLeagues();
+      }
 
       async function deleteLeague(id) {
         if (!confirm('Delete this league?')) { return; }
@@ -1071,96 +1069,96 @@ async function saveLeagueRow(id) {
         renderSessionLog(allSessionsData);
       }
 
-function renderSessionLog(data) {
-  var container = document.getElementById('sessionLogList');
-  if (!data.length) { container.innerHTML = '<p class="empty-state">No sessions logged yet.</p>'; return; }
+      function renderSessionLog(data) {
+        var container = document.getElementById('sessionLogList');
+        if (!data.length) { container.innerHTML = '<p class="empty-state">No sessions logged yet.</p>'; return; }
 
-  container.innerHTML = '<table><thead><tr><th>Player</th><th>Date</th><th>Total</th><th>Action</th></tr></thead><tbody>' +
-    data.map(function(s) {
-      var player = s.profiles || {};
-      var name = player.full_name || player.username || 'Unknown';
-      var total = (s.attendance || 0) + (s.attitude || 0) + (s.match_win || 0) + (s.break_throw || 0) + (s.nine_dart_challenge || 0) + (s.over_100_checkout || 0) + (s.score_171_plus || 0) + (s.bonus_points || 0);
-      return '<tr style="cursor:pointer;" onclick="toggleSessionDetail(' + s.id + ')">' +
-        '<td>' + name + '</td><td>' + (s.session_date || '-') + '</td><td><strong id="session-total-' + s.id + '">' + total + '</strong></td>' +
-        '<td><button class="btn-small" onclick="event.stopPropagation(); editSession(' + s.id + ')">Edit</button> <button class="btn-small danger" onclick="event.stopPropagation(); deleteSession(' + s.id + ')">Delete</button></td>' +
-        '</tr>' +
-        '<tr id="session-detail-' + s.id + '" style="display:none;background:#f9f9f9;">' +
-        '<td colspan="4" style="padding:16px;" id="session-detail-content-' + s.id + '">' +
-        renderSessionDetailView(s) +
-        '</td></tr>';
-    }).join('') + '</tbody></table>';
-}
+        container.innerHTML = '<table><thead><tr><th>Player</th><th>Date</th><th>Total</th><th>Action</th></tr></thead><tbody>' +
+          data.map(function(s) {
+            var player = s.profiles || {};
+            var name = player.full_name || player.username || 'Unknown';
+            var total = (s.attendance || 0) + (s.attitude || 0) + (s.match_win || 0) + (s.break_throw || 0) + (s.nine_dart_challenge || 0) + (s.over_100_checkout || 0) + (s.score_171_plus || 0) + (s.bonus_points || 0);
+            return '<tr style="cursor:pointer;" onclick="toggleSessionDetail(' + s.id + ')">' +
+              '<td>' + name + '</td><td>' + (s.session_date || '-') + '</td><td><strong id="session-total-' + s.id + '">' + total + '</strong></td>' +
+              '<td><button class="btn-small" onclick="event.stopPropagation(); editSession(' + s.id + ')">Edit</button> <button class="btn-small danger" onclick="event.stopPropagation(); deleteSession(' + s.id + ')">Delete</button></td>' +
+              '</tr>' +
+              '<tr id="session-detail-' + s.id + '" style="display:none;background:#f9f9f9;">' +
+              '<td colspan="4" style="padding:16px;" id="session-detail-content-' + s.id + '">' +
+              renderSessionDetailView(s) +
+              '</td></tr>';
+          }).join('') + '</tbody></table>';
+      }
 
-function renderSessionDetailView(s) {
-  return '<strong>Attendance:</strong> ' + (s.attendance || 0) + '<br>' +
-    '<strong>Attitude:</strong> ' + (s.attitude || 0) + '<br>' +
-    '<strong>Match Win:</strong> ' + (s.match_win || 0) + '<br>' +
-    '<strong>Break Throw in Last Leg Decider:</strong> ' + (s.break_throw || 0) + '<br>' +
-    '<strong>9 Dart Challenge Score:</strong> ' + (s.nine_dart_challenge || 0) + '<br>' +
-    '<strong>Over 100 Checkout Within Session:</strong> ' + (s.over_100_checkout || 0) + '<br>' +
-    '<strong>171+ Scored in a Match:</strong> ' + (s.score_171_plus || 0) + '<br>' +
-    '<strong>Bonus Points:</strong> ' + (s.bonus_points || 0);
-}
+      function renderSessionDetailView(s) {
+        return '<strong>Attendance:</strong> ' + (s.attendance || 0) + '<br>' +
+          '<strong>Attitude:</strong> ' + (s.attitude || 0) + '<br>' +
+          '<strong>Match Win:</strong> ' + (s.match_win || 0) + '<br>' +
+          '<strong>Break Throw in Last Leg Decider:</strong> ' + (s.break_throw || 0) + '<br>' +
+          '<strong>9 Dart Challenge Score:</strong> ' + (s.nine_dart_challenge || 0) + '<br>' +
+          '<strong>Over 100 Checkout Within Session:</strong> ' + (s.over_100_checkout || 0) + '<br>' +
+          '<strong>171+ Scored in a Match:</strong> ' + (s.score_171_plus || 0) + '<br>' +
+          '<strong>Bonus Points:</strong> ' + (s.bonus_points || 0);
+      }
 
-function renderSessionEditView(s) {
-  return '<div class="form-row-3">' +
-    '<div class="form-group"><label>Attendance</label><input class="score-input" type="number" id="edit-att-' + s.id + '" value="' + (s.attendance || 0) + '" /></div>' +
-    '<div class="form-group"><label>Attitude</label><input class="score-input" type="number" id="edit-atd-' + s.id + '" value="' + (s.attitude || 0) + '" /></div>' +
-    '<div class="form-group"><label>Match Win</label><input class="score-input" type="number" id="edit-mw-' + s.id + '" value="' + (s.match_win || 0) + '" /></div>' +
-    '</div>' +
-    '<div class="form-row-3">' +
-    '<div class="form-group"><label>Break Throw</label><input class="score-input" type="number" id="edit-bt-' + s.id + '" value="' + (s.break_throw || 0) + '" /></div>' +
-    '<div class="form-group"><label>9 Dart Challenge</label><input class="score-input" type="number" id="edit-9dc-' + s.id + '" value="' + (s.nine_dart_challenge || 0) + '" /></div>' +
-    '<div class="form-group"><label>Over 100 Checkout</label><input class="score-input" type="number" id="edit-100-' + s.id + '" value="' + (s.over_100_checkout || 0) + '" /></div>' +
-    '</div>' +
-    '<div class="form-row-3">' +
-    '<div class="form-group"><label>171+ Scored</label><input class="score-input" type="number" id="edit-171-' + s.id + '" value="' + (s.score_171_plus || 0) + '" /></div>' +
-    '<div class="form-group"><label>Bonus Points</label><input class="score-input" type="number" id="edit-bonus-' + s.id + '" value="' + (s.bonus_points || 0) + '" /></div>' +
-    '</div>' +
-    '<button class="btn btn-primary" onclick="saveSessionEdit(' + s.id + ')">Save Changes</button>' +
-    '<button class="btn btn-secondary" onclick="cancelSessionEdit(' + s.id + ')">Cancel</button>';
-}
+      function renderSessionEditView(s) {
+        return '<div class="form-row-3">' +
+          '<div class="form-group"><label>Attendance</label><input class="score-input" type="number" id="edit-att-' + s.id + '" value="' + (s.attendance || 0) + '" /></div>' +
+          '<div class="form-group"><label>Attitude</label><input class="score-input" type="number" id="edit-atd-' + s.id + '" value="' + (s.attitude || 0) + '" /></div>' +
+          '<div class="form-group"><label>Match Win</label><input class="score-input" type="number" id="edit-mw-' + s.id + '" value="' + (s.match_win || 0) + '" /></div>' +
+          '</div>' +
+          '<div class="form-row-3">' +
+          '<div class="form-group"><label>Break Throw</label><input class="score-input" type="number" id="edit-bt-' + s.id + '" value="' + (s.break_throw || 0) + '" /></div>' +
+          '<div class="form-group"><label>9 Dart Challenge</label><input class="score-input" type="number" id="edit-9dc-' + s.id + '" value="' + (s.nine_dart_challenge || 0) + '" /></div>' +
+          '<div class="form-group"><label>Over 100 Checkout</label><input class="score-input" type="number" id="edit-100-' + s.id + '" value="' + (s.over_100_checkout || 0) + '" /></div>' +
+          '</div>' +
+          '<div class="form-row-3">' +
+          '<div class="form-group"><label>171+ Scored</label><input class="score-input" type="number" id="edit-171-' + s.id + '" value="' + (s.score_171_plus || 0) + '" /></div>' +
+          '<div class="form-group"><label>Bonus Points</label><input class="score-input" type="number" id="edit-bonus-' + s.id + '" value="' + (s.bonus_points || 0) + '" /></div>' +
+          '</div>' +
+          '<button class="btn btn-primary" onclick="saveSessionEdit(' + s.id + ')">Save Changes</button>' +
+          '<button class="btn btn-secondary" onclick="cancelSessionEdit(' + s.id + ')">Cancel</button>';
+      }
 
-function editSession(id) {
-  var session = allSessionsData.find(function(s) { return s.id === id; });
-  if (!session) { return; }
-  document.getElementById('session-detail-' + id).style.display = 'table-row';
-  document.getElementById('session-detail-content-' + id).innerHTML = renderSessionEditView(session);
-}
+      function editSession(id) {
+        var session = allSessionsData.find(function(s) { return s.id === id; });
+        if (!session) { return; }
+        document.getElementById('session-detail-' + id).style.display = 'table-row';
+        document.getElementById('session-detail-content-' + id).innerHTML = renderSessionEditView(session);
+      }
 
-function cancelSessionEdit(id) {
-  var session = allSessionsData.find(function(s) { return s.id === id; });
-  if (!session) { return; }
-  document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
-}
+      function cancelSessionEdit(id) {
+        var session = allSessionsData.find(function(s) { return s.id === id; });
+        if (!session) { return; }
+        document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
+      }
 
-async function saveSessionEdit(id) {
-  var updated = {
-    attendance: parseInt(document.getElementById('edit-att-' + id).value) || 0,
-    attitude: parseInt(document.getElementById('edit-atd-' + id).value) || 0,
-    match_win: parseInt(document.getElementById('edit-mw-' + id).value) || 0,
-    break_throw: parseInt(document.getElementById('edit-bt-' + id).value) || 0,
-    nine_dart_challenge: parseInt(document.getElementById('edit-9dc-' + id).value) || 0,
-    over_100_checkout: parseInt(document.getElementById('edit-100-' + id).value) || 0,
-    score_171_plus: parseInt(document.getElementById('edit-171-' + id).value) || 0,
-    bonus_points: parseInt(document.getElementById('edit-bonus-' + id).value) || 0
-  };
+      async function saveSessionEdit(id) {
+        var updated = {
+          attendance: parseInt(document.getElementById('edit-att-' + id).value) || 0,
+          attitude: parseInt(document.getElementById('edit-atd-' + id).value) || 0,
+          match_win: parseInt(document.getElementById('edit-mw-' + id).value) || 0,
+          break_throw: parseInt(document.getElementById('edit-bt-' + id).value) || 0,
+          nine_dart_challenge: parseInt(document.getElementById('edit-9dc-' + id).value) || 0,
+          over_100_checkout: parseInt(document.getElementById('edit-100-' + id).value) || 0,
+          score_171_plus: parseInt(document.getElementById('edit-171-' + id).value) || 0,
+          bonus_points: parseInt(document.getElementById('edit-bonus-' + id).value) || 0
+        };
 
-  var result = await sbClient.from('academy_sessions').update(updated).eq('id', id);
-  if (result.error) { alert('Error saving: ' + result.error.message); return; }
+        var result = await sbClient.from('academy_sessions').update(updated).eq('id', id);
+        if (result.error) { alert('Error saving: ' + result.error.message); return; }
 
-  var session = allSessionsData.find(function(s) { return s.id === id; });
-  if (session) { Object.assign(session, updated); }
+        var session = allSessionsData.find(function(s) { return s.id === id; });
+        if (session) { Object.assign(session, updated); }
 
-  var total = updated.attendance + updated.attitude + updated.match_win + updated.break_throw + updated.nine_dart_challenge + updated.over_100_checkout + updated.score_171_plus + updated.bonus_points;
-  document.getElementById('session-total-' + id).textContent = total;
-  document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
-}
+        var total = updated.attendance + updated.attitude + updated.match_win + updated.break_throw + updated.nine_dart_challenge + updated.over_100_checkout + updated.score_171_plus + updated.bonus_points;
+        document.getElementById('session-total-' + id).textContent = total;
+        document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
+      }
 
-function toggleSessionDetail(id) {
-  var row = document.getElementById('session-detail-' + id);
-  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
-}
+      function toggleSessionDetail(id) {
+        var row = document.getElementById('session-detail-' + id);
+        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+      }
 
       function filterSessionLog() {
         var playerVal = document.getElementById('sessionSearch').value;
@@ -1315,56 +1313,58 @@ function toggleSessionDetail(id) {
         loadDivisionSponsorsForSelected();
       }
 
-async function loadSponsorEnquiries() {
-  var result = await sbClient.from('sponsor_enquiries').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
-  var container = document.getElementById('sponsorEnquiriesList');
-  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
+      async function loadSponsorEnquiries() {
+        var result = await sbClient.from('sponsor_enquiries').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
+        var container = document.getElementById('sponsorEnquiriesList');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
 
-  container.innerHTML = '<table><thead><tr><th>Player</th><th>From</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
-    result.data.map(function(e) {
-      var player = e.profiles || {};
-      var playerName = player.full_name || player.username || 'Unknown';
-      var unreadMark = !e.is_read ? ' 🔴' : '';
-      return '<tr style="cursor:pointer;" onclick="toggleEnquiryDetail(' + e.id + ', \'player\')">' +
-        '<td>' + playerName + unreadMark + '</td><td>' + e.enquirer_name + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
-        '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteEnquiry(' + e.id + ')">Delete</button></td>' +
-        '</tr>' +
-        '<tr id="enquiry-detail-' + e.id + '" style="display:none;background:#f9f9f9;">' +
-        '<td colspan="4" style="padding:16px;">' +
-        '<strong>Email:</strong> ' + e.enquirer_email + '<br>' +
-        '<strong>Phone:</strong> ' + (e.enquirer_phone || '-') + '<br>' +
-        '<strong>Message:</strong><br>' + e.message +
-        '</td></tr>';
-    }).join('') + '</tbody></table>';
+        container.innerHTML = '<table><thead><tr><th>Player</th><th>From</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
+          result.data.map(function(e) {
+            var player = e.profiles || {};
+            var playerName = player.full_name || player.username || 'Unknown';
+            var unreadMark = !e.is_read ? ' 🔴' : '';
+            return '<tr style="cursor:pointer;" onclick="toggleEnquiryDetail(' + e.id + ')">' +
+              '<td>' + playerName + unreadMark + '</td><td>' + e.enquirer_name + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
+              '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteEnquiry(' + e.id + ')">Delete</button></td>' +
+              '</tr>' +
+              '<tr id="enquiry-detail-' + e.id + '" style="display:none;background:#f9f9f9;">' +
+              '<td colspan="4" style="padding:16px;">' +
+              '<strong>Email:</strong> ' + e.enquirer_email + '<br>' +
+              '<strong>Phone:</strong> ' + (e.enquirer_phone || '-') + '<br>' +
+              '<strong>Message:</strong><br>' + e.message +
+              '</td></tr>';
+          }).join('') + '</tbody></table>';
 
-  updateAcademyBadge();
-}
-
-      function toggleEnquiryDetail(id) {
-        var row = document.getElementById('enquiry-detail-' + id);
-        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+        updateAcademyBadge();
       }
 
-async function toggleEnquiryDetail(id) {
-  var row = document.getElementById('enquiry-detail-' + id);
-  var opening = row.style.display === 'none';
-  row.style.display = opening ? 'table-row' : 'none';
-  if (opening) {
-    await sbClient.from('sponsor_enquiries').update({ is_read: true }).eq('id', id);
-    loadSponsorEnquiries();
-  }
-}
+      async function toggleEnquiryDetail(id) {
+        var row = document.getElementById('enquiry-detail-' + id);
+        var opening = row.style.display === 'none';
+        row.style.display = opening ? 'table-row' : 'none';
+        if (opening) {
+          await sbClient.from('sponsor_enquiries').update({ is_read: true }).eq('id', id);
+          loadSponsorEnquiries();
+        }
+      }
+
+      async function deleteEnquiry(id) {
+        if (!confirm('Delete this enquiry?')) { return; }
+        await sbClient.from('sponsor_enquiries').delete().eq('id', id);
+        loadSponsorEnquiries();
+      }
 
       async function loadDivisionEnquiries() {
         var result = await sbClient.from('division_sponsor_enquiries').select('*, academy_leagues(name)').order('created_at', { ascending: false });
         var container = document.getElementById('divisionEnquiriesList');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; return; }
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
 
         container.innerHTML = '<table><thead><tr><th>Group</th><th>From</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
           result.data.map(function(e) {
             var group = e.academy_leagues || {};
+            var unreadMark = !e.is_read ? ' 🔴' : '';
             return '<tr style="cursor:pointer;" onclick="toggleDivisionEnquiryDetail(' + e.id + ')">' +
-              '<td>' + (group.name || 'Unknown') + '</td><td>' + e.enquirer_name + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
+              '<td>' + (group.name || 'Unknown') + unreadMark + '</td><td>' + e.enquirer_name + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
               '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteDivisionEnquiry(' + e.id + ')">Delete</button></td>' +
               '</tr>' +
               '<tr id="division-enquiry-detail-' + e.id + '" style="display:none;background:#f9f9f9;">' +
@@ -1374,17 +1374,32 @@ async function toggleEnquiryDetail(id) {
               '<strong>Message:</strong><br>' + e.message +
               '</td></tr>';
           }).join('') + '</tbody></table>';
+
+        updateAcademyBadge();
       }
 
-      function toggleDivisionEnquiryDetail(id) {
+      async function toggleDivisionEnquiryDetail(id) {
         var row = document.getElementById('division-enquiry-detail-' + id);
-        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+        var opening = row.style.display === 'none';
+        row.style.display = opening ? 'table-row' : 'none';
+        if (opening) {
+          await sbClient.from('division_sponsor_enquiries').update({ is_read: true }).eq('id', id);
+          loadDivisionEnquiries();
+        }
       }
 
       async function deleteDivisionEnquiry(id) {
         if (!confirm('Delete this enquiry?')) { return; }
         await sbClient.from('division_sponsor_enquiries').delete().eq('id', id);
         loadDivisionEnquiries();
+      }
+
+      async function updateAcademyBadge() {
+        var playerResult = await sbClient.from('sponsor_enquiries').select('id').eq('is_read', false);
+        var divisionResult = await sbClient.from('division_sponsor_enquiries').select('id').eq('is_read', false);
+        var count = (playerResult.data ? playerResult.data.length : 0) + (divisionResult.data ? divisionResult.data.length : 0);
+        var btn = document.getElementById('academyTabBtn');
+        btn.textContent = count > 0 ? 'Academy (' + count + ')' : 'Academy';
       }
 
       async function saveNews() {
@@ -1448,8 +1463,8 @@ async function toggleEnquiryDetail(id) {
         loadSessionLog();
         loadSponsorPlayerSelect();
         loadSponsorEnquiries();
-loadDivisionSponsorSelect();
-loadDivisionEnquiries();
+        loadDivisionEnquiries();
+        loadDivisionSponsorSelect();
         loadNews();
       });
     </script>
