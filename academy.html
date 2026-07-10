@@ -27,7 +27,17 @@
       .tab:hover { color: #000000; }
       .tab-content { display: none; }
       .tab-content.active { display: block; }
-      .news-item { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 24px; margin-bottom: 16px; }
+      .news-item { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
+      .news-item-title { padding: 18px 24px; font-weight: bold; font-size: 1.05em; cursor: pointer; text-align: center; }
+      .news-item-title:hover { background-color: #f9f9f9; }
+      .news-item-body { display: none; padding: 0 24px 24px; }
+      .news-item-body.open { display: block; }
+      .news-item-body img { width: 100%; border-radius: 6px; margin-bottom: 16px; display: block; }
+      .news-date-text { font-size: 0.85em; color: #888888; margin-bottom: 12px; }
+      .news-content-text { color: #333333; line-height: 1.6; white-space: pre-wrap; }
+      .like-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+      .like-btn { background: none; border: 1px solid #dddddd; border-radius: 20px; padding: 6px 16px; cursor: pointer; font-size: 0.9em; }
+      .like-btn.liked { background-color: #fff0f0; border-color: #ffcccc; color: #cc0000; }
       table { width: 100%; border-collapse: collapse; margin-top: 20px; }
       th { background-color: #111111; color: #ffffff; padding: 10px 8px; text-align: left; font-size: 0.85em; }
       th abbr { text-decoration: none; cursor: help; border-bottom: 1px dotted #ffffff; }
@@ -118,7 +128,11 @@
       </div>
 
       <div id="tab-news" class="tab-content active">
-        <div class="coming-soon">📰 Academy news coming soon — check back shortly!</div>
+        <h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;font-size:1.3em;">Latest News</h2>
+        <div id="academyNewsList"><p class="loading">Loading news...</p></div>
+
+        <h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin:30px 0 20px;font-size:1.3em;">Latest Announcements</h2>
+        <div id="academyAnnouncementsList"><p class="loading">Loading announcements...</p></div>
       </div>
 
       <div id="tab-table" class="tab-content">
@@ -326,6 +340,7 @@
       let currentProfileId = null;
       let allAcademyLeagues = [];
       let isCurrentUserAdmin = false;
+      let academyNewsLikes = {};
 
       const fieldLabels = {
         highest_checkout: 'profileCheckout',
@@ -631,7 +646,8 @@
           `;
         } else {
           const wrapEl = document.getElementById('edit-' + field).parentElement;
-          const displayValue = field === 'username' && newValue ? '@' + newValue : (newValue || '-');
+          let displayValue = newValue || '-';
+          if (field === 'username' && newValue) { displayValue = '@' + newValue; }
           const spanClass = (field === 'full_name' || field === 'username') ? '' : 'class="detail-value"';
           wrapEl.innerHTML = `
             <span ${spanClass} id="${fieldLabels[field]}">${displayValue}</span>
@@ -651,7 +667,8 @@
           `;
         } else {
           const wrap = document.getElementById('edit-' + field).parentElement;
-          const displayValue = field === 'username' && originalValue ? '@' + originalValue : (originalValue || '-');
+          let displayValue = originalValue || '-';
+          if (field === 'username' && originalValue) { displayValue = '@' + originalValue; }
           const spanClass = (field === 'full_name' || field === 'username') ? '' : 'class="detail-value"';
           wrap.innerHTML = `
             <span ${spanClass} id="${fieldLabels[field]}">${displayValue}</span>
@@ -767,6 +784,94 @@
         }).join('');
       }
 
+      async function loadAcademyNews() {
+        const { data: allArticles, error } = await sbClient
+          .from('news')
+          .select('*')
+          .or('section.eq.academy,section.eq.both')
+          .order('article_date', { ascending: false });
+
+        if (error) {
+          document.getElementById('academyNewsList').innerHTML = '<p class="coming-soon">Error loading news.</p>';
+          return;
+        }
+
+        const today = new Date();
+        const active = (allArticles || []).filter(a => {
+          const artDate = new Date(a.article_date || a.created_at);
+          const expiry = new Date(artDate);
+          expiry.setDate(expiry.getDate() + (a.duration_days || 30));
+          return expiry >= today;
+        });
+
+        const newsArticles = active.filter(a => a.tag !== 'announcement');
+        const announcementArticles = active.filter(a => a.tag === 'announcement');
+
+        const { data: likesData } = await sbClient.from('news_likes').select('*');
+        (likesData || []).forEach(l => {
+          if (!academyNewsLikes[l.news_id]) academyNewsLikes[l.news_id] = [];
+          academyNewsLikes[l.news_id].push(l.player_id);
+        });
+
+        renderAcademyNewsList('academyNewsList', newsArticles, 'No news yet — check back soon!');
+        renderAcademyNewsList('academyAnnouncementsList', announcementArticles, 'No announcements yet — check back soon!');
+      }
+
+      function renderAcademyNewsList(containerId, articles, emptyMsg) {
+        const container = document.getElementById(containerId);
+        if (!articles.length) {
+          container.innerHTML = `<p class="coming-soon">${emptyMsg}</p>`;
+          return;
+        }
+
+        container.innerHTML = articles.map(a => {
+          const dateStr = new Date(a.article_date || a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+          const likes = academyNewsLikes[a.id] || [];
+          const userLiked = currentUserId && likes.includes(currentUserId);
+          return `
+            <div class="news-item">
+              <div class="news-item-title" onclick="toggleAcademyArticle(${a.id})">${a.title}</div>
+              <div class="news-item-body" id="academy-article-${a.id}">
+                ${a.image_url ? `<img src="${a.image_url}" alt="${a.title}" />` : ''}
+                <div class="news-date-text">${dateStr}</div>
+                <div class="news-content-text">${a.content || ''}</div>
+                <div class="like-row">
+                  <button class="like-btn ${userLiked ? 'liked' : ''}" id="academy-like-btn-${a.id}" onclick="toggleAcademyLike(${a.id}, event)">
+                    ${userLiked ? '❤️ Liked' : '🤍 Like'} (<span id="academy-like-count-${a.id}">${likes.length}</span>)
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function toggleAcademyArticle(id) {
+        const body = document.getElementById('academy-article-' + id);
+        body.classList.toggle('open');
+      }
+
+      async function toggleAcademyLike(newsId, event) {
+        event.stopPropagation();
+        if (!currentUserId) { window.location.href = 'login.html'; return; }
+
+        const likes = academyNewsLikes[newsId] || [];
+        const alreadyLiked = likes.includes(currentUserId);
+
+        if (alreadyLiked) {
+          await sbClient.from('news_likes').delete().eq('news_id', newsId).eq('player_id', currentUserId);
+          academyNewsLikes[newsId] = likes.filter(id => id !== currentUserId);
+        } else {
+          await sbClient.from('news_likes').insert([{ news_id: newsId, player_id: currentUserId }]);
+          academyNewsLikes[newsId] = [...likes, currentUserId];
+        }
+
+        const btn = document.getElementById('academy-like-btn-' + newsId);
+        const nowLiked = academyNewsLikes[newsId].includes(currentUserId);
+        btn.className = 'like-btn' + (nowLiked ? ' liked' : '');
+        btn.innerHTML = (nowLiked ? '❤️ Liked' : '🤍 Like') + ' (<span id="academy-like-count-' + newsId + '">' + academyNewsLikes[newsId].length + '</span>)';
+      }
+
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -781,6 +886,7 @@
       window.addEventListener('load', () => {
         checkAuth();
         loadAcademyPlayers();
+        loadAcademyNews();
       });
     </script>
 
