@@ -1433,16 +1433,17 @@
         btn.textContent = count > 0 ? 'Academy (' + count + ')' : 'Academy';
       }
 
-      async function saveNews() {
-        var title = document.getElementById('newsTitle').value.trim();
-        var content = document.getElementById('newsContent').value.trim();
-        var date = document.getElementById('newsDate').value;
-        if (!title || !content) { showMsg('news-error', 'Please fill in title and content.'); return; }
+async function saveNews() {
+  var title = document.getElementById('newsTitle').value.trim();
+  var content = document.getElementById('newsContent').value.trim();
+  var date = document.getElementById('newsDate').value;
+  var fileInput = document.getElementById('newsImageFile');
+  var file = fileInput.files[0];
 
-        var imageUrl = null;
-        var fileInput = document.getElementById('newsImageFile');
-        var file = fileInput.files[0];
-        if (file) {
+  if (!title) { showMsg('news-error', 'Please enter a title.'); return; }
+  if (!content && !file) { showMsg('news-error', 'Please add either content or an image.'); return; }
+
+  var imageUrl = null;
           var fileExt = file.name.split('.').pop();
           var fileName = 'news_' + Date.now() + '.' + fileExt;
           var uploadResult = await sbClient.storage.from('news-images').upload(fileName, file);
