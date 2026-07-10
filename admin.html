@@ -578,7 +578,34 @@
         document.getElementById('switchBtn').textContent = 'Switch to Online';
         document.getElementById('switchBtn').href = 'index.html';
       }
+async function loadPendingApprovals() {
+  var result = await sbClient.from('profiles').select('*').eq('access_status', 'pending');
+  var container = document.getElementById('pendingApprovalsList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No pending requests.</p>'; return; }
+  container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Requested</th><th>Action</th></tr></thead><tbody>' +
+    result.data.map(function(p) {
+      var requestedLabel = p.requested_access === 'both' ? 'Both (Academy pending)' : 'Academy Only';
+      return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + requestedLabel + '</td>' +
+        '<td><button class="btn-small" onclick="approveAccess(\'' + p.id + '\', \'' + p.requested_access + '\')">Approve</button> <button class="btn-small danger" onclick="denyAccess(\'' + p.id + '\', \'' + p.requested_access + '\')">Deny</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
 
+async function approveAccess(id, requestedAccess) {
+  await sbClient.from('profiles').update({ access: requestedAccess, access_status: 'approved' }).eq('id', id);
+  loadPendingApprovals();
+  loadPlayers();
+}
+
+async function denyAccess(id, requestedAccess) {
+  if (requestedAccess === 'both') {
+    await sbClient.from('profiles').update({ access: 'online', access_status: 'denied' }).eq('id', id);
+  } else {
+    await sbClient.from('profiles').update({ access_status: 'denied' }).eq('id', id);
+  }
+  if (!confirm('Deny this request? ' + (requestedAccess === 'academy' ? 'This player will be blocked from logging in.' : 'They will remain Online-only.'))) { return; }
+  loadPendingApprovals();
+  loadPlayers();
+}
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
