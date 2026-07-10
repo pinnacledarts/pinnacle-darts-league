@@ -78,8 +78,17 @@
 
     <main>
       <a href="index.html" class="back-link">← Back to Home</a>
+
+      <div style="margin-bottom:20px;">
+        <label style="font-weight:bold;font-size:0.9em;display:block;margin-bottom:8px;">Viewing:</label>
+        <select id="termsSelect" onchange="loadTerms()" style="padding:10px 14px;border:1px solid #dddddd;border-radius:4px;font-size:1em;background-color:#f9f9f9;">
+          <option value="terms_online">Online Terms & Conditions</option>
+          <option value="terms_academy">Academy Terms & Conditions</option>
+        </select>
+      </div>
+
       <div class="title-row">
-        <h2>Terms & Conditions</h2>
+        <h2 id="pageTitle">Terms & Conditions</h2>
         <button class="pencil-btn" id="editBtn" onclick="startEdit()" style="display:none;">✏️</button>
       </div>
       <div class="content-box" id="contentBox"><p class="loading">Loading...</p></div>
@@ -96,7 +105,12 @@
           isCurrentUserAdmin = profile ? profile.is_admin : false;
         }
 
-        const { data, error } = await sbClient.from('site_pages').select('*').eq('key', 'terms').single();
+        const key = document.getElementById('termsSelect').value;
+        const label = key === 'terms_academy' ? 'Academy Terms & Conditions' : 'Online Terms & Conditions';
+        document.getElementById('pageTitle').textContent = label;
+        document.title = label + ' | Pinnacle Darts League';
+
+        const { data, error } = await sbClient.from('site_pages').select('*').eq('key', key).single();
         currentContent = data ? (data.content || '') : '';
 
         document.getElementById('contentBox').innerHTML = `<p class="content-text">${currentContent}</p>`;
@@ -115,7 +129,8 @@
 
       async function saveTerms() {
         const newContent = document.getElementById('editArea').value;
-        const { error } = await sbClient.from('site_pages').update({ content: newContent, updated_at: new Date().toISOString() }).eq('key', 'terms');
+        const key = document.getElementById('termsSelect').value;
+        const { error } = await sbClient.from('site_pages').update({ content: newContent, updated_at: new Date().toISOString() }).eq('key', key);
         if (error) { alert('Error saving. Please try again.'); return; }
         currentContent = newContent;
         loadTerms();
@@ -127,6 +142,10 @@
 
       window.addEventListener('load', () => {
         checkAuth();
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('type') === 'academy') {
+          document.getElementById('termsSelect').value = 'terms_academy';
+        }
         loadTerms();
       });
     </script>
