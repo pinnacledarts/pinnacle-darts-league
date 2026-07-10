@@ -244,7 +244,22 @@ document.getElementById('pageContent').innerHTML =
         if (isGroupKnockout) { loadGroups(); }
         loadKnockouts();
       }
-
+async function saveTournamentDetails() {
+  var update = {
+    name: document.getElementById('detName').value.trim(),
+    date: document.getElementById('detDate').value || null,
+    time: document.getElementById('detTime').value || null,
+    format: document.getElementById('detFormat').value,
+    platform: document.getElementById('detPlatform').value,
+    max_players: document.getElementById('detMax').value || null,
+    description: document.getElementById('detDesc').value.trim() || null
+  };
+  var result = await sbClient.from('tournaments').update(update).eq('id', tournamentId);
+  if (result.error) { showMsg('details-error', result.error.message); return; }
+  tournamentData.name = update.name;
+  document.getElementById('pageTitle').textContent = '⚙️ Managing: ' + update.name;
+  showMsg('details-success', 'Details saved successfully!');
+}
       function buildPlayerChecklist(filter) {
         var checklist = document.getElementById('playerChecklist');
         var available = allProfiles.filter(function(p) {
