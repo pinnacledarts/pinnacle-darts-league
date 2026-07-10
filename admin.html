@@ -779,9 +779,9 @@ function renderTournamentRow(t, status) {
         allLeaguesData.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
       }
 
-      function renderLeagueRow(l, status) {
-        return '<tr id="lrow-' + l.id + '"><td>' + l.name + '</td><td>' + (l.season || '-') + '</td><td>' + formatLabel(l.format) + '</td><td>' + formatLabel(l.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><div class="action-buttons"><a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a> <button class="btn-small" onclick="editLeagueRow(' + l.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button></div></td></tr>';
-      }
+function renderLeagueRow(l, status) {
+  return '<tr id="lrow-' + l.id + '"><td>' + l.name + '</td><td>' + (l.season || '-') + '</td><td>' + formatLabel(l.format) + '</td><td>' + formatLabel(l.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><div class="action-buttons"><a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a> <button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button></div></td></tr>';
+}
 
       function editLeagueRow(id) {
         var l = allLeaguesData.find(function(x) { return x.id === id; });
