@@ -1432,31 +1432,41 @@
         btn.textContent = count > 0 ? 'Academy (' + count + ')' : 'Academy';
       }
 
-      async function saveNews() {
-        var title = document.getElementById('newsTitle').value.trim();
-        var content = document.getElementById('newsContent').value.trim();
-        if (!title || !content) { showMsg('news-error', 'Please fill in title and content.'); return; }
+     async function saveNews() {
+  var title = document.getElementById('newsTitle').value.trim();
+  var content = document.getElementById('newsContent').value.trim();
+  var date = document.getElementById('newsDate').value;
+  if (!title || !content) { showMsg('news-error', 'Please fill in title and content.'); return; }
 
-        var imageUrl = null;
-        var fileInput = document.getElementById('newsImageFile');
-        var file = fileInput.files[0];
-        if (file) {
-          var fileExt = file.name.split('.').pop();
-          var fileName = 'news_' + Date.now() + '.' + fileExt;
-          var uploadResult = await sbClient.storage.from('news-images').upload(fileName, file);
-          if (uploadResult.error) { showMsg('news-error', 'Error uploading image: ' + uploadResult.error.message); return; }
-          var urlData = sbClient.storage.from('news-images').getPublicUrl(fileName);
-          imageUrl = urlData.data.publicUrl;
-        }
+  var imageUrl = null;
+  var fileInput = document.getElementById('newsImageFile');
+  var file = fileInput.files[0];
+  if (file) {
+    var fileExt = file.name.split('.').pop();
+    var fileName = 'news_' + Date.now() + '.' + fileExt;
+    var uploadResult = await sbClient.storage.from('news-images').upload(fileName, file);
+    if (uploadResult.error) { showMsg('news-error', 'Error uploading image: ' + uploadResult.error.message); return; }
+    var urlData = sbClient.storage.from('news-images').getPublicUrl(fileName);
+    imageUrl = urlData.data.publicUrl;
+  }
 
-        var result = await sbClient.from('news').insert([{
-          title: title,
-          content: content,
-          tag: document.getElementById('newsTag').value,
-          section: document.getElementById('newsSection').value,
-          image_url: imageUrl,
-          created_at: new Date().toISOString()
-        }]);
+  var result = await sbClient.from('news').insert([{
+    title: title,
+    content: content,
+    tag: document.getElementById('newsTag').value,
+    section: document.getElementById('newsSection').value,
+    image_url: imageUrl,
+    article_date: date || new Date().toISOString().split('T')[0],
+    duration_days: parseInt(document.getElementById('newsDuration').value) || 30,
+    created_at: new Date().toISOString()
+  }]);
+  if (result.error) { showMsg('news-error', result.error.message); return; }
+  showMsg('news-success', 'Article published successfully!');
+  document.getElementById('newsTitle').value = '';
+  document.getElementById('newsContent').value = '';
+  fileInput.value = '';
+  loadNews();
+}
         if (result.error) { showMsg('news-error', result.error.message); return; }
         showMsg('news-success', 'Article published successfully!');
         document.getElementById('newsTitle').value = '';
