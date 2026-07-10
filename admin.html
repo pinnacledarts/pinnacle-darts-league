@@ -302,9 +302,13 @@
       </div>
 
       <!-- PLAYERS TAB -->
-      <div id="tab-players" class="tab-content">
-        <div class="card">
-          <h3>Registered Players</h3>
+<div id="tab-players" class="tab-content">
+  <div class="card">
+    <h3>Pending Academy Approvals</h3>
+    <div id="pendingApprovalsList"><p class="empty-state">Loading...</p></div>
+  </div>
+  <div class="card">
+    <h3>Registered Players</h3>
           <input type="text" class="search-bar" id="playerSearch" placeholder="Search by name or username..." oninput="filterPlayersList()" />
           <table>
 <thead><tr><th>Name</th><th>Username</th><th>Phone</th><th>Platform</th><th>Access</th><th>Admin</th><th>Actions</th></tr></thead>
