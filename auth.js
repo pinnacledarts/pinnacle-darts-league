@@ -11,9 +11,14 @@ async function checkAuth() {
   if (session) {
     const { data: profile } = await sbClient
       .from('profiles')
-      .select('username, is_admin')
+      .select('username, is_admin, requested_access, access_status')
       .eq('id', session.user.id)
       .single();
+
+    if (profile && profile.requested_access === 'academy' && profile.access_status !== 'approved' && !window.location.pathname.includes('membership-status.html')) {
+      window.location.href = profile.access_status === 'denied' ? 'membership-status.html?status=denied' : 'membership-status.html?status=pending';
+      return;
+    }
 
     const username = profile ? profile.username : session.user.email;
 
