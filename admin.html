@@ -877,9 +877,12 @@ function renderPlayersList(data) {
         await sbClient.from('profiles').update({ access: value }).eq('id', id);
       }
 
-      async function updatePlatform(id, value) {
-        await sbClient.from('profiles').update({ platform: value || null }).eq('id', id);
-      }
+async function updatePhone(id) {
+  var value = document.getElementById('phone-' + id).value.trim();
+  var result = await sbClient.from('profiles').update({ phone: value || null }).eq('id', id);
+  if (result.error) { alert('Error saving phone: ' + result.error.message); return; }
+  alert('Phone number saved!');
+}
 
       async function toggleAdmin(id, currentStatus) {
         await sbClient.from('profiles').update({ is_admin: !currentStatus }).eq('id', id);
