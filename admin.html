@@ -1467,13 +1467,7 @@
   fileInput.value = '';
   loadNews();
 }
-        if (result.error) { showMsg('news-error', result.error.message); return; }
-        showMsg('news-success', 'Article published successfully!');
-        document.getElementById('newsTitle').value = '';
-        document.getElementById('newsContent').value = '';
-        fileInput.value = '';
-        loadNews();
-      }
+
 
       async function loadNews() {
         var result = await sbClient.from('news').select('*').order('created_at', { ascending: false });
