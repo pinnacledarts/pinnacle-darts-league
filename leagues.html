@@ -78,11 +78,16 @@
       <a href="players.html">Players</a>
     </nav>
 
-    <main>
-      <h2>Leagues</h2>
-      <div id="leaguesList"><p class="loading">Loading leagues...</p></div>
-      <p style="text-align:center;margin-top:20px;"><a href="leagues-archive.html" style="color:#555;font-size:0.9em;">View League Archive →</a></p>
-    </main>
+<main>
+  <div id="myLeaguesSection" style="display:none;">
+    <h2>My Leagues</h2>
+    <div id="myLeaguesList"></div>
+  </div>
+
+  <h2>Leagues</h2>
+  <div id="leaguesList"><p class="loading">Loading leagues...</p></div>
+  <p style="text-align:center;margin-top:20px;"><a href="leagues-archive.html" style="color:#555;font-size:0.9em;">View League Archive →</a></p>
+</main>
 
     <script>
       var currentUserId = null;
