@@ -6,7 +6,7 @@
     <title>League | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=2"></script>
+    <script src="auth.js?t=999999"></script>
     <style>
       .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
 .badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
@@ -46,7 +46,7 @@
       .key { font-size: 0.85em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
       .key span { margin-right: 20px; display: inline-block; }
       .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #ffffff; border: 1px solid #eeeeee; border-radius: 4px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
-      .fixture-players { font-size: 0.9em; font-weight: bold; flex: 1; }
+      .fixture-players { font-size: 0.9em; font-weight: bold; flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
       .fixture-vs { color: #888888; margin: 0 8px; }
       .score-inputs { display: flex; align-items: center; gap: 6px; }
       .score-input { width: 50px; padding: 4px 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; text-align: center; }
@@ -109,6 +109,21 @@
       var currentUserId = null;
       var profileMap = {};
 
+      function buildWhatsAppLink(phone) {
+        if (!phone) { return null; }
+        var digits = phone.replace(/[^\d]/g, '');
+        if (!digits) { return null; }
+        return 'https://wa.me/' + digits;
+      }
+
+      function whatsAppButtonHtml(opponentId) {
+        var opponent = profileMap[opponentId];
+        if (!opponent) { return ''; }
+        var link = buildWhatsAppLink(opponent.phone);
+        if (!link) { return ''; }
+        return '<a href="' + link + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background-color:#25D366;color:#ffffff;padding:4px 10px;border-radius:20px;font-size:0.8em;text-decoration:none;font-weight:bold;">💬 WhatsApp</a>';
+      }
+
       async function loadLeague() {
         var params = new URLSearchParams(window.location.search);
         leagueId = params.get('id');
@@ -117,9 +132,11 @@
         var session = await sbClient.auth.getSession();
         if (session.data.session) { currentUserId = session.data.session.user.id; }
 
-        var profilesResult = await sbClient.from('profiles').select('id, full_name, username');
+        var profilesResult = await sbClient.from('profiles').select('id, full_name, username, phone');
         if (profilesResult.data) {
-          profilesResult.data.forEach(function(p) { profileMap[p.id] = p.full_name || p.username || 'Unknown'; });
+          profilesResult.data.forEach(function(p) {
+            profileMap[p.id] = { name: p.full_name || p.username || 'Unknown', phone: p.phone || null };
+          });
         }
 
         var result = await sbClient.from('leagues').select('*').eq('id', leagueId).single();
@@ -227,16 +244,25 @@ var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'
       }
 
       function renderFixtureItem(m) {
-        var p1name = profileMap[m.player1_id] || 'Unknown';
-        var p2name = profileMap[m.player2_id] || 'Unknown';
+        var p1obj = profileMap[m.player1_id];
+        var p2obj = profileMap[m.player2_id];
+        var p1name = p1obj ? p1obj.name : 'Unknown';
+        var p2name = p2obj ? p2obj.name : 'Unknown';
+
+        var whatsAppHtml = '';
+        if (currentUserId === m.player1_id) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
+        else if (currentUserId === m.player2_id) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
+
+        var playersHtml = '<div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + whatsAppHtml + '</div>';
+
         if (m.status === 'completed') {
-          return '<div class="fixture-item"><div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div><div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div></div>';
+          return '<div class="fixture-item">' + playersHtml + '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div></div>';
         }
         var canSubmit = currentUserId && (currentUserId === m.player1_id || currentUserId === m.player2_id);
         if (canSubmit) {
-          return '<div class="fixture-item"><div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div><div class="score-inputs"><input class="score-input" type="number" id="fs1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="fs2_' + m.id + '" min="0" placeholder="0" /><button class="btn-submit-score" onclick="submitFixtureScore(' + m.id + ')">Submit</button></div></div>';
+          return '<div class="fixture-item">' + playersHtml + '<div class="score-inputs"><input class="score-input" type="number" id="fs1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="fs2_' + m.id + '" min="0" placeholder="0" /><button class="btn-submit-score" onclick="submitFixtureScore(' + m.id + ')">Submit</button></div></div>';
         }
-        return '<div class="fixture-item"><div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div><div class="score-display" style="color:#aaa">Pending</div></div>';
+        return '<div class="fixture-item">' + playersHtml + '<div class="score-display" style="color:#aaa">Pending</div></div>';
       }
 
       function showFixtureRound(round, btn) {
@@ -268,8 +294,13 @@ var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'
 
         container.innerHTML = roundOrder.filter(function(r) { return rounds[r]; }).map(function(r) {
           var matchesHtml = rounds[r].map(function(m) {
-            var p1name = m.player1_id ? (profileMap[m.player1_id] || 'Unknown') : 'TBD';
-            var p2name = m.player2_id ? (profileMap[m.player2_id] || 'Unknown') : 'TBD';
+            var p1name = m.player1_id ? (profileMap[m.player1_id] ? profileMap[m.player1_id].name : 'Unknown') : 'TBD';
+            var p2name = m.player2_id ? (profileMap[m.player2_id] ? profileMap[m.player2_id].name : 'Unknown') : 'TBD';
+            var playoffWhatsAppHtml = '';
+            if (m.player1_id && m.player2_id) {
+              if (currentUserId === m.player1_id) { playoffWhatsAppHtml = whatsAppButtonHtml(m.player2_id); }
+              else if (currentUserId === m.player2_id) { playoffWhatsAppHtml = whatsAppButtonHtml(m.player1_id); }
+            }
             var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
             var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
 
@@ -284,7 +315,7 @@ var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'
               scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
             }
 
-            return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span></div>' + scoreHtml + '</div>';
+            return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span>' + playoffWhatsAppHtml + '</div>' + scoreHtml + '</div>';
           }).join('');
           return '<h4 style="margin:16px 0 8px;">' + r + '</h4>' + matchesHtml;
         }).join('');
