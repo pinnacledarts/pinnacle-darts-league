@@ -581,6 +581,11 @@
 async function loadPendingApprovals() {
   var result = await sbClient.from('profiles').select('*').eq('access_status', 'pending');
   var container = document.getElementById('pendingApprovalsList');
+  var count = result.data ? result.data.length : 0;
+
+  var btn = document.getElementById('playersTabBtn');
+  if (btn) { btn.textContent = count > 0 ? 'Players (' + count + ')' : 'Players'; }
+
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No pending requests.</p>'; return; }
   container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Requested</th><th>Action</th></tr></thead><tbody>' +
     result.data.map(function(p) {
