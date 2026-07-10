@@ -502,51 +502,51 @@
 
       <!-- NEWS TAB -->
       <div id="tab-news" class="tab-content">
-       <div class="card">
-  <h3>Add News Article</h3>
-  <div class="success-msg" id="news-success"></div>
-  <div class="error-msg" id="news-error"></div>
-  <div class="form-row">
-    <div class="form-group">
-      <label>Title</label>
-      <input type="text" id="newsTitle" placeholder="e.g. Season 1 is underway" />
-    </div>
-    <div class="form-group">
-      <label>Date</label>
-      <input type="date" id="newsDate" />
-    </div>
-  </div>
-  <div class="form-row-3">
-    <div class="form-group">
-      <label>Type</label>
-      <select id="newsTag">
-        <option value="news">News</option>
-        <option value="announcement">Announcement</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Section</label>
-      <select id="newsSection">
-        <option value="online">Online</option>
-        <option value="academy">Academy</option>
-        <option value="both">Both</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Duration (days visible)</label>
-      <input type="number" id="newsDuration" value="30" />
-    </div>
-  </div>
-  <div class="form-group">
-    <label>Image (optional)</label>
-    <input type="file" id="newsImageFile" accept="image/*" />
-  </div>
-  <div class="form-group">
-    <label>Content</label>
-    <textarea id="newsContent" rows="4" placeholder="Write your news article here..."></textarea>
-  </div>
-  <button class="btn btn-primary" onclick="saveNews()">Publish Article</button>
-</div>
+        <div class="card">
+          <h3>Add News Article</h3>
+          <div class="success-msg" id="news-success"></div>
+          <div class="error-msg" id="news-error"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Title</label>
+              <input type="text" id="newsTitle" placeholder="e.g. Season 1 is underway" />
+            </div>
+            <div class="form-group">
+              <label>Date</label>
+              <input type="date" id="newsDate" />
+            </div>
+          </div>
+          <div class="form-row-3">
+            <div class="form-group">
+              <label>Type</label>
+              <select id="newsTag">
+                <option value="news">News</option>
+                <option value="announcement">Announcement</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Section</label>
+              <select id="newsSection">
+                <option value="online">Online</option>
+                <option value="academy">Academy</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Duration (days visible)</label>
+              <input type="number" id="newsDuration" value="30" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Image (optional)</label>
+            <input type="file" id="newsImageFile" accept="image/*" />
+          </div>
+          <div class="form-group">
+            <label>Content</label>
+            <textarea id="newsContent" rows="4" placeholder="Write your news article here..."></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="saveNews()">Publish Article</button>
+        </div>
 
         <div class="card">
           <h3>Manage News</h3>
@@ -565,6 +565,7 @@
       var academyLeagueAvailablePlayers = [];
       var allTournamentsData = [];
       var allLeaguesData = [];
+      var allNewsData = [];
 
       if (document.referrer.includes('academy.html')) {
         document.getElementById('switchBtn').textContent = 'Switch to Online';
@@ -1432,50 +1433,101 @@
         btn.textContent = count > 0 ? 'Academy (' + count + ')' : 'Academy';
       }
 
-     async function saveNews() {
-  var title = document.getElementById('newsTitle').value.trim();
-  var content = document.getElementById('newsContent').value.trim();
-  var date = document.getElementById('newsDate').value;
-  if (!title || !content) { showMsg('news-error', 'Please fill in title and content.'); return; }
+      async function saveNews() {
+        var title = document.getElementById('newsTitle').value.trim();
+        var content = document.getElementById('newsContent').value.trim();
+        var date = document.getElementById('newsDate').value;
+        if (!title || !content) { showMsg('news-error', 'Please fill in title and content.'); return; }
 
-  var imageUrl = null;
-  var fileInput = document.getElementById('newsImageFile');
-  var file = fileInput.files[0];
-  if (file) {
-    var fileExt = file.name.split('.').pop();
-    var fileName = 'news_' + Date.now() + '.' + fileExt;
-    var uploadResult = await sbClient.storage.from('news-images').upload(fileName, file);
-    if (uploadResult.error) { showMsg('news-error', 'Error uploading image: ' + uploadResult.error.message); return; }
-    var urlData = sbClient.storage.from('news-images').getPublicUrl(fileName);
-    imageUrl = urlData.data.publicUrl;
-  }
+        var imageUrl = null;
+        var fileInput = document.getElementById('newsImageFile');
+        var file = fileInput.files[0];
+        if (file) {
+          var fileExt = file.name.split('.').pop();
+          var fileName = 'news_' + Date.now() + '.' + fileExt;
+          var uploadResult = await sbClient.storage.from('news-images').upload(fileName, file);
+          if (uploadResult.error) { showMsg('news-error', 'Error uploading image: ' + uploadResult.error.message); return; }
+          var urlData = sbClient.storage.from('news-images').getPublicUrl(fileName);
+          imageUrl = urlData.data.publicUrl;
+        }
 
-  var result = await sbClient.from('news').insert([{
-    title: title,
-    content: content,
-    tag: document.getElementById('newsTag').value,
-    section: document.getElementById('newsSection').value,
-    image_url: imageUrl,
-    article_date: date || new Date().toISOString().split('T')[0],
-    duration_days: parseInt(document.getElementById('newsDuration').value) || 30,
-    created_at: new Date().toISOString()
-  }]);
-  if (result.error) { showMsg('news-error', result.error.message); return; }
-  showMsg('news-success', 'Article published successfully!');
-  document.getElementById('newsTitle').value = '';
-  document.getElementById('newsContent').value = '';
-  fileInput.value = '';
-  loadNews();
-}
-
+        var result = await sbClient.from('news').insert([{
+          title: title,
+          content: content,
+          tag: document.getElementById('newsTag').value,
+          section: document.getElementById('newsSection').value,
+          image_url: imageUrl,
+          article_date: date || new Date().toISOString().split('T')[0],
+          duration_days: parseInt(document.getElementById('newsDuration').value) || 30,
+          created_at: new Date().toISOString()
+        }]);
+        if (result.error) { showMsg('news-error', result.error.message); return; }
+        showMsg('news-success', 'Article published successfully!');
+        document.getElementById('newsTitle').value = '';
+        document.getElementById('newsContent').value = '';
+        fileInput.value = '';
+        loadNews();
+      }
 
       async function loadNews() {
         var result = await sbClient.from('news').select('*').order('created_at', { ascending: false });
+        allNewsData = result.data || [];
         var tbody = document.getElementById('newsList');
-        if (!result.data || !result.data.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No news articles yet</td></tr>'; return; }
-        tbody.innerHTML = result.data.map(function(n) {
-          return '<tr><td>' + n.title + '</td><td>' + n.tag + '</td><td>' + (n.section === 'academy' ? 'Academy' : 'Online') + '</td><td>' + new Date(n.created_at).toLocaleDateString('en-GB') + '</td><td><button class="btn-small danger" onclick="deleteNews(\'' + n.id + '\')">Delete</button></td></tr>';
+        if (!allNewsData.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No news articles yet</td></tr>'; return; }
+        tbody.innerHTML = allNewsData.map(function(n) {
+          return renderNewsRow(n);
         }).join('');
+      }
+
+      function renderNewsRow(n) {
+        var sectionLabel = n.section === 'academy' ? 'Academy' : (n.section === 'both' ? 'Both' : 'Online');
+        return '<tr id="nrow-' + n.id + '"><td>' + n.title + '</td><td>' + n.tag + '</td><td>' + sectionLabel + '</td><td>' + new Date(n.article_date || n.created_at).toLocaleDateString('en-GB') + '</td>' +
+          '<td><button class="btn-small" onclick="editNewsRow(' + n.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteNews(\'' + n.id + '\')">Delete</button></td></tr>' +
+          '<tr id="nrow-edit-' + n.id + '" style="display:none;background:#f9f9f9;"><td colspan="5" style="padding:16px;" id="nrow-edit-content-' + n.id + '"></td></tr>';
+      }
+
+      function editNewsRow(id) {
+        var n = allNewsData.find(function(x) { return x.id === id; });
+        if (!n) { return; }
+        document.getElementById('nrow-edit-' + id).style.display = 'table-row';
+        document.getElementById('nrow-edit-content-' + id).innerHTML =
+          '<div class="form-row">' +
+          '<div class="form-group"><label>Title</label><input class="edit-input" id="en-title-' + id + '" value="' + (n.title || '').replace(/"/g, '&quot;') + '" style="width:100%;" /></div>' +
+          '<div class="form-group"><label>Date</label><input class="edit-input" type="date" id="en-date-' + id + '" value="' + (n.article_date || '') + '" style="width:100%;" /></div>' +
+          '</div>' +
+          '<div class="form-row-3">' +
+          '<div class="form-group"><label>Type</label><select id="en-tag-' + id + '" style="width:100%;">' +
+          '<option value="news"' + (n.tag !== 'announcement' ? ' selected' : '') + '>News</option>' +
+          '<option value="announcement"' + (n.tag === 'announcement' ? ' selected' : '') + '>Announcement</option>' +
+          '</select></div>' +
+          '<div class="form-group"><label>Section</label><select id="en-section-' + id + '" style="width:100%;">' +
+          '<option value="online"' + (n.section === 'online' ? ' selected' : '') + '>Online</option>' +
+          '<option value="academy"' + (n.section === 'academy' ? ' selected' : '') + '>Academy</option>' +
+          '<option value="both"' + (n.section === 'both' ? ' selected' : '') + '>Both</option>' +
+          '</select></div>' +
+          '<div class="form-group"><label>Duration (days)</label><input class="edit-input" type="number" id="en-duration-' + id + '" value="' + (n.duration_days || 30) + '" style="width:100%;" /></div>' +
+          '</div>' +
+          '<div class="form-group"><label>Content</label><textarea id="en-content-' + id + '" rows="3" style="width:100%;">' + (n.content || '') + '</textarea></div>' +
+          '<button class="btn btn-primary" onclick="saveNewsEdit(' + id + ')">Save Changes</button> ' +
+          '<button class="btn btn-secondary" onclick="cancelNewsEdit(' + id + ')">Cancel</button>';
+      }
+
+      function cancelNewsEdit(id) {
+        document.getElementById('nrow-edit-' + id).style.display = 'none';
+      }
+
+      async function saveNewsEdit(id) {
+        var update = {
+          title: document.getElementById('en-title-' + id).value.trim(),
+          article_date: document.getElementById('en-date-' + id).value || null,
+          tag: document.getElementById('en-tag-' + id).value,
+          section: document.getElementById('en-section-' + id).value,
+          duration_days: parseInt(document.getElementById('en-duration-' + id).value) || 30,
+          content: document.getElementById('en-content-' + id).value.trim()
+        };
+        var result = await sbClient.from('news').update(update).eq('id', id);
+        if (result.error) { alert('Error saving: ' + result.error.message); return; }
+        loadNews();
       }
 
       async function deleteNews(id) {
@@ -1507,9 +1559,7 @@
       }
 
       window.addEventListener('load', function() {
-         document.getElementById('newsDate').value = new Date().toISOString().split('T')[0];
-  checkAuth();
-  refreshTemplateSelects();
+        document.getElementById('newsDate').value = new Date().toISOString().split('T')[0];
         checkAuth();
         refreshTemplateSelects();
         loadTournaments();
