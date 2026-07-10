@@ -694,9 +694,9 @@
         tbody.innerHTML = rowsHtml.join('');
       }
 
-      function renderTournamentRow(t, status) {
-        return '<tr id="trow-' + t.id + '"><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View</a> <button class="btn-small" onclick="editTournamentRow(' + t.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>';
-      }
+function renderTournamentRow(t, status) {
+  return '<tr id="trow-' + t.id + '"><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View</a> <button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>';
+}
 
       function editTournamentRow(id) {
         var t = allTournamentsData.find(function(x) { return x.id === id; });
