@@ -200,8 +200,11 @@
       <h2>Welcome</h2>
       <p>Welcome to the official Pinnacle Darts League website. Check the standings, fixtures and player profiles above.</p>
 
-      <h2>Latest News & Announcements</h2>
+      <h2>Latest News</h2>
       <div id="newsPreviewList"><p class="loading">Loading news...</p></div>
+
+      <h2>Latest Announcements</h2>
+      <div id="announcementsPreviewList"><p class="loading">Loading announcements...</p></div>
 
       <div class="see-more">
         <a href="news.html">See all news →</a>
@@ -223,10 +226,8 @@
           .or('section.eq.online,section.eq.both')
           .order('article_date', { ascending: false });
 
-        const container = document.getElementById('newsPreviewList');
-
         if (error) {
-          container.innerHTML = '<p class="coming-soon">Error loading news.</p>';
+          document.getElementById('newsPreviewList').innerHTML = '<p class="coming-soon">Error loading news.</p>';
           return;
         }
 
@@ -238,12 +239,8 @@
           return expiry >= today;
         });
 
-        const preview = active.slice(0, 4);
-
-        if (!preview.length) {
-          container.innerHTML = '<p class="coming-soon">No news yet — check back soon!</p>';
-          return;
-        }
+        const newsArticles = active.filter(a => a.tag !== 'announcement').slice(0, 4);
+        const announcementArticles = active.filter(a => a.tag === 'announcement').slice(0, 4);
 
         const { data: likesData } = await sbClient.from('news_likes').select('*');
         (likesData || []).forEach(l => {
@@ -251,7 +248,18 @@
           allNewsLikes[l.news_id].push(l.player_id);
         });
 
-        container.innerHTML = preview.map(a => {
+        renderPreviewList('newsPreviewList', newsArticles, 'No news yet — check back soon!');
+        renderPreviewList('announcementsPreviewList', announcementArticles, 'No announcements yet — check back soon!');
+      }
+
+      function renderPreviewList(containerId, articles, emptyMsg) {
+        const container = document.getElementById(containerId);
+        if (!articles.length) {
+          container.innerHTML = `<p class="coming-soon">${emptyMsg}</p>`;
+          return;
+        }
+
+        container.innerHTML = articles.map(a => {
           const dateStr = new Date(a.article_date || a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
           const likes = allNewsLikes[a.id] || [];
           const userLiked = currentUserId && likes.includes(currentUserId);
