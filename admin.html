@@ -1603,6 +1603,7 @@ var imageUrl = null;
         document.getElementById('newsDate').value = new Date().toISOString().split('T')[0];
         checkAuth();
         refreshTemplateSelects();
+        loadPendingApprovals()
         loadTournaments();
         loadLeagues();
         loadPlayers();
