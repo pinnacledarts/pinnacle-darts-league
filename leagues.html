@@ -123,50 +123,62 @@
         var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System' };
         var platformLabels = { dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both' };
 
-        var cardsHtml = [];
-        for (var i = 0; i < result.data.length; i++) {
-          var l = result.data[i];
-          var status = await computeLeagueStatus(l);
-          if (status === 'completed') { continue; }
+var cardsHtml = [];
+var myCardsHtml = [];
+for (var i = 0; i < result.data.length; i++) {
+  var l = result.data[i];
+  var status = await computeLeagueStatus(l);
+  if (status === 'completed') { continue; }
 
-          if (playerPlatform && playerPlatform !== 'both' && l.platform !== 'in_person' && l.platform !== 'both' && l.platform !== playerPlatform) {
-            continue;
-          }
+  if (playerPlatform && playerPlatform !== 'both' && l.platform !== 'in_person' && l.platform !== 'both' && l.platform !== playerPlatform) {
+    continue;
+  }
 
-          var startStr = l.start_date ? new Date(l.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
-          var endStr = l.end_date ? new Date(l.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
-          var playerCount = playerCounts[parseInt(l.id)] || 0;
-          var maxStr = l.max_players ? playerCount + ' / ' + l.max_players + ' players' : playerCount + ' players';
-          var isFull = l.max_players && playerCount >= l.max_players;
-          var hasJoined = joinedLeagues.indexOf(l.id) > -1;
+  var startStr = l.start_date ? new Date(l.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+  var endStr = l.end_date ? new Date(l.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+  var playerCount = playerCounts[parseInt(l.id)] || 0;
+  var maxStr = l.max_players ? playerCount + ' / ' + l.max_players + ' players' : playerCount + ' players';
+  var isFull = l.max_players && playerCount >= l.max_players;
+  var hasJoined = joinedLeagues.indexOf(l.id) > -1;
 
-          var joinBtn = '';
-          if (currentUserId) {
-            if (hasJoined) {
-              joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
-            } else if (isFull) {
-              joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">League Full</button>';
-            } else {
-              joinBtn = '<button class="btn-join" onclick="joinLeague(' + l.id + ', this)">Join League</button>';
-            }
-          }
+  var joinBtn = '';
+  if (currentUserId) {
+    if (hasJoined) {
+      joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
+    } else if (isFull) {
+      joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">League Full</button>';
+    } else {
+      joinBtn = '<button class="btn-join" onclick="joinLeague(' + l.id + ', this)">Join League</button>';
+    }
+  }
 
-          cardsHtml.push('<div class="league-card">' +
-            getStatusBadgeHtml(status) +
-            '<h3>' + l.name + '</h3>' +
-            (l.season ? '<p><strong>Season:</strong> ' + l.season + '</p>' : '') +
-            '<p><strong>Format:</strong> ' + (formatLabels[l.format] || l.format || 'TBC') + (l.playoffs ? ' + Playoffs' : '') + '</p>' +
-            '<p><strong>Platform:</strong> ' + (platformLabels[l.platform] || l.platform || 'TBC') + '</p>' +
-            '<p><strong>Dates:</strong> ' + startStr + ' — ' + endStr + '</p>' +
-            '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
-            '<div class="card-actions">' +
-            '<a href="league.html?id=' + l.id + '" class="btn-view">View League</a>' +
-            joinBtn +
-            '</div>' +
-            '</div>');
-        }
+  var cardHtml = '<div class="league-card">' +
+    getStatusBadgeHtml(status) +
+    '<h3>' + l.name + '</h3>' +
+    (l.season ? '<p><strong>Season:</strong> ' + l.season + '</p>' : '') +
+    '<p><strong>Format:</strong> ' + (formatLabels[l.format] || l.format || 'TBC') + (l.playoffs ? ' + Playoffs' : '') + '</p>' +
+    '<p><strong>Platform:</strong> ' + (platformLabels[l.platform] || l.platform || 'TBC') + '</p>' +
+    '<p><strong>Dates:</strong> ' + startStr + ' — ' + endStr + '</p>' +
+    '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
+    '<div class="card-actions">' +
+    '<a href="league.html?id=' + l.id + '" class="btn-view">View League</a>' +
+    joinBtn +
+    '</div>' +
+    '</div>';
 
-        container.innerHTML = cardsHtml.length ? cardsHtml.join('') : '<p class="coming-soon">🎯 No upcoming or live leagues — check the archive for past results!</p>';
+  cardsHtml.push(cardHtml);
+  if (hasJoined) { myCardsHtml.push(cardHtml); }
+}
+
+container.innerHTML = cardsHtml.length ? cardsHtml.join('') : '<p class="coming-soon">🎯 No upcoming or live leagues — check the archive for past results!</p>';
+
+var myLeaguesSection = document.getElementById('myLeaguesSection');
+if (myCardsHtml.length) {
+  myLeaguesSection.style.display = 'block';
+  document.getElementById('myLeaguesList').innerHTML = myCardsHtml.join('');
+} else {
+  myLeaguesSection.style.display = 'none';
+}
       }
 
       async function joinLeague(leagueId, btn) {
