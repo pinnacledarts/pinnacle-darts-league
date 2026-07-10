@@ -6,7 +6,7 @@
     <title>Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=2"></script>
+    <script src="auth.js?t=999999"></script>
     <style>
       * { box-sizing: border-box; }
 
@@ -108,26 +108,33 @@
       .news-item {
         background-color: #ffffff;
         border: 1px solid #dddddd;
-        border-radius: 6px;
-        padding: 24px;
-        margin-bottom: 16px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        overflow: hidden;
       }
 
-      .news-item h3 { margin: 0 0 6px; font-size: 1.2em; }
+      .news-item-title {
+        padding: 18px 24px;
+        font-weight: bold;
+        font-size: 1.05em;
+        cursor: pointer;
+        text-align: center;
+      }
+      .news-item-title:hover { background-color: #f9f9f9; }
+
+      .news-item-body { display: none; padding: 0 24px 24px; }
+      .news-item-body.open { display: block; }
+      .news-item-body img { width: 100%; border-radius: 6px; margin-bottom: 16px; display: block; }
+
       .news-date { font-size: 0.85em; color: #888888; margin-bottom: 12px; }
-      .news-item p { margin: 0; color: #444444; line-height: 1.6; }
+      .news-content { color: #333333; line-height: 1.6; white-space: pre-wrap; }
 
-      .news-tag {
-        display: inline-block;
-        background-color: #111111;
-        color: #ffffff;
-        font-size: 0.75em;
-        padding: 3px 10px;
-        border-radius: 20px;
-        margin-bottom: 10px;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-      }
+      .like-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
+      .like-btn { background: none; border: 1px solid #dddddd; border-radius: 20px; padding: 6px 16px; cursor: pointer; font-size: 0.9em; }
+      .like-btn.liked { background-color: #fff0f0; border-color: #ffcccc; color: #cc0000; }
+
+      .coming-soon { text-align: center; padding: 30px 20px; color: #aaaaaa; font-size: 0.95em; }
+      .loading { text-align: center; padding: 30px; color: #888888; }
 
       .see-more { text-align: center; margin-top: 10px; }
 
@@ -193,21 +200,8 @@
       <h2>Welcome</h2>
       <p>Welcome to the official Pinnacle Darts League website. Check the standings, fixtures and player profiles above.</p>
 
-      <h2>Latest News</h2>
-
-      <div class="news-item">
-        <span class="news-tag">League</span>
-        <h3>Season 1 is underway</h3>
-        <div class="news-date">June 2026</div>
-        <p>The first season of the Pinnacle Darts League has kicked off. Check the Leagues page for the latest standings and upcoming fixtures.</p>
-      </div>
-
-      <div class="news-item">
-        <span class="news-tag">Announcement</span>
-        <h3>Welcome to the Pinnacle Darts League!</h3>
-        <div class="news-date">June 2026</div>
-        <p>The Pinnacle Darts League website is now live. Stay tuned for fixtures, results, standings and more as the season gets underway.</p>
-      </div>
+      <h2>Latest News & Announcements</h2>
+      <div id="newsPreviewList"><p class="loading">Loading news...</p></div>
 
       <div class="see-more">
         <a href="news.html">See all news →</a>
@@ -216,11 +210,103 @@
     </main>
 
     <script>
+      let currentUserId = null;
+      let allNewsLikes = {};
+
+      async function loadNewsPreview() {
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (session) currentUserId = session.user.id;
+
+        const { data: allArticles, error } = await sbClient
+          .from('news')
+          .select('*')
+          .or('section.eq.online,section.eq.both')
+          .order('article_date', { ascending: false });
+
+        const container = document.getElementById('newsPreviewList');
+
+        if (error) {
+          container.innerHTML = '<p class="coming-soon">Error loading news.</p>';
+          return;
+        }
+
+        const today = new Date();
+        const active = (allArticles || []).filter(a => {
+          const artDate = new Date(a.article_date || a.created_at);
+          const expiry = new Date(artDate);
+          expiry.setDate(expiry.getDate() + (a.duration_days || 30));
+          return expiry >= today;
+        });
+
+        const preview = active.slice(0, 4);
+
+        if (!preview.length) {
+          container.innerHTML = '<p class="coming-soon">No news yet — check back soon!</p>';
+          return;
+        }
+
+        const { data: likesData } = await sbClient.from('news_likes').select('*');
+        (likesData || []).forEach(l => {
+          if (!allNewsLikes[l.news_id]) allNewsLikes[l.news_id] = [];
+          allNewsLikes[l.news_id].push(l.player_id);
+        });
+
+        container.innerHTML = preview.map(a => {
+          const dateStr = new Date(a.article_date || a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+          const likes = allNewsLikes[a.id] || [];
+          const userLiked = currentUserId && likes.includes(currentUserId);
+          return `
+            <div class="news-item">
+              <div class="news-item-title" onclick="toggleArticle(${a.id})">${a.title}</div>
+              <div class="news-item-body" id="article-${a.id}">
+                ${a.image_url ? `<img src="${a.image_url}" alt="${a.title}" />` : ''}
+                <div class="news-date">${dateStr}</div>
+                <div class="news-content">${a.content}</div>
+                <div class="like-row">
+                  <button class="like-btn ${userLiked ? 'liked' : ''}" id="like-btn-${a.id}" onclick="toggleLike(${a.id}, event)">
+                    ${userLiked ? '❤️ Liked' : '🤍 Like'} (<span id="like-count-${a.id}">${likes.length}</span>)
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function toggleArticle(id) {
+        const body = document.getElementById('article-' + id);
+        body.classList.toggle('open');
+      }
+
+      async function toggleLike(newsId, event) {
+        event.stopPropagation();
+        if (!currentUserId) { window.location.href = 'login.html'; return; }
+
+        const likes = allNewsLikes[newsId] || [];
+        const alreadyLiked = likes.includes(currentUserId);
+
+        if (alreadyLiked) {
+          await sbClient.from('news_likes').delete().eq('news_id', newsId).eq('player_id', currentUserId);
+          allNewsLikes[newsId] = likes.filter(id => id !== currentUserId);
+        } else {
+          await sbClient.from('news_likes').insert([{ news_id: newsId, player_id: currentUserId }]);
+          allNewsLikes[newsId] = [...likes, currentUserId];
+        }
+
+        const btn = document.getElementById('like-btn-' + newsId);
+        const nowLiked = allNewsLikes[newsId].includes(currentUserId);
+        btn.className = 'like-btn' + (nowLiked ? ' liked' : '');
+        btn.innerHTML = (nowLiked ? '❤️ Liked' : '🤍 Like') + ' (<span id="like-count-' + newsId + '">' + allNewsLikes[newsId].length + '</span>)';
+      }
+
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
 
-      checkAuth();
+      window.addEventListener('load', () => {
+        checkAuth();
+        loadNewsPreview();
+      });
     </script>
 
   </body>
