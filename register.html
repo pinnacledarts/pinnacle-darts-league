@@ -195,18 +195,32 @@
           }
 
           if (data.user) {
-            const { error: profileError } = await sbClient
-              .from('profiles')
-              .insert([{
-                id: data.user.id,
-                full_name: fullName,
-                username,
-                email,
-                phone,
-                date_of_birth: dob,
-                platform,
-                created_at: new Date().toISOString()
-              }]);
+let initialAccess = 'online';
+let accessStatus = 'approved';
+
+if (accessRequest === 'both') {
+  initialAccess = 'online';
+  accessStatus = 'pending';
+} else if (accessRequest === 'academy') {
+  initialAccess = 'academy';
+  accessStatus = 'pending';
+}
+
+const { error: profileError } = await sbClient
+  .from('profiles')
+  .insert([{
+    id: data.user.id,
+    full_name: fullName,
+    username,
+    email,
+    phone,
+    date_of_birth: dob,
+    platform,
+    access: initialAccess,
+    requested_access: accessRequest,
+    access_status: accessStatus,
+    created_at: new Date().toISOString()
+  }]);
 
             if (profileError) {
               console.error('Profile error:', profileError);
