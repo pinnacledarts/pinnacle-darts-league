@@ -502,44 +502,51 @@
 
       <!-- NEWS TAB -->
       <div id="tab-news" class="tab-content">
-        <div class="card">
-          <h3>Add News Article</h3>
-          <div class="success-msg" id="news-success"></div>
-          <div class="error-msg" id="news-error"></div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Title</label>
-              <input type="text" id="newsTitle" placeholder="e.g. Season 1 is underway" />
-            </div>
-            <div class="form-group">
-              <label>Tag</label>
-              <select id="newsTag">
-                <option value="announcement">Announcement</option>
-                <option value="league">League</option>
-                <option value="tournament">Tournament</option>
-                <option value="update">Update</option>
-              </select>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Section</label>
-              <select id="newsSection">
-                <option value="online">Online</option>
-                <option value="academy">Academy</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Image (optional)</label>
-              <input type="file" id="newsImageFile" accept="image/*" />
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Content</label>
-            <textarea id="newsContent" rows="4" placeholder="Write your news article here..."></textarea>
-          </div>
-          <button class="btn btn-primary" onclick="saveNews()">Publish Article</button>
-        </div>
+       <div class="card">
+  <h3>Add News Article</h3>
+  <div class="success-msg" id="news-success"></div>
+  <div class="error-msg" id="news-error"></div>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" id="newsTitle" placeholder="e.g. Season 1 is underway" />
+    </div>
+    <div class="form-group">
+      <label>Date</label>
+      <input type="date" id="newsDate" />
+    </div>
+  </div>
+  <div class="form-row-3">
+    <div class="form-group">
+      <label>Type</label>
+      <select id="newsTag">
+        <option value="news">News</option>
+        <option value="announcement">Announcement</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Section</label>
+      <select id="newsSection">
+        <option value="online">Online</option>
+        <option value="academy">Academy</option>
+        <option value="both">Both</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Duration (days visible)</label>
+      <input type="number" id="newsDuration" value="30" />
+    </div>
+  </div>
+  <div class="form-group">
+    <label>Image (optional)</label>
+    <input type="file" id="newsImageFile" accept="image/*" />
+  </div>
+  <div class="form-group">
+    <label>Content</label>
+    <textarea id="newsContent" rows="4" placeholder="Write your news article here..."></textarea>
+  </div>
+  <button class="btn btn-primary" onclick="saveNews()">Publish Article</button>
+</div>
 
         <div class="card">
           <h3>Manage News</h3>
