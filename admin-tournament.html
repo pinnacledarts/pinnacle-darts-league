@@ -160,13 +160,40 @@
         var isSingleElim = tournamentData.format === 'single_elimination' || tournamentData.format === 'single_elimination_b';
         var groupsTab = isGroupKnockout ? '<button class="tab" onclick="showTab(\'groups\', event)">Groups & Scores</button>' : '';
 
-        document.getElementById('pageContent').innerHTML =
-          '<h2>⚙️ Managing: ' + tournamentData.name + '</h2>' +
-          '<div class="tabs">' +
-          '<button class="tab active" onclick="showTab(\'players\', event)">Players</button>' +
-          groupsTab +
-          '<button class="tab" onclick="showTab(\'knockouts\', event)">' + (isSingleElim ? 'Bracket' : 'Knockouts') + '</button>' +
-          '</div>' +
+document.getElementById('pageContent').innerHTML =
+  '<h2 id="pageTitle">⚙️ Managing: ' + tournamentData.name + '</h2>' +
+  '<div class="tabs">' +
+  '<button class="tab active" onclick="showTab(\'details\', event)">Details</button>' +
+  '<button class="tab" onclick="showTab(\'players\', event)">Players</button>' +
+  groupsTab +
+  '<button class="tab" onclick="showTab(\'knockouts\', event)">' + (isSingleElim ? 'Bracket' : 'Knockouts') + '</button>' +
+  '</div>' +
+
+  '<div id="tab-details" class="tab-content active">' +
+  '<div class="card"><h3>Tournament Details</h3>' +
+  '<div class="success-msg" id="details-success"></div>' +
+  '<div class="error-msg" id="details-error"></div>' +
+  '<div class="form-group"><label>Tournament Name</label><input type="text" id="detName" value="' + (tournamentData.name || '').replace(/"/g, '&quot;') + '" /></div>' +
+  '<div class="form-group"><label>Date</label><input type="date" id="detDate" value="' + (tournamentData.date || '') + '" /></div>' +
+  '<div class="form-group"><label>Time</label><input type="time" id="detTime" value="' + (tournamentData.time || '') + '" /></div>' +
+  '<div class="form-group"><label>Format</label><select id="detFormat" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
+  '<option value="single_elimination"' + (tournamentData.format === 'single_elimination' ? ' selected' : '') + '>Single Elimination</option>' +
+  '<option value="single_elimination_b"' + (tournamentData.format === 'single_elimination_b' ? ' selected' : '') + '>Single Elimination + B Bracket</option>' +
+  '<option value="group_knockout"' + (tournamentData.format === 'group_knockout' ? ' selected' : '') + '>Group Stages + Knockout</option>' +
+  '</select></div>' +
+  '<div class="form-group"><label>Platform</label><select id="detPlatform" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
+  '<option value="dartcounter"' + (tournamentData.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
+  '<option value="scolia"' + (tournamentData.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
+  '<option value="in_person"' + (tournamentData.platform === 'in_person' ? ' selected' : '') + '>In Person</option>' +
+  '<option value="both"' + (tournamentData.platform === 'both' ? ' selected' : '') + '>Both</option>' +
+  '</select></div>' +
+  '<div class="form-group"><label>Max Players</label><input type="number" id="detMax" value="' + (tournamentData.max_players || '') + '" /></div>' +
+  '<div class="form-group"><label>Description</label><textarea id="detDesc" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-family:Arial, sans-serif;">' + (tournamentData.description || '') + '</textarea></div>' +
+  '<button class="btn btn-primary" onclick="saveTournamentDetails()">Save Details</button>' +
+  '</div>' +
+  '</div>' +
+
+  '<div id="tab-players" class="tab-content">' +
 
           '<div id="tab-players" class="tab-content active">' +
           '<div class="card"><h3>Add Players</h3>' +
