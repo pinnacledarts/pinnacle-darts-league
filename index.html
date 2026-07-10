@@ -209,6 +209,7 @@
       <div class="see-more">
         <a href="news.html">See all news →</a>
       </div>
+      <p style="text-align:center;margin-top:20px;"><a href="terms.html" style="color:#555;font-size:0.9em;">View Terms & Conditions →</a></p>
 
     </main>
 
@@ -269,7 +270,7 @@
               <div class="news-item-body" id="article-${a.id}">
                 ${a.image_url ? `<img src="${a.image_url}" alt="${a.title}" />` : ''}
                 <div class="news-date">${dateStr}</div>
-                <div class="news-content">${a.content}</div>
+                <div class="news-content">${a.content || ''}</div>
                 <div class="like-row">
                   <button class="like-btn ${userLiked ? 'liked' : ''}" id="like-btn-${a.id}" onclick="toggleLike(${a.id}, event)">
                     ${userLiked ? '❤️ Liked' : '🤍 Like'} (<span id="like-count-${a.id}">${likes.length}</span>)
