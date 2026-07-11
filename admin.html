@@ -122,13 +122,12 @@
     <main>
       <h2>Admin Dashboard</h2>
 
-      <div class="tabs">
-        <button class="tab active" onclick="showTab('tournaments', event)">Tournaments</button>
-        <button class="tab" onclick="showTab('leagues', event)">Leagues</button>
-<button class="tab" onclick="showTab('players', event)" id="playersTabBtn">Players</button>
-        <button class="tab" onclick="showTab('academy', event)" id="academyTabBtn">Academy</button>
-        <button class="tab" onclick="showTab('news', event)">News</button>
-      </div>
+<div class="tabs">
+  <button class="tab active" onclick="showTab('news', event)">News & Updates</button>
+  <button class="tab" onclick="showTab('table', event)">League Table</button>
+  <button class="tab" onclick="showTab('profiles', event)">Player Profiles</button>
+  <button class="tab" onclick="showTab('drills', event)">Drills</button>
+</div>
 
       <!-- TOURNAMENTS TAB -->
       <div id="tab-tournaments" class="tab-content active">
