@@ -1002,8 +1002,8 @@
           }]);
         }
 
-        document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#006600;">✓ Attempt submitted! Total score: ' + totalScore + '</span>';
-        targetSelects.forEach(function(sel) { sel.value = ''; });
+document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#006600;">✓ Attempt submitted! Total score: ' + totalScore + '</span>';
+document.getElementById('drill-form-' + drillId).innerHTML = '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')">Start Another Drill</button>';
       }
 
       async function loadProgressDrillOptions() {
