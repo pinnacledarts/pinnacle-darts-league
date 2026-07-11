@@ -316,20 +316,33 @@ async function submitFixtureScore(matchId, isP1) {
   var s2 = parseInt(document.getElementById('fs2_' + matchId).value);
   if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
 
-  var update = { player1_score: s1, player2_score: s2, status: 'completed' };
   var myAvgId = isP1 ? 'favg1_' + matchId : 'favg2_' + matchId;
   var myAvgVal = document.getElementById(myAvgId).value.trim();
-  if (myAvgVal) {
-    if (isP1) { update.player1_avg = parseFloat(myAvgVal); } else { update.player2_avg = parseFloat(myAvgVal); }
-  }
+  if (!myAvgVal) { alert('Please enter your average for this match.'); return; }
+
+  var update = { player1_score: s1, player2_score: s2, status: 'completed' };
+  if (isP1) { update.player1_avg = parseFloat(myAvgVal); } else { update.player2_avg = parseFloat(myAvgVal); }
 
   var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
   if (result.error) { alert('Error submitting score. Please try again.'); return; }
 
-  if (myAvgVal) { await updatePlayerAverage(currentUserId); }
+  await updatePlayerAverage(currentUserId);
 
   loadFixtures();
   loadStandings();
+}
+
+async function submitMyAverageOnly(matchId, isP1) {
+  var fieldId = isP1 ? 'myavg1_' + matchId : 'myavg2_' + matchId;
+  var val = document.getElementById(fieldId).value.trim();
+  if (!val) { alert('Please enter your average.'); return; }
+
+  var update = isP1 ? { player1_avg: parseFloat(val) } : { player2_avg: parseFloat(val) };
+  var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
+  if (result.error) { alert('Error saving average. Please try again.'); return; }
+
+  await updatePlayerAverage(currentUserId);
+  loadFixtures();
 }
 
       async function loadPlayoffs() {
