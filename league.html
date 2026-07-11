@@ -243,27 +243,36 @@ var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'
         }
       }
 
-      function renderFixtureItem(m) {
-        var p1obj = profileMap[m.player1_id];
-        var p2obj = profileMap[m.player2_id];
-        var p1name = p1obj ? p1obj.name : 'Unknown';
-        var p2name = p2obj ? p2obj.name : 'Unknown';
+function renderFixtureItem(m) {
+  var p1obj = profileMap[m.player1_id];
+  var p2obj = profileMap[m.player2_id];
+  var p1name = p1obj ? p1obj.name : 'Unknown';
+  var p2name = p2obj ? p2obj.name : 'Unknown';
 
-        var whatsAppHtml = '';
-        if (currentUserId === m.player1_id) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
-        else if (currentUserId === m.player2_id) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
+  var whatsAppHtml = '';
+  if (currentUserId === m.player1_id) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
+  else if (currentUserId === m.player2_id) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
 
-        var playersHtml = '<div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + whatsAppHtml + '</div>';
+  var playersHtml = '<div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + whatsAppHtml + '</div>';
 
-        if (m.status === 'completed') {
-          return '<div class="fixture-item">' + playersHtml + '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div></div>';
-        }
-        var canSubmit = currentUserId && (currentUserId === m.player1_id || currentUserId === m.player2_id);
-        if (canSubmit) {
-          return '<div class="fixture-item">' + playersHtml + '<div class="score-inputs"><input class="score-input" type="number" id="fs1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="fs2_' + m.id + '" min="0" placeholder="0" /><button class="btn-submit-score" onclick="submitFixtureScore(' + m.id + ')">Submit</button></div></div>';
-        }
-        return '<div class="fixture-item">' + playersHtml + '<div class="score-display" style="color:#aaa">Pending</div></div>';
-      }
+  if (m.status === 'completed') {
+    return '<div class="fixture-item">' + playersHtml + '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div></div>';
+  }
+  var canSubmit = currentUserId && (currentUserId === m.player1_id || currentUserId === m.player2_id);
+  if (canSubmit) {
+    var isP1 = currentUserId === m.player1_id;
+    var myAvgId = isP1 ? 'favg1_' + m.id : 'favg2_' + m.id;
+    return '<div class="fixture-item">' + playersHtml +
+      '<div class="score-inputs">' +
+      '<input class="score-input" type="number" id="fs1_' + m.id + '" min="0" placeholder="0" />' +
+      '<span>-</span>' +
+      '<input class="score-input" type="number" id="fs2_' + m.id + '" min="0" placeholder="0" />' +
+      '<input class="score-input" type="number" step="0.01" id="' + myAvgId + '" placeholder="Your Avg" style="width:80px;" />' +
+      '<button class="btn-submit-score" onclick="submitFixtureScore(' + m.id + ', ' + isP1 + ')">Submit</button>' +
+      '</div></div>';
+  }
+  return '<div class="fixture-item">' + playersHtml + '<div class="score-display" style="color:#aaa">Pending</div></div>';
+}
 
       function showFixtureRound(round, btn) {
         document.querySelectorAll('.round-tab').forEach(function(t) { t.classList.remove('active'); });
