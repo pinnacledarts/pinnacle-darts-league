@@ -236,56 +236,72 @@ var dateStr = tournamentData.date ? new Date(tournamentData.date).toLocaleDateSt
         loadPlayers();
       }
 
-      async function loadGroups() {
-        var groupsResult = await sbClient.from('tournament_groups').select('*, tournament_group_players(player_id, profiles(full_name, username))').eq('tournament_id', tournamentId).order('group_name');
-        var container = document.getElementById('groupsContent');
-        if (!groupsResult.data || !groupsResult.data.length) { container.innerHTML = '<p class="coming-soon">Groups have not been drawn yet.</p>'; return; }
+     async function loadGroups() {
+  var groupsResult = await sbClient.from('tournament_groups').select('*, tournament_group_players(player_id, profiles(full_name, username))').eq('tournament_id', tournamentId).order('group_name');
+  var container = document.getElementById('groupsContent');
+  if (!groupsResult.data || !groupsResult.data.length) { container.innerHTML = '<p class="coming-soon">Groups have not been drawn yet.</p>'; return; }
 
-        var matchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'group');
-        var matches = matchesResult.data || [];
+  var matchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'group');
+  var matches = matchesResult.data || [];
 
-        container.innerHTML = groupsResult.data.map(function(group) {
-          var groupPlayers = group.tournament_group_players || [];
-          var playerMap = {};
-          groupPlayers.forEach(function(gp) { var profile = gp.profiles || {}; playerMap[gp.player_id] = profile.full_name || profile.username || 'Unknown'; });
+  container.innerHTML = groupsResult.data.map(function(group) {
+    var groupPlayers = group.tournament_group_players || [];
+    var playerMap = {};
+    groupPlayers.forEach(function(gp) { var profile = gp.profiles || {}; playerMap[gp.player_id] = profile.full_name || profile.username || 'Unknown'; });
 
-          var standings = groupPlayers.map(function(gp) {
-            var played = 0, won = 0, lost = 0, pts = 0;
-            matches.forEach(function(m) {
-              if (m.group_id !== group.id || m.status !== 'completed') { return; }
-              if (m.player1_id === gp.player_id) { played++; if (m.player1_score > m.player2_score) { won++; pts += 3; } else { lost++; } }
-              else if (m.player2_id === gp.player_id) { played++; if (m.player2_score > m.player1_score) { won++; pts += 3; } else { lost++; } }
-            });
-            return { name: playerMap[gp.player_id], played: played, won: won, lost: lost, pts: pts };
-          }).sort(function(a, b) { return b.pts - a.pts; });
+    var standings = groupPlayers.map(function(gp) {
+      var played = 0, won = 0, lost = 0, pts = 0;
+      matches.forEach(function(m) {
+        if (m.group_id !== group.id || m.status !== 'completed') { return; }
+        if (m.player1_id === gp.player_id) { played++; if (m.player1_score > m.player2_score) { won++; pts += 3; } else { lost++; } }
+        else if (m.player2_id === gp.player_id) { played++; if (m.player2_score > m.player1_score) { won++; pts += 3; } else { lost++; } }
+      });
+      return { name: playerMap[gp.player_id], played: played, won: won, lost: lost, pts: pts };
+    }).sort(function(a, b) { return b.pts - a.pts; });
 
-          var groupFixtures = matches.filter(function(m) { return m.group_id === group.id; });
-          var fixturesHtml = groupFixtures.map(function(m) {
-            var p1name = playerMap[m.player1_id] || 'Unknown';
-            var p2name = playerMap[m.player2_id] || 'Unknown';
+    var groupFixtures = matches.filter(function(m) { return m.group_id === group.id; });
+    var fixturesHtml = groupFixtures.map(function(m) {
+      var p1name = playerMap[m.player1_id] || 'Unknown';
+      var p2name = playerMap[m.player2_id] || 'Unknown';
 
-            var whatsAppHtml = '';
-            if (currentUserId === m.player1_id) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
-            else if (currentUserId === m.player2_id) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
+      var whatsAppHtml = '';
+      if (currentUserId === m.player1_id) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
+      else if (currentUserId === m.player2_id) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
 
-            var playersHtml = '<div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + whatsAppHtml + '</div>';
+      var playersHtml = '<div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + whatsAppHtml + '</div>';
 
-            if (m.status === 'completed') {
-              return '<div class="fixture-item">' + playersHtml + '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div></div>';
-            }
-            var canSubmit = currentUserId && (currentUserId === m.player1_id || currentUserId === m.player2_id);
-            if (canSubmit) {
-              return '<div class="fixture-item">' + playersHtml + '<div class="score-inputs"><input class="score-input" type="number" id="s1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="s2_' + m.id + '" min="0" placeholder="0" /><button class="btn-submit-score" onclick="submitGroupScore(' + m.id + ')">Submit</button></div></div>';
-            }
-            return '<div class="fixture-item">' + playersHtml + '<div class="score-display" style="color:#aaa">Pending</div></div>';
-          }).join('');
+      var isP1 = currentUserId === m.player1_id;
+      var isP2 = currentUserId === m.player2_id;
 
-          return '<div class="group-card"><h3>' + group.group_name + '</h3>' +
-            '<table class="group-table"><thead><tr><th>Player</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>' +
-            standings.map(function(s) { return '<tr><td>' + s.name + '</td><td>' + s.played + '</td><td>' + s.won + '</td><td>' + s.lost + '</td><td><strong>' + s.pts + '</strong></td></tr>'; }).join('') +
-            '</tbody></table><h4 style="margin:16px 0 8px;font-size:0.95em;">Fixtures</h4>' + fixturesHtml + '</div>';
-        }).join('');
+      if (m.status === 'completed') {
+        var scoreBlock = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
+        var myAvgMissing = (isP1 && m.player1_avg == null) || (isP2 && m.player2_avg == null);
+        if (myAvgMissing) {
+          var myAvgFieldId = isP1 ? 'gmyavg1_' + m.id : 'gmyavg2_' + m.id;
+          scoreBlock += '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;">' +
+            '<input class="score-input" type="number" step="0.01" id="' + myAvgFieldId + '" placeholder="Your Avg" style="width:80px;" />' +
+            '<button class="btn-submit-score" onclick="submitGroupAverageOnly(' + m.id + ', ' + isP1 + ')">Add My Avg</button>' +
+            '</div>';
+        }
+        return '<div class="fixture-item">' + playersHtml + scoreBlock + '</div>';
       }
+      var canSubmit = currentUserId && (isP1 || isP2);
+      if (canSubmit) {
+        var myAvgId = isP1 ? 'gavg1_' + m.id : 'gavg2_' + m.id;
+        return '<div class="fixture-item">' + playersHtml +
+          '<div class="score-inputs"><input class="score-input" type="number" id="s1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="s2_' + m.id + '" min="0" placeholder="0" />' +
+          '<input class="score-input" type="number" step="0.01" id="' + myAvgId + '" placeholder="Your Avg" style="width:80px;" />' +
+          '<button class="btn-submit-score" onclick="submitGroupScore(' + m.id + ', ' + isP1 + ')">Submit</button></div></div>';
+      }
+      return '<div class="fixture-item">' + playersHtml + '<div class="score-display" style="color:#aaa">Pending</div></div>';
+    }).join('');
+
+    return '<div class="group-card"><h3>' + group.group_name + '</h3>' +
+      '<table class="group-table"><thead><tr><th>Player</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>' +
+      standings.map(function(s) { return '<tr><td>' + s.name + '</td><td>' + s.played + '</td><td>' + s.won + '</td><td>' + s.lost + '</td><td><strong>' + s.pts + '</strong></td></tr>'; }).join('') +
+      '</tbody></table><h4 style="margin:16px 0 8px;font-size:0.95em;">Fixtures</h4>' + fixturesHtml + '</div>';
+  }).join('');
+}
 
       async function submitGroupScore(matchId) {
         var s1 = parseInt(document.getElementById('s1_' + matchId).value);
