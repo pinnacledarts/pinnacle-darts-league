@@ -136,7 +136,43 @@
       var roundOrderFull = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
       var cachedAMatches = [];
       var cachedBMatches = [];
+async function splitByAverage() {
+  var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
+  if (existing.data && existing.data.length > 0) {
+    if (!confirm('Bracket already exists. Regenerate?')) { return; }
+    await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
+  }
 
+  var playersResult = await sbClient.from('tournament_players').select('player_id, profiles(starter_average, average)').eq('tournament_id', tournamentId);
+  if (!playersResult.data || playersResult.data.length < 2) { showMsg('knockouts-error', 'Need at least 2 players to split.'); return; }
+
+  var playersWithAvg = playersResult.data.map(function(p) {
+    var profile = p.profiles || {};
+    var avg = profile.average || profile.starter_average || 0;
+    return { player_id: p.player_id, avg: parseFloat(avg) || 0 };
+  });
+
+  var missingAvg = playersWithAvg.filter(function(p) { return !p.avg; });
+  if (missingAvg.length > 0) {
+    showMsg('knockouts-error', missingAvg.length + ' player(s) have no average set yet. Please set their Starter Average in the Players tab before splitting.');
+    return;
+  }
+
+  playersWithAvg.sort(function(a, b) { return b.avg - a.avg; });
+
+  var half = Math.ceil(playersWithAvg.length / 2);
+  var cupA = playersWithAvg.slice(0, half);
+  var cupB = playersWithAvg.slice(half);
+
+  shuffleArray(cupA);
+  shuffleArray(cupB);
+
+  await createBracketRounds(cupA, 'A');
+  await createBracketRounds(cupB, 'B');
+
+  showMsg('knockouts-success', 'Split complete! ' + tournamentData.name + ' A (' + cupA.length + ' players) and ' + tournamentData.name + ' B (' + cupB.length + ' players) generated.');
+  loadKnockouts();
+}
       async function init() {
         var params = new URLSearchParams(window.location.search);
         tournamentId = params.get('id');
