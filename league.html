@@ -282,15 +282,26 @@ function renderFixtureItem(m) {
         });
       }
 
-      async function submitFixtureScore(matchId) {
-        var s1 = parseInt(document.getElementById('fs1_' + matchId).value);
-        var s2 = parseInt(document.getElementById('fs2_' + matchId).value);
-        if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
-        var result = await sbClient.from('league_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
-        if (result.error) { alert('Error submitting score. Please try again.'); return; }
-        loadFixtures();
-        loadStandings();
-      }
+async function submitFixtureScore(matchId, isP1) {
+  var s1 = parseInt(document.getElementById('fs1_' + matchId).value);
+  var s2 = parseInt(document.getElementById('fs2_' + matchId).value);
+  if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
+
+  var update = { player1_score: s1, player2_score: s2, status: 'completed' };
+  var myAvgId = isP1 ? 'favg1_' + matchId : 'favg2_' + matchId;
+  var myAvgVal = document.getElementById(myAvgId).value.trim();
+  if (myAvgVal) {
+    if (isP1) { update.player1_avg = parseFloat(myAvgVal); } else { update.player2_avg = parseFloat(myAvgVal); }
+  }
+
+  var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
+  if (result.error) { alert('Error submitting score. Please try again.'); return; }
+
+  if (myAvgVal) { await updatePlayerAverage(currentUserId); }
+
+  loadFixtures();
+  loadStandings();
+}
 
       async function loadPlayoffs() {
         var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff');
