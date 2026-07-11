@@ -942,18 +942,6 @@ function resetDrillForm(drillId) {
   }).join('');
 }
 
-          return '<div class="news-item">' +
-            '<div class="news-item-title" onclick="toggleDrillItem(' + d.id + ')">' + d.title + '</div>' +
-            '<div class="news-item-body" id="drill-body-' + d.id + '">' +
-            targetRowsHtml +
-            '<div style="margin-top:16px;">' +
-            '<button class="save-btn" onclick="submitDrillAttempt(' + d.id + ')">Submit Attempt</button>' +
-            '</div>' +
-            '<div id="drill-msg-' + d.id + '" style="margin-top:10px;font-size:0.9em;"></div>' +
-            '</div></div>';
-        }).join('');
-      }
-
       function toggleDrillItem(id) {
         const body = document.getElementById('drill-body-' + id);
         body.classList.toggle('open');
