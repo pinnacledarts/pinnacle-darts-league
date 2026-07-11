@@ -366,7 +366,11 @@
       let allAcademyLeagues = [];
       let isCurrentUserAdmin = false;
       let academyNewsLikes = {};
-
+function resetDrillForm(drillId) {
+  toggleDrillItem(drillId);
+  document.getElementById('drillsAccordionList').scrollIntoView({ behavior: 'smooth' });
+  loadDrillsAccordion();
+}
       const fieldLabels = {
         highest_checkout: 'profileCheckout',
         hometown: 'profileHometown',
