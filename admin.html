@@ -1015,7 +1015,38 @@ loadDrills();
         await sbClient.from('drills').delete().eq('id', id);
         loadDrills();
       }
+async function editDrill(id) {
+  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, drill_score_options(id, label, points, sort_order))').eq('id', id).single();
+  if (result.error || !result.data) { alert('Error loading drill.'); return; }
+  var drill = result.data;
 
+  editingDrillId = id;
+  document.getElementById('drillTitle').value = drill.title || '';
+  document.getElementById('drillTargetsList').innerHTML = '';
+  drillTargetCount = 0;
+  scoreOptionCounts = {};
+
+  var targets = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+  targets.forEach(function(t) {
+    addDrillTargetRow();
+    var idx = drillTargetCount;
+    document.getElementById('targetName' + idx).value = t.target_name || '';
+
+    document.getElementById('scoreOptionsList' + idx).innerHTML = '';
+    scoreOptionCounts[idx] = 0;
+
+    var options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+    options.forEach(function(o) {
+      addScoreOptionRow(idx);
+      var optIdx = scoreOptionCounts[idx];
+      document.getElementById('scoreLabel' + idx + '_' + optIdx).value = o.label || '';
+      document.getElementById('scorePoints' + idx + '_' + optIdx).value = o.points != null ? o.points : '';
+    });
+  });
+
+  document.querySelector('button[onclick="saveDrill()"]').textContent = 'Update Drill';
+  document.getElementById('drillTitle').scrollIntoView({ behavior: 'smooth' });
+}
       async function loadAcademyLeagueSelects() {
         var result = await sbClient.from('academy_leagues').select('*').order('name');
         var allGroups = result.data || [];
