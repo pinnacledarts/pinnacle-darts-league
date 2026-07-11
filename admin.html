@@ -882,7 +882,7 @@ function renderLeagueRow(l, status) {
 
 function renderPlayersList(data) {
   var tbody = document.getElementById('playersList');
-  if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No players found</td></tr>'; return; }
+  if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No players found</td></tr>'; return; }
   tbody.innerHTML = data.map(function(p) {
     var platformSelect = '<select onchange="updatePlatform(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
       '<option value=""' + (!p.platform ? ' selected' : '') + '>-</option>' +
@@ -897,9 +897,11 @@ function renderPlayersList(data) {
       '</select>';
     var phoneField = '<input type="text" value="' + (p.phone || '') + '" id="phone-' + p.id + '" style="width:120px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;" placeholder="+44..." /> ' +
       '<button class="btn-small" onclick="updatePhone(\'' + p.id + '\')">Save</button>';
+    var starterAvgField = '<input type="number" step="0.01" value="' + (p.starter_average || '') + '" id="stavg-' + p.id + '" style="width:70px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;" placeholder="e.g. 45.5" /> ' +
+      '<button class="btn-small" onclick="updateStarterAvg(\'' + p.id + '\')">Save</button>';
     var adminBtn = '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
     var removeBtn = '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\')">Remove</button>';
-    return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + phoneField + '</td><td>' + platformSelect + '</td><td>' + accessSelect + '</td><td>' + (p.is_admin ? 'Yes' : 'No') + '</td><td>' + adminBtn + ' ' + removeBtn + '</td></tr>';
+    return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + phoneField + '</td><td>' + starterAvgField + '</td><td>' + platformSelect + '</td><td>' + accessSelect + '</td><td>' + (p.is_admin ? 'Yes' : 'No') + '</td><td>' + adminBtn + ' ' + removeBtn + '</td></tr>';
   }).join('');
 }
 
