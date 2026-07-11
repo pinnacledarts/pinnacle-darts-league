@@ -149,16 +149,18 @@ for (var i = 0; i < result.data.length; i++) {
   var isFull = t.max_players && playerCount >= t.max_players;
   var hasJoined = joinedTournaments.indexOf(t.id) > -1;
 
-  var joinBtn = '';
-  if (currentUserId) {
-    if (hasJoined) {
-      joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
-    } else if (isFull) {
-      joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">Tournament Full</button>';
-    } else {
-      joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this)">Join Tournament</button>';
-    }
+var joinBtn = '';
+if (currentUserId) {
+  if (hasJoined) {
+    joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
+  } else if (isFull) {
+    joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">Tournament Full</button>';
+  } else if (t.average_split && !playerHasAverage) {
+    joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;" title="You need an average set before joining this tournament">Average Required</button>';
+  } else {
+    joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this)">Join Tournament</button>';
   }
+}
 
   var cardHtml = '<div class="tournament-card">' +
     getStatusBadgeHtml(status) +
