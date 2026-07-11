@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <link rel="manifest" href="manifest-academy.json">
-<link rel="apple-touch-icon" href="logo.png">
-<meta name="theme-color" content="#000000">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
     <style>
@@ -21,10 +18,6 @@
       .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
       .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
       .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-      .hamburger { display: none; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; }
-      nav { background-color: #222222; display: flex; justify-content: center; gap: 40px; padding: 15px; }
-      nav a { color: #ffffff; text-decoration: none; font-size: 1.1em; text-transform: uppercase; letter-spacing: 1px; }
-      nav a:hover { color: #aaaaaa; }
       main { padding: 40px; max-width: 900px; margin: 0 auto; }
       h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 30px; }
       .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
@@ -85,10 +78,6 @@
         header p { font-size: 0.85em; }
         .header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
         .btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
-        .hamburger { display: block; }
-        nav { display: none; flex-direction: column; gap: 0; padding: 0; }
-        nav.open { display: flex; }
-        nav a { padding: 14px 20px; border-bottom: 1px solid #333333; font-size: 1em; }
         main { padding: 24px 20px; }
         h2 { font-size: 1.3em; }
         .form-row { grid-template-columns: 1fr; }
@@ -105,28 +94,22 @@
         <h1>Pinnacle Darts League</h1>
         <p>Official League Website</p>
       </div>
-      <a href="academy.html" class="btn-switch" id="switchBtn">Switch to Academy</a>
+      <a href="academy.html" class="btn-switch" id="switchBtn">Return to Online</a>
       <div class="header-buttons" style="margin-left: auto;">
         <div id="authButtons"></div>
-        <button class="hamburger" onclick="toggleMenu()">☰</button>
       </div>
     </header>
-
-    <nav id="mainNav">
-      <a href="index.html">Home</a>
-      <a href="leagues.html">Leagues</a>
-      <a href="tournaments.html">Tournaments</a>
-      <a href="players.html">Players</a>
-    </nav>
 
     <main>
       <h2>Admin Dashboard</h2>
 
-<div class="tabs">
-  <button class="tab active" onclick="showTab('news', event)">News & Updates</button>
-  <button class="tab" onclick="showTab('table', event)">League Table</button>
-  <button class="tab" onclick="showTab('profiles', event)">Player Profiles</button>
-</div>
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('tournaments', event)">Tournaments</button>
+        <button class="tab" onclick="showTab('leagues', event)">Leagues</button>
+        <button class="tab" onclick="showTab('players', event)">Players</button>
+        <button class="tab" onclick="showTab('academy', event)" id="academyTabBtn">Academy</button>
+        <button class="tab" onclick="showTab('news', event)">News</button>
+      </div>
 
       <!-- TOURNAMENTS TAB -->
       <div id="tab-tournaments" class="tab-content active">
@@ -170,21 +153,21 @@
               <input type="number" id="tournamentMax" placeholder="e.g. 16" />
             </div>
           </div>
-         <div class="form-row">
-  <div class="form-group">
-    <label>Platform</label>
-    <select id="tournamentPlatform">
-      <option value="dartcounter">Dartcounter</option>
-      <option value="scolia">Scolia</option>
-      <option value="in_person">In Person</option>
-      <option value="both">Both</option>
-    </select>
-  </div>
-  <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:24px;">
-    <input type="checkbox" id="tournamentAvgSplit" style="width:18px;height:18px;" />
-    <label style="margin:0;">Average Split (splits into two cups by average)</label>
-  </div>
-</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Platform</label>
+              <select id="tournamentPlatform">
+                <option value="dartcounter">Dartcounter</option>
+                <option value="scolia">Scolia</option>
+                <option value="in_person">In Person</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:24px;">
+              <input type="checkbox" id="tournamentAvgSplit" style="width:18px;height:18px;" />
+              <label style="margin:0;">Average Split (splits into two cups by average)</label>
+            </div>
+          </div>
           <div class="form-group">
             <label>Description</label>
             <textarea id="tournamentDesc" rows="3" placeholder="Tournament details..."></textarea>
@@ -272,16 +255,16 @@
               <input type="number" id="leagueMaxPlayers" placeholder="e.g. 16" />
             </div>
           </div>
-<div class="form-row">
-  <div class="form-group" style="display:flex; align-items:center; gap:8px;">
-    <input type="checkbox" id="leaguePlayoffs" style="width:18px; height:18px;" />
-    <label style="margin:0;">Add Playoff Rounds (Top 4)</label>
-  </div>
-  <div class="form-group" style="display:flex; align-items:center; gap:8px;">
-    <input type="checkbox" id="leagueAvgSplit" style="width:18px; height:18px;" />
-    <label style="margin:0;">Average Split (divisions by average)</label>
-  </div>
-</div>
+          <div class="form-row">
+            <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" id="leaguePlayoffs" style="width:18px; height:18px;" />
+              <label style="margin:0;">Add Playoff Rounds (Top 4)</label>
+            </div>
+            <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" id="leagueAvgSplit" style="width:18px; height:18px;" />
+              <label style="margin:0;">Average Split (divisions by average)</label>
+            </div>
+          </div>
 
           <button class="btn btn-primary" onclick="createLeague()">Create League</button>
         </div>
@@ -308,17 +291,17 @@
       </div>
 
       <!-- PLAYERS TAB -->
-<div id="tab-players" class="tab-content">
-  <div class="card">
-    <h3>Pending Academy Approvals</h3>
-    <div id="pendingApprovalsList"><p class="empty-state">Loading...</p></div>
-  </div>
-  <div class="card">
-    <h3>Registered Players</h3>
+      <div id="tab-players" class="tab-content">
+        <div class="card">
+          <h3>Pending Academy Approvals</h3>
+          <div id="pendingApprovalsList"><p class="empty-state">Loading...</p></div>
+        </div>
+        <div class="card">
+          <h3>Registered Players</h3>
           <input type="text" class="search-bar" id="playerSearch" placeholder="Search by name or username..." oninput="filterPlayersList()" />
           <table>
-<thead><tr><th>Name</th><th>Username</th><th>Phone</th><th>Starter Avg</th><th>Platform</th><th>Access</th><th>Admin</th><th>Actions</th></tr></thead>
-            <tbody id="playersList"><tr><td colspan="6" class="empty-state">Loading...</td></tr></tbody>
+            <thead><tr><th>Name</th><th>Username</th><th>Phone</th><th>Starter Avg</th><th>Platform</th><th>Access</th><th>Admin</th><th>Actions</th></tr></thead>
+            <tbody id="playersList"><tr><td colspan="8" class="empty-state">Loading...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -326,27 +309,28 @@
       <!-- ACADEMY TAB -->
       <div id="tab-academy" class="tab-content">
         <div class="card">
+          <h3>Set Up New Drill</h3>
+          <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a drill with targets and score options.</p>
+          <div class="success-msg" id="drill-success"></div>
+          <div class="error-msg" id="drill-error"></div>
+          <div class="form-group">
+            <label>Drill Title</label>
+            <input type="text" id="drillTitle" placeholder="e.g. Around the Clock" />
+          </div>
+
+          <div id="drillTargetsList"></div>
+          <button class="btn btn-secondary" onclick="addDrillTargetRow()" style="margin-bottom:16px;">+ Add Target</button>
+
+          <button class="btn btn-primary" onclick="saveDrill()">Create Drill</button>
+        </div>
+
+        <div class="card">
+          <h3>Manage Drills</h3>
+          <div id="drillsList"><p class="empty-state">Loading...</p></div>
+        </div>
+
+        <div class="card">
           <h3>Academy Leagues (Groups)</h3>
-          <div class="card">
-  <h3>Set Up New Drill</h3>
-  <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a drill with targets and score options.</p>
-  <div class="success-msg" id="drill-success"></div>
-  <div class="error-msg" id="drill-error"></div>
-  <div class="form-group">
-    <label>Drill Title</label>
-    <input type="text" id="drillTitle" placeholder="e.g. Around the Clock" />
-  </div>
-
-  <div id="drillTargetsList"></div>
-  <button class="btn btn-secondary" onclick="addDrillTargetRow()" style="margin-bottom:16px;">+ Add Target</button>
-
-  <button class="btn btn-primary" onclick="saveDrill()">Create Drill</button>
-</div>
-
-<div class="card">
-  <h3>Manage Drills</h3>
-  <div id="drillsList"><p class="empty-state">Loading...</p></div>
-</div>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a group (e.g. Tuesday Prodigy) and add players to it.</p>
           <div class="success-msg" id="academyleague-success"></div>
           <div class="error-msg" id="academyleague-error"></div>
@@ -599,160 +583,17 @@
       var allTournamentsData = [];
       var allLeaguesData = [];
       var allNewsData = [];
-var drillTargetCount = 0;
-async function saveDrill() {
-  var title = document.getElementById('drillTitle').value.trim();
-  if (!title) { showMsg('drill-error', 'Please enter a drill title.'); return; }
+      var drillTargetCount = 0;
+      var scoreOptionCounts = {};
 
-  var targetRows = document.querySelectorAll('#drillTargetsList > div');
-  if (!targetRows.length) { showMsg('drill-error', 'Please add at least one target.'); return; }
-
-  var drillResult = await sbClient.from('drills').insert([{ title: title }]).select();
-  if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
-  var drillId = drillResult.data[0].id;
-
-  var targetOrder = 0;
-  for (var i = 0; i < targetRows.length; i++) {
-    var row = targetRows[i];
-    var targetIdx = row.id.replace('drillTargetRow', '');
-    var targetNameInput = document.getElementById('targetName' + targetIdx);
-    if (!targetNameInput) { continue; }
-    var targetName = targetNameInput.value.trim();
-    if (!targetName) { continue; }
-
-    targetOrder++;
-    var targetResult = await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: targetName, sort_order: targetOrder }]).select();
-    if (targetResult.error || !targetResult.data) { continue; }
-    var targetId = targetResult.data[0].id;
-
-    var scoreRows = document.querySelectorAll('#scoreOptionsList' + targetIdx + ' > div');
-    var scoreOrder = 0;
-    for (var j = 0; j < scoreRows.length; j++) {
-      var sRow = scoreRows[j];
-      var idParts = sRow.id.split('_');
-      var optIdx = idParts[1];
-      var labelInput = document.getElementById('scoreLabel' + targetIdx + '_' + optIdx);
-      var pointsInput = document.getElementById('scorePoints' + targetIdx + '_' + optIdx);
-      if (!labelInput || !pointsInput) { continue; }
-      var label = labelInput.value.trim();
-      var points = parseFloat(pointsInput.value);
-      if (!label || isNaN(points)) { continue; }
-
-      scoreOrder++;
-      await sbClient.from('drill_score_options').insert([{ target_id: targetId, label: label, points: points, sort_order: scoreOrder }]);
-    }
-  }
-
-  showMsg('drill-success', 'Drill created successfully!');
-  document.getElementById('drillTitle').value = '';
-  document.getElementById('drillTargetsList').innerHTML = '';
-  drillTargetCount = 0;
-  scoreOptionCounts = {};
-  loadDrills();
-}
-
-async function loadDrills() {
-  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, drill_score_options(id, label, points))').order('created_at', { ascending: false });
-  var container = document.getElementById('drillsList');
-  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No drills created yet.</p>'; return; }
-
-  container.innerHTML = result.data.map(function(d) {
-    var targets = d.drill_targets || [];
-    var targetsSummary = targets.map(function(t) {
-      var options = t.drill_score_options || [];
-      var optSummary = options.map(function(o) { return o.label + ' (' + o.points + 'pts)'; }).join(', ');
-      return '<li><strong>' + t.target_name + ':</strong> ' + (optSummary || 'No score options') + '</li>';
-    }).join('');
-    return '<div class="card"><h4 style="margin:0 0 8px;">' + d.title + '</h4><ul style="margin:0 0 12px;padding-left:20px;font-size:0.9em;color:#555;">' + targetsSummary + '</ul><button class="btn-small danger" onclick="deleteDrill(' + d.id + ')">Delete Drill</button></div>';
-  }).join('');
-}
-
-async function deleteDrill(id) {
-  if (!confirm('Delete this drill? All player progress for it will be lost.')) { return; }
-  await sbClient.from('drills').delete().eq('id', id);
-  loadDrills();
-}
-function addDrillTargetRow() {
-  drillTargetCount++;
-  var idx = drillTargetCount;
-  var container = document.getElementById('drillTargetsList');
-  var row = document.createElement('div');
-  row.className = 'card';
-  row.style.background = '#f9f9f9';
-  row.id = 'drillTargetRow' + idx;
-  row.innerHTML =
-    '<div class="form-row">' +
-    '<div class="form-group"><label>Target Name</label><input type="text" id="targetName' + idx + '" placeholder="e.g. Bullseye" /></div>' +
-    '<div class="form-group" style="display:flex;align-items:flex-end;">' +
-    '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Target</button>' +
-    '</div>' +
-    '</div>' +
-    '<div id="scoreOptionsList' + idx + '"></div>' +
-    '<button class="btn-small" onclick="addScoreOptionRow(' + idx + ')">+ Add Score Option</button>';
-  container.appendChild(row);
-  addScoreOptionRow(idx);
-}
-
-function removeDrillTargetRow(idx) {
-  var row = document.getElementById('drillTargetRow' + idx);
-  if (row) { row.remove(); }
-}
-
-var scoreOptionCounts = {};
-
-function addScoreOptionRow(targetIdx) {
-  if (!scoreOptionCounts[targetIdx]) { scoreOptionCounts[targetIdx] = 0; }
-  scoreOptionCounts[targetIdx]++;
-  var optIdx = scoreOptionCounts[targetIdx];
-  var container = document.getElementById('scoreOptionsList' + targetIdx);
-  var row = document.createElement('div');
-  row.style.display = 'flex';
-  row.style.gap = '8px';
-  row.style.marginBottom = '8px';
-  row.id = 'scoreOptRow' + targetIdx + '_' + optIdx;
-  row.innerHTML =
-    '<input type="text" id="scoreLabel' + targetIdx + '_' + optIdx + '" placeholder="Label (e.g. Hit)" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
-    '<input type="number" id="scorePoints' + targetIdx + '_' + optIdx + '" placeholder="Points" style="width:100px;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
-    '<button class="btn-small danger" onclick="document.getElementById(\'scoreOptRow' + targetIdx + '_' + optIdx + '\').remove()">✕</button>';
-  container.appendChild(row);
-}
       if (document.referrer.includes('academy.html')) {
-        document.getElementById('switchBtn').textContent = 'Switch to Online';
-        document.getElementById('switchBtn').href = 'index.html';
+        var sBtn = document.getElementById('switchBtn');
+        if (sBtn) { sBtn.textContent = 'Return to Academy'; sBtn.href = 'academy.html'; }
+      } else {
+        var sBtn2 = document.getElementById('switchBtn');
+        if (sBtn2) { sBtn2.textContent = 'Return to Online'; sBtn2.href = 'index.html'; }
       }
-async function loadPendingApprovals() {
-  var result = await sbClient.from('profiles').select('*').eq('access_status', 'pending');
-  var container = document.getElementById('pendingApprovalsList');
-  var count = result.data ? result.data.length : 0;
 
-  var btn = document.getElementById('playersTabBtn');
-  if (btn) { btn.textContent = count > 0 ? 'Players (' + count + ')' : 'Players'; }
-
-  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No pending requests.</p>'; return; }
-  container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Requested</th><th>Action</th></tr></thead><tbody>' +
-    result.data.map(function(p) {
-      var requestedLabel = p.requested_access === 'both' ? 'Both (Academy pending)' : 'Academy Only';
-      return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + requestedLabel + '</td>' +
-        '<td><button class="btn-small" onclick="approveAccess(\'' + p.id + '\', \'' + p.requested_access + '\')">Approve</button> <button class="btn-small danger" onclick="denyAccess(\'' + p.id + '\', \'' + p.requested_access + '\')">Deny</button></td></tr>';
-    }).join('') + '</tbody></table>';
-}
-
-async function approveAccess(id, requestedAccess) {
-  await sbClient.from('profiles').update({ access: requestedAccess, access_status: 'approved' }).eq('id', id);
-  loadPendingApprovals();
-  loadPlayers();
-}
-
-async function denyAccess(id, requestedAccess) {
-  if (requestedAccess === 'both') {
-    await sbClient.from('profiles').update({ access: 'online', access_status: 'denied' }).eq('id', id);
-  } else {
-    await sbClient.from('profiles').update({ access_status: 'denied' }).eq('id', id);
-  }
-  if (!confirm('Deny this request? ' + (requestedAccess === 'academy' ? 'This player will be blocked from logging in.' : 'They will remain Online-only.'))) { return; }
-  loadPendingApprovals();
-  loadPlayers();
-}
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
@@ -839,21 +680,20 @@ async function denyAccess(id, requestedAccess) {
         }
       }
 
-
- async function createTournament() {
-  var name = document.getElementById('tournamentName').value.trim();
-  if (!name) { showMsg('tournament-error', 'Please enter a tournament name.'); return; }
-  var result = await sbClient.from('tournaments').insert([{
-    name: name,
-    date: document.getElementById('tournamentDate').value || null,
-    time: document.getElementById('tournamentTime').value || null,
-    format: document.getElementById('tournamentFormat').value,
-    platform: document.getElementById('tournamentPlatform').value,
-    max_players: document.getElementById('tournamentMax').value || null,
-    status: 'upcoming',
-    average_split: document.getElementById('tournamentAvgSplit').checked,
-    description: document.getElementById('tournamentDesc').value.trim() || null
-  }]);
+      async function createTournament() {
+        var name = document.getElementById('tournamentName').value.trim();
+        if (!name) { showMsg('tournament-error', 'Please enter a tournament name.'); return; }
+        var result = await sbClient.from('tournaments').insert([{
+          name: name,
+          date: document.getElementById('tournamentDate').value || null,
+          time: document.getElementById('tournamentTime').value || null,
+          format: document.getElementById('tournamentFormat').value,
+          platform: document.getElementById('tournamentPlatform').value,
+          max_players: document.getElementById('tournamentMax').value || null,
+          status: 'upcoming',
+          average_split: document.getElementById('tournamentAvgSplit').checked,
+          description: document.getElementById('tournamentDesc').value.trim() || null
+        }]);
         if (result.error) { showMsg('tournament-error', result.error.message); return; }
         showMsg('tournament-success', 'Tournament created successfully!');
         document.getElementById('tournamentName').value = '';
@@ -872,49 +712,9 @@ async function denyAccess(id, requestedAccess) {
         for (var i = 0; i < allTournamentsData.length; i++) {
           var t = allTournamentsData[i];
           var status = await computeTournamentStatus(t);
-          rowsHtml.push(renderTournamentRow(t, status));
+          rowsHtml.push('<tr><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View</a> <button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>');
         }
         tbody.innerHTML = rowsHtml.join('');
-      }
-
-function renderTournamentRow(t, status) {
-  return '<tr id="trow-' + t.id + '"><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View</a> <button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>';
-}
-
-      function editTournamentRow(id) {
-        var t = allTournamentsData.find(function(x) { return x.id === id; });
-        if (!t) { return; }
-        var row = document.getElementById('trow-' + id);
-        row.innerHTML =
-          '<td><input class="edit-input" id="et-name-' + id + '" value="' + (t.name || '') + '" style="width:120px;" /></td>' +
-          '<td><input class="edit-input" type="date" id="et-date-' + id + '" value="' + (t.date || '') + '" style="width:130px;" /></td>' +
-          '<td><input class="edit-input" type="time" id="et-time-' + id + '" value="' + (t.time || '') + '" style="width:100px;" /></td>' +
-          '<td><select id="et-format-' + id + '" style="width:130px;">' +
-          '<option value="single_elimination"' + (t.format === 'single_elimination' ? ' selected' : '') + '>Single Elim</option>' +
-          '<option value="single_elimination_b"' + (t.format === 'single_elimination_b' ? ' selected' : '') + '>Single Elim + B</option>' +
-          '<option value="group_knockout"' + (t.format === 'group_knockout' ? ' selected' : '') + '>Group + Knockout</option>' +
-          '</select></td>' +
-          '<td><select id="et-platform-' + id + '" style="width:110px;">' +
-          '<option value="dartcounter"' + (t.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
-          '<option value="scolia"' + (t.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
-          '<option value="in_person"' + (t.platform === 'in_person' ? ' selected' : '') + '>In Person</option>' +
-          '<option value="both"' + (t.platform === 'both' ? ' selected' : '') + '>Both</option>' +
-          '</select></td>' +
-          '<td>-</td>' +
-          '<td><button class="btn-small" onclick="saveTournamentRow(' + id + ')">Save</button> <button class="btn-small" onclick="loadTournaments()">Cancel</button></td>';
-      }
-
-      async function saveTournamentRow(id) {
-        var update = {
-          name: document.getElementById('et-name-' + id).value.trim(),
-          date: document.getElementById('et-date-' + id).value || null,
-          time: document.getElementById('et-time-' + id).value || null,
-          format: document.getElementById('et-format-' + id).value,
-          platform: document.getElementById('et-platform-' + id).value
-        };
-        var result = await sbClient.from('tournaments').update(update).eq('id', id);
-        if (result.error) { alert('Error saving: ' + result.error.message); return; }
-        loadTournaments();
       }
 
       async function deleteTournament(id) {
@@ -926,20 +726,20 @@ function renderTournamentRow(t, status) {
       async function createLeague() {
         var name = document.getElementById('leagueName').value.trim();
         if (!name) { showMsg('league-error', 'Please enter a league name.'); return; }
-var result = await sbClient.from('leagues').insert([{
-  name: name,
-  season: document.getElementById('leagueSeason').value.trim() || null,
-  start_date: document.getElementById('leagueStart').value || null,
-  end_date: document.getElementById('leagueEnd').value || null,
-  format: document.getElementById('leagueFormat').value,
-  platform: document.getElementById('leaguePlatform').value,
-  status: 'upcoming',
-  playoffs: document.getElementById('leaguePlayoffs').checked,
-  average_split: document.getElementById('leagueAvgSplit').checked,
-  players_per_division: document.getElementById('leaguePlayersPerDiv').value || null,
-  swiss_games: document.getElementById('leagueSwissGames').value || null,
-  max_players: document.getElementById('leagueMaxPlayers').value || null
-}]);
+        var result = await sbClient.from('leagues').insert([{
+          name: name,
+          season: document.getElementById('leagueSeason').value.trim() || null,
+          start_date: document.getElementById('leagueStart').value || null,
+          end_date: document.getElementById('leagueEnd').value || null,
+          format: document.getElementById('leagueFormat').value,
+          platform: document.getElementById('leaguePlatform').value,
+          status: 'upcoming',
+          playoffs: document.getElementById('leaguePlayoffs').checked,
+          average_split: document.getElementById('leagueAvgSplit').checked,
+          players_per_division: document.getElementById('leaguePlayersPerDiv').value || null,
+          swiss_games: document.getElementById('leagueSwissGames').value || null,
+          max_players: document.getElementById('leagueMaxPlayers').value || null
+        }]);
         if (result.error) { showMsg('league-error', result.error.message); return; }
         showMsg('league-success', 'League created successfully!');
         document.getElementById('leagueName').value = '';
@@ -955,50 +755,12 @@ var result = await sbClient.from('leagues').insert([{
         for (var i = 0; i < allLeaguesData.length; i++) {
           var l = allLeaguesData[i];
           var status = await computeLeagueStatus(l);
-          rowsHtml.push(renderLeagueRow(l, status));
+          rowsHtml.push('<tr><td>' + l.name + '</td><td>' + (l.season || '-') + '</td><td>' + formatLabel(l.format) + '</td><td>' + formatLabel(l.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><div class="action-buttons"><a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a> <button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button></div></td></tr>');
         }
         tbody.innerHTML = rowsHtml.join('');
         var select = document.getElementById('regLeagueSelect');
         select.innerHTML = '<option value="">-- Select a league --</option>';
         allLeaguesData.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
-      }
-
-function renderLeagueRow(l, status) {
-  return '<tr id="lrow-' + l.id + '"><td>' + l.name + '</td><td>' + (l.season || '-') + '</td><td>' + formatLabel(l.format) + '</td><td>' + formatLabel(l.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><div class="action-buttons"><a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a> <button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button></div></td></tr>';
-}
-
-      function editLeagueRow(id) {
-        var l = allLeaguesData.find(function(x) { return x.id === id; });
-        if (!l) { return; }
-        var row = document.getElementById('lrow-' + id);
-        row.innerHTML =
-          '<td><input class="edit-input" id="el-name-' + id + '" value="' + (l.name || '') + '" style="width:130px;" /></td>' +
-          '<td><input class="edit-input" id="el-season-' + id + '" value="' + (l.season || '') + '" style="width:80px;" /></td>' +
-          '<td><select id="el-format-' + id + '" style="width:120px;">' +
-          '<option value="round_robin"' + (l.format === 'round_robin' ? ' selected' : '') + '>Round Robin</option>' +
-          '<option value="home_away"' + (l.format === 'home_away' ? ' selected' : '') + '>Home & Away</option>' +
-          '<option value="swiss"' + (l.format === 'swiss' ? ' selected' : '') + '>Swiss</option>' +
-          '</select></td>' +
-          '<td><select id="el-platform-' + id + '" style="width:110px;">' +
-          '<option value="dartcounter"' + (l.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
-          '<option value="scolia"' + (l.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
-          '<option value="in_person"' + (l.platform === 'in_person' ? ' selected' : '') + '>In Person</option>' +
-          '<option value="both"' + (l.platform === 'both' ? ' selected' : '') + '>Both</option>' +
-          '</select></td>' +
-          '<td>-</td>' +
-          '<td><button class="btn-small" onclick="saveLeagueRow(' + id + ')">Save</button> <button class="btn-small" onclick="loadLeagues()">Cancel</button></td>';
-      }
-
-      async function saveLeagueRow(id) {
-        var update = {
-          name: document.getElementById('el-name-' + id).value.trim(),
-          season: document.getElementById('el-season-' + id).value.trim() || null,
-          format: document.getElementById('el-format-' + id).value,
-          platform: document.getElementById('el-platform-' + id).value
-        };
-        var result = await sbClient.from('leagues').update(update).eq('id', id);
-        if (result.error) { alert('Error saving: ' + result.error.message); return; }
-        loadLeagues();
       }
 
       async function deleteLeague(id) {
@@ -1019,36 +781,70 @@ function renderLeagueRow(l, status) {
         }).join('');
       }
 
+      async function loadPendingApprovals() {
+        var result = await sbClient.from('profiles').select('*').eq('access_status', 'pending');
+        var container = document.getElementById('pendingApprovalsList');
+        var count = result.data ? result.data.length : 0;
+
+        var btn = document.getElementById('playersTabBtn');
+        if (btn) { btn.textContent = count > 0 ? 'Players (' + count + ')' : 'Players'; }
+
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No pending requests.</p>'; return; }
+        container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Requested</th><th>Action</th></tr></thead><tbody>' +
+          result.data.map(function(p) {
+            var requestedLabel = p.requested_access === 'both' ? 'Both (Academy pending)' : 'Academy Only';
+            return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + requestedLabel + '</td>' +
+              '<td><button class="btn-small" onclick="approveAccess(\'' + p.id + '\', \'' + p.requested_access + '\')">Approve</button> <button class="btn-small danger" onclick="denyAccess(\'' + p.id + '\', \'' + p.requested_access + '\')">Deny</button></td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+
+      async function approveAccess(id, requestedAccess) {
+        await sbClient.from('profiles').update({ access: requestedAccess, access_status: 'approved' }).eq('id', id);
+        loadPendingApprovals();
+        loadPlayers();
+      }
+
+      async function denyAccess(id, requestedAccess) {
+        if (!confirm('Deny this request? ' + (requestedAccess === 'academy' ? 'This player will be blocked from logging in.' : 'They will remain Online-only.'))) { return; }
+        if (requestedAccess === 'both') {
+          await sbClient.from('profiles').update({ access: 'online', access_status: 'denied' }).eq('id', id);
+        } else {
+          await sbClient.from('profiles').update({ access_status: 'denied' }).eq('id', id);
+        }
+        loadPendingApprovals();
+        loadPlayers();
+      }
+
       async function loadPlayers() {
         var result = await sbClient.from('profiles').select('*').order('created_at', { ascending: false });
         allPlayersData = result.data || [];
         renderPlayersList(allPlayersData);
       }
 
-function renderPlayersList(data) {
-  var tbody = document.getElementById('playersList');
-  if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No players found</td></tr>'; return; }
-  tbody.innerHTML = data.map(function(p) {
-    var platformSelect = '<select onchange="updatePlatform(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
-      '<option value=""' + (!p.platform ? ' selected' : '') + '>-</option>' +
-      '<option value="dartcounter"' + (p.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
-      '<option value="scolia"' + (p.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
-      '<option value="both"' + (p.platform === 'both' ? ' selected' : '') + '>Both</option>' +
-      '</select>';
-    var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
-      '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
-      '<option value="academy"' + (p.access === 'academy' ? ' selected' : '') + '>Academy</option>' +
-      '<option value="both"' + (p.access === 'both' ? ' selected' : '') + '>Both</option>' +
-      '</select>';
-    var phoneField = '<input type="text" value="' + (p.phone || '') + '" id="phone-' + p.id + '" style="width:120px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;" placeholder="+44..." /> ' +
-      '<button class="btn-small" onclick="updatePhone(\'' + p.id + '\')">Save</button>';
-    var starterAvgField = '<input type="number" step="0.01" value="' + (p.starter_average || '') + '" id="stavg-' + p.id + '" style="width:70px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;" placeholder="e.g. 45.5" /> ' +
-      '<button class="btn-small" onclick="updateStarterAvg(\'' + p.id + '\')">Save</button>';
-    var adminBtn = '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
-    var removeBtn = '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\')">Remove</button>';
-    return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + phoneField + '</td><td>' + starterAvgField + '</td><td>' + platformSelect + '</td><td>' + accessSelect + '</td><td>' + (p.is_admin ? 'Yes' : 'No') + '</td><td>' + adminBtn + ' ' + removeBtn + '</td></tr>';
-  }).join('');
-}
+      function renderPlayersList(data) {
+        var tbody = document.getElementById('playersList');
+        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No players found</td></tr>'; return; }
+        tbody.innerHTML = data.map(function(p) {
+          var platformSelect = '<select onchange="updatePlatform(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
+            '<option value=""' + (!p.platform ? ' selected' : '') + '>-</option>' +
+            '<option value="dartcounter"' + (p.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
+            '<option value="scolia"' + (p.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
+            '<option value="both"' + (p.platform === 'both' ? ' selected' : '') + '>Both</option>' +
+            '</select>';
+          var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
+            '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
+            '<option value="academy"' + (p.access === 'academy' ? ' selected' : '') + '>Academy</option>' +
+            '<option value="both"' + (p.access === 'both' ? ' selected' : '') + '>Both</option>' +
+            '</select>';
+          var phoneField = '<input type="text" value="' + (p.phone || '') + '" id="phone-' + p.id + '" style="width:120px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;" placeholder="+44..." /> ' +
+            '<button class="btn-small" onclick="updatePhone(\'' + p.id + '\')">Save</button>';
+          var starterAvgField = '<input type="number" step="0.01" value="' + (p.starter_average || '') + '" id="stavg-' + p.id + '" style="width:70px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;" placeholder="e.g. 45.5" /> ' +
+            '<button class="btn-small" onclick="updateStarterAvg(\'' + p.id + '\')">Save</button>';
+          var adminBtn = '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
+          var removeBtn = '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\')">Remove</button>';
+          return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + phoneField + '</td><td>' + starterAvgField + '</td><td>' + platformSelect + '</td><td>' + accessSelect + '</td><td>' + (p.is_admin ? 'Yes' : 'No') + '</td><td>' + adminBtn + ' ' + removeBtn + '</td></tr>';
+        }).join('');
+      }
 
       function filterPlayersList() {
         var val = document.getElementById('playerSearch').value.toLowerCase().trim();
@@ -1063,19 +859,24 @@ function renderPlayersList(data) {
         await sbClient.from('profiles').update({ access: value }).eq('id', id);
       }
 
-async function updatePhone(id) {
-  var value = document.getElementById('phone-' + id).value.trim();
-  var result = await sbClient.from('profiles').update({ phone: value || null }).eq('id', id);
-  if (result.error) { alert('Error saving phone: ' + result.error.message); return; }
-  alert('Phone number saved!');
-}
+      async function updatePlatform(id, value) {
+        await sbClient.from('profiles').update({ platform: value || null }).eq('id', id);
+      }
+
+      async function updatePhone(id) {
+        var value = document.getElementById('phone-' + id).value.trim();
+        var result = await sbClient.from('profiles').update({ phone: value || null }).eq('id', id);
+        if (result.error) { alert('Error saving phone: ' + result.error.message); return; }
+        alert('Phone number saved!');
+      }
 
       async function updateStarterAvg(id) {
-  var value = document.getElementById('stavg-' + id).value.trim();
-  var result = await sbClient.from('profiles').update({ starter_average: value || null }).eq('id', id);
-  if (result.error) { alert('Error saving starter average: ' + result.error.message); return; }
-  alert('Starter average saved!');
-}
+        var value = document.getElementById('stavg-' + id).value.trim();
+        var result = await sbClient.from('profiles').update({ starter_average: value || null }).eq('id', id);
+        if (result.error) { alert('Error saving starter average: ' + result.error.message); return; }
+        alert('Starter average saved!');
+      }
+
       async function toggleAdmin(id, currentStatus) {
         await sbClient.from('profiles').update({ is_admin: !currentStatus }).eq('id', id);
         loadPlayers();
@@ -1085,6 +886,122 @@ async function updatePhone(id) {
         if (!confirm('Remove this player?')) { return; }
         await sbClient.from('profiles').delete().eq('id', id);
         loadPlayers();
+      }
+
+      function addDrillTargetRow() {
+        drillTargetCount++;
+        var idx = drillTargetCount;
+        var container = document.getElementById('drillTargetsList');
+        var row = document.createElement('div');
+        row.className = 'card';
+        row.style.background = '#f9f9f9';
+        row.id = 'drillTargetRow' + idx;
+        row.innerHTML =
+          '<div class="form-row">' +
+          '<div class="form-group"><label>Target Name</label><input type="text" id="targetName' + idx + '" placeholder="e.g. Bullseye" /></div>' +
+          '<div class="form-group" style="display:flex;align-items:flex-end;">' +
+          '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Target</button>' +
+          '</div>' +
+          '</div>' +
+          '<div id="scoreOptionsList' + idx + '"></div>' +
+          '<button class="btn-small" onclick="addScoreOptionRow(' + idx + ')">+ Add Score Option</button>';
+        container.appendChild(row);
+        addScoreOptionRow(idx);
+      }
+
+      function removeDrillTargetRow(idx) {
+        var row = document.getElementById('drillTargetRow' + idx);
+        if (row) { row.remove(); }
+      }
+
+      function addScoreOptionRow(targetIdx) {
+        if (!scoreOptionCounts[targetIdx]) { scoreOptionCounts[targetIdx] = 0; }
+        scoreOptionCounts[targetIdx]++;
+        var optIdx = scoreOptionCounts[targetIdx];
+        var container = document.getElementById('scoreOptionsList' + targetIdx);
+        var row = document.createElement('div');
+        row.style.display = 'flex';
+        row.style.gap = '8px';
+        row.style.marginBottom = '8px';
+        row.id = 'scoreOptRow' + targetIdx + '_' + optIdx;
+        row.innerHTML =
+          '<input type="text" id="scoreLabel' + targetIdx + '_' + optIdx + '" placeholder="Label (e.g. Hit)" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
+          '<input type="number" id="scorePoints' + targetIdx + '_' + optIdx + '" placeholder="Points" style="width:100px;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
+          '<button class="btn-small danger" onclick="document.getElementById(\'scoreOptRow' + targetIdx + '_' + optIdx + '\').remove()">✕</button>';
+        container.appendChild(row);
+      }
+
+      async function saveDrill() {
+        var title = document.getElementById('drillTitle').value.trim();
+        if (!title) { showMsg('drill-error', 'Please enter a drill title.'); return; }
+
+        var targetRows = document.querySelectorAll('#drillTargetsList > div');
+        if (!targetRows.length) { showMsg('drill-error', 'Please add at least one target.'); return; }
+
+        var drillResult = await sbClient.from('drills').insert([{ title: title }]).select();
+        if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
+        var drillId = drillResult.data[0].id;
+
+        var targetOrder = 0;
+        for (var i = 0; i < targetRows.length; i++) {
+          var row = targetRows[i];
+          var targetIdx = row.id.replace('drillTargetRow', '');
+          var targetNameInput = document.getElementById('targetName' + targetIdx);
+          if (!targetNameInput) { continue; }
+          var targetName = targetNameInput.value.trim();
+          if (!targetName) { continue; }
+
+          targetOrder++;
+          var targetResult = await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: targetName, sort_order: targetOrder }]).select();
+          if (targetResult.error || !targetResult.data) { continue; }
+          var targetId = targetResult.data[0].id;
+
+          var scoreRows = document.querySelectorAll('#scoreOptionsList' + targetIdx + ' > div');
+          var scoreOrder = 0;
+          for (var j = 0; j < scoreRows.length; j++) {
+            var sRow = scoreRows[j];
+            var idParts = sRow.id.split('_');
+            var optIdx = idParts[1];
+            var labelInput = document.getElementById('scoreLabel' + targetIdx + '_' + optIdx);
+            var pointsInput = document.getElementById('scorePoints' + targetIdx + '_' + optIdx);
+            if (!labelInput || !pointsInput) { continue; }
+            var label = labelInput.value.trim();
+            var points = parseFloat(pointsInput.value);
+            if (!label || isNaN(points)) { continue; }
+
+            scoreOrder++;
+            await sbClient.from('drill_score_options').insert([{ target_id: targetId, label: label, points: points, sort_order: scoreOrder }]);
+          }
+        }
+
+        showMsg('drill-success', 'Drill created successfully!');
+        document.getElementById('drillTitle').value = '';
+        document.getElementById('drillTargetsList').innerHTML = '';
+        drillTargetCount = 0;
+        scoreOptionCounts = {};
+        loadDrills();
+      }
+
+      async function loadDrills() {
+        var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, drill_score_options(id, label, points))').order('created_at', { ascending: false });
+        var container = document.getElementById('drillsList');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No drills created yet.</p>'; return; }
+
+        container.innerHTML = result.data.map(function(d) {
+          var targets = d.drill_targets || [];
+          var targetsSummary = targets.map(function(t) {
+            var options = t.drill_score_options || [];
+            var optSummary = options.map(function(o) { return o.label + ' (' + o.points + 'pts)'; }).join(', ');
+            return '<li><strong>' + t.target_name + ':</strong> ' + (optSummary || 'No score options') + '</li>';
+          }).join('');
+          return '<div class="card"><h4 style="margin:0 0 8px;">' + d.title + '</h4><ul style="margin:0 0 12px;padding-left:20px;font-size:0.9em;color:#555;">' + targetsSummary + '</ul><button class="btn-small danger" onclick="deleteDrill(' + d.id + ')">Delete Drill</button></div>';
+        }).join('');
+      }
+
+      async function deleteDrill(id) {
+        if (!confirm('Delete this drill? All player progress for it will be lost.')) { return; }
+        await sbClient.from('drills').delete().eq('id', id);
+        loadDrills();
       }
 
       async function loadAcademyLeagueSelects() {
@@ -1627,28 +1544,28 @@ async function updatePhone(id) {
         var divisionResult = await sbClient.from('division_sponsor_enquiries').select('id').eq('is_read', false);
         var count = (playerResult.data ? playerResult.data.length : 0) + (divisionResult.data ? divisionResult.data.length : 0);
         var btn = document.getElementById('academyTabBtn');
-        btn.textContent = count > 0 ? 'Academy (' + count + ')' : 'Academy';
+        if (btn) { btn.textContent = count > 0 ? 'Academy (' + count + ')' : 'Academy'; }
       }
 
-async function saveNews() {
-  var title = document.getElementById('newsTitle').value.trim();
-  var content = document.getElementById('newsContent').value.trim();
-  var date = document.getElementById('newsDate').value;
-  var fileInput = document.getElementById('newsImageFile');
-  var file = fileInput.files[0];
+      async function saveNews() {
+        var title = document.getElementById('newsTitle').value.trim();
+        var content = document.getElementById('newsContent').value.trim();
+        var date = document.getElementById('newsDate').value;
+        var fileInput = document.getElementById('newsImageFile');
+        var file = fileInput.files[0];
 
-  if (!title) { showMsg('news-error', 'Please enter a title.'); return; }
-  if (!content && !file) { showMsg('news-error', 'Please add either content or an image.'); return; }
+        if (!title) { showMsg('news-error', 'Please enter a title.'); return; }
+        if (!content && !file) { showMsg('news-error', 'Please add either content or an image.'); return; }
 
-var imageUrl = null;
-  if (file) {
-    var fileExt = file.name.split('.').pop();
-    var fileName = 'news_' + Date.now() + '.' + fileExt;
-    var uploadResult = await sbClient.storage.from('news-images').upload(fileName, file);
-    if (uploadResult.error) { showMsg('news-error', 'Error uploading image: ' + uploadResult.error.message); return; }
-    var urlData = sbClient.storage.from('news-images').getPublicUrl(fileName);
-    imageUrl = urlData.data.publicUrl;
-  }
+        var imageUrl = null;
+        if (file) {
+          var fileExt = file.name.split('.').pop();
+          var fileName = 'news_' + Date.now() + '.' + fileExt;
+          var uploadResult = await sbClient.storage.from('news-images').upload(fileName, file);
+          if (uploadResult.error) { showMsg('news-error', 'Error uploading image: ' + uploadResult.error.message); return; }
+          var urlData = sbClient.storage.from('news-images').getPublicUrl(fileName);
+          imageUrl = urlData.data.publicUrl;
+        }
 
         var result = await sbClient.from('news').insert([{
           title: title,
@@ -1753,25 +1670,21 @@ var imageUrl = null;
         setTimeout(function() { el.style.display = 'none'; }, 4000);
       }
 
-      function toggleMenu() {
-        document.getElementById('mainNav').classList.toggle('open');
-      }
-
       window.addEventListener('load', function() {
         document.getElementById('newsDate').value = new Date().toISOString().split('T')[0];
         checkAuth();
         refreshTemplateSelects();
-        loadPendingApprovals()
         loadTournaments();
         loadLeagues();
-        loadDrills();
         loadPlayers();
+        loadPendingApprovals();
         loadAcademyLeagueSelects();
         loadSessionLog();
         loadSponsorPlayerSelect();
         loadSponsorEnquiries();
         loadDivisionEnquiries();
         loadDivisionSponsorSelect();
+        loadDrills();
         loadNews();
       });
     </script>
