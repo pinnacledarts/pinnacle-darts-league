@@ -143,16 +143,18 @@ for (var i = 0; i < result.data.length; i++) {
   var isFull = l.max_players && playerCount >= l.max_players;
   var hasJoined = joinedLeagues.indexOf(l.id) > -1;
 
-  var joinBtn = '';
-  if (currentUserId) {
-    if (hasJoined) {
-      joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
-    } else if (isFull) {
-      joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">League Full</button>';
-    } else {
-      joinBtn = '<button class="btn-join" onclick="joinLeague(' + l.id + ', this)">Join League</button>';
-    }
+var joinBtn = '';
+if (currentUserId) {
+  if (hasJoined) {
+    joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
+  } else if (isFull) {
+    joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">League Full</button>';
+  } else if (l.average_split && !playerHasAverage) {
+    joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;" title="You need an average set before joining this league">Average Required</button>';
+  } else {
+    joinBtn = '<button class="btn-join" onclick="joinLeague(' + l.id + ', this)">Join League</button>';
   }
+}
 
   var cardHtml = '<div class="league-card">' +
     getStatusBadgeHtml(status) +
