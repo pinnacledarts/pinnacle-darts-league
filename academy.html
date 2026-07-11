@@ -366,11 +366,7 @@
       let allAcademyLeagues = [];
       let isCurrentUserAdmin = false;
       let academyNewsLikes = {};
-function resetDrillForm(drillId) {
-  toggleDrillItem(drillId);
-  document.getElementById('drillsAccordionList').scrollIntoView({ behavior: 'smooth' });
-  loadDrillsAccordion();
-}
+
       const fieldLabels = {
         highest_checkout: 'profileCheckout',
         hometown: 'profileHometown',
@@ -909,83 +905,99 @@ function resetDrillForm(drillId) {
         if (name === 'progress') { loadProgressDrillOptions(); }
       }
 
-     async function loadDrillsAccordion() {
-  const { data, error } = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
-  const container = document.getElementById('drillsAccordionList');
-  if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
+      async function loadDrillsAccordion() {
+        const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
+        const data = result.data;
+        const error = result.error;
+        const container = document.getElementById('drillsAccordionList');
+        if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
 
-  container.innerHTML = data.map(function(d) {
-    const targets = (d.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-    const targetRowsHtml = targets.map(function(t) {
-      const options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-      const optionsHtml = options.map(function(o) { return '<option value="' + o.id + '|' + o.points + '">' + o.label + ' (' + o.points + ' pts)</option>'; }).join('');
-      return '<div class="detail-row"><span class="detail-label">' + t.target_name + '</span>' +
-        '<select id="drilltarget-' + d.id + '-' + t.id + '" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;">' +
-        '<option value="">-- Select score --</option>' + optionsHtml + '</select></div>';
-    }).join('');
+        var htmlPieces = [];
+        for (var di = 0; di < data.length; di++) {
+          var d = data[di];
+          var targets = (d.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+          var targetRowsHtml = '';
+          for (var ti = 0; ti < targets.length; ti++) {
+            var t = targets[ti];
+            var options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+            var optionsHtml = '';
+            for (var oi = 0; oi < options.length; oi++) {
+              var o = options[oi];
+              optionsHtml += '<option value="' + o.id + '|' + o.points + '">' + o.label + ' (' + o.points + ' pts)</option>';
+            }
+            targetRowsHtml += '<div class="detail-row"><span class="detail-label">' + t.target_name + '</span>' +
+              '<select id="drilltarget-' + d.id + '-' + t.id + '" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;">' +
+              '<option value="">-- Select score --</option>' + optionsHtml + '</select></div>';
+          }
 
-    return '<div class="news-item">' +
-      '<div class="news-item-title" onclick="toggleDrillItem(' + d.id + ')">' + d.title + '</div>' +
-      '<div class="news-item-body" id="drill-body-' + d.id + '">' +
-      '<div class="detail-row" style="border-bottom:2px solid #dddddd;font-weight:bold;">' +
-      '<span class="detail-label" style="color:#111111;">Target</span>' +
-      '<span style="color:#111111;">Score</span>' +
-      '</div>' +
-      '<div id="drill-form-' + d.id + '">' +
-      targetRowsHtml +
-      '<div style="margin-top:16px;">' +
-      '<button class="save-btn" onclick="submitDrillAttempt(' + d.id + ')">Submit Attempt</button>' +
-      '</div>' +
-      '</div>' +
-      '<div id="drill-msg-' + d.id + '" style="margin-top:10px;font-size:0.9em;"></div>' +
-      '</div></div>';
-  }).join('');
-}
+          var itemHtml = '<div class="news-item">' +
+            '<div class="news-item-title" onclick="toggleDrillItem(' + d.id + ')">' + d.title + '</div>' +
+            '<div class="news-item-body" id="drill-body-' + d.id + '">' +
+            '<div class="detail-row" style="border-bottom:2px solid #dddddd;font-weight:bold;">' +
+            '<span class="detail-label" style="color:#111111;">Target</span>' +
+            '<span style="color:#111111;">Score</span>' +
+            '</div>' +
+            '<div id="drill-form-' + d.id + '">' +
+            targetRowsHtml +
+            '<div style="margin-top:16px;">' +
+            '<button class="save-btn" onclick="submitDrillAttempt(' + d.id + ')">Submit Attempt</button>' +
+            '</div>' +
+            '</div>' +
+            '<div id="drill-msg-' + d.id + '" style="margin-top:10px;font-size:0.9em;"></div>' +
+            '</div></div>';
+
+          htmlPieces.push(itemHtml);
+        }
+
+        container.innerHTML = htmlPieces.join('');
+      }
 
       function toggleDrillItem(id) {
-        const body = document.getElementById('drill-body-' + id);
+        var body = document.getElementById('drill-body-' + id);
         body.classList.toggle('open');
       }
 
       async function submitDrillAttempt(drillId) {
         if (!currentUserId) { window.location.href = 'login.html'; return; }
 
-        const targetSelects = document.querySelectorAll('[id^="drilltarget-' + drillId + '-"]');
+        var targetSelects = document.querySelectorAll('[id^="drilltarget-' + drillId + '-"]');
         if (!targetSelects.length) { return; }
 
-        let totalScore = 0;
-        const scoreEntries = [];
-        let allSelected = true;
+        var totalScore = 0;
+        var scoreEntries = [];
+        var allSelected = true;
 
-        targetSelects.forEach(function(sel) {
-          if (!sel.value) { allSelected = false; return; }
-          const parts = sel.value.split('|');
-          const scoreOptionId = parts[0];
-          const points = parseFloat(parts[1]);
-          const targetId = sel.id.split('-')[2];
+        for (var i = 0; i < targetSelects.length; i++) {
+          var sel = targetSelects[i];
+          if (!sel.value) { allSelected = false; continue; }
+          var parts = sel.value.split('|');
+          var scoreOptionId = parts[0];
+          var points = parseFloat(parts[1]);
+          var targetId = sel.id.split('-')[2];
           totalScore += points;
           scoreEntries.push({ target_id: targetId, score_option_id: scoreOptionId, points: points });
-        });
+        }
 
         if (!allSelected) {
           document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#cc0000;">Please select a score for every target.</span>';
           return;
         }
 
-        const { data: attemptData, error: attemptError } = await sbClient.from('drill_attempts').insert([{
+        var attemptResult = await sbClient.from('drill_attempts').insert([{
           drill_id: drillId,
           player_id: currentUserId,
           total_score: totalScore,
           attempt_date: new Date().toISOString().split('T')[0]
         }]).select();
 
-        if (attemptError || !attemptData) {
+        if (attemptResult.error || !attemptResult.data) {
           document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#cc0000;">Error submitting attempt.</span>';
           return;
         }
 
-        const attemptId = attemptData[0].id;
-        for (const entry of scoreEntries) {
+        var attemptId = attemptResult.data[0].id;
+        for (var j = 0; j < scoreEntries.length; j++) {
+          var entry = scoreEntries[j];
           await sbClient.from('drill_attempt_scores').insert([{
             attempt_id: attemptId,
             target_id: entry.target_id,
@@ -994,76 +1006,92 @@ function resetDrillForm(drillId) {
           }]);
         }
 
-document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#006600;">✓ Attempt submitted! Total score: ' + totalScore + '</span>';
-document.getElementById('drill-form-' + drillId).innerHTML = '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')">Start Another Drill</button>';
+        document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#006600;">✓ Attempt submitted! Total score: ' + totalScore + '</span>';
+        document.getElementById('drill-form-' + drillId).innerHTML = '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')">Start Another Drill</button>';
+      }
+
+      function resetDrillForm(drillId) {
+        toggleDrillItem(drillId);
+        document.getElementById('drillsAccordionList').scrollIntoView({ behavior: 'smooth' });
+        loadDrillsAccordion();
       }
 
       async function loadProgressDrillOptions() {
-        const { data } = await sbClient.from('drills').select('id, title').order('title');
-        const select = document.getElementById('progressDrillSelect');
-        select.innerHTML = '<option value="">-- Select a drill --</option>' + (data || []).map(function(d) { return '<option value="' + d.id + '">' + d.title + '</option>'; }).join('');
+        var result = await sbClient.from('drills').select('id, title').order('title');
+        var data = result.data || [];
+        var select = document.getElementById('progressDrillSelect');
+        var optsHtml = '<option value="">-- Select a drill --</option>';
+        for (var i = 0; i < data.length; i++) {
+          optsHtml += '<option value="' + data[i].id + '">' + data[i].title + '</option>';
+        }
+        select.innerHTML = optsHtml;
       }
 
-     async function loadDrillProgress() {
-  const drillId = document.getElementById('progressDrillSelect').value;
-  const container = document.getElementById('progressChartContainer');
-  if (!drillId || !currentUserId) { container.innerHTML = '<p class="loading">Select a drill to view your progress.</p>'; return; }
+      async function loadDrillProgress() {
+        var drillId = document.getElementById('progressDrillSelect').value;
+        var container = document.getElementById('progressChartContainer');
+        if (!drillId || !currentUserId) { container.innerHTML = '<p class="loading">Select a drill to view your progress.</p>'; return; }
 
-  const { data } = await sbClient.from('drill_attempts').select('*').eq('drill_id', drillId).eq('player_id', currentUserId).order('attempt_date', { ascending: true });
-  if (!data || !data.length) { container.innerHTML = '<p class="coming-soon">No attempts logged yet for this drill.</p>'; return; }
+        var result = await sbClient.from('drill_attempts').select('*').eq('drill_id', drillId).eq('player_id', currentUserId).order('attempt_date', { ascending: true });
+        var data = result.data;
+        if (!data || !data.length) { container.innerHTML = '<p class="coming-soon">No attempts logged yet for this drill.</p>'; return; }
 
-  const maxScore = Math.max.apply(null, data.map(function(d) { return d.total_score; }));
-  const chartMax = maxScore > 0 ? maxScore : 1;
+        var maxScore = 0;
+        for (var i = 0; i < data.length; i++) { if (data[i].total_score > maxScore) { maxScore = data[i].total_score; } }
+        var chartMax = maxScore > 0 ? maxScore : 1;
 
-  const leftPad = 14;
-  const rightPad = 4;
-  const topPad = 8;
-  const bottomPad = 16;
-  const chartWidth = 100 - leftPad - rightPad;
-  const chartHeight = 100 - topPad - bottomPad;
+        var leftPad = 14;
+        var rightPad = 4;
+        var topPad = 8;
+        var bottomPad = 16;
+        var chartWidth = 100 - leftPad - rightPad;
+        var chartHeight = 100 - topPad - bottomPad;
 
-  const points = data.map(function(d, i) {
-    const x = leftPad + (data.length > 1 ? (i / (data.length - 1)) * chartWidth : chartWidth / 2);
-    const y = topPad + chartHeight - (d.total_score / chartMax) * chartHeight;
-    const dateObj = new Date(d.attempt_date);
-    const dateLabel = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
-    return { x: x, y: y, score: d.total_score, dateLabel: dateLabel, fullDate: d.attempt_date };
-  });
+        var points = [];
+        for (var i = 0; i < data.length; i++) {
+          var d = data[i];
+          var x = leftPad + (data.length > 1 ? (i / (data.length - 1)) * chartWidth : chartWidth / 2);
+          var y = topPad + chartHeight - (d.total_score / chartMax) * chartHeight;
+          var dateObj = new Date(d.attempt_date);
+          var dateLabel = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+          points.push({ x: x, y: y, score: d.total_score, dateLabel: dateLabel, fullDate: d.attempt_date });
+        }
 
-  const pathD = points.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' ');
+        var pathD = '';
+        for (var i = 0; i < points.length; i++) {
+          pathD += (i === 0 ? 'M' : 'L') + points[i].x + ',' + points[i].y + ' ';
+        }
 
-  var yAxisLabels = '';
-  var yAxisGrid = '';
-  var steps = 4;
-  for (var s = 0; s <= steps; s++) {
-    var val = Math.round((chartMax / steps) * s);
-    var yPos = topPad + chartHeight - (val / chartMax) * chartHeight;
-    yAxisLabels += '<text x="' + (leftPad - 3) + '" y="' + (yPos + 1) + '" font-size="3" text-anchor="end" fill="#888888">' + val + '</text>';
-    yAxisGrid += '<line x1="' + leftPad + '" y1="' + yPos + '" x2="' + (100 - rightPad) + '" y2="' + yPos + '" stroke="#eeeeee" stroke-width="0.3" />';
-  }
+        var yAxisLabels = '';
+        var yAxisGrid = '';
+        var steps = 4;
+        for (var s = 0; s <= steps; s++) {
+          var val = Math.round((chartMax / steps) * s);
+          var yPos = topPad + chartHeight - (val / chartMax) * chartHeight;
+          yAxisLabels += '<text x="' + (leftPad - 3) + '" y="' + (yPos + 1) + '" font-size="3" text-anchor="end" fill="#888888">' + val + '</text>';
+          yAxisGrid += '<line x1="' + leftPad + '" y1="' + yPos + '" x2="' + (100 - rightPad) + '" y2="' + yPos + '" stroke="#eeeeee" stroke-width="0.3" />';
+        }
 
-  const dotsHtml = points.map(function(p) {
-    return '<circle cx="' + p.x + '" cy="' + p.y + '" r="1.5" fill="#111111"><title>' + p.fullDate + ': ' + p.score + '</title></circle>';
-  }).join('');
+        var dotsHtml = '';
+        var scoreLabelsHtml = '';
+        var dateLabelsHtml = '';
+        for (var i = 0; i < points.length; i++) {
+          var p = points[i];
+          dotsHtml += '<circle cx="' + p.x + '" cy="' + p.y + '" r="1.5" fill="#111111"><title>' + p.fullDate + ': ' + p.score + '</title></circle>';
+          scoreLabelsHtml += '<text x="' + p.x + '" y="' + (p.y - 3) + '" font-size="3" text-anchor="middle" fill="#555555">' + p.score + '</text>';
+          dateLabelsHtml += '<text x="' + p.x + '" y="' + (100 - bottomPad + 6) + '" font-size="3" text-anchor="middle" fill="#888888">' + p.dateLabel + '</text>';
+        }
 
-  const scoreLabelsHtml = points.map(function(p) {
-    return '<text x="' + p.x + '" y="' + (p.y - 3) + '" font-size="3" text-anchor="middle" fill="#555555">' + p.score + '</text>';
-  }).join('');
-
-  const dateLabelsHtml = points.map(function(p) {
-    return '<text x="' + p.x + '" y="' + (100 - bottomPad + 6) + '" font-size="3" text-anchor="middle" fill="#888888">' + p.dateLabel + '</text>';
-  }).join('');
-
-  container.innerHTML = '<svg viewBox="0 0 100 100" style="width:100%;height:320px;">' +
-    yAxisGrid +
-    '<line x1="' + leftPad + '" y1="' + topPad + '" x2="' + leftPad + '" y2="' + (100 - bottomPad) + '" stroke="#dddddd" stroke-width="0.5" />' +
-    '<line x1="' + leftPad + '" y1="' + (100 - bottomPad) + '" x2="' + (100 - rightPad) + '" y2="' + (100 - bottomPad) + '" stroke="#dddddd" stroke-width="0.5" />' +
-    yAxisLabels +
-    '<path d="' + pathD + '" fill="none" stroke="#111111" stroke-width="1" />' +
-    dotsHtml + scoreLabelsHtml + dateLabelsHtml +
-    '</svg>' +
-    '<div style="text-align:center;font-size:0.85em;color:#888888;margin-top:8px;">' + data.length + ' attempt(s) — earliest to most recent, left to right</div>';
-}
+        container.innerHTML = '<svg viewBox="0 0 100 100" style="width:100%;height:320px;">' +
+          yAxisGrid +
+          '<line x1="' + leftPad + '" y1="' + topPad + '" x2="' + leftPad + '" y2="' + (100 - bottomPad) + '" stroke="#dddddd" stroke-width="0.5" />' +
+          '<line x1="' + leftPad + '" y1="' + (100 - bottomPad) + '" x2="' + (100 - rightPad) + '" y2="' + (100 - bottomPad) + '" stroke="#dddddd" stroke-width="0.5" />' +
+          yAxisLabels +
+          '<path d="' + pathD + '" fill="none" stroke="#111111" stroke-width="1" />' +
+          dotsHtml + scoreLabelsHtml + dateLabelsHtml +
+          '</svg>' +
+          '<div style="text-align:center;font-size:0.85em;color:#888888;margin-top:8px;">' + data.length + ' attempt(s) — earliest to most recent, left to right</div>';
+      }
 
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
