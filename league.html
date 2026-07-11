@@ -332,43 +332,57 @@ async function submitMyAverageOnly(matchId, isP1) {
   loadFixtures();
 }
 
-      async function loadPlayoffs() {
-        var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff');
-        var container = document.getElementById('playoffsContent');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">Playoffs will appear once the regular season is complete.</p>'; return; }
+     async function loadPlayoffs() {
+  var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff');
+  var container = document.getElementById('playoffsContent');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">Playoffs will appear once the regular season is complete.</p>'; return; }
 
-        var rounds = {};
-        result.data.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
-        var roundOrder = ['Semi Final', 'Final'];
+  var rounds = {};
+  result.data.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
+  var roundOrder = ['Semi Final', 'Final'];
 
-        container.innerHTML = roundOrder.filter(function(r) { return rounds[r]; }).map(function(r) {
-          var matchesHtml = rounds[r].map(function(m) {
-            var p1name = m.player1_id ? (profileMap[m.player1_id] ? profileMap[m.player1_id].name : 'Unknown') : 'TBD';
-            var p2name = m.player2_id ? (profileMap[m.player2_id] ? profileMap[m.player2_id].name : 'Unknown') : 'TBD';
-            var playoffWhatsAppHtml = '';
-            if (m.player1_id && m.player2_id) {
-              if (currentUserId === m.player1_id) { playoffWhatsAppHtml = whatsAppButtonHtml(m.player2_id); }
-              else if (currentUserId === m.player2_id) { playoffWhatsAppHtml = whatsAppButtonHtml(m.player1_id); }
-            }
-            var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
-            var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
-
-            var scoreHtml;
-            if (m.status === 'completed') {
-              scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
-            } else if (m.player1_id && m.player2_id && currentUserId && (currentUserId === m.player1_id || currentUserId === m.player2_id)) {
-              scoreHtml = '<div class="score-inputs"><input class="score-input" type="number" id="ps1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ps2_' + m.id + '" min="0" placeholder="0" /><button class="btn-submit-score" onclick="submitPlayoffScore(' + m.id + ',\'' + r + '\')">Submit</button></div>';
-            } else if (m.player1_id && m.player2_id) {
-              scoreHtml = '<div class="score-display" style="color:#aaa">Pending</div>';
-            } else {
-              scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
-            }
-
-            return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span>' + playoffWhatsAppHtml + '</div>' + scoreHtml + '</div>';
-          }).join('');
-          return '<h4 style="margin:16px 0 8px;">' + r + '</h4>' + matchesHtml;
-        }).join('');
+  container.innerHTML = roundOrder.filter(function(r) { return rounds[r]; }).map(function(r) {
+    var matchesHtml = rounds[r].map(function(m) {
+      var p1name = m.player1_id ? (profileMap[m.player1_id] ? profileMap[m.player1_id].name : 'Unknown') : 'TBD';
+      var p2name = m.player2_id ? (profileMap[m.player2_id] ? profileMap[m.player2_id].name : 'Unknown') : 'TBD';
+      var playoffWhatsAppHtml = '';
+      if (m.player1_id && m.player2_id) {
+        if (currentUserId === m.player1_id) { playoffWhatsAppHtml = whatsAppButtonHtml(m.player2_id); }
+        else if (currentUserId === m.player2_id) { playoffWhatsAppHtml = whatsAppButtonHtml(m.player1_id); }
       }
+      var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
+      var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
+
+      var isP1 = currentUserId === m.player1_id;
+      var isP2 = currentUserId === m.player2_id;
+
+      var scoreHtml;
+      if (m.status === 'completed') {
+        scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
+        var myAvgMissing = (isP1 && m.player1_avg == null) || (isP2 && m.player2_avg == null);
+        if (myAvgMissing) {
+          var myAvgFieldId = isP1 ? 'pmyavg1_' + m.id : 'pmyavg2_' + m.id;
+          scoreHtml += '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;">' +
+            '<input class="score-input" type="number" step="0.01" id="' + myAvgFieldId + '" placeholder="Your Avg" style="width:80px;" />' +
+            '<button class="btn-submit-score" onclick="submitPlayoffAverageOnly(' + m.id + ', ' + isP1 + ')">Add My Avg</button>' +
+            '</div>';
+        }
+      } else if (m.player1_id && m.player2_id && currentUserId && (isP1 || isP2)) {
+        var myAvgId = isP1 ? 'pavg1_' + m.id : 'pavg2_' + m.id;
+        scoreHtml = '<div class="score-inputs"><input class="score-input" type="number" id="ps1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ps2_' + m.id + '" min="0" placeholder="0" />' +
+          '<input class="score-input" type="number" step="0.01" id="' + myAvgId + '" placeholder="Your Avg" style="width:80px;" />' +
+          '<button class="btn-submit-score" onclick="submitPlayoffScore(' + m.id + ',\'' + r + '\', ' + isP1 + ')">Submit</button></div>';
+      } else if (m.player1_id && m.player2_id) {
+        scoreHtml = '<div class="score-display" style="color:#aaa">Pending</div>';
+      } else {
+        scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
+      }
+
+      return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span>' + playoffWhatsAppHtml + '</div>' + scoreHtml + '</div>';
+    }).join('');
+    return '<h4 style="margin:16px 0 8px;">' + r + '</h4>' + matchesHtml;
+  }).join('');
+}
 
       async function submitPlayoffScore(matchId, currentRound) {
         var s1 = parseInt(document.getElementById('ps1_' + matchId).value);
