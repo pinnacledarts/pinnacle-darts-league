@@ -303,14 +303,37 @@ var dateStr = tournamentData.date ? new Date(tournamentData.date).toLocaleDateSt
   }).join('');
 }
 
-      async function submitGroupScore(matchId) {
-        var s1 = parseInt(document.getElementById('s1_' + matchId).value);
-        var s2 = parseInt(document.getElementById('s2_' + matchId).value);
-        if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
-        var result = await sbClient.from('tournament_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
-        if (result.error) { alert('Error submitting score. Please try again.'); return; }
-        loadGroups();
-      }
+async function submitGroupScore(matchId, isP1) {
+  var s1 = parseInt(document.getElementById('s1_' + matchId).value);
+  var s2 = parseInt(document.getElementById('s2_' + matchId).value);
+  if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
+
+  var myAvgId = isP1 ? 'gavg1_' + matchId : 'gavg2_' + matchId;
+  var myAvgVal = document.getElementById(myAvgId).value.trim();
+  if (!myAvgVal) { alert('Please enter your average for this match.'); return; }
+
+  var update = { player1_score: s1, player2_score: s2, status: 'completed' };
+  if (isP1) { update.player1_avg = parseFloat(myAvgVal); } else { update.player2_avg = parseFloat(myAvgVal); }
+
+  var result = await sbClient.from('tournament_matches').update(update).eq('id', matchId);
+  if (result.error) { alert('Error submitting score. Please try again.'); return; }
+
+  await updatePlayerAverage(currentUserId);
+  loadGroups();
+}
+
+async function submitGroupAverageOnly(matchId, isP1) {
+  var fieldId = isP1 ? 'gmyavg1_' + matchId : 'gmyavg2_' + matchId;
+  var val = document.getElementById(fieldId).value.trim();
+  if (!val) { alert('Please enter your average.'); return; }
+
+  var update = isP1 ? { player1_avg: parseFloat(val) } : { player2_avg: parseFloat(val) };
+  var result = await sbClient.from('tournament_matches').update(update).eq('id', matchId);
+  if (result.error) { alert('Error saving average. Please try again.'); return; }
+
+  await updatePlayerAverage(currentUserId);
+  loadGroups();
+}
 
       async function loadKnockouts() {
         var result = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').order('match_order');
