@@ -211,14 +211,16 @@ document.getElementById('pageContent').innerHTML =
           '<div class="card"><h3>Registered Players</h3><div id="playersList"><p class="loading">Loading...</p></div></div>' +
           '</div>' +
 
-          '<div id="tab-fixtures" class="tab-content">' +
-          '<div class="success-msg" id="fixtures-success"></div>' +
-          '<div class="error-msg" id="fixtures-error"></div>' +
-          (leagueData.format === 'swiss' ?
-            '<div class="admin-bar"><button class="btn btn-primary" onclick="generateNextSwissRound()">Generate Next Round</button><button class="btn btn-danger" onclick="clearFixtures()">Clear All Fixtures</button></div>' :
-            '<div class="admin-bar"><button class="btn btn-primary" onclick="generateFixtures()">Generate Fixtures</button><button class="btn btn-danger" onclick="clearFixtures()">Clear Fixtures</button></div>') +
-          '<div id="fixturesContent"><p class="empty-state">No fixtures generated yet.</p></div>' +
-          '</div>' +
+'<div id="tab-fixtures" class="tab-content">' +
+'<div class="success-msg" id="fixtures-success"></div>' +
+'<div class="error-msg" id="fixtures-error"></div>' +
+(leagueData.average_split ?
+  '<div class="admin-bar"><button class="btn btn-primary" onclick="assignDivisionsByAverage()">Assign Divisions by Average</button></div>' : '') +
+(leagueData.format === 'swiss' ?
+  '<div class="admin-bar"><button class="btn btn-primary" onclick="generateNextSwissRound()">Generate Next Round</button><button class="btn btn-danger" onclick="clearFixtures()">Clear All Fixtures</button></div>' :
+  '<div class="admin-bar"><button class="btn btn-primary" onclick="generateFixtures()">Generate Fixtures</button><button class="btn btn-danger" onclick="clearFixtures()">Clear Fixtures</button></div>') +
+'<div id="fixturesContent"><p class="empty-state">No fixtures generated yet.</p></div>' +
+'</div>' +
 
           '<div id="tab-standings" class="tab-content">' +
           '<div class="card"><h3>League Standings</h3><div id="standingsContent"><p class="loading">Loading...</p></div></div>' +
