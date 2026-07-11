@@ -905,20 +905,38 @@
         if (name === 'progress') { loadProgressDrillOptions(); }
       }
 
-      async function loadDrillsAccordion() {
-        const { data, error } = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
-        const container = document.getElementById('drillsAccordionList');
-        if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
+     async function loadDrillsAccordion() {
+  const { data, error } = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
+  const container = document.getElementById('drillsAccordionList');
+  if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
 
-        container.innerHTML = data.map(function(d) {
-          const targets = (d.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-          const targetRowsHtml = targets.map(function(t) {
-            const options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-            const optionsHtml = options.map(function(o) { return '<option value="' + o.id + '|' + o.points + '">' + o.label + ' (' + o.points + ' pts)</option>'; }).join('');
-            return '<div class="detail-row"><span class="detail-label">' + t.target_name + '</span>' +
-              '<select id="drilltarget-' + d.id + '-' + t.id + '" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;">' +
-              '<option value="">-- Select score --</option>' + optionsHtml + '</select></div>';
-          }).join('');
+  container.innerHTML = data.map(function(d) {
+    const targets = (d.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+    const targetRowsHtml = targets.map(function(t) {
+      const options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+      const optionsHtml = options.map(function(o) { return '<option value="' + o.id + '|' + o.points + '">' + o.label + ' (' + o.points + ' pts)</option>'; }).join('');
+      return '<div class="detail-row"><span class="detail-label">' + t.target_name + '</span>' +
+        '<select id="drilltarget-' + d.id + '-' + t.id + '" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;">' +
+        '<option value="">-- Select score --</option>' + optionsHtml + '</select></div>';
+    }).join('');
+
+    return '<div class="news-item">' +
+      '<div class="news-item-title" onclick="toggleDrillItem(' + d.id + ')">' + d.title + '</div>' +
+      '<div class="news-item-body" id="drill-body-' + d.id + '">' +
+      '<div class="detail-row" style="border-bottom:2px solid #dddddd;font-weight:bold;">' +
+      '<span class="detail-label" style="color:#111111;">Target</span>' +
+      '<span style="color:#111111;">Score</span>' +
+      '</div>' +
+      '<div id="drill-form-' + d.id + '">' +
+      targetRowsHtml +
+      '<div style="margin-top:16px;">' +
+      '<button class="save-btn" onclick="submitDrillAttempt(' + d.id + ')">Submit Attempt</button>' +
+      '</div>' +
+      '</div>' +
+      '<div id="drill-msg-' + d.id + '" style="margin-top:10px;font-size:0.9em;"></div>' +
+      '</div></div>';
+  }).join('');
+}
 
           return '<div class="news-item">' +
             '<div class="news-item-title" onclick="toggleDrillItem(' + d.id + ')">' + d.title + '</div>' +
