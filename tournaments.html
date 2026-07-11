@@ -93,16 +93,18 @@
       var currentUserId = null;
       var joinedTournaments = [];
 
-      async function loadTournaments() {
-        var session = await sbClient.auth.getSession();
-        var playerPlatform = null;
-        if (session.data.session) {
-          currentUserId = session.data.session.user.id;
-          var joined = await sbClient.from('tournament_players').select('tournament_id').eq('player_id', currentUserId);
-          joinedTournaments = joined.data ? joined.data.map(function(j) { return j.tournament_id; }) : [];
-          var profileResult = await sbClient.from('profiles').select('platform').eq('id', currentUserId).single();
-          playerPlatform = profileResult.data ? profileResult.data.platform : null;
-        }
+async function loadTournaments() {
+  var session = await sbClient.auth.getSession();
+  var playerPlatform = null;
+  var playerHasAverage = false;
+  if (session.data.session) {
+    currentUserId = session.data.session.user.id;
+    var joined = await sbClient.from('tournament_players').select('tournament_id').eq('player_id', currentUserId);
+    joinedTournaments = joined.data ? joined.data.map(function(j) { return j.tournament_id; }) : [];
+    var profileResult = await sbClient.from('profiles').select('platform, average, starter_average').eq('id', currentUserId).single();
+    playerPlatform = profileResult.data ? profileResult.data.platform : null;
+    playerHasAverage = profileResult.data ? !!(profileResult.data.average || profileResult.data.starter_average) : false;
+  }
 
         var result = await sbClient.from('tournaments').select('*').order('date', { ascending: true });
         var container = document.getElementById('tournamentsList');
