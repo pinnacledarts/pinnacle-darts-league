@@ -931,16 +931,24 @@
         container.appendChild(row);
       }
 
-      async function saveDrill() {
-        var title = document.getElementById('drillTitle').value.trim();
-        if (!title) { showMsg('drill-error', 'Please enter a drill title.'); return; }
+    async function saveDrill() {
+  var title = document.getElementById('drillTitle').value.trim();
+  if (!title) { showMsg('drill-error', 'Please enter a drill title.'); return; }
 
-        var targetRows = document.querySelectorAll('#drillTargetsList > div');
-        if (!targetRows.length) { showMsg('drill-error', 'Please add at least one target.'); return; }
+  var targetRows = document.querySelectorAll('#drillTargetsList > div');
+  if (!targetRows.length) { showMsg('drill-error', 'Please add at least one target.'); return; }
 
-        var drillResult = await sbClient.from('drills').insert([{ title: title }]).select();
-        if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
-        var drillId = drillResult.data[0].id;
+  var drillId;
+  if (editingDrillId) {
+    var updateResult = await sbClient.from('drills').update({ title: title }).eq('id', editingDrillId);
+    if (updateResult.error) { showMsg('drill-error', 'Error updating drill: ' + updateResult.error.message); return; }
+    drillId = editingDrillId;
+    await sbClient.from('drill_targets').delete().eq('drill_id', drillId);
+  } else {
+    var drillResult = await sbClient.from('drills').insert([{ title: title }]).select();
+    if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
+    drillId = drillResult.data[0].id;
+  }
 
         var targetOrder = 0;
         for (var i = 0; i < targetRows.length; i++) {
