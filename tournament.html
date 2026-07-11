@@ -382,49 +382,60 @@ async function submitGroupAverageOnly(matchId, isP1) {
       }
 
       function renderBracketSection(matches) {
-        var rounds = {};
-        matches.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
-        var roundsPresent = roundOrderFull.filter(function(r) { return rounds[r]; });
+  var rounds = {};
+  matches.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
+  var roundsPresent = roundOrderFull.filter(function(r) { return rounds[r]; });
 
-        var tabsHtml = '<div class="round-tabs">' + roundsPresent.map(function(r, i) {
-          return '<button class="round-tab' + (i === 0 ? ' active' : '') + '" data-round="' + r + '" onclick="showKnockoutRound(\'' + r + '\', this)">' + r + '</button>';
-        }).join('') + '</div>';
+  var tabsHtml = '<div class="round-tabs">' + roundsPresent.map(function(r, i) {
+    return '<button class="round-tab' + (i === 0 ? ' active' : '') + '" data-round="' + r + '" onclick="showKnockoutRound(\'' + r + '\', this)">' + r + '</button>';
+  }).join('') + '</div>';
 
-        var contentHtml = roundsPresent.map(function(r, i) {
-          var rMatches = rounds[r];
-          var matchesHtml = rMatches.map(function(m) {
-            var p1name = m.player1_id ? (profileMap[m.player1_id] ? profileMap[m.player1_id].name : 'Unknown') : 'TBD';
-            var p2name = m.player2_id ? (profileMap[m.player2_id] ? profileMap[m.player2_id].name : 'Unknown') : 'TBD';
-            var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
-            var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
-            var canSubmit = currentUserId && m.status !== 'completed' && m.player1_id && m.player2_id &&
-              (currentUserId === m.player1_id || currentUserId === m.player2_id);
+  var contentHtml = roundsPresent.map(function(r, i) {
+    var rMatches = rounds[r];
+    var matchesHtml = rMatches.map(function(m) {
+      var p1name = m.player1_id ? (profileMap[m.player1_id] ? profileMap[m.player1_id].name : 'Unknown') : 'TBD';
+      var p2name = m.player2_id ? (profileMap[m.player2_id] ? profileMap[m.player2_id].name : 'Unknown') : 'TBD';
+      var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
+      var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
+      var isP1 = currentUserId === m.player1_id;
+      var isP2 = currentUserId === m.player2_id;
+      var canSubmit = currentUserId && m.status !== 'completed' && m.player1_id && m.player2_id && (isP1 || isP2);
 
-            var whatsAppHtml = '';
-            if (m.player1_id && m.player2_id) {
-              if (currentUserId === m.player1_id) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
-              else if (currentUserId === m.player2_id) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
-            }
-
-            var scoreHtml;
-            if (m.status === 'completed') {
-              scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
-            } else if (canSubmit) {
-              scoreHtml = '<div class="score-inputs"><input class="score-input" type="number" id="ks1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ks2_' + m.id + '" min="0" placeholder="0" /><button class="btn-submit-score" onclick="submitKnockoutScore(' + m.id + ',\'' + r + '\',' + m.match_order + ',\'' + (m.bracket_type || 'A') + '\')">Submit</button></div>';
-            } else if (m.player1_id && m.player2_id) {
-              scoreHtml = '<div class="score-display" style="color:#aaa">Pending</div>';
-            } else {
-              scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
-            }
-
-            return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span>' + whatsAppHtml + '</div>' + scoreHtml + '</div>';
-          }).join('');
-          return '<div class="round-content" data-round="' + r + '" style="' + (i === 0 ? '' : 'display:none;') + '">' + matchesHtml + '</div>';
-        }).join('');
-
-        document.getElementById('bracketSectionContent').innerHTML = tabsHtml + contentHtml;
+      var whatsAppHtml = '';
+      if (m.player1_id && m.player2_id) {
+        if (isP1) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
+        else if (isP2) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
       }
 
+      var scoreHtml;
+      if (m.status === 'completed') {
+        scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
+        var myAvgMissing = (isP1 && m.player1_avg == null) || (isP2 && m.player2_avg == null);
+        if (myAvgMissing) {
+          var myAvgFieldId = isP1 ? 'kmyavg1_' + m.id : 'kmyavg2_' + m.id;
+          scoreHtml += '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;">' +
+            '<input class="score-input" type="number" step="0.01" id="' + myAvgFieldId + '" placeholder="Your Avg" style="width:80px;" />' +
+            '<button class="btn-submit-score" onclick="submitKnockoutAverageOnly(' + m.id + ', ' + isP1 + ')">Add My Avg</button>' +
+            '</div>';
+        }
+      } else if (canSubmit) {
+        var myAvgId = isP1 ? 'kavg1_' + m.id : 'kavg2_' + m.id;
+        scoreHtml = '<div class="score-inputs"><input class="score-input" type="number" id="ks1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ks2_' + m.id + '" min="0" placeholder="0" />' +
+          '<input class="score-input" type="number" step="0.01" id="' + myAvgId + '" placeholder="Your Avg" style="width:80px;" />' +
+          '<button class="btn-submit-score" onclick="submitKnockoutScore(' + m.id + ',\'' + r + '\',' + m.match_order + ',\'' + (m.bracket_type || 'A') + '\', ' + isP1 + ')">Submit</button></div>';
+      } else if (m.player1_id && m.player2_id) {
+        scoreHtml = '<div class="score-display" style="color:#aaa">Pending</div>';
+      } else {
+        scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
+      }
+
+      return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span>' + whatsAppHtml + '</div>' + scoreHtml + '</div>';
+    }).join('');
+    return '<div class="round-content" data-round="' + r + '" style="' + (i === 0 ? '' : 'display:none;') + '">' + matchesHtml + '</div>';
+  }).join('');
+
+  document.getElementById('bracketSectionContent').innerHTML = tabsHtml + contentHtml;
+}
       function showKnockoutRound(round, btn) {
         document.querySelectorAll('.round-tab').forEach(function(t) { t.classList.remove('active'); });
         btn.classList.add('active');
