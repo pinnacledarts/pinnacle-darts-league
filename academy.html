@@ -994,36 +994,66 @@
         select.innerHTML = '<option value="">-- Select a drill --</option>' + (data || []).map(function(d) { return '<option value="' + d.id + '">' + d.title + '</option>'; }).join('');
       }
 
-      async function loadDrillProgress() {
-        const drillId = document.getElementById('progressDrillSelect').value;
-        const container = document.getElementById('progressChartContainer');
-        if (!drillId || !currentUserId) { container.innerHTML = '<p class="loading">Select a drill to view your progress.</p>'; return; }
+     async function loadDrillProgress() {
+  const drillId = document.getElementById('progressDrillSelect').value;
+  const container = document.getElementById('progressChartContainer');
+  if (!drillId || !currentUserId) { container.innerHTML = '<p class="loading">Select a drill to view your progress.</p>'; return; }
 
-        const { data } = await sbClient.from('drill_attempts').select('*').eq('drill_id', drillId).eq('player_id', currentUserId).order('attempt_date', { ascending: true });
-        if (!data || !data.length) { container.innerHTML = '<p class="coming-soon">No attempts logged yet for this drill.</p>'; return; }
+  const { data } = await sbClient.from('drill_attempts').select('*').eq('drill_id', drillId).eq('player_id', currentUserId).order('attempt_date', { ascending: true });
+  if (!data || !data.length) { container.innerHTML = '<p class="coming-soon">No attempts logged yet for this drill.</p>'; return; }
 
-        const maxScore = Math.max.apply(null, data.map(function(d) { return d.total_score; }));
-        const points = data.map(function(d, i) {
-          const x = (i / Math.max(data.length - 1, 1)) * 100;
-          const y = 100 - (d.total_score / (maxScore || 1)) * 90;
-          return { x: x, y: y, score: d.total_score, date: d.attempt_date };
-        });
+  const maxScore = Math.max.apply(null, data.map(function(d) { return d.total_score; }));
+  const chartMax = maxScore > 0 ? maxScore : 1;
 
-        const pathD = points.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' ');
-        const dotsHtml = points.map(function(p) {
-          return '<circle cx="' + p.x + '" cy="' + p.y + '" r="1.5" fill="#111111"><title>' + p.date + ': ' + p.score + '</title></circle>';
-        }).join('');
-        const labelsHtml = points.map(function(p) {
-          return '<text x="' + p.x + '" y="' + (p.y - 3) + '" font-size="3" text-anchor="middle" fill="#555555">' + p.score + '</text>';
-        }).join('');
+  const leftPad = 14;
+  const rightPad = 4;
+  const topPad = 8;
+  const bottomPad = 16;
+  const chartWidth = 100 - leftPad - rightPad;
+  const chartHeight = 100 - topPad - bottomPad;
 
-        container.innerHTML = '<svg viewBox="0 0 100 100" style="width:100%;height:300px;">' +
-          '<line x1="0" y1="100" x2="100" y2="100" stroke="#dddddd" stroke-width="0.5" />' +
-          '<path d="' + pathD + '" fill="none" stroke="#111111" stroke-width="1" />' +
-          dotsHtml + labelsHtml +
-          '</svg>' +
-          '<div style="text-align:center;font-size:0.85em;color:#888888;margin-top:8px;">' + data.length + ' attempt(s) — earliest to most recent, left to right</div>';
-      }
+  const points = data.map(function(d, i) {
+    const x = leftPad + (data.length > 1 ? (i / (data.length - 1)) * chartWidth : chartWidth / 2);
+    const y = topPad + chartHeight - (d.total_score / chartMax) * chartHeight;
+    const dateObj = new Date(d.attempt_date);
+    const dateLabel = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    return { x: x, y: y, score: d.total_score, dateLabel: dateLabel, fullDate: d.attempt_date };
+  });
+
+  const pathD = points.map(function(p, i) { return (i === 0 ? 'M' : 'L') + p.x + ',' + p.y; }).join(' ');
+
+  var yAxisLabels = '';
+  var yAxisGrid = '';
+  var steps = 4;
+  for (var s = 0; s <= steps; s++) {
+    var val = Math.round((chartMax / steps) * s);
+    var yPos = topPad + chartHeight - (val / chartMax) * chartHeight;
+    yAxisLabels += '<text x="' + (leftPad - 3) + '" y="' + (yPos + 1) + '" font-size="3" text-anchor="end" fill="#888888">' + val + '</text>';
+    yAxisGrid += '<line x1="' + leftPad + '" y1="' + yPos + '" x2="' + (100 - rightPad) + '" y2="' + yPos + '" stroke="#eeeeee" stroke-width="0.3" />';
+  }
+
+  const dotsHtml = points.map(function(p) {
+    return '<circle cx="' + p.x + '" cy="' + p.y + '" r="1.5" fill="#111111"><title>' + p.fullDate + ': ' + p.score + '</title></circle>';
+  }).join('');
+
+  const scoreLabelsHtml = points.map(function(p) {
+    return '<text x="' + p.x + '" y="' + (p.y - 3) + '" font-size="3" text-anchor="middle" fill="#555555">' + p.score + '</text>';
+  }).join('');
+
+  const dateLabelsHtml = points.map(function(p) {
+    return '<text x="' + p.x + '" y="' + (100 - bottomPad + 6) + '" font-size="3" text-anchor="middle" fill="#888888">' + p.dateLabel + '</text>';
+  }).join('');
+
+  container.innerHTML = '<svg viewBox="0 0 100 100" style="width:100%;height:320px;">' +
+    yAxisGrid +
+    '<line x1="' + leftPad + '" y1="' + topPad + '" x2="' + leftPad + '" y2="' + (100 - bottomPad) + '" stroke="#dddddd" stroke-width="0.5" />' +
+    '<line x1="' + leftPad + '" y1="' + (100 - bottomPad) + '" x2="' + (100 - rightPad) + '" y2="' + (100 - bottomPad) + '" stroke="#dddddd" stroke-width="0.5" />' +
+    yAxisLabels +
+    '<path d="' + pathD + '" fill="none" stroke="#111111" stroke-width="1" />' +
+    dotsHtml + scoreLabelsHtml + dateLabelsHtml +
+    '</svg>' +
+    '<div style="text-align:center;font-size:0.85em;color:#888888;margin-top:8px;">' + data.length + ' attempt(s) — earliest to most recent, left to right</div>';
+}
 
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
