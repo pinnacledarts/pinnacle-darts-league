@@ -982,21 +982,21 @@
         loadDrills();
       }
 
-      async function loadDrills() {
-        var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, drill_score_options(id, label, points))').order('created_at', { ascending: false });
-        var container = document.getElementById('drillsList');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No drills created yet.</p>'; return; }
+     async function loadDrills() {
+  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, drill_score_options(id, label, points))').order('created_at', { ascending: false });
+  var container = document.getElementById('drillsList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No drills created yet.</p>'; return; }
 
-        container.innerHTML = result.data.map(function(d) {
-          var targets = d.drill_targets || [];
-          var targetsSummary = targets.map(function(t) {
-            var options = t.drill_score_options || [];
-            var optSummary = options.map(function(o) { return o.label + ' (' + o.points + 'pts)'; }).join(', ');
-            return '<li><strong>' + t.target_name + ':</strong> ' + (optSummary || 'No score options') + '</li>';
-          }).join('');
-          return '<div class="card"><h4 style="margin:0 0 8px;">' + d.title + '</h4><ul style="margin:0 0 12px;padding-left:20px;font-size:0.9em;color:#555;">' + targetsSummary + '</ul><button class="btn-small danger" onclick="deleteDrill(' + d.id + ')">Delete Drill</button></div>';
-        }).join('');
-      }
+  container.innerHTML = result.data.map(function(d) {
+    var targets = d.drill_targets || [];
+    var targetsSummary = targets.map(function(t) {
+      var options = t.drill_score_options || [];
+      var optSummary = options.map(function(o) { return o.label + ' (' + o.points + 'pts)'; }).join(', ');
+      return '<li><strong>' + t.target_name + ':</strong> ' + (optSummary || 'No score options') + '</li>';
+    }).join('');
+    return '<div class="card"><h4 style="margin:0 0 8px;">' + d.title + '</h4><ul style="margin:0 0 12px;padding-left:20px;font-size:0.9em;color:#555;">' + targetsSummary + '</ul><button class="btn-small danger" onclick="deleteDrill(' + d.id + ')">Delete Drill</button></div>';
+  }).join('');
+}
 
       async function deleteDrill(id) {
         if (!confirm('Delete this drill? All player progress for it will be lost.')) { return; }
