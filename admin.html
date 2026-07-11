@@ -702,18 +702,20 @@ async function denyAccess(id, requestedAccess) {
       }
 
       async function createTournament() {
-        var name = document.getElementById('tournamentName').value.trim();
-        if (!name) { showMsg('tournament-error', 'Please enter a tournament name.'); return; }
-        var result = await sbClient.from('tournaments').insert([{
-          name: name,
-          date: document.getElementById('tournamentDate').value || null,
-          time: document.getElementById('tournamentTime').value || null,
-          format: document.getElementById('tournamentFormat').value,
-          platform: document.getElementById('tournamentPlatform').value,
-          max_players: document.getElementById('tournamentMax').value || null,
-          status: 'upcoming',
-          description: document.getElementById('tournamentDesc').value.trim() || null
-        }]);
+ async function createTournament() {
+  var name = document.getElementById('tournamentName').value.trim();
+  if (!name) { showMsg('tournament-error', 'Please enter a tournament name.'); return; }
+  var result = await sbClient.from('tournaments').insert([{
+    name: name,
+    date: document.getElementById('tournamentDate').value || null,
+    time: document.getElementById('tournamentTime').value || null,
+    format: document.getElementById('tournamentFormat').value,
+    platform: document.getElementById('tournamentPlatform').value,
+    max_players: document.getElementById('tournamentMax').value || null,
+    status: 'upcoming',
+    average_split: document.getElementById('tournamentAvgSplit').checked,
+    description: document.getElementById('tournamentDesc').value.trim() || null
+  }]);
         if (result.error) { showMsg('tournament-error', result.error.message); return; }
         showMsg('tournament-success', 'Tournament created successfully!');
         document.getElementById('tournamentName').value = '';
