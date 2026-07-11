@@ -123,3 +123,22 @@ function getStatusBadgeHtml(status) {
   var labels = { upcoming: 'Upcoming', live: 'Live', completed: 'Completed' };
   return '<span class="badge badge-status-' + status + '">' + (labels[status] || status) + '</span>';
 }
+async function updatePlayerAverage(playerId) {
+  var leagueResult = await sbClient.from('league_matches').select('player1_id, player2_id, player1_avg, player2_avg').or('player1_id.eq.' + playerId + ',player2_id.eq.' + playerId);
+  var tournamentResult = await sbClient.from('tournament_matches').select('player1_id, player2_id, player1_avg, player2_avg').or('player1_id.eq.' + playerId + ',player2_id.eq.' + playerId);
+
+  var avgs = [];
+  (leagueResult.data || []).forEach(function(m) {
+    if (m.player1_id === playerId && m.player1_avg != null) { avgs.push(parseFloat(m.player1_avg)); }
+    if (m.player2_id === playerId && m.player2_avg != null) { avgs.push(parseFloat(m.player2_avg)); }
+  });
+  (tournamentResult.data || []).forEach(function(m) {
+    if (m.player1_id === playerId && m.player1_avg != null) { avgs.push(parseFloat(m.player1_avg)); }
+    if (m.player2_id === playerId && m.player2_avg != null) { avgs.push(parseFloat(m.player2_avg)); }
+  });
+
+  if (avgs.length > 0) {
+    var mean = avgs.reduce(function(a, b) { return a + b; }, 0) / avgs.length;
+    await sbClient.from('profiles').update({ average: mean.toFixed(2) }).eq('id', playerId);
+  }
+}
