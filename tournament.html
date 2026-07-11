@@ -72,8 +72,8 @@
       .round-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
       .round-tab { padding: 8px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
       .round-tab.active { background: #111111; color: #ffffff; border-color: #111111; font-weight: bold; }
-      .bracket-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
-      .bracket-toggle-btn { padding: 10px 20px; border: 2px solid #111111; background: #ffffff; border-radius: 6px; font-size: 0.95em; font-weight: bold; cursor: pointer; font-family: Arial, sans-serif; color: #111111; }
+      .bracket-toggle { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+      .bracket-toggle-btn { padding: 10px 20px; border: 2px solid #111111; background: #ffffff; border-radius: 6px; font-size: 0.9em; font-weight: bold; cursor: pointer; font-family: Arial, sans-serif; color: #111111; }
       .bracket-toggle-btn.active { background: #111111; color: #ffffff; }
       .coming-soon { text-align: center; padding: 40px; color: #aaaaaa; font-size: 1em; }
       .loading { text-align: center; padding: 40px; color: #888888; }
@@ -127,8 +127,7 @@
       var tournamentData = null;
       var profileMap = {};
       var roundOrderFull = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
-      var cachedAMatches = [];
-      var cachedBMatches = [];
+      var cachedBracketsByType = {};
 
       function buildWhatsAppLink(phone) {
         if (!phone) { return null; }
@@ -303,25 +302,44 @@ var dateStr = tournamentData.date ? new Date(tournamentData.date).toLocaleDateSt
         var all = result.data || [];
         if (!all.length) { container.innerHTML = '<p class="coming-soon">Bracket will appear here once generated.</p>'; return; }
 
-        cachedAMatches = all.filter(function(m) { return (m.bracket_type || 'A') === 'A'; });
-        cachedBMatches = all.filter(function(m) { return m.bracket_type === 'B'; });
+        cachedBracketsByType = {};
+        all.forEach(function(m) {
+          var bt = m.bracket_type || 'A';
+          if (!cachedBracketsByType[bt]) { cachedBracketsByType[bt] = []; }
+          cachedBracketsByType[bt].push(m);
+        });
+
+        var order, labels;
+        if (tournamentData.average_split) {
+          order = ['CUPA', 'CUPA_PLATE', 'CUPB', 'CUPB_PLATE'];
+          labels = {
+            CUPA: tournamentData.name + ' A',
+            CUPA_PLATE: tournamentData.name + ' A - Plate',
+            CUPB: tournamentData.name + ' B',
+            CUPB_PLATE: tournamentData.name + ' B - Plate'
+          };
+        } else {
+          order = ['A', 'B'];
+          labels = { A: 'Main Bracket', B: 'Plate (Consolation)' };
+        }
+
+        var presentTypes = order.filter(function(t) { return cachedBracketsByType[t] && cachedBracketsByType[t].length; });
 
         var toggleHtml = '';
-        if (cachedBMatches.length > 0) {
-          toggleHtml = '<div class="bracket-toggle">' +
-            '<button class="bracket-toggle-btn active" onclick="switchBracketView(\'A\', this)">Main Bracket</button>' +
-            '<button class="bracket-toggle-btn" onclick="switchBracketView(\'B\', this)">Plate (Consolation)</button>' +
-            '</div>';
+        if (presentTypes.length > 1) {
+          toggleHtml = '<div class="bracket-toggle">' + presentTypes.map(function(t, i) {
+            return '<button class="bracket-toggle-btn' + (i === 0 ? ' active' : '') + '" onclick="switchBracketView(\'' + t + '\', this)">' + labels[t] + '</button>';
+          }).join('') + '</div>';
         }
 
         container.innerHTML = toggleHtml + '<div id="bracketSectionContent"></div>';
-        renderBracketSection(cachedAMatches);
+        renderBracketSection(cachedBracketsByType[presentTypes[0]] || []);
       }
 
       function switchBracketView(type, btn) {
         document.querySelectorAll('.bracket-toggle-btn').forEach(function(b) { b.classList.remove('active'); });
         btn.classList.add('active');
-        renderBracketSection(type === 'A' ? cachedAMatches : cachedBMatches);
+        renderBracketSection(cachedBracketsByType[type] || []);
       }
 
       function renderBracketSection(matches) {
