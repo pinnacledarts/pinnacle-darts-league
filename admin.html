@@ -602,7 +602,78 @@
       var allLeaguesData = [];
       var allNewsData = [];
 var drillTargetCount = 0;
+async function saveDrill() {
+  var title = document.getElementById('drillTitle').value.trim();
+  if (!title) { showMsg('drill-error', 'Please enter a drill title.'); return; }
 
+  var targetRows = document.querySelectorAll('#drillTargetsList > div');
+  if (!targetRows.length) { showMsg('drill-error', 'Please add at least one target.'); return; }
+
+  var drillResult = await sbClient.from('drills').insert([{ title: title }]).select();
+  if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
+  var drillId = drillResult.data[0].id;
+
+  var targetOrder = 0;
+  for (var i = 0; i < targetRows.length; i++) {
+    var row = targetRows[i];
+    var targetIdx = row.id.replace('drillTargetRow', '');
+    var targetNameInput = document.getElementById('targetName' + targetIdx);
+    if (!targetNameInput) { continue; }
+    var targetName = targetNameInput.value.trim();
+    if (!targetName) { continue; }
+
+    targetOrder++;
+    var targetResult = await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: targetName, sort_order: targetOrder }]).select();
+    if (targetResult.error || !targetResult.data) { continue; }
+    var targetId = targetResult.data[0].id;
+
+    var scoreRows = document.querySelectorAll('#scoreOptionsList' + targetIdx + ' > div');
+    var scoreOrder = 0;
+    for (var j = 0; j < scoreRows.length; j++) {
+      var sRow = scoreRows[j];
+      var idParts = sRow.id.split('_');
+      var optIdx = idParts[1];
+      var labelInput = document.getElementById('scoreLabel' + targetIdx + '_' + optIdx);
+      var pointsInput = document.getElementById('scorePoints' + targetIdx + '_' + optIdx);
+      if (!labelInput || !pointsInput) { continue; }
+      var label = labelInput.value.trim();
+      var points = parseFloat(pointsInput.value);
+      if (!label || isNaN(points)) { continue; }
+
+      scoreOrder++;
+      await sbClient.from('drill_score_options').insert([{ target_id: targetId, label: label, points: points, sort_order: scoreOrder }]);
+    }
+  }
+
+  showMsg('drill-success', 'Drill created successfully!');
+  document.getElementById('drillTitle').value = '';
+  document.getElementById('drillTargetsList').innerHTML = '';
+  drillTargetCount = 0;
+  scoreOptionCounts = {};
+  loadDrills();
+}
+
+async function loadDrills() {
+  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, drill_score_options(id, label, points))').order('created_at', { ascending: false });
+  var container = document.getElementById('drillsList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No drills created yet.</p>'; return; }
+
+  container.innerHTML = result.data.map(function(d) {
+    var targets = d.drill_targets || [];
+    var targetsSummary = targets.map(function(t) {
+      var options = t.drill_score_options || [];
+      var optSummary = options.map(function(o) { return o.label + ' (' + o.points + 'pts)'; }).join(', ');
+      return '<li><strong>' + t.target_name + ':</strong> ' + (optSummary || 'No score options') + '</li>';
+    }).join('');
+    return '<div class="card"><h4 style="margin:0 0 8px;">' + d.title + '</h4><ul style="margin:0 0 12px;padding-left:20px;font-size:0.9em;color:#555;">' + targetsSummary + '</ul><button class="btn-small danger" onclick="deleteDrill(' + d.id + ')">Delete Drill</button></div>';
+  }).join('');
+}
+
+async function deleteDrill(id) {
+  if (!confirm('Delete this drill? All player progress for it will be lost.')) { return; }
+  await sbClient.from('drills').delete().eq('id', id);
+  loadDrills();
+}
 function addDrillTargetRow() {
   drillTargetCount++;
   var idx = drillTargetCount;
