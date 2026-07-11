@@ -573,13 +573,15 @@ async function addSelectedPlayers() {
         cachedAMatches = all.filter(function(m) { return (m.bracket_type || 'A') === 'A'; });
         cachedBMatches = all.filter(function(m) { return m.bracket_type === 'B'; });
 
-        var toggleHtml = '';
-        if (cachedBMatches.length > 0) {
-          toggleHtml = '<div class="bracket-toggle">' +
-            '<button class="bracket-toggle-btn active" onclick="switchBracketView(\'A\', this)">Main Bracket</button>' +
-            '<button class="bracket-toggle-btn" onclick="switchBracketView(\'B\', this)">Plate (Consolation)</button>' +
-            '</div>';
-        }
+var toggleHtml = '';
+if (cachedBMatches.length > 0) {
+  var labelA = tournamentData.average_split ? tournamentData.name + ' A' : 'Main Bracket';
+  var labelB = tournamentData.average_split ? tournamentData.name + ' B' : 'Plate (Consolation)';
+  toggleHtml = '<div class="bracket-toggle">' +
+    '<button class="bracket-toggle-btn active" onclick="switchBracketView(\'A\', this)">' + labelA + '</button>' +
+    '<button class="bracket-toggle-btn" onclick="switchBracketView(\'B\', this)">' + labelB + '</button>' +
+    '</div>';
+}
 
         container.innerHTML = toggleHtml + '<div id="bracketSectionContent"></div>';
         renderBracketSection(cachedAMatches);
