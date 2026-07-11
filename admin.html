@@ -982,12 +982,14 @@
           }
         }
 
-        showMsg('drill-success', 'Drill created successfully!');
-        document.getElementById('drillTitle').value = '';
-        document.getElementById('drillTargetsList').innerHTML = '';
-        drillTargetCount = 0;
-        scoreOptionCounts = {};
-        loadDrills();
+     showMsg('drill-success', editingDrillId ? 'Drill updated successfully!' : 'Drill created successfully!');
+document.getElementById('drillTitle').value = '';
+document.getElementById('drillTargetsList').innerHTML = '';
+document.querySelector('button[onclick="saveDrill()"]').textContent = 'Create Drill';
+drillTargetCount = 0;
+scoreOptionCounts = {};
+editingDrillId = null;
+loadDrills();
       }
 
      async function loadDrills() {
