@@ -287,21 +287,8 @@ function renderFixtureItem(m) {
   }
   return '<div class="fixture-item">' + playersHtml + '<div class="score-display" style="color:#aaa">Pending</div></div>';
 }
-  var canSubmit = currentUserId && (currentUserId === m.player1_id || currentUserId === m.player2_id);
-  if (canSubmit) {
-    var isP1 = currentUserId === m.player1_id;
-    var myAvgId = isP1 ? 'favg1_' + m.id : 'favg2_' + m.id;
-    return '<div class="fixture-item">' + playersHtml +
-      '<div class="score-inputs">' +
-      '<input class="score-input" type="number" id="fs1_' + m.id + '" min="0" placeholder="0" />' +
-      '<span>-</span>' +
-      '<input class="score-input" type="number" id="fs2_' + m.id + '" min="0" placeholder="0" />' +
-      '<input class="score-input" type="number" step="0.01" id="' + myAvgId + '" placeholder="Your Avg" style="width:80px;" />' +
-      '<button class="btn-submit-score" onclick="submitFixtureScore(' + m.id + ', ' + isP1 + ')">Submit</button>' +
-      '</div></div>';
-  }
-  return '<div class="fixture-item">' + playersHtml + '<div class="score-display" style="color:#aaa">Pending</div></div>';
-}
+
+
 
       function showFixtureRound(round, btn) {
         document.querySelectorAll('.round-tab').forEach(function(t) { t.classList.remove('active'); });
