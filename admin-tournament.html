@@ -6,7 +6,7 @@
     <title>Manage Tournament | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-<script src="auth.js?v=2"></script>
+    <script src="auth.js?t=999999"></script>
     <style>
       .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
 .badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
@@ -79,8 +79,8 @@
       .round-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
       .round-tab { padding: 8px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
       .round-tab.active { background: #111111; color: #ffffff; border-color: #111111; font-weight: bold; }
-      .bracket-toggle { display: flex; gap: 8px; margin-bottom: 20px; }
-      .bracket-toggle-btn { padding: 10px 20px; border: 2px solid #111111; background: #ffffff; border-radius: 6px; font-size: 0.95em; font-weight: bold; cursor: pointer; font-family: Arial, sans-serif; color: #111111; }
+      .bracket-toggle { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+      .bracket-toggle-btn { padding: 10px 20px; border: 2px solid #111111; background: #ffffff; border-radius: 6px; font-size: 0.9em; font-weight: bold; cursor: pointer; font-family: Arial, sans-serif; color: #111111; }
       .bracket-toggle-btn.active { background: #111111; color: #ffffff; }
       .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
       .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
@@ -108,7 +108,7 @@
         <h1>Pinnacle Darts League</h1>
         <p>Official League Website</p>
       </div>
-      <a href="academy.html" class="btn-switch">Switch to Academy</a>
+      <a href="academy.html" class="btn-switch" id="switchBtn">Switch to Academy</a>
       <div class="header-buttons" style="margin-left: auto;">
         <div id="authButtons"></div>
         <button class="hamburger" onclick="toggleMenu()">☰</button>
@@ -134,45 +134,13 @@
       var existingPlayerIds = [];
       var profileMapAdmin = {};
       var roundOrderFull = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
-      var cachedAMatches = [];
-      var cachedBMatches = [];
-async function splitByAverage() {
-  var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
-  if (existing.data && existing.data.length > 0) {
-    if (!confirm('Bracket already exists. Regenerate?')) { return; }
-    await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
-  }
+      var cachedBracketsByType = {};
 
-  var playersResult = await sbClient.from('tournament_players').select('player_id, profiles(starter_average, average)').eq('tournament_id', tournamentId);
-  if (!playersResult.data || playersResult.data.length < 2) { showMsg('knockouts-error', 'Need at least 2 players to split.'); return; }
+      if (document.referrer.includes('academy.html')) {
+        var sBtn = document.getElementById('switchBtn');
+        if (sBtn) { sBtn.textContent = 'Switch to Online'; sBtn.href = 'index.html'; }
+      }
 
-  var playersWithAvg = playersResult.data.map(function(p) {
-    var profile = p.profiles || {};
-    var avg = profile.average || profile.starter_average || 0;
-    return { player_id: p.player_id, avg: parseFloat(avg) || 0 };
-  });
-
-  var missingAvg = playersWithAvg.filter(function(p) { return !p.avg; });
-  if (missingAvg.length > 0) {
-    showMsg('knockouts-error', missingAvg.length + ' player(s) have no average set yet. Please set their Starter Average in the Players tab before splitting.');
-    return;
-  }
-
-  playersWithAvg.sort(function(a, b) { return b.avg - a.avg; });
-
-  var half = Math.ceil(playersWithAvg.length / 2);
-  var cupA = playersWithAvg.slice(0, half);
-  var cupB = playersWithAvg.slice(half);
-
-  shuffleArray(cupA);
-  shuffleArray(cupB);
-
-  await createBracketRounds(cupA, 'A');
-  await createBracketRounds(cupB, 'B');
-
-  showMsg('knockouts-success', 'Split complete! ' + tournamentData.name + ' A (' + cupA.length + ' players) and ' + tournamentData.name + ' B (' + cupB.length + ' players) generated.');
-  loadKnockouts();
-}
       async function init() {
         var params = new URLSearchParams(window.location.search);
         tournamentId = params.get('id');
@@ -188,7 +156,7 @@ async function splitByAverage() {
         if (result.error || !result.data) { window.location.href = 'admin.html'; return; }
         tournamentData = result.data;
 
-        var profilesResult = await sbClient.from('profiles').select('id, full_name, username').order('full_name');
+        var profilesResult = await sbClient.from('profiles').select('id, full_name, username, starter_average, average').order('full_name');
         allProfiles = profilesResult.data || [];
         allProfiles.forEach(function(p) { profileMapAdmin[p.id] = p.full_name || p.username || 'Unknown'; });
 
@@ -196,44 +164,44 @@ async function splitByAverage() {
         var isSingleElim = tournamentData.format === 'single_elimination' || tournamentData.format === 'single_elimination_b';
         var groupsTab = isGroupKnockout ? '<button class="tab" onclick="showTab(\'groups\', event)">Groups & Scores</button>' : '';
 
-document.getElementById('pageContent').innerHTML =
-  '<h2 id="pageTitle">⚙️ Managing: ' + tournamentData.name + '</h2>' +
-  '<div class="tabs">' +
-  '<button class="tab active" onclick="showTab(\'details\', event)">Details</button>' +
-  '<button class="tab" onclick="showTab(\'players\', event)">Players</button>' +
-  groupsTab +
-  '<button class="tab" onclick="showTab(\'knockouts\', event)">' + (isSingleElim ? 'Bracket' : 'Knockouts') + '</button>' +
-  '</div>' +
+        document.getElementById('pageContent').innerHTML =
+          '<h2 id="pageTitle">⚙️ Managing: ' + tournamentData.name + '</h2>' +
+          '<div class="tabs">' +
+          '<button class="tab active" onclick="showTab(\'details\', event)">Details</button>' +
+          '<button class="tab" onclick="showTab(\'players\', event)">Players</button>' +
+          groupsTab +
+          '<button class="tab" onclick="showTab(\'knockouts\', event)">' + (isSingleElim ? 'Bracket' : 'Knockouts') + '</button>' +
+          '</div>' +
 
-  '<div id="tab-details" class="tab-content active">' +
-  '<div class="card"><h3>Tournament Details</h3>' +
-  '<div class="success-msg" id="details-success"></div>' +
-  '<div class="error-msg" id="details-error"></div>' +
-  '<div class="form-group"><label>Tournament Name</label><input type="text" id="detName" value="' + (tournamentData.name || '').replace(/"/g, '&quot;') + '" /></div>' +
-  '<div class="form-group"><label>Date</label><input type="date" id="detDate" value="' + (tournamentData.date || '') + '" /></div>' +
-  '<div class="form-group"><label>Time</label><input type="time" id="detTime" value="' + (tournamentData.time || '') + '" /></div>' +
-  '<div class="form-group"><label>Format</label><select id="detFormat" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
-  '<option value="single_elimination"' + (tournamentData.format === 'single_elimination' ? ' selected' : '') + '>Single Elimination</option>' +
-  '<option value="single_elimination_b"' + (tournamentData.format === 'single_elimination_b' ? ' selected' : '') + '>Single Elimination + B Bracket</option>' +
-  '<option value="group_knockout"' + (tournamentData.format === 'group_knockout' ? ' selected' : '') + '>Group Stages + Knockout</option>' +
-  '</select></div>' +
-  '<div class="form-group"><label>Platform</label><select id="detPlatform" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
-  '<option value="dartcounter"' + (tournamentData.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
-  '<option value="scolia"' + (tournamentData.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
-  '<option value="in_person"' + (tournamentData.platform === 'in_person' ? ' selected' : '') + '>In Person</option>' +
-  '<option value="both"' + (tournamentData.platform === 'both' ? ' selected' : '') + '>Both</option>' +
-  '</select></div>' +
-  '<div class="form-group"><label>Max Players</label><input type="number" id="detMax" value="' + (tournamentData.max_players || '') + '" /></div>' +
-  '<div class="form-group" style="display:flex;align-items:center;gap:8px;">' +
-'<input type="checkbox" id="detAvgSplit" style="width:18px;height:18px;"' + (tournamentData.average_split ? ' checked' : '') + ' />' +
-'<label style="margin:0;">Average Split (splits into two cups by average)</label>' +
-'</div>' +
-  '<div class="form-group"><label>Description</label><textarea id="detDesc" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-family:Arial, sans-serif;">' + (tournamentData.description || '') + '</textarea></div>' +
-  '<button class="btn btn-primary" onclick="saveTournamentDetails()">Save Details</button>' +
-  '</div>' +
-  '</div>' +
+          '<div id="tab-details" class="tab-content active">' +
+          '<div class="card"><h3>Tournament Details</h3>' +
+          '<div class="success-msg" id="details-success"></div>' +
+          '<div class="error-msg" id="details-error"></div>' +
+          '<div class="form-group"><label>Tournament Name</label><input type="text" id="detName" value="' + (tournamentData.name || '').replace(/"/g, '&quot;') + '" /></div>' +
+          '<div class="form-group"><label>Date</label><input type="date" id="detDate" value="' + (tournamentData.date || '') + '" /></div>' +
+          '<div class="form-group"><label>Time</label><input type="time" id="detTime" value="' + (tournamentData.time || '') + '" /></div>' +
+          '<div class="form-group"><label>Format</label><select id="detFormat" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
+          '<option value="single_elimination"' + (tournamentData.format === 'single_elimination' ? ' selected' : '') + '>Single Elimination</option>' +
+          '<option value="single_elimination_b"' + (tournamentData.format === 'single_elimination_b' ? ' selected' : '') + '>Single Elimination + B Bracket</option>' +
+          '<option value="group_knockout"' + (tournamentData.format === 'group_knockout' ? ' selected' : '') + '>Group Stages + Knockout</option>' +
+          '</select></div>' +
+          '<div class="form-group"><label>Platform</label><select id="detPlatform" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
+          '<option value="dartcounter"' + (tournamentData.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
+          '<option value="scolia"' + (tournamentData.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
+          '<option value="in_person"' + (tournamentData.platform === 'in_person' ? ' selected' : '') + '>In Person</option>' +
+          '<option value="both"' + (tournamentData.platform === 'both' ? ' selected' : '') + '>Both</option>' +
+          '</select></div>' +
+          '<div class="form-group"><label>Max Players</label><input type="number" id="detMax" value="' + (tournamentData.max_players || '') + '" /></div>' +
+          '<div class="form-group" style="display:flex;align-items:center;gap:8px;">' +
+          '<input type="checkbox" id="detAvgSplit" style="width:18px;height:18px;"' + (tournamentData.average_split ? ' checked' : '') + ' />' +
+          '<label style="margin:0;">Average Split (splits into two cups by average)</label>' +
+          '</div>' +
+          '<div class="form-group"><label>Description</label><textarea id="detDesc" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-family:Arial, sans-serif;">' + (tournamentData.description || '') + '</textarea></div>' +
+          '<button class="btn btn-primary" onclick="saveTournamentDetails()">Save Details</button>' +
+          '</div>' +
+          '</div>' +
 
-'<div id="tab-players" class="tab-content">' +
+          '<div id="tab-players" class="tab-content">' +
           '<div class="card"><h3>Add Players</h3>' +
           '<div class="success-msg" id="add-player-success"></div>' +
           '<div class="error-msg" id="add-player-error"></div>' +
@@ -260,45 +228,48 @@ document.getElementById('pageContent').innerHTML =
           '<div id="groupsContent"><p class="empty-state">No groups generated yet.</p></div>' +
           '</div>' : '') +
 
-'<div id="tab-knockouts" class="tab-content">' +
-'<div class="success-msg" id="knockouts-success"></div>' +
-'<div class="error-msg" id="knockouts-error"></div>' +
-(isGroupKnockout ?
-'<div class="admin-bar">' +
-'<label>Players per group to progress:</label><input type="number" id="progressPerGroup" value="2" min="1" max="4" />' +
-'<button class="btn btn-primary" onclick="generateKnockouts()">Generate Knockouts</button>' +
-'<button class="btn btn-danger" onclick="clearKnockouts()">Clear Knockouts</button>' +
-'</div>' : '') +
-(isSingleElim ?
-'<div class="admin-bar">' +
-(tournamentData.average_split ? '<button class="btn btn-primary" onclick="splitByAverage()">Split by Average</button>' : '<button class="btn btn-primary" onclick="generateSingleElimination()">Generate Bracket</button>') +
-'<button class="btn btn-danger" onclick="clearKnockouts()">Clear Bracket</button>' +
-'</div>' : '') +
-'<div id="knockoutsContent"><p class="empty-state">No bracket yet.</p></div>' +
-'</div>';
+          '<div id="tab-knockouts" class="tab-content">' +
+          '<div class="success-msg" id="knockouts-success"></div>' +
+          '<div class="error-msg" id="knockouts-error"></div>' +
+          (isGroupKnockout ?
+          '<div class="admin-bar">' +
+          '<label>Players per group to progress:</label><input type="number" id="progressPerGroup" value="2" min="1" max="4" />' +
+          '<button class="btn btn-primary" onclick="generateKnockouts()">Generate Knockouts</button>' +
+          '<button class="btn btn-danger" onclick="clearKnockouts()">Clear Knockouts</button>' +
+          '</div>' : '') +
+          (isSingleElim ?
+          '<div class="admin-bar">' +
+          (tournamentData.average_split ? '<button class="btn btn-primary" onclick="splitByAverage()">Split by Average</button>' : '<button class="btn btn-primary" onclick="generateSingleElimination()">Generate Bracket</button>') +
+          '<button class="btn btn-danger" onclick="clearKnockouts()">Clear Bracket</button>' +
+          '</div>' : '') +
+          '<div id="knockoutsContent"><p class="empty-state">No bracket yet.</p></div>' +
+          '</div>';
 
         await loadPlayers();
         buildPlayerChecklist('');
         if (isGroupKnockout) { loadGroups(); }
         loadKnockouts();
       }
-async function saveTournamentDetails() {
-  var update = {
-    name: document.getElementById('detName').value.trim(),
-    date: document.getElementById('detDate').value || null,
-    time: document.getElementById('detTime').value || null,
-    format: document.getElementById('detFormat').value,
-    platform: document.getElementById('detPlatform').value,
-    max_players: document.getElementById('detMax').value || null,
-    average_split: document.getElementById('detAvgSplit').checked,
-    description: document.getElementById('detDesc').value.trim() || null
-  };
-  var result = await sbClient.from('tournaments').update(update).eq('id', tournamentId);
-  if (result.error) { showMsg('details-error', result.error.message); return; }
-  tournamentData.name = update.name;
-  document.getElementById('pageTitle').textContent = '⚙️ Managing: ' + update.name;
-  showMsg('details-success', 'Details saved successfully!');
-}
+
+      async function saveTournamentDetails() {
+        var update = {
+          name: document.getElementById('detName').value.trim(),
+          date: document.getElementById('detDate').value || null,
+          time: document.getElementById('detTime').value || null,
+          format: document.getElementById('detFormat').value,
+          platform: document.getElementById('detPlatform').value,
+          max_players: document.getElementById('detMax').value || null,
+          average_split: document.getElementById('detAvgSplit').checked,
+          description: document.getElementById('detDesc').value.trim() || null
+        };
+        var result = await sbClient.from('tournaments').update(update).eq('id', tournamentId);
+        if (result.error) { showMsg('details-error', result.error.message); return; }
+        tournamentData.name = update.name;
+        tournamentData.average_split = update.average_split;
+        document.getElementById('pageTitle').textContent = '⚙️ Managing: ' + update.name;
+        showMsg('details-success', 'Details saved successfully! Refresh the page if you changed Format or Average Split to update the tabs shown.');
+      }
+
       function buildPlayerChecklist(filter) {
         var checklist = document.getElementById('playerChecklist');
         var available = allProfiles.filter(function(p) {
@@ -338,29 +309,29 @@ async function saveTournamentDetails() {
         document.getElementById('selectedCount').textContent = checked.length + ' player' + (checked.length !== 1 ? 's' : '') + ' selected';
       }
 
-async function addSelectedPlayers() {
-  var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
-  if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
+      async function addSelectedPlayers() {
+        var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
+        if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
 
-  if (tournamentData.max_players) {
-    var wouldBeTotal = existingPlayerIds.length + checked.length;
-    if (wouldBeTotal > tournamentData.max_players) {
-      var canAdd = tournamentData.max_players - existingPlayerIds.length;
-      showMsg('add-player-error', 'Max players is ' + tournamentData.max_players + '. You can only add ' + (canAdd > 0 ? canAdd : 0) + ' more.');
-      return;
-    }
-  }
+        if (tournamentData.max_players) {
+          var wouldBeTotal = existingPlayerIds.length + checked.length;
+          if (wouldBeTotal > tournamentData.max_players) {
+            var canAdd = tournamentData.max_players - existingPlayerIds.length;
+            showMsg('add-player-error', 'Max players is ' + tournamentData.max_players + '. You can only add ' + (canAdd > 0 ? canAdd : 0) + ' more.');
+            return;
+          }
+        }
 
-  var added = 0;
-  for (var i = 0; i < checked.length; i++) {
-    var playerId = checked[i].value;
-    var result = await sbClient.from('tournament_players').insert([{ tournament_id: parseInt(tournamentId), player_id: playerId }]);
-    if (!result.error) { added++; }
-  }
-  showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
-  await loadPlayers();
-  buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
-}
+        var added = 0;
+        for (var i = 0; i < checked.length; i++) {
+          var playerId = checked[i].value;
+          var result = await sbClient.from('tournament_players').insert([{ tournament_id: parseInt(tournamentId), player_id: playerId }]);
+          if (!result.error) { added++; }
+        }
+        showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
+        await loadPlayers();
+        buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+      }
 
       async function loadPlayers() {
         var result = await sbClient.from('tournament_players').select('player_id, profiles(full_name, username)').eq('tournament_id', tournamentId);
@@ -516,6 +487,51 @@ async function addSelectedPlayers() {
         loadKnockouts();
       }
 
+      async function splitByAverage() {
+        var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
+        if (existing.data && existing.data.length > 0) {
+          if (!confirm('Bracket already exists. Regenerate?')) { return; }
+          await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
+        }
+
+        var playersResult = await sbClient.from('tournament_players').select('player_id, profiles(starter_average, average)').eq('tournament_id', tournamentId);
+        if (!playersResult.data || playersResult.data.length < 2) { showMsg('knockouts-error', 'Need at least 2 players to split.'); return; }
+
+        var playersWithAvg = playersResult.data.map(function(p) {
+          var profile = p.profiles || {};
+          var avg = profile.average || profile.starter_average || 0;
+          return { player_id: p.player_id, avg: parseFloat(avg) || 0 };
+        });
+
+        var missingAvg = playersWithAvg.filter(function(p) { return !p.avg; });
+        if (missingAvg.length > 0) {
+          showMsg('knockouts-error', missingAvg.length + ' player(s) have no average set yet. Please set their Starter Average in the Players tab before splitting.');
+          return;
+        }
+
+        playersWithAvg.sort(function(a, b) { return b.avg - a.avg; });
+
+        var half = Math.ceil(playersWithAvg.length / 2);
+        var cupA = playersWithAvg.slice(0, half);
+        var cupB = playersWithAvg.slice(half);
+
+        shuffleArray(cupA);
+        shuffleArray(cupB);
+
+        await createBracketRounds(cupA, 'CUPA');
+        await createBracketRounds(cupB, 'CUPB');
+
+        showMsg('knockouts-success', 'Split complete! ' + tournamentData.name + ' A (' + cupA.length + ' players) and ' + tournamentData.name + ' B (' + cupB.length + ' players) generated.');
+        loadKnockouts();
+      }
+
+      function getPlateBracketType(mainType) {
+        if (mainType === 'A') { return 'B'; }
+        if (mainType === 'CUPA') { return 'CUPA_PLATE'; }
+        if (mainType === 'CUPB') { return 'CUPB_PLATE'; }
+        return null;
+      }
+
       async function generateKnockouts() {
         var progressPerGroup = parseInt(document.getElementById('progressPerGroup').value) || 2;
         var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
@@ -570,27 +586,44 @@ async function addSelectedPlayers() {
         var all = result.data || [];
         if (!all.length) { container.innerHTML = '<p class="empty-state">No bracket yet.</p>'; return; }
 
-        cachedAMatches = all.filter(function(m) { return (m.bracket_type || 'A') === 'A'; });
-        cachedBMatches = all.filter(function(m) { return m.bracket_type === 'B'; });
+        cachedBracketsByType = {};
+        all.forEach(function(m) {
+          var bt = m.bracket_type || 'A';
+          if (!cachedBracketsByType[bt]) { cachedBracketsByType[bt] = []; }
+          cachedBracketsByType[bt].push(m);
+        });
 
-var toggleHtml = '';
-if (cachedBMatches.length > 0) {
-  var labelA = tournamentData.average_split ? tournamentData.name + ' A' : 'Main Bracket';
-  var labelB = tournamentData.average_split ? tournamentData.name + ' B' : 'Plate (Consolation)';
-  toggleHtml = '<div class="bracket-toggle">' +
-    '<button class="bracket-toggle-btn active" onclick="switchBracketView(\'A\', this)">' + labelA + '</button>' +
-    '<button class="bracket-toggle-btn" onclick="switchBracketView(\'B\', this)">' + labelB + '</button>' +
-    '</div>';
-}
+        var order, labels;
+        if (tournamentData.average_split) {
+          order = ['CUPA', 'CUPA_PLATE', 'CUPB', 'CUPB_PLATE'];
+          labels = {
+            CUPA: tournamentData.name + ' A',
+            CUPA_PLATE: tournamentData.name + ' A - Plate',
+            CUPB: tournamentData.name + ' B',
+            CUPB_PLATE: tournamentData.name + ' B - Plate'
+          };
+        } else {
+          order = ['A', 'B'];
+          labels = { A: 'Main Bracket', B: 'Plate (Consolation)' };
+        }
+
+        var presentTypes = order.filter(function(t) { return cachedBracketsByType[t] && cachedBracketsByType[t].length; });
+
+        var toggleHtml = '';
+        if (presentTypes.length > 1) {
+          toggleHtml = '<div class="bracket-toggle">' + presentTypes.map(function(t, i) {
+            return '<button class="bracket-toggle-btn' + (i === 0 ? ' active' : '') + '" onclick="switchBracketView(\'' + t + '\', this)">' + labels[t] + '</button>';
+          }).join('') + '</div>';
+        }
 
         container.innerHTML = toggleHtml + '<div id="bracketSectionContent"></div>';
-        renderBracketSection(cachedAMatches);
+        renderBracketSection(cachedBracketsByType[presentTypes[0]] || []);
       }
 
       function switchBracketView(type, btn) {
         document.querySelectorAll('.bracket-toggle-btn').forEach(function(b) { b.classList.remove('active'); });
         btn.classList.add('active');
-        renderBracketSection(type === 'A' ? cachedAMatches : cachedBMatches);
+        renderBracketSection(cachedBracketsByType[type] || []);
       }
 
       function renderBracketSection(matches) {
@@ -661,10 +694,11 @@ if (cachedBMatches.length > 0) {
         if (result.error) { alert('Error saving score: ' + result.error.message); return; }
 
         var advanced = await advanceWinner(matchId, currentRound, matchOrder, bracketType);
-        showMsg('knockouts-success', advanced ? 'Score saved — winner advanced!' : '🏆 ' + (bracketType === 'B' ? 'Plate' : 'Tournament') + ' complete! We have a winner!');
+        var isPlate = bracketType.indexOf('PLATE') > -1 || bracketType === 'B';
+        showMsg('knockouts-success', advanced ? 'Score saved — winner advanced!' : '🏆 ' + (isPlate ? 'Plate' : 'Bracket') + ' complete! We have a winner!');
 
-        if (bracketType === 'A' && tournamentData.format === 'single_elimination_b') {
-          await maybeGenerateBBracket(currentRound);
+        if (tournamentData.format === 'single_elimination_b' && getPlateBracketType(bracketType)) {
+          await maybeGenerateBBracket(currentRound, bracketType);
         }
 
         loadKnockouts();
@@ -687,19 +721,22 @@ if (cachedBMatches.length > 0) {
         });
       }
 
-      async function maybeGenerateBBracket(currentRound) {
-        var aMatchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').eq('bracket_type', 'A');
-        var aMatches = aMatchesResult.data || [];
-        var roundsPresentA = roundOrderFull.filter(function(r) { return aMatches.some(function(m) { return m.round === r; }); });
-        var firstRound = roundsPresentA[0];
+      async function maybeGenerateBBracket(currentRound, bracketType) {
+        var plateType = getPlateBracketType(bracketType);
+        if (!plateType) { return; }
+
+        var mainMatchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').eq('bracket_type', bracketType);
+        var mainMatches = mainMatchesResult.data || [];
+        var roundsPresentMain = roundOrderFull.filter(function(r) { return mainMatches.some(function(m) { return m.round === r; }); });
+        var firstRound = roundsPresentMain[0];
         if (currentRound !== firstRound) { return; }
 
-        var round1Matches = aMatches.filter(function(m) { return m.round === firstRound; }).sort(function(a, b) { return a.match_order - b.match_order; });
+        var round1Matches = mainMatches.filter(function(m) { return m.round === firstRound; }).sort(function(a, b) { return a.match_order - b.match_order; });
         var allComplete = round1Matches.every(function(m) { return m.status === 'completed'; });
         if (!allComplete) { return; }
 
-        var bExisting = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout').eq('bracket_type', 'B');
-        if (bExisting.data && bExisting.data.length > 0) { return; }
+        var plateExisting = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout').eq('bracket_type', plateType);
+        if (plateExisting.data && plateExisting.data.length > 0) { return; }
 
         var losers = round1Matches.map(function(m) {
           if (!m.player1_id || !m.player2_id) { return null; }
@@ -707,8 +744,8 @@ if (cachedBMatches.length > 0) {
           return { player_id: loserId };
         });
 
-        await createBracketRounds(losers, 'B');
-        showMsg('knockouts-success', 'Round 1 complete! Plate (B Bracket) generated from losers.');
+        await createBracketRounds(losers, plateType);
+        showMsg('knockouts-success', 'Round 1 complete! Plate bracket generated.');
       }
 
       function getRoundName(numMatches) {
