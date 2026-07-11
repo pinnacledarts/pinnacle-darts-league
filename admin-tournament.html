@@ -254,6 +254,7 @@ async function saveTournamentDetails() {
     format: document.getElementById('detFormat').value,
     platform: document.getElementById('detPlatform').value,
     max_players: document.getElementById('detMax').value || null,
+    average_split: document.getElementById('detAvgSplit').checked,
     description: document.getElementById('detDesc').value.trim() || null
   };
   var result = await sbClient.from('tournaments').update(update).eq('id', tournamentId);
