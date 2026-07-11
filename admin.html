@@ -601,7 +601,52 @@
       var allTournamentsData = [];
       var allLeaguesData = [];
       var allNewsData = [];
+var drillTargetCount = 0;
 
+function addDrillTargetRow() {
+  drillTargetCount++;
+  var idx = drillTargetCount;
+  var container = document.getElementById('drillTargetsList');
+  var row = document.createElement('div');
+  row.className = 'card';
+  row.style.background = '#f9f9f9';
+  row.id = 'drillTargetRow' + idx;
+  row.innerHTML =
+    '<div class="form-row">' +
+    '<div class="form-group"><label>Target Name</label><input type="text" id="targetName' + idx + '" placeholder="e.g. Bullseye" /></div>' +
+    '<div class="form-group" style="display:flex;align-items:flex-end;">' +
+    '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Target</button>' +
+    '</div>' +
+    '</div>' +
+    '<div id="scoreOptionsList' + idx + '"></div>' +
+    '<button class="btn-small" onclick="addScoreOptionRow(' + idx + ')">+ Add Score Option</button>';
+  container.appendChild(row);
+  addScoreOptionRow(idx);
+}
+
+function removeDrillTargetRow(idx) {
+  var row = document.getElementById('drillTargetRow' + idx);
+  if (row) { row.remove(); }
+}
+
+var scoreOptionCounts = {};
+
+function addScoreOptionRow(targetIdx) {
+  if (!scoreOptionCounts[targetIdx]) { scoreOptionCounts[targetIdx] = 0; }
+  scoreOptionCounts[targetIdx]++;
+  var optIdx = scoreOptionCounts[targetIdx];
+  var container = document.getElementById('scoreOptionsList' + targetIdx);
+  var row = document.createElement('div');
+  row.style.display = 'flex';
+  row.style.gap = '8px';
+  row.style.marginBottom = '8px';
+  row.id = 'scoreOptRow' + targetIdx + '_' + optIdx;
+  row.innerHTML =
+    '<input type="text" id="scoreLabel' + targetIdx + '_' + optIdx + '" placeholder="Label (e.g. Hit)" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
+    '<input type="number" id="scorePoints' + targetIdx + '_' + optIdx + '" placeholder="Points" style="width:100px;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
+    '<button class="btn-small danger" onclick="document.getElementById(\'scoreOptRow' + targetIdx + '_' + optIdx + '\').remove()">✕</button>';
+  container.appendChild(row);
+}
       if (document.referrer.includes('academy.html')) {
         document.getElementById('switchBtn').textContent = 'Switch to Online';
         document.getElementById('switchBtn').href = 'index.html';
