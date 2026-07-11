@@ -709,25 +709,54 @@ function renderBracketSection(matches) {
         return true;
       }
 
-      async function saveKnockoutScore(matchId, currentRound, matchOrder, bracketType) {
-        var s1 = parseInt(document.getElementById('ks1_' + matchId).value);
-        var s2 = parseInt(document.getElementById('ks2_' + matchId).value);
-        if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
-        if (s1 === s2) { alert('Scores cannot be equal in a knockout match.'); return; }
+async function saveKnockoutScore(matchId, currentRound, matchOrder, bracketType, p1Id, p2Id) {
+  var s1 = parseInt(document.getElementById('ks1_' + matchId).value);
+  var s2 = parseInt(document.getElementById('ks2_' + matchId).value);
+  if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
+  if (s1 === s2) { alert('Scores cannot be equal in a knockout match.'); return; }
 
-        var result = await sbClient.from('tournament_matches').update({ player1_score: s1, player2_score: s2, status: 'completed' }).eq('id', matchId);
-        if (result.error) { alert('Error saving score: ' + result.error.message); return; }
+  var a1Val = document.getElementById('ka1_' + matchId).value.trim();
+  var a2Val = document.getElementById('ka2_' + matchId).value.trim();
 
-        var advanced = await advanceWinner(matchId, currentRound, matchOrder, bracketType);
-        var isPlate = bracketType.indexOf('PLATE') > -1 || bracketType === 'B';
-        showMsg('knockouts-success', advanced ? 'Score saved — winner advanced!' : '🏆 ' + (isPlate ? 'Plate' : 'Bracket') + ' complete! We have a winner!');
+  var update = { player1_score: s1, player2_score: s2, status: 'completed' };
+  if (a1Val) { update.player1_avg = parseFloat(a1Val); }
+  if (a2Val) { update.player2_avg = parseFloat(a2Val); }
 
-        if (tournamentData.format === 'single_elimination_b' && getPlateBracketType(bracketType)) {
-          await maybeGenerateBBracket(currentRound, bracketType);
-        }
+  var result = await sbClient.from('tournament_matches').update(update).eq('id', matchId);
+  if (result.error) { alert('Error saving score: ' + result.error.message); return; }
 
-        loadKnockouts();
-      }
+  if (a1Val && p1Id) { await updatePlayerAverage(p1Id); }
+  if (a2Val && p2Id) { await updatePlayerAverage(p2Id); }
+
+  var advanced = await advanceWinner(matchId, currentRound, matchOrder, bracketType);
+  var isPlate = bracketType.indexOf('PLATE') > -1 || bracketType === 'B';
+  showMsg('knockouts-success', advanced ? 'Score saved — winner advanced!' : '🏆 ' + (isPlate ? 'Plate' : 'Bracket') + ' complete! We have a winner!');
+
+  if (tournamentData.format === 'single_elimination_b' && getPlateBracketType(bracketType)) {
+    await maybeGenerateBBracket(currentRound, bracketType);
+  }
+
+  loadKnockouts();
+}
+
+function editKnockoutAvg(matchId, p1Id, p2Id) {
+  var newA1 = prompt('Enter Player 1 average (leave blank to skip):');
+  var newA2 = prompt('Enter Player 2 average (leave blank to skip):');
+
+  var update = {};
+  if (newA1 && newA1.trim()) { update.player1_avg = parseFloat(newA1.trim()); }
+  if (newA2 && newA2.trim()) { update.player2_avg = parseFloat(newA2.trim()); }
+
+  if (Object.keys(update).length === 0) { return; }
+
+  sbClient.from('tournament_matches').update(update).eq('id', matchId).then(async function(result) {
+    if (result.error) { alert('Error updating averages: ' + result.error.message); return; }
+    if (update.player1_avg != null && p1Id) { await updatePlayerAverage(p1Id); }
+    if (update.player2_avg != null && p2Id) { await updatePlayerAverage(p2Id); }
+    showMsg('knockouts-success', 'Averages updated!');
+    loadKnockouts();
+  });
+}
 
       function editKnockoutScore(matchId, currentRound, matchOrder, bracketType) {
         var newS1 = prompt('Enter new score for Player 1:');
