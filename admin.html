@@ -925,6 +925,12 @@ async function updatePhone(id) {
   alert('Phone number saved!');
 }
 
+      async function updateStarterAvg(id) {
+  var value = document.getElementById('stavg-' + id).value.trim();
+  var result = await sbClient.from('profiles').update({ starter_average: value || null }).eq('id', id);
+  if (result.error) { alert('Error saving starter average: ' + result.error.message); return; }
+  alert('Starter average saved!');
+}
       async function toggleAdmin(id, currentStatus) {
         await sbClient.from('profiles').update({ is_admin: !currentStatus }).eq('id', id);
         loadPlayers();
