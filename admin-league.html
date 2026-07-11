@@ -327,19 +327,22 @@
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
 
-      async function loadPlayers() {
-        var result = await sbClient.from('league_players').select('player_id, profiles(full_name, username)').eq('league_id', leagueId);
-        existingPlayerIds = result.data ? result.data.map(function(p) { return p.player_id; }) : [];
-        var container = document.getElementById('playersList');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
-        container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Actions</th></tr></thead><tbody>' +
-          result.data.map(function(p) {
-            var profile = p.profiles || {};
-            var name = profile.full_name || profile.username || 'Unknown';
-            var username = profile.username ? '@' + profile.username : '-';
-            return '<tr><td>' + name + '</td><td>' + username + '</td><td><button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
-          }).join('') + '</tbody></table>';
-      }
+async function loadPlayers() {
+  var result = await sbClient.from('league_players').select('player_id, division, profiles(full_name, username, average, starter_average)').eq('league_id', leagueId);
+  existingPlayerIds = result.data ? result.data.map(function(p) { return p.player_id; }) : [];
+  var container = document.getElementById('playersList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
+  container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Division</th><th>Actions</th></tr></thead><tbody>' +
+    result.data.map(function(p) {
+      var profile = p.profiles || {};
+      var name = profile.full_name || profile.username || 'Unknown';
+      var username = profile.username ? '@' + profile.username : '-';
+      var avg = profile.average || profile.starter_average;
+      var nameWithAvg = name + (avg ? ' (' + avg + ')' : '');
+      var divisionText = p.division ? 'Div ' + p.division : '-';
+      return '<tr><td>' + nameWithAvg + '</td><td>' + username + '</td><td>' + divisionText + '</td><td><button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
 
       async function removePlayer(playerId) {
         if (!confirm('Remove this player from the league?')) { return; }
