@@ -133,7 +133,38 @@
       var existingPlayerIds = [];
       var profileMapAdmin = {};
       var playoffRoundOrder = ['Semi Final', 'Final'];
+async function assignDivisionsByAverage() {
+  var playersPerDivision = leagueData.players_per_division;
+  if (!playersPerDivision || playersPerDivision < 2) {
+    showMsg('fixtures-error', 'Please set "Players Per Division" in the Details tab first.');
+    return;
+  }
 
+  var playersResult = await sbClient.from('league_players').select('player_id, profiles(starter_average, average)').eq('league_id', leagueId);
+  if (!playersResult.data || playersResult.data.length < 2) { showMsg('fixtures-error', 'Not enough players registered.'); return; }
+
+  var playersWithAvg = playersResult.data.map(function(p) {
+    var profile = p.profiles || {};
+    var avg = profile.average || profile.starter_average || 0;
+    return { player_id: p.player_id, avg: parseFloat(avg) || 0 };
+  });
+
+  var missingAvg = playersWithAvg.filter(function(p) { return !p.avg; });
+  if (missingAvg.length > 0) {
+    showMsg('fixtures-error', missingAvg.length + ' player(s) have no average set. Please set their Starter Average in the Players tab first.');
+    return;
+  }
+
+  playersWithAvg.sort(function(a, b) { return b.avg - a.avg; });
+
+  for (var i = 0; i < playersWithAvg.length; i++) {
+    var divisionNum = Math.floor(i / playersPerDivision) + 1;
+    await sbClient.from('league_players').update({ division: divisionNum }).eq('league_id', leagueId).eq('player_id', playersWithAvg[i].player_id);
+  }
+
+  var numDivisions = Math.ceil(playersWithAvg.length / playersPerDivision);
+  showMsg('fixtures-success', 'Players assigned into ' + numDivisions + ' division(s) by average!');
+}
       async function init() {
         var params = new URLSearchParams(window.location.search);
         leagueId = params.get('id');
