@@ -333,7 +333,28 @@
           </div>
         </div>
 
-        <div id="loadingMsg" class="loading">Loading players...</div>
+<div id="loadingMsg" class="loading">Loading players...</div>
+      </div>
+
+      <div id="tab-drills" class="tab-content">
+        <div class="tabs" style="border-bottom:1px solid #dddddd;margin-bottom:20px;">
+          <button class="tab active" onclick="showDrillSubTab('newdrill', event)">New Drill</button>
+          <button class="tab" onclick="showDrillSubTab('progress', event)">Progress</button>
+        </div>
+
+        <div id="subtab-newdrill" class="tab-content active">
+          <div id="drillsAccordionList"><p class="loading">Loading drills...</p></div>
+        </div>
+
+        <div id="subtab-progress" class="tab-content">
+          <div class="search-box">
+            <label>Select Drill</label>
+            <select id="progressDrillSelect" onchange="loadDrillProgress()"></select>
+          </div>
+          <div id="progressChartContainer" style="background-color:#ffffff;border:1px solid #dddddd;border-radius:8px;padding:20px;">
+            <p class="loading">Select a drill to view your progress.</p>
+          </div>
+        </div>
       </div>
     </main>
 
