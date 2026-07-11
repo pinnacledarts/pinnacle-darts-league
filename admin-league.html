@@ -579,34 +579,39 @@ async function updateFixtureScore(matchId, p1Id, p2Id) {
       }
 
       async function loadPlayoffs() {
-        var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff');
-        var container = document.getElementById('playoffsContent');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">Playoffs will generate automatically once the regular season is complete.</p>'; return; }
+  var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff');
+  var container = document.getElementById('playoffsContent');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">Playoffs will generate automatically once the regular season is complete.</p>'; return; }
 
-        var rounds = {};
-        result.data.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
+  var rounds = {};
+  result.data.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
 
-        var html = playoffRoundOrder.filter(function(r) { return rounds[r]; }).map(function(r) {
-          var matchesHtml = rounds[r].map(function(m) {
-            var p1name = m.player1_id ? (profileMapAdmin[m.player1_id] || 'Unknown') : 'TBD';
-            var p2name = m.player2_id ? (profileMapAdmin[m.player2_id] || 'Unknown') : 'TBD';
-            var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
-            var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
-            var scoreHtml;
-            if (m.status === 'completed') {
-              scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
-            } else if (m.player1_id && m.player2_id) {
-              scoreHtml = '<div class="score-inputs"><input class="score-input" type="number" id="ps1_' + m.id + '" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ps2_' + m.id + '" placeholder="0" /><button class="btn-submit-score" onclick="savePlayoffScore(' + m.id + ',\'' + r + '\')">Submit</button></div>';
-            } else {
-              scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
-            }
-            return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span></div>' + scoreHtml + '</div>';
-          }).join('');
-          return '<h4 style="margin:16px 0 8px;">' + r + '</h4>' + matchesHtml;
-        }).join('');
-
-        container.innerHTML = html;
+  var html = playoffRoundOrder.filter(function(r) { return rounds[r]; }).map(function(r) {
+    var matchesHtml = rounds[r].map(function(m) {
+      var p1name = m.player1_id ? (profileMapAdmin[m.player1_id] || 'Unknown') : 'TBD';
+      var p2name = m.player2_id ? (profileMapAdmin[m.player2_id] || 'Unknown') : 'TBD';
+      var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
+      var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
+      var a1 = m.player1_avg != null ? m.player1_avg : '';
+      var a2 = m.player2_avg != null ? m.player2_avg : '';
+      var scoreHtml;
+      if (m.status === 'completed') {
+        scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
+      } else if (m.player1_id && m.player2_id) {
+        scoreHtml = '<div class="score-inputs"><input class="score-input" type="number" id="ps1_' + m.id + '" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ps2_' + m.id + '" placeholder="0" />' +
+          '<input class="score-input" type="number" step="0.01" id="pa1_' + m.id + '" value="' + a1 + '" placeholder="Avg 1" style="width:70px;" />' +
+          '<input class="score-input" type="number" step="0.01" id="pa2_' + m.id + '" value="' + a2 + '" placeholder="Avg 2" style="width:70px;" />' +
+          '<button class="btn-submit-score" onclick="savePlayoffScore(' + m.id + ',\'' + r + '\', \'' + m.player1_id + '\', \'' + m.player2_id + '\')">Submit</button></div>';
+      } else {
+        scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
       }
+      return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span></div>' + scoreHtml + '</div>';
+    }).join('');
+    return '<h4 style="margin:16px 0 8px;">' + r + '</h4>' + matchesHtml;
+  }).join('');
+
+  container.innerHTML = html;
+}
 
       async function savePlayoffScore(matchId, currentRound) {
         var s1 = parseInt(document.getElementById('ps1_' + matchId).value);
