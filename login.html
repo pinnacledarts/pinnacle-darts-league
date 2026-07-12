@@ -95,10 +95,13 @@
           <label>Password</label>
           <input type="password" id="password" placeholder="Enter your password" />
         </div>
-        <button class="btn-submit" onclick="handleLogin()">Login</button>
-        <div class="register-link">
-          Don't have an account? <a href="register.html">Create one here</a>
-        </div>
+<button class="btn-submit" onclick="handleLogin()">Login</button>
+<div class="register-link" style="margin-top:8px;">
+  <a href="#" onclick="showResetForm(); return false;">Forgot password?</a>
+</div>
+<div class="register-link">
+  Don't have an account? <a href="register.html">Create one here</a>
+</div>
       </div>
     </main>
 
