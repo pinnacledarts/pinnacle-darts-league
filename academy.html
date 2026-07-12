@@ -979,20 +979,30 @@
         var targetSelects = document.querySelectorAll('[id^="drilltarget-' + drillId + '-"]');
         if (!targetSelects.length) { return; }
 
-        var totalScore = 0;
-        var scoreEntries = [];
-        var allSelected = true;
+      var totalScore = 0;
+var scoreEntries = [];
+var allSelected = true;
 
-        for (var i = 0; i < targetSelects.length; i++) {
-          var sel = targetSelects[i];
-          if (!sel.value) { allSelected = false; continue; }
-          var parts = sel.value.split('|');
-          var scoreOptionId = parts[0];
-          var points = parseFloat(parts[1]);
-          var targetId = sel.id.split('-')[2];
-          totalScore += points;
-          scoreEntries.push({ target_id: targetId, score_option_id: scoreOptionId, points: points });
-        }
+for (var i = 0; i < targetSelects.length; i++) {
+  var sel = targetSelects[i];
+  var isManual = sel.getAttribute('data-manual') === 'true';
+  var targetId = sel.id.split('-')[2];
+
+  if (isManual) {
+    if (sel.value === '') { allSelected = false; continue; }
+    var manualPoints = parseFloat(sel.value);
+    if (isNaN(manualPoints)) { allSelected = false; continue; }
+    totalScore += manualPoints;
+    scoreEntries.push({ target_id: targetId, score_option_id: null, points: manualPoints });
+  } else {
+    if (!sel.value) { allSelected = false; continue; }
+    var parts = sel.value.split('|');
+    var scoreOptionId = parts[0];
+    var points = parseFloat(parts[1]);
+    totalScore += points;
+    scoreEntries.push({ target_id: targetId, score_option_id: scoreOptionId, points: points });
+  }
+}
 
         if (!allSelected) {
           document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#cc0000;">Please select a score for every target.</span>';
