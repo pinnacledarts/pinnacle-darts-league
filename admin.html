@@ -1286,6 +1286,115 @@ function toggleManageDrill(id) {
         await sbClient.from('drills').delete().eq('id', id);
         loadDrills();
       }
+      var allDrillAttemptsData = [];
+
+async function loadDrillAttempts() {
+  var result = await sbClient.from('drill_attempts').select('*, profiles(full_name, username), drills(title), drill_attempt_scores(id, target_id, points, drill_targets(target_name), drill_score_options(label))').order('attempt_date', { ascending: false });
+  allDrillAttemptsData = result.data || [];
+
+  var playerFilter = document.getElementById('drillAttemptPlayerFilter');
+  var uniquePlayers = {};
+  allDrillAttemptsData.forEach(function(a) {
+    var p = a.profiles || {};
+    var name = p.full_name || p.username || 'Unknown';
+    if (a.player_id) { uniquePlayers[a.player_id] = name; }
+  });
+  playerFilter.innerHTML = '<option value="">-- All Players --</option>';
+  Object.keys(uniquePlayers).forEach(function(pid) {
+    playerFilter.innerHTML += '<option value="' + pid + '">' + uniquePlayers[pid] + '</option>';
+  });
+
+  renderDrillAttempts(allDrillAttemptsData);
+}
+
+function renderDrillAttempts(data) {
+  var container = document.getElementById('drillAttemptsList');
+  if (!data.length) { container.innerHTML = '<p class="empty-state">No drill attempts logged yet.</p>'; return; }
+
+  container.innerHTML = '<table><thead><tr><th>Player</th><th>Drill</th><th>Date</th><th>Score</th><th>Action</th></tr></thead><tbody>' +
+    data.map(function(a) {
+      var profile = a.profiles || {};
+      var name = profile.full_name || profile.username || 'Unknown';
+      var drillTitle = a.drills ? a.drills.title : 'Unknown Drill';
+      return '<tr style="cursor:pointer;" onclick="toggleDrillAttemptDetail(' + a.id + ')">' +
+        '<td>' + name + '</td><td>' + drillTitle + '</td><td>' + (a.attempt_date || '-') + '</td><td><strong id="attempt-total-' + a.id + '">' + a.total_score + '</strong></td>' +
+        '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteDrillAttempt(' + a.id + ')">Delete</button></td>' +
+        '</tr>' +
+        '<tr id="attempt-detail-' + a.id + '" style="display:none;background:#f9f9f9;">' +
+        '<td colspan="5" style="padding:16px;" id="attempt-detail-content-' + a.id + '">' +
+        renderDrillAttemptDetailView(a) +
+        '</td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+function renderDrillAttemptDetailView(a) {
+  var scores = a.drill_attempt_scores || [];
+  var rowsHtml = scores.map(function(s) {
+    var targetName = s.drill_targets ? s.drill_targets.target_name : 'Unknown';
+    var label = s.drill_score_options ? s.drill_score_options.label : 'Manual Entry';
+    return '<strong>' + targetName + ':</strong> ' + label + ' (' + s.points + ' pts)<br>';
+  }).join('');
+  return (rowsHtml || 'No target breakdown available.') +
+    '<button class="btn-small" onclick="editDrillAttempt(' + a.id + ')" style="margin-top:10px;">Edit Total Score</button>';
+}
+
+function toggleDrillAttemptDetail(id) {
+  var row = document.getElementById('attempt-detail-' + id);
+  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+}
+
+function editDrillAttempt(id) {
+  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
+  if (!attempt) { return; }
+  document.getElementById('attempt-detail-content-' + id).innerHTML =
+    '<div class="form-group" style="max-width:200px;"><label>Total Score</label><input type="number" step="any" class="score-input" id="edit-attempt-score-' + id + '" value="' + attempt.total_score + '" style="width:100px;" /></div>' +
+    '<button class="btn-small" onclick="saveDrillAttemptEdit(' + id + ')">Save</button> ' +
+    '<button class="btn-small" onclick="cancelDrillAttemptEdit(' + id + ')">Cancel</button>';
+}
+
+function cancelDrillAttemptEdit(id) {
+  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
+  if (!attempt) { return; }
+  document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
+}
+
+async function saveDrillAttemptEdit(id) {
+  var newScore = parseFloat(document.getElementById('edit-attempt-score-' + id).value);
+  if (isNaN(newScore)) { alert('Please enter a valid score.'); return; }
+
+  var result = await sbClient.from('drill_attempts').update({ total_score: newScore }).eq('id', id);
+  if (result.error) { alert('Error saving: ' + result.error.message); return; }
+
+  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
+  if (attempt) { attempt.total_score = newScore; }
+  document.getElementById('attempt-total-' + id).textContent = newScore;
+  document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
+}
+
+async function deleteDrillAttempt(id) {
+  if (!confirm('Delete this drill attempt?')) { return; }
+  await sbClient.from('drill_attempts').delete().eq('id', id);
+  loadDrillAttempts();
+}
+
+function filterDrillAttempts() {
+  var playerVal = document.getElementById('drillAttemptPlayerFilter').value;
+  var dateVal = document.getElementById('drillAttemptDateFilter').value;
+
+  var filtered = allDrillAttemptsData.filter(function(a) {
+    var playerMatch = !playerVal || a.player_id === playerVal;
+    var dateMatch = !dateVal || a.attempt_date === dateVal;
+    return playerMatch && dateMatch;
+  });
+
+  renderDrillAttempts(filtered);
+}
+
+function clearDrillAttemptFilters() {
+  document.getElementById('drillAttemptPlayerFilter').value = '';
+  document.getElementById('drillAttemptDateFilter').value = '';
+  renderDrillAttempts(allDrillAttemptsData);
+}
 async function editDrill(id) {
  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').eq('id', id).single();
   if (result.error || !result.data) { alert('Error loading drill.'); return; }
