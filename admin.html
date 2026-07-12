@@ -395,7 +395,23 @@
           <h3>Manage Drills</h3>
           <div id="drillsList"><p class="empty-state">Loading...</p></div>
         </div>
-
+<div class="card">
+  <h3>Drill Attempts Log</h3>
+  <div class="form-row">
+    <div class="form-group">
+      <label>Filter by Player</label>
+      <select id="drillAttemptPlayerFilter" onchange="filterDrillAttempts()">
+        <option value="">-- All Players --</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Filter by Date</label>
+      <input type="date" id="drillAttemptDateFilter" onchange="filterDrillAttempts()" />
+    </div>
+  </div>
+  <button class="btn btn-secondary" onclick="clearDrillAttemptFilters()" style="margin-bottom:16px;">Clear Filters</button>
+  <div id="drillAttemptsList"><p class="empty-state">Loading...</p></div>
+</div>
         <div class="card">
           <h3>Academy Leagues (Groups)</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a group (e.g. Tuesday Prodigy) and add players to it.</p>
