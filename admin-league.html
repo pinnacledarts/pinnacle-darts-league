@@ -323,14 +323,7 @@
       var canAdd = leagueData.max_players - existingPlayerIds.length;
       showMsg('add-player-error', 'Max players is ' + leagueData.max_players + '. You can only add ' + (canAdd > 0 ? canAdd : 0) + ' more.');
       return;
-    }
-  }
-
-  var added = 0;
-  for (var i = 0; i < checked.length; i++) {
-    var playerId = checked[i].value;
-    var result = await sbClient.from('league_players').insert([{ league_id: parseInt(leagueId), player_id: playerId }]);
-    if (!result.error) { added++; }
+    
   }
   showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
   await loadPlayers();
