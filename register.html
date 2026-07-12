@@ -165,11 +165,17 @@
         errorMsg.style.display = 'none';
         successMsg.style.display = 'none';
 
-        if (!fullName || !username || !email || !phone || !dob || !platform || !password) {
-          errorMsg.textContent = 'Please fill in all fields.';
-          errorMsg.style.display = 'block';
-          return;
-        }
+       if (!fullName || !username || !email || !phone || !dob || !platform || !password) {
+  errorMsg.textContent = 'Please fill in all fields.';
+  errorMsg.style.display = 'block';
+  return;
+}
+
+if (!document.getElementById('agreeTerms').checked) {
+  errorMsg.textContent = 'Please agree to the Terms & Conditions to continue.';
+  errorMsg.style.display = 'block';
+  return;
+}
 
         if (password !== confirmPassword) {
           errorMsg.textContent = 'Passwords do not match.';
