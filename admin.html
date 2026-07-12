@@ -1922,28 +1922,30 @@
       }
 
       async function loadDivisionEnquiries() {
-        var result = await sbClient.from('division_sponsor_enquiries').select('*, academy_leagues(name)').order('created_at', { ascending: false });
-        var container = document.getElementById('divisionEnquiriesList');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
+  var result = await sbClient.from('division_sponsor_enquiries').select('*, academy_leagues(name)').order('created_at', { ascending: false });
+  var container = document.getElementById('divisionEnquiriesList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
 
-        container.innerHTML = '<table><thead><tr><th>Group</th><th>From</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
-          result.data.map(function(e) {
-            var group = e.academy_leagues || {};
-            var unreadMark = !e.is_read ? ' 🔴' : '';
-            return '<tr style="cursor:pointer;" onclick="toggleDivisionEnquiryDetail(' + e.id + ')">' +
-              '<td>' + (group.name || 'Unknown') + unreadMark + '</td><td>' + e.enquirer_name + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
-              '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteDivisionEnquiry(' + e.id + ')">Delete</button></td>' +
-              '</tr>' +
-              '<tr id="division-enquiry-detail-' + e.id + '" style="display:none;background:#f9f9f9;">' +
-              '<td colspan="4" style="padding:16px;">' +
-              '<strong>Email:</strong> ' + e.enquirer_email + '<br>' +
-              '<strong>Phone:</strong> ' + (e.enquirer_phone || '-') + '<br>' +
-              '<strong>Message:</strong><br>' + e.message +
-              '</td></tr>';
-          }).join('') + '</tbody></table>';
+  container.innerHTML = result.data.map(function(e) {
+    var group = e.academy_leagues || {};
+    var unreadMark = !e.is_read ? ' 🔴' : '';
+    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+      '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleDivisionEnquiryDetail(' + e.id + ')">' +
+      '<div><strong>' + (group.name || 'Unknown') + unreadMark + '</strong><div style="color:#888;font-size:0.85em;">From: ' + e.enquirer_name + ' — ' + new Date(e.created_at).toLocaleDateString('en-GB') + '</div></div>' +
+      '<span style="color:#aaa;">▾</span>' +
+      '</div>' +
+      '<div id="division-enquiry-detail-' + e.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+      '<div style="padding-top:12px;">' +
+      '<strong>Email:</strong> ' + e.enquirer_email + '<br>' +
+      '<strong>Phone:</strong> ' + (e.enquirer_phone || '-') + '<br>' +
+      '<strong>Message:</strong><br>' + e.message +
+      '</div>' +
+      '<button class="btn-small danger" onclick="deleteDivisionEnquiry(' + e.id + ')" style="margin-top:10px;">Delete</button>' +
+      '</div></div>';
+  }).join('');
 
-        updateAcademyBadge();
-      }
+  updateAcademyBadge();
+}
 
       async function toggleDivisionEnquiryDetail(id) {
         var row = document.getElementById('division-enquiry-detail-' + id);
