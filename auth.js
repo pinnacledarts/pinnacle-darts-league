@@ -45,7 +45,32 @@ async function checkAuth() {
     `;
   }
 }
+async function checkAcademyAccess() {
+  const { data: { session } } = await sbClient.auth.getSession();
+  if (!session) { return false; }
 
+  const { data: profile } = await sbClient.from('profiles').select('access').eq('id', session.user.id).single();
+  if (!profile) { return false; }
+
+  return profile.access === 'academy' || profile.access === 'both';
+}
+
+async function updateSwitchButtonVisibility() {
+  const switchBtn = document.getElementById('switchBtn');
+  if (!switchBtn) { return; }
+
+  const { data: { session } } = await sbClient.auth.getSession();
+  if (!session) { switchBtn.style.display = 'none'; return; }
+
+  const { data: profile } = await sbClient.from('profiles').select('access').eq('id', session.user.id).single();
+  const hasAcademyAccess = profile && (profile.access === 'academy' || profile.access === 'both');
+
+  if (window.location.pathname.includes('academy') || window.location.pathname.includes('admin')) {
+    switchBtn.style.display = '';
+  } else {
+    switchBtn.style.display = hasAcademyAccess ? '' : 'none';
+  }
+}
 async function handleLogout() {
   await sbClient.auth.signOut();
   window.location.href = 'index.html';
