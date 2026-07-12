@@ -118,15 +118,67 @@
       </div>
     </header>
 
-    <main>
-      <h2>Pinnacle Academy</h2>
+<main id="academyMain">
+  <div id="academyLockedView" style="display:none;">
+    <h2>Pinnacle Academy</h2>
+    <p style="color:#555;">Academy content is restricted for safeguarding purposes. Please use one of the enquiry forms below to get in touch, or log in if you already have Academy access.</p>
 
-      <div class="tabs">
-        <button class="tab active" onclick="showTab('news', event)">News & Updates</button>
-        <button class="tab" onclick="showTab('table', event)">League Table</button>
-        <button class="tab" onclick="showTab('profiles', event)">Player Profiles</button>
-        <button class="tab" onclick="showTab('drills', event)">Drills</button>
+    <div class="card" style="background-color:#ffffff;border:1px solid #dddddd;border-radius:8px;padding:24px;margin-bottom:20px;">
+      <h3 style="margin:0 0 16px;padding-left:12px;border-left:4px solid #000000;">Enquire to Join Academy</h3>
+      <div class="success-msg" id="join-enquiry-success" style="display:none;background:#f0fff0;border:1px solid #cceecc;color:#006600;padding:10px;border-radius:4px;margin-bottom:16px;font-size:0.9em;"></div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Name</label>
+        <input type="text" id="joinEnquiryName" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
       </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Email</label>
+        <input type="email" id="joinEnquiryEmail" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Phone Number (optional)</label>
+        <input type="tel" id="joinEnquiryPhone" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Message</label>
+        <textarea id="joinEnquiryMessage" rows="3" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;"></textarea>
+      </div>
+      <button onclick="submitAcademyEnquiry('join')" style="background-color:#111111;color:#ffffff;border:none;padding:10px 24px;border-radius:4px;cursor:pointer;">Send Enquiry</button>
+    </div>
+
+    <div class="card" style="background-color:#ffffff;border:1px solid #dddddd;border-radius:8px;padding:24px;">
+      <h3 style="margin:0 0 16px;padding-left:12px;border-left:4px solid #000000;">Enquire About Sponsoring a Player</h3>
+      <div class="success-msg" id="sponsor-enquiry-success" style="display:none;background:#f0fff0;border:1px solid #cceecc;color:#006600;padding:10px;border-radius:4px;margin-bottom:16px;font-size:0.9em;"></div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Name</label>
+        <input type="text" id="sponsorEnquiryName" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Email</label>
+        <input type="email" id="sponsorEnquiryEmail" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Phone Number (optional)</label>
+        <input type="tel" id="sponsorEnquiryPhone" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
+      </div>
+      <div class="form-group" style="margin-bottom:12px;">
+        <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Message</label>
+        <textarea id="sponsorEnquiryMessage" rows="3" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;"></textarea>
+      </div>
+      <button onclick="submitAcademyEnquiry('sponsor')" style="background-color:#111111;color:#ffffff;border:none;padding:10px 24px;border-radius:4px;cursor:pointer;">Send Enquiry</button>
+    </div>
+
+    <p style="text-align:center;margin-top:20px;"><a href="login.html" style="color:#555;font-size:0.9em;">Already have Academy access? Log in →</a></p>
+  </div>
+
+  <div id="academyContentView" style="display:none;">
+  <h2>Pinnacle Academy</h2>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('news', event)">News & Updates</button>
+    <button class="tab" onclick="showTab('table', event)">League Table</button>
+    <button class="tab" onclick="showTab('profiles', event)">Player Profiles</button>
+    <button class="tab" onclick="showTab('drills', event)">Drills</button>
+  </div>
 
       <div id="tab-news" class="tab-content active">
         <h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;font-size:1.3em;">Latest News</h2>
