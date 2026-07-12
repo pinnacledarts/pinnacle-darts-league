@@ -1181,11 +1181,56 @@ for (var i = 0; i < targetSelects.length; i++) {
         document.getElementById('mainNav') && document.getElementById('mainNav').classList.toggle('open');
       }
 
-      window.addEventListener('load', () => {
-        checkAuth();
-        loadAcademyPlayers();
-        loadAcademyNews();
-      });
+window.addEventListener('load', async () => {
+  checkAuth();
+  updateSwitchButtonVisibility();
+
+  const hasAccess = await checkAcademyAccess();
+  if (!hasAccess) {
+    document.getElementById('academyLockedView').style.display = 'block';
+    document.getElementById('academyContentView').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('academyLockedView').style.display = 'none';
+  document.getElementById('academyContentView').style.display = 'block';
+  loadAcademyPlayers();
+  loadAcademyNews();
+});
+
+async function submitAcademyEnquiry(type) {
+  const prefix = type === 'join' ? 'joinEnquiry' : 'sponsorEnquiry';
+  const name = document.getElementById(prefix + 'Name').value.trim();
+  const email = document.getElementById(prefix + 'Email').value.trim();
+  const phone = document.getElementById(prefix + 'Phone').value.trim();
+  const message = document.getElementById(prefix + 'Message').value.trim();
+
+  if (!name || !email || !message) {
+    alert('Please fill in your name, email and message.');
+    return;
+  }
+
+  const { error } = await sbClient.from('academy_enquiries').insert([{
+    type: type,
+    name: name,
+    email: email,
+    phone: phone || null,
+    message: message
+  }]);
+
+  if (error) {
+    alert('Error sending enquiry. Please try again.');
+    return;
+  }
+
+  const successId = type === 'join' ? 'join-enquiry-success' : 'sponsor-enquiry-success';
+  document.getElementById(successId).textContent = 'Thank you! Your enquiry has been sent.';
+  document.getElementById(successId).style.display = 'block';
+  document.getElementById(prefix + 'Name').value = '';
+  document.getElementById(prefix + 'Email').value = '';
+  document.getElementById(prefix + 'Phone').value = '';
+  document.getElementById(prefix + 'Message').value = '';
+}
     </script>
 
   </body>
