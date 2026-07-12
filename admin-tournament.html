@@ -140,27 +140,47 @@
         var sBtn = document.getElementById('switchBtn');
         if (sBtn) { sBtn.textContent = 'Switch to Online'; sBtn.href = 'index.html'; }
       }
+var manualBracketPlayerIds = [];
+
 async function showManualBracketForm() {
   var playersResult = await sbClient.from('tournament_players').select('player_id').eq('tournament_id', tournamentId);
   if (!playersResult.data || playersResult.data.length < 2) { showMsg('knockouts-error', 'Need at least 2 players to build a bracket.'); return; }
 
-  var playerIds = playersResult.data.map(function(p) { return p.player_id; });
+  manualBracketPlayerIds = playersResult.data.map(function(p) { return p.player_id; });
 
-  var slotsHtml = playerIds.map(function(pid, i) {
-    var optionsHtml = playerIds.map(function(pid2) {
-      return '<option value="' + pid2 + '">' + (profileMapAdmin[pid2] || 'Unknown') + '</option>';
-    }).join('');
-    return '<div class="form-group"><label>Slot ' + (i + 1) + '</label><select id="manualSlot' + i + '" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
-      '<option value="">-- Select player --</option>' + optionsHtml + '</select></div>';
+  var slotsHtml = manualBracketPlayerIds.map(function(pid, i) {
+    return '<div class="form-group"><label>Slot ' + (i + 1) + '</label><select id="manualSlot' + i + '" onchange="refreshManualBracketOptions()" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;"></select></div>';
   }).join('');
 
   document.getElementById('manualBracketFormContainer').innerHTML =
     '<div class="card"><h3>Manual Bracket Setup</h3>' +
     '<p style="color:#666;font-size:0.9em;margin-top:-8px;">Choose which player goes in each Round 1 slot. Adjacent slots (1&2, 3&4, etc) will play each other.</p>' +
     slotsHtml +
-    '<button class="btn btn-primary" onclick="submitManualBracket(' + playerIds.length + ')">Create Bracket</button> ' +
+    '<button class="btn btn-primary" onclick="submitManualBracket(' + manualBracketPlayerIds.length + ')">Create Bracket</button> ' +
     '<button class="btn btn-secondary" onclick="document.getElementById(\'manualBracketFormContainer\').innerHTML=\'\'">Cancel</button>' +
     '</div>';
+
+  refreshManualBracketOptions();
+}
+
+function refreshManualBracketOptions() {
+  var slotCount = manualBracketPlayerIds.length;
+  var currentValues = [];
+  for (var i = 0; i < slotCount; i++) {
+    currentValues.push(document.getElementById('manualSlot' + i).value);
+  }
+
+  for (var i = 0; i < slotCount; i++) {
+    var sel = document.getElementById('manualSlot' + i);
+    var myValue = currentValues[i];
+    var optionsHtml = '<option value="">-- Select player --</option>';
+    manualBracketPlayerIds.forEach(function(pid) {
+      var usedElsewhere = currentValues.indexOf(pid) > -1 && pid !== myValue;
+      if (usedElsewhere) { return; }
+      optionsHtml += '<option value="' + pid + '"' + (pid === myValue ? ' selected' : '') + '>' + (profileMapAdmin[pid] || 'Unknown') + '</option>';
+    });
+    sel.innerHTML = optionsHtml;
+  }
 }
 
 async function submitManualBracket(slotCount) {
