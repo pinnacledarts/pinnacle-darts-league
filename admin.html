@@ -603,7 +603,65 @@
 var drillTargetCount = 0;
 var scoreOptionCounts = {};
 var editingDrillId = null;
+async function loadAcademyJoinEnquiries() {
+  var result = await sbClient.from('academy_enquiries').select('*').eq('type', 'join').order('created_at', { ascending: false });
+  var container = document.getElementById('academyJoinEnquiriesList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
 
+  container.innerHTML = '<table><thead><tr><th>Name</th><th>Email</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
+    result.data.map(function(e) {
+      var unreadMark = !e.is_read ? ' 🔴' : '';
+      return '<tr style="cursor:pointer;" onclick="toggleAcademyEnquiryDetail(' + e.id + ', \'join\')">' +
+        '<td>' + e.name + unreadMark + '</td><td>' + e.email + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
+        '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteAcademyEnquiry(' + e.id + ', \'join\')">Delete</button></td>' +
+        '</tr>' +
+        '<tr id="academy-enquiry-detail-join-' + e.id + '" style="display:none;background:#f9f9f9;">' +
+        '<td colspan="4" style="padding:16px;">' +
+        '<strong>Phone:</strong> ' + (e.phone || '-') + '<br>' +
+        '<strong>Message:</strong><br>' + e.message +
+        '</td></tr>';
+    }).join('') + '</tbody></table>';
+
+  updateAcademyBadge();
+}
+
+async function loadAcademySponsorEnquiries() {
+  var result = await sbClient.from('academy_enquiries').select('*').eq('type', 'sponsor').order('created_at', { ascending: false });
+  var container = document.getElementById('academySponsorEnquiriesList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
+
+  container.innerHTML = '<table><thead><tr><th>Name</th><th>Email</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
+    result.data.map(function(e) {
+      var unreadMark = !e.is_read ? ' 🔴' : '';
+      return '<tr style="cursor:pointer;" onclick="toggleAcademyEnquiryDetail(' + e.id + ', \'sponsor\')">' +
+        '<td>' + e.name + unreadMark + '</td><td>' + e.email + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
+        '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteAcademyEnquiry(' + e.id + ', \'sponsor\')">Delete</button></td>' +
+        '</tr>' +
+        '<tr id="academy-enquiry-detail-sponsor-' + e.id + '" style="display:none;background:#f9f9f9;">' +
+        '<td colspan="4" style="padding:16px;">' +
+        '<strong>Phone:</strong> ' + (e.phone || '-') + '<br>' +
+        '<strong>Message:</strong><br>' + e.message +
+        '</td></tr>';
+    }).join('') + '</tbody></table>';
+
+  updateAcademyBadge();
+}
+
+async function toggleAcademyEnquiryDetail(id, type) {
+  var row = document.getElementById('academy-enquiry-detail-' + type + '-' + id);
+  var opening = row.style.display === 'none';
+  row.style.display = opening ? 'table-row' : 'none';
+  if (opening) {
+    await sbClient.from('academy_enquiries').update({ is_read: true }).eq('id', id);
+    updateAcademyBadge();
+  }
+}
+
+async function deleteAcademyEnquiry(id, type) {
+  if (!confirm('Delete this enquiry?')) { return; }
+  await sbClient.from('academy_enquiries').delete().eq('id', id);
+  if (type === 'join') { loadAcademyJoinEnquiries(); } else { loadAcademySponsorEnquiries(); }
+}
       if (document.referrer.includes('academy.html')) {
         var sBtn = document.getElementById('switchBtn');
         if (sBtn) { sBtn.textContent = 'Return to Academy'; sBtn.href = 'academy.html'; }
