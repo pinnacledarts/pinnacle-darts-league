@@ -889,26 +889,57 @@ var editingDrillId = null;
         loadPlayers();
       }
 
-      function addDrillTargetRow() {
-        drillTargetCount++;
-        var idx = drillTargetCount;
-        var container = document.getElementById('drillTargetsList');
-        var row = document.createElement('div');
-        row.className = 'card';
-        row.style.background = '#f9f9f9';
-        row.id = 'drillTargetRow' + idx;
-        row.innerHTML =
-          '<div class="form-row">' +
-          '<div class="form-group"><label>Target Name</label><input type="text" id="targetName' + idx + '" placeholder="e.g. Bullseye" /></div>' +
-          '<div class="form-group" style="display:flex;align-items:flex-end;">' +
-          '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Target</button>' +
-          '</div>' +
-          '</div>' +
-          '<div id="scoreOptionsList' + idx + '"></div>' +
-          '<button class="btn-small" onclick="addScoreOptionRow(' + idx + ')">+ Add Score Option</button>';
-        container.appendChild(row);
-        addScoreOptionRow(idx);
-      }
+     function addDrillTargetRow() {
+  drillTargetCount++;
+  var idx = drillTargetCount;
+  var container = document.getElementById('drillTargetsList');
+  var row = document.createElement('div');
+  row.className = 'card';
+  row.style.background = '#f9f9f9';
+  row.id = 'drillTargetRow' + idx;
+  row.setAttribute('data-type', 'target');
+  row.innerHTML =
+    '<div class="form-row">' +
+    '<div class="form-group"><label>Target Name</label><input type="text" id="targetName' + idx + '" placeholder="e.g. Bullseye" /></div>' +
+    '<div class="form-group"><label>Score Type</label><select id="targetEntryType' + idx + '" onchange="toggleEntryType(' + idx + ')">' +
+    '<option value="dropdown">Dropdown (pick from set scores)</option>' +
+    '<option value="manual">Manual Entry (player types a number)</option>' +
+    '</select></div>' +
+    '</div>' +
+    '<div id="dropdownSection' + idx + '">' +
+    '<div id="scoreOptionsList' + idx + '"></div>' +
+    '<button class="btn-small" onclick="addScoreOptionRow(' + idx + ')">+ Add Score Option</button>' +
+    '</div>' +
+    '<div style="margin-top:10px;">' +
+    '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Target</button>' +
+    '</div>';
+  container.appendChild(row);
+  addScoreOptionRow(idx);
+}
+
+function toggleEntryType(idx) {
+  var type = document.getElementById('targetEntryType' + idx).value;
+  document.getElementById('dropdownSection' + idx).style.display = type === 'manual' ? 'none' : 'block';
+}
+
+function addDrillSubtitleRow() {
+  drillTargetCount++;
+  var idx = drillTargetCount;
+  var container = document.getElementById('drillTargetsList');
+  var row = document.createElement('div');
+  row.className = 'card';
+  row.style.background = '#eeeeee';
+  row.id = 'drillTargetRow' + idx;
+  row.setAttribute('data-type', 'subtitle');
+  row.innerHTML =
+    '<div class="form-row">' +
+    '<div class="form-group"><label>Subtitle Text</label><input type="text" id="subtitleName' + idx + '" placeholder="e.g. Round 1" /></div>' +
+    '<div class="form-group" style="display:flex;align-items:flex-end;">' +
+    '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Subtitle</button>' +
+    '</div>' +
+    '</div>';
+  container.appendChild(row);
+}
 
       function removeDrillTargetRow(idx) {
         var row = document.getElementById('drillTargetRow' + idx);
