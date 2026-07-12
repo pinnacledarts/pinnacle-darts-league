@@ -314,14 +314,28 @@
       }
 
       async function addSelectedPlayers() {
-        var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
-        if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
-        var added = 0;
-        for (var i = 0; i < checked.length; i++) {
-          var playerId = checked[i].value;
-          var result = await sbClient.from('league_players').insert([{ league_id: parseInt(leagueId), player_id: playerId }]);
-          if (!result.error) { added++; }
-        }
+  var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
+  if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
+
+  if (leagueData.max_players) {
+    var wouldBeTotal = existingPlayerIds.length + checked.length;
+    if (wouldBeTotal > leagueData.max_players) {
+      var canAdd = leagueData.max_players - existingPlayerIds.length;
+      showMsg('add-player-error', 'Max players is ' + leagueData.max_players + '. You can only add ' + (canAdd > 0 ? canAdd : 0) + ' more.');
+      return;
+    }
+  }
+
+  var added = 0;
+  for (var i = 0; i < checked.length; i++) {
+    var playerId = checked[i].value;
+    var result = await sbClient.from('league_players').insert([{ league_id: parseInt(leagueId), player_id: playerId }]);
+    if (!result.error) { added++; }
+  }
+  showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
+  await loadPlayers();
+  buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+}
         showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
         await loadPlayers();
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
