@@ -1093,23 +1093,32 @@ async function editDrill(id) {
   drillTargetCount = 0;
   scoreOptionCounts = {};
 
-  var targets = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-  targets.forEach(function(t) {
-    addDrillTargetRow();
-    var idx = drillTargetCount;
-    document.getElementById('targetName' + idx).value = t.target_name || '';
+ var targets = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+targets.forEach(function(t) {
+  if (t.is_subtitle) {
+    addDrillSubtitleRow();
+    var subIdx = drillTargetCount;
+    document.getElementById('subtitleName' + subIdx).value = t.target_name || '';
+    return;
+  }
 
-    document.getElementById('scoreOptionsList' + idx).innerHTML = '';
-    scoreOptionCounts[idx] = 0;
+  addDrillTargetRow();
+  var idx = drillTargetCount;
+  document.getElementById('targetName' + idx).value = t.target_name || '';
+  document.getElementById('targetEntryType' + idx).value = t.entry_type || 'dropdown';
+  toggleEntryType(idx);
 
-    var options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-    options.forEach(function(o) {
-      addScoreOptionRow(idx);
-      var optIdx = scoreOptionCounts[idx];
-      document.getElementById('scoreLabel' + idx + '_' + optIdx).value = o.label || '';
-      document.getElementById('scorePoints' + idx + '_' + optIdx).value = o.points != null ? o.points : '';
-    });
+  document.getElementById('scoreOptionsList' + idx).innerHTML = '';
+  scoreOptionCounts[idx] = 0;
+
+  var options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+  options.forEach(function(o) {
+    addScoreOptionRow(idx);
+    var optIdx = scoreOptionCounts[idx];
+    document.getElementById('scoreLabel' + idx + '_' + optIdx).value = o.label || '';
+    document.getElementById('scorePoints' + idx + '_' + optIdx).value = o.points != null ? o.points : '';
   });
+});
 
   document.querySelector('button[onclick="saveDrill()"]').textContent = 'Update Drill';
   document.getElementById('drillTitle').scrollIntoView({ behavior: 'smooth' });
