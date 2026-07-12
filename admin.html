@@ -962,22 +962,41 @@ function toggleTournamentRow(id) {
         loadLeagues();
       }
 
-      async function loadLeagues() {
-        var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
-        allLeaguesData = result.data || [];
-        var tbody = document.getElementById('leaguesList');
-        if (!allLeaguesData.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No leagues yet</td></tr>'; return; }
-        var rowsHtml = [];
-        for (var i = 0; i < allLeaguesData.length; i++) {
-          var l = allLeaguesData[i];
-          var status = await computeLeagueStatus(l);
-          rowsHtml.push('<tr><td>' + l.name + '</td><td>' + (l.season || '-') + '</td><td>' + formatLabel(l.format) + '</td><td>' + formatLabel(l.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><div class="action-buttons"><a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a> <button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button></div></td></tr>');
-        }
-        tbody.innerHTML = rowsHtml.join('');
-        var select = document.getElementById('regLeagueSelect');
-        select.innerHTML = '<option value="">-- Select a league --</option>';
-        allLeaguesData.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
-      }
+async function loadLeagues() {
+  var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
+  allLeaguesData = result.data || [];
+  var container = document.getElementById('leaguesList');
+  if (!allLeaguesData.length) { container.innerHTML = '<p class="empty-state">No leagues yet</p>'; }
+  else {
+    var cardsHtml = [];
+    for (var i = 0; i < allLeaguesData.length; i++) {
+      var l = allLeaguesData[i];
+      var status = await computeLeagueStatus(l);
+      cardsHtml.push('<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+        '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleLeagueRow(\'' + l.id + '\')">' +
+        '<div><strong>' + l.name + '</strong><div style="margin-top:4px;">' + getStatusBadgeHtml(status) + '</div></div>' +
+        '<span style="color:#aaa;">▾</span>' +
+        '</div>' +
+        '<div id="league-row-' + l.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+        '<div class="form-group" style="margin-top:12px;"><label>Season</label><div>' + (l.season || '-') + '</div></div>' +
+        '<div class="form-group"><label>Format</label><div>' + formatLabel(l.format) + '</div></div>' +
+        '<div class="form-group"><label>Platform</label><div>' + formatLabel(l.platform) + '</div></div>' +
+        '<div style="display:flex;gap:8px;margin-top:10px;">' +
+        '<a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a>' +
+        '<button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button>' +
+        '</div></div></div>');
+    }
+    container.innerHTML = cardsHtml.join('');
+  }
+  var select = document.getElementById('regLeagueSelect');
+  select.innerHTML = '<option value="">-- Select a league --</option>';
+  allLeaguesData.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
+}
+
+function toggleLeagueRow(id) {
+  var row = document.getElementById('league-row-' + id);
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
 
       async function deleteLeague(id) {
         if (!confirm('Delete this league?')) { return; }
