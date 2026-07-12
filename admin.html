@@ -2064,9 +2064,10 @@ function editNewsRow(id) {
           '<button class="btn btn-secondary" onclick="cancelNewsEdit(' + id + ')">Cancel</button>';
       }
 
-      function cancelNewsEdit(id) {
-        document.getElementById('nrow-edit-' + id).style.display = 'none';
-      }
+function cancelNewsEdit(id) {
+  document.getElementById('nrow-edit-content-' + id).innerHTML =
+    '<button class="btn-small" onclick="editNewsRow(' + id + ')">Edit</button> <button class="btn-small danger" onclick="deleteNews(\'' + id + '\')">Delete</button>';
+}
 
       async function saveNewsEdit(id) {
         var update = {
