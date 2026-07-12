@@ -1083,7 +1083,7 @@ function toggleManageDrill(id) {
         loadDrills();
       }
 async function editDrill(id) {
-  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, drill_score_options(id, label, points, sort_order))').eq('id', id).single();
+ var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').eq('id', id).single();
   if (result.error || !result.data) { alert('Error loading drill.'); return; }
   var drill = result.data;
 
