@@ -842,8 +842,9 @@ var editingDrillId = null;
             '<button class="btn-small" onclick="updatePhone(\'' + p.id + '\')">Save</button>';
           var starterAvgField = '<input type="number" step="0.01" value="' + (p.starter_average || '') + '" id="stavg-' + p.id + '" style="width:70px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;" placeholder="e.g. 45.5" /> ' +
             '<button class="btn-small" onclick="updateStarterAvg(\'' + p.id + '\')">Save</button>';
-          var adminBtn = '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
-          var removeBtn = '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\')">Remove</button>';
+          var isProtected = p.username === 'Macca23';
+var adminBtn = isProtected ? '<span style="color:#888;font-size:0.85em;">Protected</span>' : '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ', \'' + p.username + '\')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
+var removeBtn = isProtected ? '' : '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\', \'' + p.username + '\')">Remove</button>';
           return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + phoneField + '</td><td>' + starterAvgField + '</td><td>' + platformSelect + '</td><td>' + accessSelect + '</td><td>' + (p.is_admin ? 'Yes' : 'No') + '</td><td>' + adminBtn + ' ' + removeBtn + '</td></tr>';
         }).join('');
       }
