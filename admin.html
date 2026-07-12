@@ -904,18 +904,37 @@ async function deleteAcademyEnquiry(id, type) {
       }
 
       async function loadTournaments() {
-        var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
-        allTournamentsData = result.data || [];
-        var tbody = document.getElementById('tournamentsList');
-        if (!allTournamentsData.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No tournaments yet</td></tr>'; return; }
-        var rowsHtml = [];
-        for (var i = 0; i < allTournamentsData.length; i++) {
-          var t = allTournamentsData[i];
-          var status = await computeTournamentStatus(t);
-          rowsHtml.push('<tr><td>' + t.name + '</td><td>' + (t.date || 'TBC') + '</td><td>' + (t.time || '-') + '</td><td>' + formatLabel(t.format) + '</td><td>' + formatLabel(t.platform) + '</td><td>' + getStatusBadgeHtml(status) + '</td><td><a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View</a> <button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button></td></tr>');
-        }
-        tbody.innerHTML = rowsHtml.join('');
-      }
+  var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
+  allTournamentsData = result.data || [];
+  var container = document.getElementById('tournamentsList');
+  if (!allTournamentsData.length) { container.innerHTML = '<p class="empty-state">No tournaments yet</p>'; return; }
+
+  var cardsHtml = [];
+  for (var i = 0; i < allTournamentsData.length; i++) {
+    var t = allTournamentsData[i];
+    var status = await computeTournamentStatus(t);
+    cardsHtml.push('<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+      '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleTournamentRow(\'' + t.id + '\')">' +
+      '<div><strong>' + t.name + '</strong><div style="margin-top:4px;">' + getStatusBadgeHtml(status) + '</div></div>' +
+      '<span style="color:#aaa;">▾</span>' +
+      '</div>' +
+      '<div id="tournament-row-' + t.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+      '<div class="form-group" style="margin-top:12px;"><label>Date</label><div>' + (t.date || 'TBC') + '</div></div>' +
+      '<div class="form-group"><label>Time</label><div>' + (t.time || '-') + '</div></div>' +
+      '<div class="form-group"><label>Format</label><div>' + formatLabel(t.format) + '</div></div>' +
+      '<div class="form-group"><label>Platform</label><div>' + formatLabel(t.platform) + '</div></div>' +
+      '<div style="display:flex;gap:8px;margin-top:10px;">' +
+      '<a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View / Edit</a>' +
+      '<button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button>' +
+      '</div></div></div>');
+  }
+  container.innerHTML = cardsHtml.join('');
+}
+
+function toggleTournamentRow(id) {
+  var row = document.getElementById('tournament-row-' + id);
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
 
       async function deleteTournament(id) {
         if (!confirm('Delete this tournament?')) { return; }
