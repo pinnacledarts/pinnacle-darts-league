@@ -905,26 +905,42 @@
         if (name === 'progress') { loadProgressDrillOptions(); }
       }
 
-      async function loadDrillsAccordion() {
-        const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
-        const data = result.data;
-        const error = result.error;
-        const container = document.getElementById('drillsAccordionList');
-        if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
+     async function loadDrillsAccordion() {
+  const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
+  const data = result.data;
+  const error = result.error;
+  const container = document.getElementById('drillsAccordionList');
+  if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
 
-        var htmlPieces = [];
-        for (var di = 0; di < data.length; di++) {
-          var d = data[di];
-          var targets = (d.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-          var targetRowsHtml = '';
-          for (var ti = 0; ti < targets.length; ti++) {
-            var t = targets[ti];
-            var options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-            var optionsHtml = '';
-            for (var oi = 0; oi < options.length; oi++) {
-              var o = options[oi];
-              optionsHtml += '<option value="' + o.id + '|' + o.points + '">' + o.label + ' (' + o.points + ' pts)</option>';
-            }
+  var htmlPieces = [];
+  for (var di = 0; di < data.length; di++) {
+    var d = data[di];
+    var targets = (d.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+    var targetRowsHtml = '';
+    for (var ti = 0; ti < targets.length; ti++) {
+      var t = targets[ti];
+
+      if (t.is_subtitle) {
+        targetRowsHtml += '<div style="font-weight:bold;margin:16px 0 8px;padding-top:12px;border-top:1px solid #eeeeee;color:#111111;">' + t.target_name + '</div>';
+        continue;
+      }
+
+      if (t.entry_type === 'manual') {
+        targetRowsHtml += '<div class="detail-row"><span class="detail-label">' + t.target_name + '</span>' +
+          '<input type="number" step="any" id="drilltarget-' + d.id + '-' + t.id + '" data-manual="true" placeholder="Enter score" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;width:120px;" /></div>';
+        continue;
+      }
+
+      var options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+      var optionsHtml = '';
+      for (var oi = 0; oi < options.length; oi++) {
+        var o = options[oi];
+        optionsHtml += '<option value="' + o.id + '|' + o.points + '">' + o.label + ' (' + o.points + ' pts)</option>';
+      }
+      targetRowsHtml += '<div class="detail-row"><span class="detail-label">' + t.target_name + '</span>' +
+        '<select id="drilltarget-' + d.id + '-' + t.id + '" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;">' +
+        '<option value="">-- Select score --</option>' + optionsHtml + '</select></div>';
+    }
             targetRowsHtml += '<div class="detail-row"><span class="detail-label">' + t.target_name + '</span>' +
               '<select id="drilltarget-' + d.id + '-' + t.id + '" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;">' +
               '<option value="">-- Select score --</option>' + optionsHtml + '</select></div>';
