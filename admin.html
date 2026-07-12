@@ -666,26 +666,80 @@ function renderDrillAttemptDetailView(a) {
     return '<strong>' + targetName + ':</strong> ' + label + ' (' + s.points + ' pts)<br>';
   }).join('');
   return (rowsHtml || 'No target breakdown available.') +
-    '<button class="btn-small" onclick="editDrillAttempt(' + a.id + ')" style="margin-top:10px;">Edit Total Score</button>';
+    '<button class="btn-small" onclick="editDrillAttempt(' + a.id + ')" style="margin-top:10px;">Edit Scores</button>';
 }
 
 function toggleDrillAttemptDetail(id) {
   var row = document.getElementById('attempt-detail-' + id);
-  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
 }
 
 function editDrillAttempt(id) {
   var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
   if (!attempt) { return; }
+  var scores = attempt.drill_attempt_scores || [];
+
+  if (!scores.length) {
+    document.getElementById('attempt-detail-content-' + id).innerHTML =
+      '<div class="form-group" style="max-width:200px;"><label>Total Score</label><input type="number" step="any" class="score-input" id="edit-attempt-score-' + id + '" value="' + attempt.total_score + '" style="width:100px;" /></div>' +
+      '<button class="btn-small" onclick="saveDrillAttemptEdit(' + id + ')">Save</button> ' +
+      '<button class="btn-small" onclick="cancelDrillAttemptEdit(' + id + ')">Cancel</button>';
+    return;
+  }
+
+  var fieldsHtml = scores.map(function(s) {
+    var targetName = s.drill_targets ? s.drill_targets.target_name : 'Unknown';
+    return '<div class="form-group"><label>' + targetName + '</label><input type="number" step="any" class="score-input" id="edit-attempt-line-' + s.id + '" value="' + s.points + '" style="width:100px;" /></div>';
+  }).join('');
+
   document.getElementById('attempt-detail-content-' + id).innerHTML =
-    '<div class="form-group" style="max-width:200px;"><label>Total Score</label><input type="number" step="any" class="score-input" id="edit-attempt-score-' + id + '" value="' + attempt.total_score + '" style="width:100px;" /></div>' +
-    '<button class="btn-small" onclick="saveDrillAttemptEdit(' + id + ')">Save</button> ' +
+    fieldsHtml +
+    '<button class="btn-small" onclick="saveDrillAttemptLines(' + id + ')">Save</button> ' +
     '<button class="btn-small" onclick="cancelDrillAttemptEdit(' + id + ')">Cancel</button>';
 }
 
 function cancelDrillAttemptEdit(id) {
   var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
   if (!attempt) { return; }
+  document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
+}
+
+async function saveDrillAttemptLines(id) {
+  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
+  if (!attempt) { return; }
+  var scores = attempt.drill_attempt_scores || [];
+
+  var newTotal = 0;
+  for (var i = 0; i < scores.length; i++) {
+    var s = scores[i];
+    var input = document.getElementById('edit-attempt-line-' + s.id);
+    var newPoints = parseFloat(input.value);
+    if (isNaN(newPoints)) { alert('Please enter a valid number for every target.'); return; }
+    newTotal += newPoints;
+
+    var lineResult = await sbClient.from('drill_attempt_scores').update({ points: newPoints }).eq('id', s.id);
+    if (lineResult.error) { alert('Error saving: ' + lineResult.error.message); return; }
+    s.points = newPoints;
+  }
+
+  var totalResult = await sbClient.from('drill_attempts').update({ total_score: newTotal }).eq('id', id);
+  if (totalResult.error) { alert('Error saving total: ' + totalResult.error.message); return; }
+
+  attempt.total_score = newTotal;
+  document.getElementById('attempt-total-' + id).textContent = newTotal;
+  document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
+}
+
+async function saveDrillAttemptEdit(id) {
+  var newScore = parseFloat(document.getElementById('edit-attempt-score-' + id).value);
+  if (isNaN(newScore)) { alert('Please enter a valid score.'); return; }
+
+  var result = await sbClient.from('drill_attempts').update({ total_score: newScore }).eq('id', id);
+  if (result.error) { alert('Error saving: ' + result.error.message); return; }
+
+  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
+  if (attempt) { attempt.total_score = newScore; }
+  document.getElementById('attempt-total-' + id).textContent = newScore;
   document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
 }
 
