@@ -176,7 +176,19 @@ if (!document.getElementById('agreeTerms').checked) {
   errorMsg.style.display = 'block';
   return;
 }
+const existingEmail = await sbClient.from('profiles').select('id').eq('email', email).maybeSingle();
+if (existingEmail.data) {
+  errorMsg.textContent = 'An account with this email already exists. Please log in instead.';
+  errorMsg.style.display = 'block';
+  return;
+}
 
+const existingPhone = await sbClient.from('profiles').select('id').eq('phone', phone).maybeSingle();
+if (existingPhone.data) {
+  errorMsg.textContent = 'An account with this phone number already exists.';
+  errorMsg.style.display = 'block';
+  return;
+}
         if (password !== confirmPassword) {
           errorMsg.textContent = 'Passwords do not match.';
           errorMsg.style.display = 'block';
