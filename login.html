@@ -96,12 +96,26 @@
       <input type="password" id="password" placeholder="Enter your password" />
     </div>
 <button class="btn-submit" onclick="handleLogin()">Login</button>
-<div class="register-link" style="margin-top:8px;">
-  <a href="#" onclick="showResetForm(); return false;">Forgot password?</a>
-</div>
-<div class="register-link">
-  Don't have an account? <a href="register.html">Create one here</a>
-</div>
+        <div class="register-link" style="margin-top:8px;">
+          <a href="#" onclick="showResetForm(); return false;">Forgot password?</a>
+        </div>
+        <div class="register-link">
+          Don't have an account? <a href="register.html">Create one here</a>
+        </div>
+      </div>
+
+      <div class="form-box" id="resetBox" style="display:none;">
+        <div class="error-msg" id="resetErrorMsg"></div>
+        <div class="success-msg" id="resetSuccessMsg">Check your email for a password reset link!</div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="resetEmail" placeholder="Enter your account email" />
+        </div>
+        <button class="btn-submit" onclick="handlePasswordReset()">Send Reset Link</button>
+        <div class="register-link">
+          <a href="#" onclick="showLoginForm(); return false;">Back to login</a>
+        </div>
       </div>
     </main>
 
