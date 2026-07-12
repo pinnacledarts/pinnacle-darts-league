@@ -154,11 +154,49 @@
         }
       }
 
-      function toggleMenu() {
-        document.getElementById('mainNav').classList.toggle('open');
-      }
+      function showResetForm() {
+  document.getElementById('loginBox').style.display = 'none';
+  document.getElementById('resetBox').style.display = 'block';
+}
 
-      checkAuth();
+function showLoginForm() {
+  document.getElementById('resetBox').style.display = 'none';
+  document.getElementById('loginBox').style.display = 'block';
+}
+
+async function handlePasswordReset() {
+  const email = document.getElementById('resetEmail').value.trim();
+  const errorMsg = document.getElementById('resetErrorMsg');
+  const successMsg = document.getElementById('resetSuccessMsg');
+
+  errorMsg.style.display = 'none';
+  successMsg.style.display = 'none';
+
+  if (!email) {
+    errorMsg.textContent = 'Please enter your email address.';
+    errorMsg.style.display = 'block';
+    return;
+  }
+
+  const { error } = await sbClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + window.location.pathname.replace('login.html', 'reset-password.html')
+  });
+
+  if (error) {
+    errorMsg.textContent = error.message;
+    errorMsg.style.display = 'block';
+    return;
+  }
+
+  successMsg.style.display = 'block';
+  document.getElementById('resetEmail').value = '';
+}
+
+function toggleMenu() {
+  document.getElementById('mainNav').classList.toggle('open');
+}
+
+checkAuth();
     </script>
 
   </body>
