@@ -1947,16 +1947,15 @@
   updateAcademyBadge();
 }
 
-      async function toggleDivisionEnquiryDetail(id) {
-        var row = document.getElementById('division-enquiry-detail-' + id);
-        var opening = row.style.display === 'none';
-        row.style.display = opening ? 'table-row' : 'none';
-        if (opening) {
-          await sbClient.from('division_sponsor_enquiries').update({ is_read: true }).eq('id', id);
-          updateAcademyBadge();
-        }
-      }
-
+     async function toggleDivisionEnquiryDetail(id) {
+  var row = document.getElementById('division-enquiry-detail-' + id);
+  var opening = row.style.display === 'none';
+  row.style.display = opening ? 'block' : 'none';
+  if (opening) {
+    await sbClient.from('division_sponsor_enquiries').update({ is_read: true }).eq('id', id);
+    updateAcademyBadge();
+  }
+}
       async function deleteDivisionEnquiry(id) {
         if (!confirm('Delete this enquiry?')) { return; }
         await sbClient.from('division_sponsor_enquiries').delete().eq('id', id);
