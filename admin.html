@@ -2010,28 +2010,39 @@
         loadNews();
       }
 
-      async function loadNews() {
-        var result = await sbClient.from('news').select('*').order('created_at', { ascending: false });
-        allNewsData = result.data || [];
-        var tbody = document.getElementById('newsList');
-        if (!allNewsData.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No news articles yet</td></tr>'; return; }
-        tbody.innerHTML = allNewsData.map(function(n) {
-          return renderNewsRow(n);
-        }).join('');
-      }
+    async function loadNews() {
+  var result = await sbClient.from('news').select('*').order('created_at', { ascending: false });
+  allNewsData = result.data || [];
+  var container = document.getElementById('newsList');
+  if (!allNewsData.length) { container.innerHTML = '<p class="empty-state">No news articles yet</p>'; return; }
+  container.innerHTML = allNewsData.map(function(n) {
+    return renderNewsRow(n);
+  }).join('');
+}
 
-      function renderNewsRow(n) {
-        var sectionLabel = n.section === 'academy' ? 'Academy' : (n.section === 'both' ? 'Both' : 'Online');
-        return '<tr id="nrow-' + n.id + '"><td>' + n.title + '</td><td>' + n.tag + '</td><td>' + sectionLabel + '</td><td>' + new Date(n.article_date || n.created_at).toLocaleDateString('en-GB') + '</td>' +
-          '<td><button class="btn-small" onclick="editNewsRow(' + n.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteNews(\'' + n.id + '\')">Delete</button></td></tr>' +
-          '<tr id="nrow-edit-' + n.id + '" style="display:none;background:#f9f9f9;"><td colspan="5" style="padding:16px;" id="nrow-edit-content-' + n.id + '"></td></tr>';
-      }
+function renderNewsRow(n) {
+  var sectionLabel = n.section === 'academy' ? 'Academy' : (n.section === 'both' ? 'Both' : 'Online');
+  var dateLabel = new Date(n.article_date || n.created_at).toLocaleDateString('en-GB');
+  return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+    '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleNewsRow(' + n.id + ')">' +
+    '<div><strong>' + n.title + '</strong><div style="color:#888;font-size:0.85em;">' + n.tag + ' — ' + sectionLabel + ' — ' + dateLabel + '</div></div>' +
+    '<span style="color:#aaa;">▾</span>' +
+    '</div>' +
+    '<div id="nrow-edit-' + n.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+    '<div id="nrow-edit-content-' + n.id + '" style="padding-top:12px;">' +
+    '<button class="btn-small" onclick="editNewsRow(' + n.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteNews(\'' + n.id + '\')">Delete</button>' +
+    '</div></div></div>';
+}
 
-      function editNewsRow(id) {
-        var n = allNewsData.find(function(x) { return x.id === id; });
-        if (!n) { return; }
-        document.getElementById('nrow-edit-' + id).style.display = 'table-row';
-        document.getElementById('nrow-edit-content-' + id).innerHTML =
+function toggleNewsRow(id) {
+  var row = document.getElementById('nrow-edit-' + id);
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
+
+function editNewsRow(id) {
+  var n = allNewsData.find(function(x) { return x.id === id; });
+  if (!n) { return; }
+  document.getElementById('nrow-edit-content-' + id).innerHTML =
           '<div class="form-row">' +
           '<div class="form-group"><label>Title</label><input class="edit-input" id="en-title-' + id + '" value="' + (n.title || '').replace(/"/g, '&quot;') + '" style="width:100%;" /></div>' +
           '<div class="form-group"><label>Date</label><input class="edit-input" type="date" id="en-date-' + id + '" value="' + (n.article_date || '') + '" style="width:100%;" /></div>' +
