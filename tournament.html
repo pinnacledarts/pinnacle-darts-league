@@ -129,12 +129,16 @@
       var roundOrderFull = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
       var cachedBracketsByType = {};
 
-      function buildWhatsAppLink(phone) {
-        if (!phone) { return null; }
-        var digits = phone.replace(/[^\d]/g, '');
-        if (!digits) { return null; }
-        return 'https://wa.me/' + digits;
-      }
+function buildWhatsAppLink(phone) {
+  if (!phone) { return null; }
+  var hasPlus = phone.trim().startsWith('+');
+  var digits = phone.replace(/[^\d]/g, '');
+  if (!digits) { return null; }
+  if (!hasPlus && digits.startsWith('0')) {
+    digits = '44' + digits.substring(1);
+  }
+  return 'https://wa.me/' + digits;
+}
 
       function whatsAppButtonHtml(opponentId) {
         var opponent = profileMap[opponentId];
