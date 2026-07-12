@@ -81,20 +81,20 @@
       <a href="players.html">Players</a>
     </nav>
 
-    <main>
-      <h2>Login</h2>
-      <div class="form-box">
-        <div class="error-msg" id="errorMsg"></div>
-        <div class="success-msg" id="successMsg">Logged in successfully! Redirecting...</div>
+  <main>
+  <h2>Login</h2>
+  <div class="form-box" id="loginBox">
+    <div class="error-msg" id="errorMsg"></div>
+    <div class="success-msg" id="successMsg">Logged in successfully! Redirecting...</div>
 
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="email" placeholder="Enter your email" />
-        </div>
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="password" placeholder="Enter your password" />
-        </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input type="email" id="email" placeholder="Enter your email" />
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="password" placeholder="Enter your password" />
+    </div>
 <button class="btn-submit" onclick="handleLogin()">Login</button>
 <div class="register-link" style="margin-top:8px;">
   <a href="#" onclick="showResetForm(); return false;">Forgot password?</a>
