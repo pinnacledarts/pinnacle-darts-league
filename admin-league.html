@@ -313,7 +313,7 @@
         document.getElementById('selectedCount').textContent = checked.length + ' player' + (checked.length !== 1 ? 's' : '') + ' selected';
       }
 
-      async function addSelectedPlayers() {
+async function addSelectedPlayers() {
   var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
   if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
 
@@ -323,12 +323,7 @@
       var canAdd = leagueData.max_players - existingPlayerIds.length;
       showMsg('add-player-error', 'Max players is ' + leagueData.max_players + '. You can only add ' + (canAdd > 0 ? canAdd : 0) + ' more.');
       return;
-    
-  }
-  showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
-  await loadPlayers();
-  buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
-}
+    }
   }
 
   var added = 0;
@@ -341,11 +336,6 @@
   await loadPlayers();
   buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
 }
-        showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
-        await loadPlayers();
-        buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
-      }
-
 async function loadPlayers() {
   var result = await sbClient.from('league_players').select('player_id, division, profiles(full_name, username, average, starter_average)').eq('league_id', leagueId);
   existingPlayerIds = result.data ? result.data.map(function(p) { return p.player_id; }) : [];
