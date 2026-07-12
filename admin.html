@@ -880,16 +880,18 @@ var removeBtn = isProtected ? '' : '<button class="btn-small danger" onclick="de
         alert('Starter average saved!');
       }
 
-      async function toggleAdmin(id, currentStatus) {
-        await sbClient.from('profiles').update({ is_admin: !currentStatus }).eq('id', id);
-        loadPlayers();
-      }
+async function toggleAdmin(id, currentStatus, username) {
+  if (username === 'Macca23') { alert('This account is protected and cannot be changed.'); return; }
+  await sbClient.from('profiles').update({ is_admin: !currentStatus }).eq('id', id);
+  loadPlayers();
+}
 
-      async function deletePlayer(id) {
-        if (!confirm('Remove this player?')) { return; }
-        await sbClient.from('profiles').delete().eq('id', id);
-        loadPlayers();
-      }
+async function deletePlayer(id, username) {
+  if (username === 'Macca23') { alert('This account is protected and cannot be deleted.'); return; }
+  if (!confirm('Remove this player?')) { return; }
+  await sbClient.from('profiles').delete().eq('id', id);
+  loadPlayers();
+}
 
      function addDrillTargetRow() {
   drillTargetCount++;
