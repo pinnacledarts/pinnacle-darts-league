@@ -780,6 +780,12 @@ function clearDrillAttemptFilters() {
   document.getElementById('drillAttemptDateFilter').value = '';
   renderDrillAttempts(allDrillAttemptsData);
 }
+
+async function loadAcademyJoinEnquiries() {
+  var result = await sbClient.from('academy_enquiries').select('*').eq('type', 'join').order('created_at', { ascending: false });
+  var container = document.getElementById('academyJoinEnquiriesList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
+
   container.innerHTML = '<table><thead><tr><th>Name</th><th>Email</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
     result.data.map(function(e) {
       var unreadMark = !e.is_read ? ' 🔴' : '';
