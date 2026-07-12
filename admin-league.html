@@ -345,11 +345,12 @@ async function loadPlayers() {
 }
 
       async function removePlayer(playerId) {
-        if (!confirm('Remove this player from the league?')) { return; }
-        await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', playerId);
-        await loadPlayers();
-        buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
-      }
+  if (!confirm('Remove this player from the league? Any existing fixtures involving them will also be deleted.')) { return; }
+  await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', playerId);
+  await sbClient.from('league_matches').delete().eq('league_id', leagueId).or('player1_id.eq.' + playerId + ',player2_id.eq.' + playerId);
+  await loadPlayers();
+  buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+}
 
       async function assignDivisionsByAverage() {
         var playersPerDivision = leagueData.players_per_division;
