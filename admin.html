@@ -983,37 +983,54 @@ function addDrillSubtitleRow() {
     drillId = drillResult.data[0].id;
   }
 
-        var targetOrder = 0;
-        for (var i = 0; i < targetRows.length; i++) {
-          var row = targetRows[i];
-          var targetIdx = row.id.replace('drillTargetRow', '');
-          var targetNameInput = document.getElementById('targetName' + targetIdx);
-          if (!targetNameInput) { continue; }
-          var targetName = targetNameInput.value.trim();
-          if (!targetName) { continue; }
+       var targetOrder = 0;
+for (var i = 0; i < targetRows.length; i++) {
+  var row = targetRows[i];
+  var rowType = row.getAttribute('data-type');
+  var targetIdx = row.id.replace('drillTargetRow', '');
 
-          targetOrder++;
-          var targetResult = await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: targetName, sort_order: targetOrder }]).select();
-          if (targetResult.error || !targetResult.data) { continue; }
-          var targetId = targetResult.data[0].id;
+  if (rowType === 'subtitle') {
+    var subtitleInput = document.getElementById('subtitleName' + targetIdx);
+    if (!subtitleInput) { continue; }
+    var subtitleText = subtitleInput.value.trim();
+    if (!subtitleText) { continue; }
+    targetOrder++;
+    await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: subtitleText, sort_order: targetOrder, is_subtitle: true }]);
+    continue;
+  }
 
-          var scoreRows = document.querySelectorAll('#scoreOptionsList' + targetIdx + ' > div');
-          var scoreOrder = 0;
-          for (var j = 0; j < scoreRows.length; j++) {
-            var sRow = scoreRows[j];
-            var idParts = sRow.id.split('_');
-            var optIdx = idParts[1];
-            var labelInput = document.getElementById('scoreLabel' + targetIdx + '_' + optIdx);
-            var pointsInput = document.getElementById('scorePoints' + targetIdx + '_' + optIdx);
-            if (!labelInput || !pointsInput) { continue; }
-            var label = labelInput.value.trim();
-            var points = parseFloat(pointsInput.value);
-            if (!label || isNaN(points)) { continue; }
+  var targetNameInput = document.getElementById('targetName' + targetIdx);
+  if (!targetNameInput) { continue; }
+  var targetName = targetNameInput.value.trim();
+  if (!targetName) { continue; }
 
-            scoreOrder++;
-            await sbClient.from('drill_score_options').insert([{ target_id: targetId, label: label, points: points, sort_order: scoreOrder }]);
-          }
-        }
+  var entryTypeSelect = document.getElementById('targetEntryType' + targetIdx);
+  var entryType = entryTypeSelect ? entryTypeSelect.value : 'dropdown';
+
+  targetOrder++;
+  var targetResult = await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: targetName, sort_order: targetOrder, entry_type: entryType, is_subtitle: false }]).select();
+  if (targetResult.error || !targetResult.data) { continue; }
+  var targetId = targetResult.data[0].id;
+
+  if (entryType === 'manual') { continue; }
+
+  var scoreRows = document.querySelectorAll('#scoreOptionsList' + targetIdx + ' > div');
+  var scoreOrder = 0;
+  for (var j = 0; j < scoreRows.length; j++) {
+    var sRow = scoreRows[j];
+    var idParts = sRow.id.split('_');
+    var optIdx = idParts[1];
+    var labelInput = document.getElementById('scoreLabel' + targetIdx + '_' + optIdx);
+    var pointsInput = document.getElementById('scorePoints' + targetIdx + '_' + optIdx);
+    if (!labelInput || !pointsInput) { continue; }
+    var label = labelInput.value.trim();
+    var points = parseFloat(pointsInput.value);
+    if (!label || isNaN(points)) { continue; }
+
+    scoreOrder++;
+    await sbClient.from('drill_score_options').insert([{ target_id: targetId, label: label, points: points, sort_order: scoreOrder }]);
+  }
+}
 
      showMsg('drill-success', editingDrillId ? 'Drill updated successfully!' : 'Drill created successfully!');
 document.getElementById('drillTitle').value = '';
