@@ -1677,13 +1677,15 @@ targets.forEach(function(t) {
         loadDivisionEnquiries();
       }
 
-      async function updateAcademyBadge() {
-        var playerResult = await sbClient.from('sponsor_enquiries').select('id').eq('is_read', false);
-        var divisionResult = await sbClient.from('division_sponsor_enquiries').select('id').eq('is_read', false);
-        var count = (playerResult.data ? playerResult.data.length : 0) + (divisionResult.data ? divisionResult.data.length : 0);
-        var btn = document.getElementById('academyTabBtn');
-        if (btn) { btn.textContent = count > 0 ? 'Academy (' + count + ')' : 'Academy'; }
-      }
+async function updateAcademyBadge() {
+  var playerResult = await sbClient.from('sponsor_enquiries').select('id').eq('is_read', false);
+  var divisionResult = await sbClient.from('division_sponsor_enquiries').select('id').eq('is_read', false);
+  var joinResult = await sbClient.from('academy_enquiries').select('id').eq('type', 'join').eq('is_read', false);
+  var sponsorResult = await sbClient.from('academy_enquiries').select('id').eq('type', 'sponsor').eq('is_read', false);
+  var count = (playerResult.data ? playerResult.data.length : 0) + (divisionResult.data ? divisionResult.data.length : 0) + (joinResult.data ? joinResult.data.length : 0) + (sponsorResult.data ? sponsorResult.data.length : 0);
+  var btn = document.getElementById('enquiriesTabBtn');
+  if (btn) { btn.textContent = count > 0 ? 'Enquiries (' + count + ')' : 'Enquiries'; }
+}
 
       async function saveNews() {
         var title = document.getElementById('newsTitle').value.trim();
