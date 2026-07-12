@@ -336,6 +336,18 @@
   await loadPlayers();
   buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
 }
+  }
+
+  var added = 0;
+  for (var i = 0; i < checked.length; i++) {
+    var playerId = checked[i].value;
+    var result = await sbClient.from('league_players').insert([{ league_id: parseInt(leagueId), player_id: playerId }]);
+    if (!result.error) { added++; }
+  }
+  showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
+  await loadPlayers();
+  buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+}
         showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
         await loadPlayers();
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
