@@ -1024,31 +1024,50 @@ async function deleteAcademyEnquiry(id, type) {
         renderPlayersList(allPlayersData);
       }
 
-      function renderPlayersList(data) {
-        var tbody = document.getElementById('playersList');
-        if (!data || !data.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No players found</td></tr>'; return; }
-        tbody.innerHTML = data.map(function(p) {
-          var platformSelect = '<select onchange="updatePlatform(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
-            '<option value=""' + (!p.platform ? ' selected' : '') + '>-</option>' +
-            '<option value="dartcounter"' + (p.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
-            '<option value="scolia"' + (p.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
-            '<option value="both"' + (p.platform === 'both' ? ' selected' : '') + '>Both</option>' +
-            '</select>';
-          var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;">' +
-            '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
-            '<option value="academy"' + (p.access === 'academy' ? ' selected' : '') + '>Academy</option>' +
-            '<option value="both"' + (p.access === 'both' ? ' selected' : '') + '>Both</option>' +
-            '</select>';
-          var phoneField = '<input type="text" value="' + (p.phone || '') + '" id="phone-' + p.id + '" style="width:120px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;" placeholder="+44..." /> ' +
-            '<button class="btn-small" onclick="updatePhone(\'' + p.id + '\')">Save</button>';
-          var starterAvgField = '<input type="number" step="0.01" value="' + (p.starter_average || '') + '" id="stavg-' + p.id + '" style="width:70px;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-size:0.85em;" placeholder="e.g. 45.5" /> ' +
-            '<button class="btn-small" onclick="updateStarterAvg(\'' + p.id + '\')">Save</button>';
-          var isProtected = p.username === 'Macca23';
-var adminBtn = isProtected ? '<span style="color:#888;font-size:0.85em;">Protected</span>' : '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ', \'' + p.username + '\')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
-var removeBtn = isProtected ? '' : '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\', \'' + p.username + '\')">Remove</button>';
-          return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + phoneField + '</td><td>' + starterAvgField + '</td><td>' + platformSelect + '</td><td>' + accessSelect + '</td><td>' + (p.is_admin ? 'Yes' : 'No') + '</td><td>' + adminBtn + ' ' + removeBtn + '</td></tr>';
-        }).join('');
-      }
+     function renderPlayersList(data) {
+  var container = document.getElementById('playersList');
+  if (!data || !data.length) { container.innerHTML = '<p class="empty-state">No players found</p>'; return; }
+
+  container.innerHTML = data.map(function(p) {
+    var platformSelect = '<select onchange="updatePlatform(\'' + p.id + '\', this.value)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;width:100%;">' +
+      '<option value=""' + (!p.platform ? ' selected' : '') + '>-</option>' +
+      '<option value="dartcounter"' + (p.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
+      '<option value="scolia"' + (p.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
+      '<option value="both"' + (p.platform === 'both' ? ' selected' : '') + '>Both</option>' +
+      '</select>';
+    var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;width:100%;">' +
+      '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
+      '<option value="academy"' + (p.access === 'academy' ? ' selected' : '') + '>Academy</option>' +
+      '<option value="both"' + (p.access === 'both' ? ' selected' : '') + '>Both</option>' +
+      '</select>';
+    var phoneField = '<div style="display:flex;gap:6px;"><input type="text" value="' + (p.phone || '') + '" id="phone-' + p.id + '" style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;" placeholder="+44..." /> ' +
+      '<button class="btn-small" onclick="updatePhone(\'' + p.id + '\')">Save</button></div>';
+    var starterAvgField = '<div style="display:flex;gap:6px;"><input type="number" step="0.01" value="' + (p.starter_average || '') + '" id="stavg-' + p.id + '" style="width:100px;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;" placeholder="e.g. 45.5" /> ' +
+      '<button class="btn-small" onclick="updateStarterAvg(\'' + p.id + '\')">Save</button></div>';
+    var isProtected = p.username === 'Macca23';
+    var adminBtn = isProtected ? '<span style="color:#888;font-size:0.85em;">Protected</span>' : '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ', \'' + p.username + '\')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
+    var removeBtn = isProtected ? '' : '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\', \'' + p.username + '\')">Remove</button>';
+
+    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+      '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePlayerRow(\'' + p.id + '\')">' +
+      '<div><strong>' + (p.full_name || '-') + '</strong><div style="color:#888;font-size:0.85em;">' + (p.username ? '@' + p.username : '-') + '</div></div>' +
+      '<span style="color:#aaa;">▾</span>' +
+      '</div>' +
+      '<div id="player-row-' + p.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+      '<div class="form-group" style="margin-top:12px;"><label>Phone</label>' + phoneField + '</div>' +
+      '<div class="form-group"><label>Starter Average</label>' + starterAvgField + '</div>' +
+      '<div class="form-group"><label>Platform</label>' + platformSelect + '</div>' +
+      '<div class="form-group"><label>Access</label>' + accessSelect + '</div>' +
+      '<div class="form-group"><label>Admin</label><div>' + (p.is_admin ? 'Yes' : 'No') + '</div></div>' +
+      '<div style="display:flex;gap:8px;margin-top:10px;">' + adminBtn + ' ' + removeBtn + '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+function togglePlayerRow(id) {
+  var row = document.getElementById('player-row-' + id);
+  row.style.display = row.style.display === 'none' ? 'block' : 'none';
+}
 
       function filterPlayersList() {
         var val = document.getElementById('playerSearch').value.toLowerCase().trim();
