@@ -7,7 +7,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
-    <style> 
+    <style>
       * { box-sizing: border-box; }
       body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
       header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
@@ -106,10 +106,10 @@
       <div class="tabs">
         <button class="tab active" onclick="showTab('tournaments', event)">Tournaments</button>
         <button class="tab" onclick="showTab('leagues', event)">Leagues</button>
-        <button class="tab" onclick="showTab('players', event)">Players</button>
-      <button class="tab" onclick="showTab('academy', event)">Academy</button>
-<button class="tab" onclick="showTab('enquiries', event)" id="enquiriesTabBtn">Enquiries</button>
-<button class="tab" onclick="showTab('news', event)">News</button>
+        <button class="tab" onclick="showTab('players', event)" id="playersTabBtn">Players</button>
+        <button class="tab" onclick="showTab('academy', event)">Academy</button>
+        <button class="tab" onclick="showTab('enquiries', event)" id="enquiriesTabBtn">Enquiries</button>
+        <button class="tab" onclick="showTab('news', event)">News</button>
       </div>
 
       <!-- TOURNAMENTS TAB -->
@@ -176,10 +176,10 @@
           <button class="btn btn-primary" onclick="createTournament()">Create Tournament</button>
         </div>
 
-<div class="card">
-  <h3>Manage Tournaments</h3>
-  <div id="tournamentsList"><p class="empty-state">Loading...</p></div>
-</div>
+        <div class="card">
+          <h3>Manage Tournaments</h3>
+          <div id="tournamentsList"><p class="empty-state">Loading...</p></div>
+        </div>
       </div>
 
       <!-- LEAGUES TAB -->
@@ -267,10 +267,10 @@
           <button class="btn btn-primary" onclick="createLeague()">Create League</button>
         </div>
 
-<div class="card">
-  <h3>Manage Leagues</h3>
-  <div id="leaguesList"><p class="empty-state">Loading...</p></div>
-</div>
+        <div class="card">
+          <h3>Manage Leagues</h3>
+          <div id="leaguesList"><p class="empty-state">Loading...</p></div>
+        </div>
 
         <div class="card">
           <h3>View Registrations</h3>
@@ -291,15 +291,14 @@
           <h3>Pending Academy Approvals</h3>
           <div id="pendingApprovalsList"><p class="empty-state">Loading...</p></div>
         </div>
-<div class="card">
-  <h3>Registered Players</h3>
-  <input type="text" class="search-bar" id="playerSearch" placeholder="Search by name or username..." oninput="filterPlayersList()" />
-  <div id="playersList"><p class="empty-state">Loading...</p></div>
-</div>
+        <div class="card">
+          <h3>Registered Players</h3>
+          <input type="text" class="search-bar" id="playerSearch" placeholder="Search by name or username..." oninput="filterPlayersList()" />
+          <div id="playersList"><p class="empty-state">Loading...</p></div>
+        </div>
       </div>
 
-
-<!-- ACADEMY TAB -->
+      <!-- ACADEMY TAB -->
       <div id="tab-academy" class="tab-content">
         <div class="card">
           <h3>Submit Session Results</h3>
@@ -366,6 +365,24 @@
         </div>
 
         <div class="card">
+          <h3>Session Log</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Filter by Player</label>
+              <select id="sessionSearch" onchange="filterSessionLog()">
+                <option value="">-- All Players --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Filter by Date</label>
+              <input type="date" id="sessionDateFilter" onchange="filterSessionLog()" />
+            </div>
+          </div>
+          <button class="btn btn-secondary" onclick="clearSessionFilters()" style="margin-bottom:16px;">Clear Filters</button>
+          <div id="sessionLogList"><p class="empty-state">Loading...</p></div>
+        </div>
+
+        <div class="card">
           <h3>Set Up New Drill</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a drill with targets and score options.</p>
           <div class="success-msg" id="drill-success"></div>
@@ -374,11 +391,9 @@
             <label>Drill Title</label>
             <input type="text" id="drillTitle" placeholder="e.g. Around the Clock" />
           </div>
-
-<div id="drillTargetsList"></div>
-<button class="btn btn-secondary" onclick="addDrillTargetRow()">+ Add Target</button>
-<button class="btn btn-secondary" onclick="addDrillSubtitleRow()" style="margin-bottom:16px;">+ Add Subtitle</button>
-
+          <div id="drillTargetsList"></div>
+          <button class="btn btn-secondary" onclick="addDrillTargetRow()">+ Add Target</button>
+          <button class="btn btn-secondary" onclick="addDrillSubtitleRow()" style="margin-bottom:16px;">+ Add Subtitle</button>
           <button class="btn btn-primary" onclick="saveDrill()">Create Drill</button>
         </div>
 
@@ -386,23 +401,25 @@
           <h3>Manage Drills</h3>
           <div id="drillsList"><p class="empty-state">Loading...</p></div>
         </div>
-<div class="card">
-  <h3>Drill Attempts Log</h3>
-  <div class="form-row">
-    <div class="form-group">
-      <label>Filter by Player</label>
-      <select id="drillAttemptPlayerFilter" onchange="filterDrillAttempts()">
-        <option value="">-- All Players --</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Filter by Date</label>
-      <input type="date" id="drillAttemptDateFilter" onchange="filterDrillAttempts()" />
-    </div>
-  </div>
-  <button class="btn btn-secondary" onclick="clearDrillAttemptFilters()" style="margin-bottom:16px;">Clear Filters</button>
-  <div id="drillAttemptsList"><p class="empty-state">Loading...</p></div>
-</div>
+
+        <div class="card">
+          <h3>Drill Attempts Log</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Filter by Player</label>
+              <select id="drillAttemptPlayerFilter" onchange="filterDrillAttempts()">
+                <option value="">-- All Players --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Filter by Date</label>
+              <input type="date" id="drillAttemptDateFilter" onchange="filterDrillAttempts()" />
+            </div>
+          </div>
+          <button class="btn btn-secondary" onclick="clearDrillAttemptFilters()" style="margin-bottom:16px;">Clear Filters</button>
+          <div id="drillAttemptsList"><p class="empty-state">Loading...</p></div>
+        </div>
+
         <div class="card">
           <h3>Academy Leagues (Groups)</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a group (e.g. Tuesday Prodigy) and add players to it.</p>
@@ -436,26 +453,6 @@
           </div>
 
           <div id="academyLeaguePlayersList" style="margin-top:16px;"></div>
-        </div>
-
-        
-
-        <div class="card">
-          <h3>Session Log</h3>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Filter by Player</label>
-              <select id="sessionSearch" onchange="filterSessionLog()">
-                <option value="">-- All Players --</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Filter by Date</label>
-              <input type="date" id="sessionDateFilter" onchange="filterSessionLog()" />
-            </div>
-          </div>
-          <button class="btn btn-secondary" onclick="clearSessionFilters()" style="margin-bottom:16px;">Clear Filters</button>
-          <div id="sessionLogList"><p class="empty-state">Loading...</p></div>
         </div>
 
         <div class="card">
@@ -512,9 +509,7 @@
           <div id="divisionSponsorsList" style="margin-top:16px;"></div>
         </div>
 
-       
-
-      <div class="card">
+        <div class="card">
           <h3>Archived Groups</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Completed seasons. Reactivate a group to make it manageable again.</p>
           <div id="archivedGroupsList"><p class="empty-state">Loading...</p></div>
@@ -610,236 +605,11 @@
       var allTournamentsData = [];
       var allLeaguesData = [];
       var allNewsData = [];
-var drillTargetCount = 0;
-var scoreOptionCounts = {};
-var editingDrillId = null;
-async function loadAcademyJoinEnquiries() {
-  var result = await sbClient.from('academy_enquiries').select('*').eq('type', 'join').order('created_at', { ascending: false });
-  var container = document.getElementById('academyJoinEnquiriesList');
-  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
-var allDrillAttemptsData = [];
+      var drillTargetCount = 0;
+      var scoreOptionCounts = {};
+      var editingDrillId = null;
+      var allDrillAttemptsData = [];
 
-async function loadDrillAttempts() {
-  var result = await sbClient.from('drill_attempts').select('*, profiles(full_name, username), drills(title), drill_attempt_scores(id, target_id, points, drill_targets(target_name), drill_score_options(label))').order('attempt_date', { ascending: false });
-  allDrillAttemptsData = result.data || [];
-
-  var playerFilter = document.getElementById('drillAttemptPlayerFilter');
-  var uniquePlayers = {};
-  allDrillAttemptsData.forEach(function(a) {
-    var p = a.profiles || {};
-    var name = p.full_name || p.username || 'Unknown';
-    if (a.player_id) { uniquePlayers[a.player_id] = name; }
-  });
-  playerFilter.innerHTML = '<option value="">-- All Players --</option>';
-  Object.keys(uniquePlayers).forEach(function(pid) {
-    playerFilter.innerHTML += '<option value="' + pid + '">' + uniquePlayers[pid] + '</option>';
-  });
-
-  renderDrillAttempts(allDrillAttemptsData);
-}
-
-function renderDrillAttempts(data) {
-  var container = document.getElementById('drillAttemptsList');
-  if (!data.length) { container.innerHTML = '<p class="empty-state">No drill attempts logged yet.</p>'; return; }
-
-  container.innerHTML = '<table><thead><tr><th>Player</th><th>Drill</th><th>Date</th><th>Score</th><th>Action</th></tr></thead><tbody>' +
-    data.map(function(a) {
-      var profile = a.profiles || {};
-      var name = profile.full_name || profile.username || 'Unknown';
-      var drillTitle = a.drills ? a.drills.title : 'Unknown Drill';
-      return '<tr style="cursor:pointer;" onclick="toggleDrillAttemptDetail(' + a.id + ')">' +
-        '<td>' + name + '</td><td>' + drillTitle + '</td><td>' + (a.attempt_date || '-') + '</td><td><strong id="attempt-total-' + a.id + '">' + a.total_score + '</strong></td>' +
-        '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteDrillAttempt(' + a.id + ')">Delete</button></td>' +
-        '</tr>' +
-        '<tr id="attempt-detail-' + a.id + '" style="display:none;background:#f9f9f9;">' +
-        '<td colspan="5" style="padding:16px;" id="attempt-detail-content-' + a.id + '">' +
-        renderDrillAttemptDetailView(a) +
-        '</td></tr>';
-    }).join('') + '</tbody></table>';
-}
-
-function renderDrillAttemptDetailView(a) {
-  var scores = a.drill_attempt_scores || [];
-  var rowsHtml = scores.map(function(s) {
-    var targetName = s.drill_targets ? s.drill_targets.target_name : 'Unknown';
-    var label = s.drill_score_options ? s.drill_score_options.label : 'Manual Entry';
-    return '<strong>' + targetName + ':</strong> ' + label + ' (' + s.points + ' pts)<br>';
-  }).join('');
-  return (rowsHtml || 'No target breakdown available.') +
-    '<button class="btn-small" onclick="editDrillAttempt(' + a.id + ')" style="margin-top:10px;">Edit Scores</button>';
-}
-
-function toggleDrillAttemptDetail(id) {
-  var row = document.getElementById('attempt-detail-' + id);
-  row.style.display = row.style.display === 'none' ? 'block' : 'none';
-}
-
-function editDrillAttempt(id) {
-  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
-  if (!attempt) { return; }
-  var scores = attempt.drill_attempt_scores || [];
-
-  if (!scores.length) {
-    document.getElementById('attempt-detail-content-' + id).innerHTML =
-      '<div class="form-group" style="max-width:200px;"><label>Total Score</label><input type="number" step="any" class="score-input" id="edit-attempt-score-' + id + '" value="' + attempt.total_score + '" style="width:100px;" /></div>' +
-      '<button class="btn-small" onclick="saveDrillAttemptEdit(' + id + ')">Save</button> ' +
-      '<button class="btn-small" onclick="cancelDrillAttemptEdit(' + id + ')">Cancel</button>';
-    return;
-  }
-
-  var fieldsHtml = scores.map(function(s) {
-    var targetName = s.drill_targets ? s.drill_targets.target_name : 'Unknown';
-    return '<div class="form-group"><label>' + targetName + '</label><input type="number" step="any" class="score-input" id="edit-attempt-line-' + s.id + '" value="' + s.points + '" style="width:100px;" /></div>';
-  }).join('');
-
-  document.getElementById('attempt-detail-content-' + id).innerHTML =
-    fieldsHtml +
-    '<button class="btn-small" onclick="saveDrillAttemptLines(' + id + ')">Save</button> ' +
-    '<button class="btn-small" onclick="cancelDrillAttemptEdit(' + id + ')">Cancel</button>';
-}
-
-function cancelDrillAttemptEdit(id) {
-  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
-  if (!attempt) { return; }
-  document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
-}
-
-async function saveDrillAttemptLines(id) {
-  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
-  if (!attempt) { return; }
-  var scores = attempt.drill_attempt_scores || [];
-
-  var newTotal = 0;
-  for (var i = 0; i < scores.length; i++) {
-    var s = scores[i];
-    var input = document.getElementById('edit-attempt-line-' + s.id);
-    var newPoints = parseFloat(input.value);
-    if (isNaN(newPoints)) { alert('Please enter a valid number for every target.'); return; }
-    newTotal += newPoints;
-
-    var lineResult = await sbClient.from('drill_attempt_scores').update({ points: newPoints }).eq('id', s.id);
-    if (lineResult.error) { alert('Error saving: ' + lineResult.error.message); return; }
-    s.points = newPoints;
-  }
-
-  var totalResult = await sbClient.from('drill_attempts').update({ total_score: newTotal }).eq('id', id);
-  if (totalResult.error) { alert('Error saving total: ' + totalResult.error.message); return; }
-
-  attempt.total_score = newTotal;
-  document.getElementById('attempt-total-' + id).textContent = newTotal;
-  document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
-}
-
-async function saveDrillAttemptEdit(id) {
-  var newScore = parseFloat(document.getElementById('edit-attempt-score-' + id).value);
-  if (isNaN(newScore)) { alert('Please enter a valid score.'); return; }
-
-  var result = await sbClient.from('drill_attempts').update({ total_score: newScore }).eq('id', id);
-  if (result.error) { alert('Error saving: ' + result.error.message); return; }
-
-  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
-  if (attempt) { attempt.total_score = newScore; }
-  document.getElementById('attempt-total-' + id).textContent = newScore;
-  document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
-}
-
-async function saveDrillAttemptEdit(id) {
-  var newScore = parseFloat(document.getElementById('edit-attempt-score-' + id).value);
-  if (isNaN(newScore)) { alert('Please enter a valid score.'); return; }
-
-  var result = await sbClient.from('drill_attempts').update({ total_score: newScore }).eq('id', id);
-  if (result.error) { alert('Error saving: ' + result.error.message); return; }
-
-  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
-  if (attempt) { attempt.total_score = newScore; }
-  document.getElementById('attempt-total-' + id).textContent = newScore;
-  document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
-}
-
-async function deleteDrillAttempt(id) {
-  if (!confirm('Delete this drill attempt?')) { return; }
-  await sbClient.from('drill_attempts').delete().eq('id', id);
-  loadDrillAttempts();
-}
-
-function filterDrillAttempts() {
-  var playerVal = document.getElementById('drillAttemptPlayerFilter').value;
-  var dateVal = document.getElementById('drillAttemptDateFilter').value;
-
-  var filtered = allDrillAttemptsData.filter(function(a) {
-    var playerMatch = !playerVal || a.player_id === playerVal;
-    var dateMatch = !dateVal || a.attempt_date === dateVal;
-    return playerMatch && dateMatch;
-  });
-
-  renderDrillAttempts(filtered);
-}
-
-function clearDrillAttemptFilters() {
-  document.getElementById('drillAttemptPlayerFilter').value = '';
-  document.getElementById('drillAttemptDateFilter').value = '';
-  renderDrillAttempts(allDrillAttemptsData);
-}
-
-async function loadAcademyJoinEnquiries() {
-  var result = await sbClient.from('academy_enquiries').select('*').eq('type', 'join').order('created_at', { ascending: false });
-  var container = document.getElementById('academyJoinEnquiriesList');
-  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
-
-  container.innerHTML = '<table><thead><tr><th>Name</th><th>Email</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
-    result.data.map(function(e) {
-      var unreadMark = !e.is_read ? ' 🔴' : '';
-      return '<tr style="cursor:pointer;" onclick="toggleAcademyEnquiryDetail(' + e.id + ', \'join\')">' +
-        '<td>' + e.name + unreadMark + '</td><td>' + e.email + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
-        '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteAcademyEnquiry(' + e.id + ', \'join\')">Delete</button></td>' +
-        '</tr>' +
-        '<tr id="academy-enquiry-detail-join-' + e.id + '" style="display:none;background:#f9f9f9;">' +
-        '<td colspan="4" style="padding:16px;">' +
-        '<strong>Phone:</strong> ' + (e.phone || '-') + '<br>' +
-        '<strong>Message:</strong><br>' + e.message +
-        '</td></tr>';
-    }).join('') + '</tbody></table>';
-
-  updateAcademyBadge();
-}
-
-async function loadAcademySponsorEnquiries() {
-  var result = await sbClient.from('academy_enquiries').select('*').eq('type', 'sponsor').order('created_at', { ascending: false });
-  var container = document.getElementById('academySponsorEnquiriesList');
-  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
-
-  container.innerHTML = '<table><thead><tr><th>Name</th><th>Email</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
-    result.data.map(function(e) {
-      var unreadMark = !e.is_read ? ' 🔴' : '';
-      return '<tr style="cursor:pointer;" onclick="toggleAcademyEnquiryDetail(' + e.id + ', \'sponsor\')">' +
-        '<td>' + e.name + unreadMark + '</td><td>' + e.email + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
-        '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteAcademyEnquiry(' + e.id + ', \'sponsor\')">Delete</button></td>' +
-        '</tr>' +
-        '<tr id="academy-enquiry-detail-sponsor-' + e.id + '" style="display:none;background:#f9f9f9;">' +
-        '<td colspan="4" style="padding:16px;">' +
-        '<strong>Phone:</strong> ' + (e.phone || '-') + '<br>' +
-        '<strong>Message:</strong><br>' + e.message +
-        '</td></tr>';
-    }).join('') + '</tbody></table>';
-
-  updateAcademyBadge();
-}
-
-async function toggleAcademyEnquiryDetail(id, type) {
-  var row = document.getElementById('academy-enquiry-detail-' + type + '-' + id);
-  var opening = row.style.display === 'none';
-  row.style.display = opening ? 'table-row' : 'none';
-  if (opening) {
-    await sbClient.from('academy_enquiries').update({ is_read: true }).eq('id', id);
-    updateAcademyBadge();
-  }
-}
-
-async function deleteAcademyEnquiry(id, type) {
-  if (!confirm('Delete this enquiry?')) { return; }
-  await sbClient.from('academy_enquiries').delete().eq('id', id);
-  if (type === 'join') { loadAcademyJoinEnquiries(); } else { loadAcademySponsorEnquiries(); }
-}
       if (document.referrer.includes('academy.html')) {
         var sBtn = document.getElementById('switchBtn');
         if (sBtn) { sBtn.textContent = 'Return to Academy'; sBtn.href = 'academy.html'; }
@@ -958,37 +728,37 @@ async function deleteAcademyEnquiry(id, type) {
       }
 
       async function loadTournaments() {
-  var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
-  allTournamentsData = result.data || [];
-  var container = document.getElementById('tournamentsList');
-  if (!allTournamentsData.length) { container.innerHTML = '<p class="empty-state">No tournaments yet</p>'; return; }
+        var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
+        allTournamentsData = result.data || [];
+        var container = document.getElementById('tournamentsList');
+        if (!allTournamentsData.length) { container.innerHTML = '<p class="empty-state">No tournaments yet</p>'; return; }
 
-  var cardsHtml = [];
-  for (var i = 0; i < allTournamentsData.length; i++) {
-    var t = allTournamentsData[i];
-    var status = await computeTournamentStatus(t);
-    cardsHtml.push('<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
-      '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleTournamentRow(\'' + t.id + '\')">' +
-      '<div><strong>' + t.name + '</strong><div style="margin-top:4px;">' + getStatusBadgeHtml(status) + '</div></div>' +
-      '<span style="color:#aaa;">▾</span>' +
-      '</div>' +
-      '<div id="tournament-row-' + t.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
-      '<div class="form-group" style="margin-top:12px;"><label>Date</label><div>' + (t.date || 'TBC') + '</div></div>' +
-      '<div class="form-group"><label>Time</label><div>' + (t.time || '-') + '</div></div>' +
-      '<div class="form-group"><label>Format</label><div>' + formatLabel(t.format) + '</div></div>' +
-      '<div class="form-group"><label>Platform</label><div>' + formatLabel(t.platform) + '</div></div>' +
-      '<div style="display:flex;gap:8px;margin-top:10px;">' +
-      '<a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View / Edit</a>' +
-      '<button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button>' +
-      '</div></div></div>');
-  }
-  container.innerHTML = cardsHtml.join('');
-}
+        var cardsHtml = [];
+        for (var i = 0; i < allTournamentsData.length; i++) {
+          var t = allTournamentsData[i];
+          var status = await computeTournamentStatus(t);
+          cardsHtml.push('<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+            '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleTournamentRow(\'' + t.id + '\')">' +
+            '<div><strong>' + t.name + '</strong><div style="margin-top:4px;">' + getStatusBadgeHtml(status) + '</div></div>' +
+            '<span style="color:#aaa;">▾</span>' +
+            '</div>' +
+            '<div id="tournament-row-' + t.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+            '<div class="form-group" style="margin-top:12px;"><label>Date</label><div>' + (t.date || 'TBC') + '</div></div>' +
+            '<div class="form-group"><label>Time</label><div>' + (t.time || '-') + '</div></div>' +
+            '<div class="form-group"><label>Format</label><div>' + formatLabel(t.format) + '</div></div>' +
+            '<div class="form-group"><label>Platform</label><div>' + formatLabel(t.platform) + '</div></div>' +
+            '<div style="display:flex;gap:8px;margin-top:10px;">' +
+            '<a href="admin-tournament.html?id=' + t.id + '" class="btn-small view">View / Edit</a>' +
+            '<button class="btn-small danger" onclick="deleteTournament(\'' + t.id + '\')">Delete</button>' +
+            '</div></div></div>');
+        }
+        container.innerHTML = cardsHtml.join('');
+      }
 
-function toggleTournamentRow(id) {
-  var row = document.getElementById('tournament-row-' + id);
-  row.style.display = row.style.display === 'none' ? 'block' : 'none';
-}
+      function toggleTournamentRow(id) {
+        var row = document.getElementById('tournament-row-' + id);
+        row.style.display = row.style.display === 'none' ? 'block' : 'none';
+      }
 
       async function deleteTournament(id) {
         if (!confirm('Delete this tournament?')) { return; }
@@ -1019,41 +789,42 @@ function toggleTournamentRow(id) {
         loadLeagues();
       }
 
-async function loadLeagues() {
-  var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
-  allLeaguesData = result.data || [];
-  var container = document.getElementById('leaguesList');
-  if (!allLeaguesData.length) { container.innerHTML = '<p class="empty-state">No leagues yet</p>'; }
-  else {
-    var cardsHtml = [];
-    for (var i = 0; i < allLeaguesData.length; i++) {
-      var l = allLeaguesData[i];
-      var status = await computeLeagueStatus(l);
-      cardsHtml.push('<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
-        '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleLeagueRow(\'' + l.id + '\')">' +
-        '<div><strong>' + l.name + '</strong><div style="margin-top:4px;">' + getStatusBadgeHtml(status) + '</div></div>' +
-        '<span style="color:#aaa;">▾</span>' +
-        '</div>' +
-        '<div id="league-row-' + l.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
-        '<div class="form-group" style="margin-top:12px;"><label>Season</label><div>' + (l.season || '-') + '</div></div>' +
-        '<div class="form-group"><label>Format</label><div>' + formatLabel(l.format) + '</div></div>' +
-        '<div class="form-group"><label>Platform</label><div>' + formatLabel(l.platform) + '</div></div>' +
-        '<div style="display:flex;gap:8px;margin-top:10px;">' +
-        '<a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a>' +
-        '<button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button>' +
-        '</div></div></div>');
-    }
-    container.innerHTML = cardsHtml.join('');
-  }
-  var select = document.getElementById('regLeagueSelect');
-  select.innerHTML = '<option value="">-- Select a league --</option>';
-  allLeaguesData.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
-}
+      async function loadLeagues() {
+        var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
+        allLeaguesData = result.data || [];
+        var container = document.getElementById('leaguesList');
+        if (!allLeaguesData.length) {
+          container.innerHTML = '<p class="empty-state">No leagues yet</p>';
+        } else {
+          var cardsHtml = [];
+          for (var i = 0; i < allLeaguesData.length; i++) {
+            var l = allLeaguesData[i];
+            var status = await computeLeagueStatus(l);
+            cardsHtml.push('<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+              '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleLeagueRow(\'' + l.id + '\')">' +
+              '<div><strong>' + l.name + '</strong><div style="margin-top:4px;">' + getStatusBadgeHtml(status) + '</div></div>' +
+              '<span style="color:#aaa;">▾</span>' +
+              '</div>' +
+              '<div id="league-row-' + l.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+              '<div class="form-group" style="margin-top:12px;"><label>Season</label><div>' + (l.season || '-') + '</div></div>' +
+              '<div class="form-group"><label>Format</label><div>' + formatLabel(l.format) + '</div></div>' +
+              '<div class="form-group"><label>Platform</label><div>' + formatLabel(l.platform) + '</div></div>' +
+              '<div style="display:flex;gap:8px;margin-top:10px;">' +
+              '<a href="admin-league.html?id=' + l.id + '" class="btn-small view">Manage</a>' +
+              '<button class="btn-small danger" onclick="deleteLeague(\'' + l.id + '\')">Delete</button>' +
+              '</div></div></div>');
+          }
+          container.innerHTML = cardsHtml.join('');
+        }
+        var select = document.getElementById('regLeagueSelect');
+        select.innerHTML = '<option value="">-- Select a league --</option>';
+        allLeaguesData.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
+      }
 
-function toggleLeagueRow(id) {
-  var row = document.getElementById('league-row-' + id);
-  row.style.display = row.style.display === 'none' ? 'block' : 'none';
-}
+      function toggleLeagueRow(id) {
+        var row = document.getElementById('league-row-' + id);
+        row.style.display = row.style.display === 'none' ? 'block' : 'none';
+      }
 
       async function deleteLeague(id) {
         if (!confirm('Delete this league?')) { return; }
@@ -1113,50 +884,50 @@ function toggleLeagueRow(id) {
         renderPlayersList(allPlayersData);
       }
 
-     function renderPlayersList(data) {
-  var container = document.getElementById('playersList');
-  if (!data || !data.length) { container.innerHTML = '<p class="empty-state">No players found</p>'; return; }
+      function renderPlayersList(data) {
+        var container = document.getElementById('playersList');
+        if (!data || !data.length) { container.innerHTML = '<p class="empty-state">No players found</p>'; return; }
 
-  container.innerHTML = data.map(function(p) {
-    var platformSelect = '<select onchange="updatePlatform(\'' + p.id + '\', this.value)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;width:100%;">' +
-      '<option value=""' + (!p.platform ? ' selected' : '') + '>-</option>' +
-      '<option value="dartcounter"' + (p.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
-      '<option value="scolia"' + (p.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
-      '<option value="both"' + (p.platform === 'both' ? ' selected' : '') + '>Both</option>' +
-      '</select>';
-    var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;width:100%;">' +
-      '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
-      '<option value="academy"' + (p.access === 'academy' ? ' selected' : '') + '>Academy</option>' +
-      '<option value="both"' + (p.access === 'both' ? ' selected' : '') + '>Both</option>' +
-      '</select>';
-    var phoneField = '<div style="display:flex;gap:6px;"><input type="text" value="' + (p.phone || '') + '" id="phone-' + p.id + '" style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;" placeholder="+44..." /> ' +
-      '<button class="btn-small" onclick="updatePhone(\'' + p.id + '\')">Save</button></div>';
-    var starterAvgField = '<div style="display:flex;gap:6px;"><input type="number" step="0.01" value="' + (p.starter_average || '') + '" id="stavg-' + p.id + '" style="width:100px;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;" placeholder="e.g. 45.5" /> ' +
-      '<button class="btn-small" onclick="updateStarterAvg(\'' + p.id + '\')">Save</button></div>';
-    var isProtected = p.username === 'Macca23';
-    var adminBtn = isProtected ? '<span style="color:#888;font-size:0.85em;">Protected</span>' : '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ', \'' + p.username + '\')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
-    var removeBtn = isProtected ? '' : '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\', \'' + p.username + '\')">Remove</button>';
+        container.innerHTML = data.map(function(p) {
+          var platformSelect = '<select onchange="updatePlatform(\'' + p.id + '\', this.value)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;width:100%;">' +
+            '<option value=""' + (!p.platform ? ' selected' : '') + '>-</option>' +
+            '<option value="dartcounter"' + (p.platform === 'dartcounter' ? ' selected' : '') + '>Dartcounter</option>' +
+            '<option value="scolia"' + (p.platform === 'scolia' ? ' selected' : '') + '>Scolia</option>' +
+            '<option value="both"' + (p.platform === 'both' ? ' selected' : '') + '>Both</option>' +
+            '</select>';
+          var accessSelect = '<select onchange="updateAccess(\'' + p.id + '\', this.value)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;width:100%;">' +
+            '<option value="online"' + (p.access === 'online' ? ' selected' : '') + '>Online</option>' +
+            '<option value="academy"' + (p.access === 'academy' ? ' selected' : '') + '>Academy</option>' +
+            '<option value="both"' + (p.access === 'both' ? ' selected' : '') + '>Both</option>' +
+            '</select>';
+          var phoneField = '<div style="display:flex;gap:6px;"><input type="text" value="' + (p.phone || '') + '" id="phone-' + p.id + '" style="flex:1;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;" placeholder="+44..." /> ' +
+            '<button class="btn-small" onclick="updatePhone(\'' + p.id + '\')">Save</button></div>';
+          var starterAvgField = '<div style="display:flex;gap:6px;"><input type="number" step="0.01" value="' + (p.starter_average || '') + '" id="stavg-' + p.id + '" style="width:100px;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;" placeholder="e.g. 45.5" /> ' +
+            '<button class="btn-small" onclick="updateStarterAvg(\'' + p.id + '\')">Save</button></div>';
+          var isProtected = p.username === 'Macca23';
+          var adminBtn = isProtected ? '<span style="color:#888;font-size:0.85em;">Protected</span>' : '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ', \'' + p.username + '\')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
+          var removeBtn = isProtected ? '' : '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\', \'' + p.username + '\')">Remove</button>';
 
-    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
-      '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePlayerRow(\'' + p.id + '\')">' +
-      '<div><strong>' + (p.full_name || '-') + '</strong><div style="color:#888;font-size:0.85em;">' + (p.username ? '@' + p.username : '-') + '</div></div>' +
-      '<span style="color:#aaa;">▾</span>' +
-      '</div>' +
-      '<div id="player-row-' + p.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
-      '<div class="form-group" style="margin-top:12px;"><label>Phone</label>' + phoneField + '</div>' +
-      '<div class="form-group"><label>Starter Average</label>' + starterAvgField + '</div>' +
-      '<div class="form-group"><label>Platform</label>' + platformSelect + '</div>' +
-      '<div class="form-group"><label>Access</label>' + accessSelect + '</div>' +
-      '<div class="form-group"><label>Admin</label><div>' + (p.is_admin ? 'Yes' : 'No') + '</div></div>' +
-      '<div style="display:flex;gap:8px;margin-top:10px;">' + adminBtn + ' ' + removeBtn + '</div>' +
-      '</div></div>';
-  }).join('');
-}
+          return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+            '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePlayerRow(\'' + p.id + '\')">' +
+            '<div><strong>' + (p.full_name || '-') + '</strong><div style="color:#888;font-size:0.85em;">' + (p.username ? '@' + p.username : '-') + '</div></div>' +
+            '<span style="color:#aaa;">▾</span>' +
+            '</div>' +
+            '<div id="player-row-' + p.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+            '<div class="form-group" style="margin-top:12px;"><label>Phone</label>' + phoneField + '</div>' +
+            '<div class="form-group"><label>Starter Average</label>' + starterAvgField + '</div>' +
+            '<div class="form-group"><label>Platform</label>' + platformSelect + '</div>' +
+            '<div class="form-group"><label>Access</label>' + accessSelect + '</div>' +
+            '<div class="form-group"><label>Admin</label><div>' + (p.is_admin ? 'Yes' : 'No') + '</div></div>' +
+            '<div style="display:flex;gap:8px;margin-top:10px;">' + adminBtn + ' ' + removeBtn + '</div>' +
+            '</div></div>';
+        }).join('');
+      }
 
-function togglePlayerRow(id) {
-  var row = document.getElementById('player-row-' + id);
-  row.style.display = row.style.display === 'none' ? 'block' : 'none';
-}
+      function togglePlayerRow(id) {
+        var row = document.getElementById('player-row-' + id);
+        row.style.display = row.style.display === 'none' ? 'block' : 'none';
+      }
 
       function filterPlayersList() {
         var val = document.getElementById('playerSearch').value.toLowerCase().trim();
@@ -1189,75 +960,77 @@ function togglePlayerRow(id) {
         alert('Starter average saved!');
       }
 
-async function toggleAdmin(id, currentStatus, username) {
-  if (username === 'Macca23') { alert('This account is protected and cannot be changed.'); return; }
-  await sbClient.from('profiles').update({ is_admin: !currentStatus }).eq('id', id);
-  loadPlayers();
-}
+      async function toggleAdmin(id, currentStatus, username) {
+        if (username === 'Macca23') { alert('This account is protected and cannot be changed.'); return; }
+        await sbClient.from('profiles').update({ is_admin: !currentStatus }).eq('id', id);
+        loadPlayers();
+      }
 
-async function deletePlayer(id, username) {
-  if (username === 'Macca23') { alert('This account is protected and cannot be deleted.'); return; }
-  if (!confirm('Remove this player?')) { return; }
-  await sbClient.from('profiles').delete().eq('id', id);
-  loadPlayers();
-}
+      async function deletePlayer(id, username) {
+        if (username === 'Macca23') { alert('This account is protected and cannot be deleted.'); return; }
+        if (!confirm('Remove this player?')) { return; }
+        await sbClient.from('profiles').delete().eq('id', id);
+        loadPlayers();
+      }
 
-     function addDrillTargetRow() {
-  drillTargetCount++;
-  var idx = drillTargetCount;
-  var container = document.getElementById('drillTargetsList');
-  var row = document.createElement('div');
-  row.className = 'card';
-  row.style.background = '#f9f9f9';
-  row.id = 'drillTargetRow' + idx;
-  row.setAttribute('data-type', 'target');
-  row.innerHTML =
-    '<div class="form-row">' +
-    '<div class="form-group"><label>Target Name</label><input type="text" id="targetName' + idx + '" placeholder="e.g. Bullseye" /></div>' +
-    '<div class="form-group"><label>Score Type</label><select id="targetEntryType' + idx + '" onchange="toggleEntryType(' + idx + ')">' +
-    '<option value="dropdown">Dropdown (pick from set scores)</option>' +
-    '<option value="manual">Manual Entry (player types a number)</option>' +
-    '</select></div>' +
-    '</div>' +
-    '<div id="dropdownSection' + idx + '">' +
-    '<div id="scoreOptionsList' + idx + '"></div>' +
-    '<button class="btn-small" onclick="addScoreOptionRow(' + idx + ')">+ Add Score Option</button>' +
-    '</div>' +
-    '<div style="margin-top:10px;">' +
-    '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Target</button>' +
-    '</div>';
-  container.appendChild(row);
-  addScoreOptionRow(idx);
-}
+      function addDrillTargetRow() {
+        drillTargetCount++;
+        var idx = drillTargetCount;
+        var container = document.getElementById('drillTargetsList');
+        var row = document.createElement('div');
+        row.className = 'card';
+        row.style.background = '#f9f9f9';
+        row.id = 'drillTargetRow' + idx;
+        row.setAttribute('data-type', 'target');
+        row.innerHTML =
+          '<div class="form-row">' +
+          '<div class="form-group"><label>Target Name</label><input type="text" id="targetName' + idx + '" placeholder="e.g. Bullseye" /></div>' +
+          '<div class="form-group"><label>Score Type</label><select id="targetEntryType' + idx + '" onchange="toggleEntryType(' + idx + ')">' +
+          '<option value="dropdown">Dropdown (pick from set scores)</option>' +
+          '<option value="manual">Manual Entry (player types a number)</option>' +
+          '</select></div>' +
+          '</div>' +
+          '<div id="dropdownSection' + idx + '">' +
+          '<div id="scoreOptionsList' + idx + '"></div>' +
+          '<button class="btn-small" onclick="addScoreOptionRow(' + idx + ')">+ Add Score Option</button>' +
+          '</div>' +
+          '<div style="margin-top:10px;">' +
+          '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Target</button>' +
+          '</div>';
+        container.appendChild(row);
+        addScoreOptionRow(idx);
+      }
 
-function toggleEntryType(idx) {
-  var type = document.getElementById('targetEntryType' + idx).value;
-  document.getElementById('dropdownSection' + idx).style.display = type === 'manual' ? 'none' : 'block';
-}
+      function toggleEntryType(idx) {
+        var type = document.getElementById('targetEntryType' + idx).value;
+        document.getElementById('dropdownSection' + idx).style.display = type === 'manual' ? 'none' : 'block';
+      }
 
-function addDrillSubtitleRow() {
-  drillTargetCount++;
-  var idx = drillTargetCount;
-  var container = document.getElementById('drillTargetsList');
-  var row = document.createElement('div');
-  row.className = 'card';
-  row.style.background = '#eeeeee';
-  row.id = 'drillTargetRow' + idx;
-  row.setAttribute('data-type', 'subtitle');
-  row.innerHTML =
-    '<div class="form-row">' +
-    '<div class="form-group"><label>Subtitle Text</label><input type="text" id="subtitleName' + idx + '" placeholder="e.g. Round 1" /></div>' +
-    '<div class="form-group" style="display:flex;align-items:flex-end;">' +
-    '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Subtitle</button>' +
-    '</div>' +
-    '</div>';
-  container.appendChild(row);
-}
+      function addDrillSubtitleRow() {
+        drillTargetCount++;
+        var idx = drillTargetCount;
+        var container = document.getElementById('drillTargetsList');
+        var row = document.createElement('div');
+        row.className = 'card';
+        row.style.background = '#eeeeee';
+        row.id = 'drillTargetRow' + idx;
+        row.setAttribute('data-type', 'subtitle');
+        row.innerHTML =
+          '<div class="form-row">' +
+          '<div class="form-group"><label>Subtitle Text</label><input type="text" id="subtitleName' + idx + '" placeholder="e.g. Round 1" /></div>' +
+          '<div class="form-group" style="display:flex;align-items:flex-end;">' +
+          '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Subtitle</button>' +
+          '</div>' +
+          '</div>';
+        container.appendChild(row);
+      }
 
       function removeDrillTargetRow(idx) {
         var row = document.getElementById('drillTargetRow' + idx);
         if (row) { row.remove(); }
       }
+
+      var scoreOptionCounts2 = scoreOptionCounts;
 
       function addScoreOptionRow(targetIdx) {
         if (!scoreOptionCounts[targetIdx]) { scoreOptionCounts[targetIdx] = 0; }
@@ -1276,245 +1049,380 @@ function addDrillSubtitleRow() {
         container.appendChild(row);
       }
 
-    async function saveDrill() {
-  var title = document.getElementById('drillTitle').value.trim();
-  if (!title) { showMsg('drill-error', 'Please enter a drill title.'); return; }
+      async function saveDrill() {
+        var title = document.getElementById('drillTitle').value.trim();
+        if (!title) { showMsg('drill-error', 'Please enter a drill title.'); return; }
 
-  var targetRows = document.querySelectorAll('#drillTargetsList > div');
-  if (!targetRows.length) { showMsg('drill-error', 'Please add at least one target.'); return; }
+        var targetRows = document.querySelectorAll('#drillTargetsList > div');
+        if (!targetRows.length) { showMsg('drill-error', 'Please add at least one target.'); return; }
 
-  var drillId;
-  if (editingDrillId) {
-    var updateResult = await sbClient.from('drills').update({ title: title }).eq('id', editingDrillId);
-    if (updateResult.error) { showMsg('drill-error', 'Error updating drill: ' + updateResult.error.message); return; }
-    drillId = editingDrillId;
-    await sbClient.from('drill_targets').delete().eq('drill_id', drillId);
-  } else {
-    var drillResult = await sbClient.from('drills').insert([{ title: title }]).select();
-    if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
-    drillId = drillResult.data[0].id;
-  }
+        var drillId;
+        if (editingDrillId) {
+          var updateResult = await sbClient.from('drills').update({ title: title }).eq('id', editingDrillId);
+          if (updateResult.error) { showMsg('drill-error', 'Error updating drill: ' + updateResult.error.message); return; }
+          drillId = editingDrillId;
+          await sbClient.from('drill_targets').delete().eq('drill_id', drillId);
+        } else {
+          var drillResult = await sbClient.from('drills').insert([{ title: title }]).select();
+          if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
+          drillId = drillResult.data[0].id;
+        }
 
-       var targetOrder = 0;
-for (var i = 0; i < targetRows.length; i++) {
-  var row = targetRows[i];
-  var rowType = row.getAttribute('data-type');
-  var targetIdx = row.id.replace('drillTargetRow', '');
+        var targetOrder = 0;
+        for (var i = 0; i < targetRows.length; i++) {
+          var row = targetRows[i];
+          var rowType = row.getAttribute('data-type');
+          var targetIdx = row.id.replace('drillTargetRow', '');
 
-  if (rowType === 'subtitle') {
-    var subtitleInput = document.getElementById('subtitleName' + targetIdx);
-    if (!subtitleInput) { continue; }
-    var subtitleText = subtitleInput.value.trim();
-    if (!subtitleText) { continue; }
-    targetOrder++;
-    await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: subtitleText, sort_order: targetOrder, is_subtitle: true }]);
-    continue;
-  }
+          if (rowType === 'subtitle') {
+            var subtitleInput = document.getElementById('subtitleName' + targetIdx);
+            if (!subtitleInput) { continue; }
+            var subtitleText = subtitleInput.value.trim();
+            if (!subtitleText) { continue; }
+            targetOrder++;
+            await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: subtitleText, sort_order: targetOrder, is_subtitle: true }]);
+            continue;
+          }
 
-  var targetNameInput = document.getElementById('targetName' + targetIdx);
-  if (!targetNameInput) { continue; }
-  var targetName = targetNameInput.value.trim();
-  if (!targetName) { continue; }
+          var targetNameInput = document.getElementById('targetName' + targetIdx);
+          if (!targetNameInput) { continue; }
+          var targetName = targetNameInput.value.trim();
+          if (!targetName) { continue; }
 
-  var entryTypeSelect = document.getElementById('targetEntryType' + targetIdx);
-  var entryType = entryTypeSelect ? entryTypeSelect.value : 'dropdown';
+          var entryTypeSelect = document.getElementById('targetEntryType' + targetIdx);
+          var entryType = entryTypeSelect ? entryTypeSelect.value : 'dropdown';
 
-  targetOrder++;
-  var targetResult = await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: targetName, sort_order: targetOrder, entry_type: entryType, is_subtitle: false }]).select();
-  if (targetResult.error || !targetResult.data) { continue; }
-  var targetId = targetResult.data[0].id;
+          targetOrder++;
+          var targetResult = await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: targetName, sort_order: targetOrder, entry_type: entryType, is_subtitle: false }]).select();
+          if (targetResult.error || !targetResult.data) { continue; }
+          var targetId = targetResult.data[0].id;
 
-  if (entryType === 'manual') { continue; }
+          if (entryType === 'manual') { continue; }
 
-  var scoreRows = document.querySelectorAll('#scoreOptionsList' + targetIdx + ' > div');
-  var scoreOrder = 0;
-  for (var j = 0; j < scoreRows.length; j++) {
-    var sRow = scoreRows[j];
-    var idParts = sRow.id.split('_');
-    var optIdx = idParts[1];
-    var labelInput = document.getElementById('scoreLabel' + targetIdx + '_' + optIdx);
-    var pointsInput = document.getElementById('scorePoints' + targetIdx + '_' + optIdx);
-    if (!labelInput || !pointsInput) { continue; }
-    var label = labelInput.value.trim();
-    var points = parseFloat(pointsInput.value);
-    if (!label || isNaN(points)) { continue; }
+          var scoreRows = document.querySelectorAll('#scoreOptionsList' + targetIdx + ' > div');
+          var scoreOrder = 0;
+          for (var j = 0; j < scoreRows.length; j++) {
+            var sRow = scoreRows[j];
+            var idParts = sRow.id.split('_');
+            var optIdx = idParts[1];
+            var labelInput = document.getElementById('scoreLabel' + targetIdx + '_' + optIdx);
+            var pointsInput = document.getElementById('scorePoints' + targetIdx + '_' + optIdx);
+            if (!labelInput || !pointsInput) { continue; }
+            var label = labelInput.value.trim();
+            var points = parseFloat(pointsInput.value);
+            if (!label || isNaN(points)) { continue; }
 
-    scoreOrder++;
-    await sbClient.from('drill_score_options').insert([{ target_id: targetId, label: label, points: points, sort_order: scoreOrder }]);
-  }
-}
+            scoreOrder++;
+            await sbClient.from('drill_score_options').insert([{ target_id: targetId, label: label, points: points, sort_order: scoreOrder }]);
+          }
+        }
 
-     showMsg('drill-success', editingDrillId ? 'Drill updated successfully!' : 'Drill created successfully!');
-document.getElementById('drillTitle').value = '';
-document.getElementById('drillTargetsList').innerHTML = '';
-document.querySelector('button[onclick="saveDrill()"]').textContent = 'Create Drill';
-drillTargetCount = 0;
-scoreOptionCounts = {};
-editingDrillId = null;
-loadDrills();
+        showMsg('drill-success', editingDrillId ? 'Drill updated successfully!' : 'Drill created successfully!');
+        document.getElementById('drillTitle').value = '';
+        document.getElementById('drillTargetsList').innerHTML = '';
+        document.querySelector('button[onclick="saveDrill()"]').textContent = 'Create Drill';
+        drillTargetCount = 0;
+        scoreOptionCounts = {};
+        editingDrillId = null;
+        loadDrills();
       }
 
-    async function loadDrills() {
-  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
-  var container = document.getElementById('drillsList');
-  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No drills created yet.</p>'; return; }
+      async function loadDrills() {
+        var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
+        var container = document.getElementById('drillsList');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No drills created yet.</p>'; return; }
 
-  container.innerHTML = result.data.map(function(d) {
-    return '<div class="card"><div style="cursor:pointer;font-weight:bold;" onclick="toggleManageDrill(' + d.id + ')">' + d.title + '</div>' +
-      '<div id="manage-drill-' + d.id + '" style="display:none;margin-top:12px;">' +
-      '<ul id="manage-drill-list-' + d.id + '" style="margin:0 0 12px;padding-left:20px;font-size:0.9em;color:#555;"></ul>' +
-      '<button class="btn-small" onclick="editDrill(' + d.id + ')">Edit</button> ' +
-      '<button class="btn-small danger" onclick="deleteDrill(' + d.id + ')">Delete Drill</button>' +
-      '</div></div>';
-  }).join('');
+        window.allDrillsData = result.data;
 
-  window.allDrillsData = result.data;
-}
+        container.innerHTML = result.data.map(function(d) {
+          return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+            '<div style="padding:14px 16px;cursor:pointer;font-weight:bold;" onclick="toggleManageDrill(' + d.id + ')">' + d.title + '</div>' +
+            '<div id="manage-drill-' + d.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+            '<ul id="manage-drill-list-' + d.id + '" style="margin:12px 0 12px;padding-left:20px;font-size:0.9em;color:#555;"></ul>' +
+            '<button class="btn-small" onclick="editDrill(' + d.id + ')">Edit</button> ' +
+            '<button class="btn-small danger" onclick="deleteDrill(' + d.id + ')">Delete Drill</button>' +
+            '</div></div>';
+        }).join('');
+      }
 
-function toggleManageDrill(id) {
-  var body = document.getElementById('manage-drill-' + id);
-  var isOpen = body.style.display !== 'none';
-  body.style.display = isOpen ? 'none' : 'block';
-  if (!isOpen) {
-    var drill = window.allDrillsData.find(function(d) { return d.id === id; });
-    if (!drill) { return; }
-    var targets = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-    var itemsHtml = targets.map(function(t) {
-      if (t.is_subtitle) { return '<li style="list-style:none;font-weight:bold;margin:8px 0 4px;">— ' + t.target_name + ' —</li>'; }
-      if (t.entry_type === 'manual') { return '<li><strong>' + t.target_name + ':</strong> Manual score entry</li>'; }
-      var options = t.drill_score_options || [];
-      var optSummary = options.map(function(o) { return o.label + ' (' + o.points + 'pts)'; }).join(', ');
-      return '<li><strong>' + t.target_name + ':</strong> ' + (optSummary || 'No score options') + '</li>';
-    }).join('');
-    document.getElementById('manage-drill-list-' + id).innerHTML = itemsHtml;
-  }
-}
+      function toggleManageDrill(id) {
+        var body = document.getElementById('manage-drill-' + id);
+        var isOpen = body.style.display !== 'none';
+        body.style.display = isOpen ? 'none' : 'block';
+        if (!isOpen) {
+          var drill = window.allDrillsData.find(function(d) { return d.id === id; });
+          if (!drill) { return; }
+          var targets = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+          var itemsHtml = targets.map(function(t) {
+            if (t.is_subtitle) { return '<li style="list-style:none;font-weight:bold;margin:8px 0 4px;">— ' + t.target_name + ' —</li>'; }
+            if (t.entry_type === 'manual') { return '<li><strong>' + t.target_name + ':</strong> Manual score entry</li>'; }
+            var options = t.drill_score_options || [];
+            var optSummary = options.map(function(o) { return o.label + ' (' + o.points + 'pts)'; }).join(', ');
+            return '<li><strong>' + t.target_name + ':</strong> ' + (optSummary || 'No score options') + '</li>';
+          }).join('');
+          document.getElementById('manage-drill-list-' + id).innerHTML = itemsHtml;
+        }
+      }
+
+      async function editDrill(id) {
+        var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').eq('id', id).single();
+        if (result.error || !result.data) { alert('Error loading drill.'); return; }
+        var drill = result.data;
+
+        editingDrillId = id;
+        document.getElementById('drillTitle').value = drill.title || '';
+        document.getElementById('drillTargetsList').innerHTML = '';
+        drillTargetCount = 0;
+        scoreOptionCounts = {};
+
+        var targets = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+        targets.forEach(function(t) {
+          if (t.is_subtitle) {
+            addDrillSubtitleRow();
+            var subIdx = drillTargetCount;
+            document.getElementById('subtitleName' + subIdx).value = t.target_name || '';
+            return;
+          }
+
+          addDrillTargetRow();
+          var idx = drillTargetCount;
+          document.getElementById('targetName' + idx).value = t.target_name || '';
+          document.getElementById('targetEntryType' + idx).value = t.entry_type || 'dropdown';
+          toggleEntryType(idx);
+
+          document.getElementById('scoreOptionsList' + idx).innerHTML = '';
+          scoreOptionCounts[idx] = 0;
+
+          var options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+          options.forEach(function(o) {
+            addScoreOptionRow(idx);
+            var optIdx = scoreOptionCounts[idx];
+            document.getElementById('scoreLabel' + idx + '_' + optIdx).value = o.label || '';
+            document.getElementById('scorePoints' + idx + '_' + optIdx).value = o.points != null ? o.points : '';
+          });
+        });
+
+        document.querySelector('button[onclick="saveDrill()"]').textContent = 'Update Drill';
+        document.getElementById('drillTitle').scrollIntoView({ behavior: 'smooth' });
+      }
+
       async function deleteDrill(id) {
         if (!confirm('Delete this drill? All player progress for it will be lost.')) { return; }
         await sbClient.from('drills').delete().eq('id', id);
         loadDrills();
       }
-      var allDrillAttemptsData = [];
 
-async function loadDrillAttempts() {
-  var result = await sbClient.from('drill_attempts').select('*, profiles(full_name, username), drills(title), drill_attempt_scores(id, target_id, points, drill_targets(target_name), drill_score_options(label))').order('attempt_date', { ascending: false });
-  allDrillAttemptsData = result.data || [];
+      async function loadDrillAttempts() {
+        var result = await sbClient.from('drill_attempts').select('*, profiles(full_name, username), drills(title), drill_attempt_scores(id, target_id, points, drill_targets(target_name), drill_score_options(label))').order('attempt_date', { ascending: false });
+        allDrillAttemptsData = result.data || [];
 
-  var playerFilter = document.getElementById('drillAttemptPlayerFilter');
-  var uniquePlayers = {};
-  allDrillAttemptsData.forEach(function(a) {
-    var p = a.profiles || {};
-    var name = p.full_name || p.username || 'Unknown';
-    if (a.player_id) { uniquePlayers[a.player_id] = name; }
-  });
-  playerFilter.innerHTML = '<option value="">-- All Players --</option>';
-  Object.keys(uniquePlayers).forEach(function(pid) {
-    playerFilter.innerHTML += '<option value="' + pid + '">' + uniquePlayers[pid] + '</option>';
-  });
+        var playerFilter = document.getElementById('drillAttemptPlayerFilter');
+        var uniquePlayers = {};
+        allDrillAttemptsData.forEach(function(a) {
+          var p = a.profiles || {};
+          var name = p.full_name || p.username || 'Unknown';
+          if (a.player_id) { uniquePlayers[a.player_id] = name; }
+        });
+        playerFilter.innerHTML = '<option value="">-- All Players --</option>';
+        Object.keys(uniquePlayers).forEach(function(pid) {
+          playerFilter.innerHTML += '<option value="' + pid + '">' + uniquePlayers[pid] + '</option>';
+        });
 
-  renderDrillAttempts(allDrillAttemptsData);
-}
+        renderDrillAttempts(allDrillAttemptsData);
+      }
 
-function renderDrillAttempts(data) {
-  var container = document.getElementById('drillAttemptsList');
-  if (!data.length) { container.innerHTML = '<p class="empty-state">No drill attempts logged yet.</p>'; return; }
+      function renderDrillAttempts(data) {
+        var container = document.getElementById('drillAttemptsList');
+        if (!data.length) { container.innerHTML = '<p class="empty-state">No drill attempts logged yet.</p>'; return; }
 
-  container.innerHTML = '<table><thead><tr><th>Player</th><th>Drill</th><th>Date</th><th>Score</th><th>Action</th></tr></thead><tbody>' +
-    data.map(function(a) {
-      var profile = a.profiles || {};
-      var name = profile.full_name || profile.username || 'Unknown';
-      var drillTitle = a.drills ? a.drills.title : 'Unknown Drill';
-      return '<tr style="cursor:pointer;" onclick="toggleDrillAttemptDetail(' + a.id + ')">' +
-        '<td>' + name + '</td><td>' + drillTitle + '</td><td>' + (a.attempt_date || '-') + '</td><td><strong id="attempt-total-' + a.id + '">' + a.total_score + '</strong></td>' +
-        '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteDrillAttempt(' + a.id + ')">Delete</button></td>' +
-        '</tr>' +
-        '<tr id="attempt-detail-' + a.id + '" style="display:none;background:#f9f9f9;">' +
-        '<td colspan="5" style="padding:16px;" id="attempt-detail-content-' + a.id + '">' +
-        renderDrillAttemptDetailView(a) +
-        '</td></tr>';
-    }).join('') + '</tbody></table>';
-}
+        container.innerHTML = data.map(function(a) {
+          var profile = a.profiles || {};
+          var name = profile.full_name || profile.username || 'Unknown';
+          var drillTitle = a.drills ? a.drills.title : 'Unknown Drill';
+          return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+            '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleDrillAttemptDetail(' + a.id + ')">' +
+            '<div><strong>' + name + '</strong><div style="color:#888;font-size:0.85em;">' + drillTitle + ' — ' + (a.attempt_date || '-') + ' — Score: <strong id="attempt-total-' + a.id + '">' + a.total_score + '</strong></div></div>' +
+            '<span style="color:#aaa;">▾</span>' +
+            '</div>' +
+            '<div id="attempt-detail-' + a.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+            '<div id="attempt-detail-content-' + a.id + '" style="padding-top:12px;">' +
+            renderDrillAttemptDetailView(a) +
+            '</div>' +
+            '<button class="btn-small danger" onclick="deleteDrillAttempt(' + a.id + ')" style="margin-top:10px;">Delete Attempt</button>' +
+            '</div></div>';
+        }).join('');
+      }
 
+      function renderDrillAttemptDetailView(a) {
+        var scores = a.drill_attempt_scores || [];
+        var rowsHtml = scores.map(function(s) {
+          var targetName = s.drill_targets ? s.drill_targets.target_name : 'Unknown';
+          var label = s.drill_score_options ? s.drill_score_options.label : 'Manual Entry';
+          return '<strong>' + targetName + ':</strong> ' + label + ' (' + s.points + ' pts)<br>';
+        }).join('');
+        return (rowsHtml || 'No target breakdown available.') +
+          '<button class="btn-small" onclick="editDrillAttempt(' + a.id + ')" style="margin-top:10px;">Edit Scores</button>';
+      }
 
+      function toggleDrillAttemptDetail(id) {
+        var row = document.getElementById('attempt-detail-' + id);
+        row.style.display = row.style.display === 'none' ? 'block' : 'none';
+      }
 
-async function saveDrillAttemptEdit(id) {
-  var newScore = parseFloat(document.getElementById('edit-attempt-score-' + id).value);
-  if (isNaN(newScore)) { alert('Please enter a valid score.'); return; }
+      function editDrillAttempt(id) {
+        var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
+        if (!attempt) { return; }
+        var scores = attempt.drill_attempt_scores || [];
 
-  var result = await sbClient.from('drill_attempts').update({ total_score: newScore }).eq('id', id);
-  if (result.error) { alert('Error saving: ' + result.error.message); return; }
+        if (!scores.length) {
+          document.getElementById('attempt-detail-content-' + id).innerHTML =
+            '<div class="form-group" style="max-width:200px;"><label>Total Score</label><input type="number" step="any" class="score-input" id="edit-attempt-score-' + id + '" value="' + attempt.total_score + '" style="width:100px;" /></div>' +
+            '<button class="btn-small" onclick="saveDrillAttemptEdit(' + id + ')">Save</button> ' +
+            '<button class="btn-small" onclick="cancelDrillAttemptEdit(' + id + ')">Cancel</button>';
+          return;
+        }
 
-  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
-  if (attempt) { attempt.total_score = newScore; }
-  document.getElementById('attempt-total-' + id).textContent = newScore;
-  document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
-}
+        var fieldsHtml = scores.map(function(s) {
+          var targetName = s.drill_targets ? s.drill_targets.target_name : 'Unknown';
+          return '<div class="form-group"><label>' + targetName + '</label><input type="number" step="any" class="score-input" id="edit-attempt-line-' + s.id + '" value="' + s.points + '" style="width:100px;" /></div>';
+        }).join('');
 
-async function deleteDrillAttempt(id) {
-  if (!confirm('Delete this drill attempt?')) { return; }
-  await sbClient.from('drill_attempts').delete().eq('id', id);
-  loadDrillAttempts();
-}
+        document.getElementById('attempt-detail-content-' + id).innerHTML =
+          fieldsHtml +
+          '<button class="btn-small" onclick="saveDrillAttemptLines(' + id + ')">Save</button> ' +
+          '<button class="btn-small" onclick="cancelDrillAttemptEdit(' + id + ')">Cancel</button>';
+      }
 
-function filterDrillAttempts() {
-  var playerVal = document.getElementById('drillAttemptPlayerFilter').value;
-  var dateVal = document.getElementById('drillAttemptDateFilter').value;
+      function cancelDrillAttemptEdit(id) {
+        var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
+        if (!attempt) { return; }
+        document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
+      }
 
-  var filtered = allDrillAttemptsData.filter(function(a) {
-    var playerMatch = !playerVal || a.player_id === playerVal;
-    var dateMatch = !dateVal || a.attempt_date === dateVal;
-    return playerMatch && dateMatch;
-  });
+      async function saveDrillAttemptLines(id) {
+        var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
+        if (!attempt) { return; }
+        var scores = attempt.drill_attempt_scores || [];
 
-  renderDrillAttempts(filtered);
-}
+        var newTotal = 0;
+        for (var i = 0; i < scores.length; i++) {
+          var s = scores[i];
+          var input = document.getElementById('edit-attempt-line-' + s.id);
+          var newPoints = parseFloat(input.value);
+          if (isNaN(newPoints)) { alert('Please enter a valid number for every target.'); return; }
+          newTotal += newPoints;
 
-function clearDrillAttemptFilters() {
-  document.getElementById('drillAttemptPlayerFilter').value = '';
-  document.getElementById('drillAttemptDateFilter').value = '';
-  renderDrillAttempts(allDrillAttemptsData);
-}
-async function editDrill(id) {
- var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').eq('id', id).single();
-  if (result.error || !result.data) { alert('Error loading drill.'); return; }
-  var drill = result.data;
+          var lineResult = await sbClient.from('drill_attempt_scores').update({ points: newPoints }).eq('id', s.id);
+          if (lineResult.error) { alert('Error saving: ' + lineResult.error.message); return; }
+          s.points = newPoints;
+        }
 
-  editingDrillId = id;
-  document.getElementById('drillTitle').value = drill.title || '';
-  document.getElementById('drillTargetsList').innerHTML = '';
-  drillTargetCount = 0;
-  scoreOptionCounts = {};
+        var totalResult = await sbClient.from('drill_attempts').update({ total_score: newTotal }).eq('id', id);
+        if (totalResult.error) { alert('Error saving total: ' + totalResult.error.message); return; }
 
- var targets = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-targets.forEach(function(t) {
-  if (t.is_subtitle) {
-    addDrillSubtitleRow();
-    var subIdx = drillTargetCount;
-    document.getElementById('subtitleName' + subIdx).value = t.target_name || '';
-    return;
-  }
+        attempt.total_score = newTotal;
+        document.getElementById('attempt-total-' + id).textContent = newTotal;
+        document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
+      }
 
-  addDrillTargetRow();
-  var idx = drillTargetCount;
-  document.getElementById('targetName' + idx).value = t.target_name || '';
-  document.getElementById('targetEntryType' + idx).value = t.entry_type || 'dropdown';
-  toggleEntryType(idx);
+      async function saveDrillAttemptEdit(id) {
+        var newScore = parseFloat(document.getElementById('edit-attempt-score-' + id).value);
+        if (isNaN(newScore)) { alert('Please enter a valid score.'); return; }
 
-  document.getElementById('scoreOptionsList' + idx).innerHTML = '';
-  scoreOptionCounts[idx] = 0;
+        var result = await sbClient.from('drill_attempts').update({ total_score: newScore }).eq('id', id);
+        if (result.error) { alert('Error saving: ' + result.error.message); return; }
 
-  var options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-  options.forEach(function(o) {
-    addScoreOptionRow(idx);
-    var optIdx = scoreOptionCounts[idx];
-    document.getElementById('scoreLabel' + idx + '_' + optIdx).value = o.label || '';
-    document.getElementById('scorePoints' + idx + '_' + optIdx).value = o.points != null ? o.points : '';
-  });
-});
+        var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
+        if (attempt) { attempt.total_score = newScore; }
+        document.getElementById('attempt-total-' + id).textContent = newScore;
+        document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
+      }
 
-  document.querySelector('button[onclick="saveDrill()"]').textContent = 'Update Drill';
-  document.getElementById('drillTitle').scrollIntoView({ behavior: 'smooth' });
-}
+      async function deleteDrillAttempt(id) {
+        if (!confirm('Delete this drill attempt?')) { return; }
+        await sbClient.from('drill_attempts').delete().eq('id', id);
+        loadDrillAttempts();
+      }
+
+      function filterDrillAttempts() {
+        var playerVal = document.getElementById('drillAttemptPlayerFilter').value;
+        var dateVal = document.getElementById('drillAttemptDateFilter').value;
+
+        var filtered = allDrillAttemptsData.filter(function(a) {
+          var playerMatch = !playerVal || a.player_id === playerVal;
+          var dateMatch = !dateVal || a.attempt_date === dateVal;
+          return playerMatch && dateMatch;
+        });
+
+        renderDrillAttempts(filtered);
+      }
+
+      function clearDrillAttemptFilters() {
+        document.getElementById('drillAttemptPlayerFilter').value = '';
+        document.getElementById('drillAttemptDateFilter').value = '';
+        renderDrillAttempts(allDrillAttemptsData);
+      }
+
+      async function loadAcademyJoinEnquiries() {
+        var result = await sbClient.from('academy_enquiries').select('*').eq('type', 'join').order('created_at', { ascending: false });
+        var container = document.getElementById('academyJoinEnquiriesList');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
+
+        container.innerHTML = '<table><thead><tr><th>Name</th><th>Email</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
+          result.data.map(function(e) {
+            var unreadMark = !e.is_read ? ' 🔴' : '';
+            return '<tr style="cursor:pointer;" onclick="toggleAcademyEnquiryDetail(' + e.id + ', \'join\')">' +
+              '<td>' + e.name + unreadMark + '</td><td>' + e.email + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
+              '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteAcademyEnquiry(' + e.id + ', \'join\')">Delete</button></td>' +
+              '</tr>' +
+              '<tr id="academy-enquiry-detail-join-' + e.id + '" style="display:none;background:#f9f9f9;">' +
+              '<td colspan="4" style="padding:16px;">' +
+              '<strong>Phone:</strong> ' + (e.phone || '-') + '<br>' +
+              '<strong>Message:</strong><br>' + e.message +
+              '</td></tr>';
+          }).join('') + '</tbody></table>';
+
+        updateAcademyBadge();
+      }
+
+      async function loadAcademySponsorEnquiries() {
+        var result = await sbClient.from('academy_enquiries').select('*').eq('type', 'sponsor').order('created_at', { ascending: false });
+        var container = document.getElementById('academySponsorEnquiriesList');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
+
+        container.innerHTML = '<table><thead><tr><th>Name</th><th>Email</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
+          result.data.map(function(e) {
+            var unreadMark = !e.is_read ? ' 🔴' : '';
+            return '<tr style="cursor:pointer;" onclick="toggleAcademyEnquiryDetail(' + e.id + ', \'sponsor\')">' +
+              '<td>' + e.name + unreadMark + '</td><td>' + e.email + '</td><td>' + new Date(e.created_at).toLocaleDateString('en-GB') + '</td>' +
+              '<td><button class="btn-small danger" onclick="event.stopPropagation(); deleteAcademyEnquiry(' + e.id + ', \'sponsor\')">Delete</button></td>' +
+              '</tr>' +
+              '<tr id="academy-enquiry-detail-sponsor-' + e.id + '" style="display:none;background:#f9f9f9;">' +
+              '<td colspan="4" style="padding:16px;">' +
+              '<strong>Phone:</strong> ' + (e.phone || '-') + '<br>' +
+              '<strong>Message:</strong><br>' + e.message +
+              '</td></tr>';
+          }).join('') + '</tbody></table>';
+
+        updateAcademyBadge();
+      }
+
+      async function toggleAcademyEnquiryDetail(id, type) {
+        var row = document.getElementById('academy-enquiry-detail-' + type + '-' + id);
+        var opening = row.style.display === 'none';
+        row.style.display = opening ? 'table-row' : 'none';
+        if (opening) {
+          await sbClient.from('academy_enquiries').update({ is_read: true }).eq('id', id);
+          updateAcademyBadge();
+        }
+      }
+
+      async function deleteAcademyEnquiry(id, type) {
+        if (!confirm('Delete this enquiry?')) { return; }
+        await sbClient.from('academy_enquiries').delete().eq('id', id);
+        if (type === 'join') { loadAcademyJoinEnquiries(); } else { loadAcademySponsorEnquiries(); }
+      }
+
       async function loadAcademyLeagueSelects() {
         var result = await sbClient.from('academy_leagues').select('*').order('name');
         var allGroups = result.data || [];
@@ -1725,29 +1633,30 @@ targets.forEach(function(t) {
         renderSessionLog(allSessionsData);
       }
 
-    function renderSessionLog(data) {
-  var container = document.getElementById('sessionLogList');
-  if (!data.length) { container.innerHTML = '<p class="empty-state">No sessions logged yet.</p>'; return; }
+      function renderSessionLog(data) {
+        var container = document.getElementById('sessionLogList');
+        if (!data.length) { container.innerHTML = '<p class="empty-state">No sessions logged yet.</p>'; return; }
 
-  container.innerHTML = data.map(function(s) {
-    var player = s.profiles || {};
-    var name = player.full_name || player.username || 'Unknown';
-    var total = (s.attendance || 0) + (s.attitude || 0) + (s.match_win || 0) + (s.break_throw || 0) + (s.nine_dart_challenge || 0) + (s.over_100_checkout || 0) + (s.score_171_plus || 0) + (s.bonus_points || 0);
-    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
-      '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleSessionDetail(' + s.id + ')">' +
-      '<div><strong>' + name + '</strong><div style="color:#888;font-size:0.85em;">' + (s.session_date || '-') + ' — Total: <strong id="session-total-' + s.id + '">' + total + '</strong></div></div>' +
-      '<span style="color:#aaa;">▾</span>' +
-      '</div>' +
-      '<div id="session-detail-' + s.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
-      '<div id="session-detail-content-' + s.id + '" style="padding-top:12px;">' +
-      renderSessionDetailView(s) +
-      '</div>' +
-      '<div style="display:flex;gap:8px;margin-top:12px;">' +
-      '<button class="btn-small" onclick="editSession(' + s.id + ')">Edit</button>' +
-      '<button class="btn-small danger" onclick="deleteSession(' + s.id + ')">Delete</button>' +
-      '</div></div></div>';
-  }).join('');
-}
+        container.innerHTML = data.map(function(s) {
+          var player = s.profiles || {};
+          var name = player.full_name || player.username || 'Unknown';
+          var total = (s.attendance || 0) + (s.attitude || 0) + (s.match_win || 0) + (s.break_throw || 0) + (s.nine_dart_challenge || 0) + (s.over_100_checkout || 0) + (s.score_171_plus || 0) + (s.bonus_points || 0);
+          return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+            '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleSessionDetail(' + s.id + ')">' +
+            '<div><strong>' + name + '</strong><div style="color:#888;font-size:0.85em;">' + (s.session_date || '-') + ' — Total: <strong id="session-total-' + s.id + '">' + total + '</strong></div></div>' +
+            '<span style="color:#aaa;">▾</span>' +
+            '</div>' +
+            '<div id="session-detail-' + s.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+            '<div id="session-detail-content-' + s.id + '" style="padding-top:12px;">' +
+            renderSessionDetailView(s) +
+            '</div>' +
+            '<div style="display:flex;gap:8px;margin-top:12px;">' +
+            '<button class="btn-small" onclick="editSession(' + s.id + ')">Edit</button>' +
+            '<button class="btn-small danger" onclick="deleteSession(' + s.id + ')">Delete</button>' +
+            '</div></div></div>';
+        }).join('');
+      }
+
       function renderSessionDetailView(s) {
         return '<strong>Attendance:</strong> ' + (s.attendance || 0) + '<br>' +
           '<strong>Attitude:</strong> ' + (s.attitude || 0) + '<br>' +
@@ -1781,7 +1690,7 @@ targets.forEach(function(t) {
       function editSession(id) {
         var session = allSessionsData.find(function(s) { return s.id === id; });
         if (!session) { return; }
-        document.getElementById('session-detail-' + id).style.display = 'table-row';
+        document.getElementById('session-detail-' + id).style.display = 'block';
         document.getElementById('session-detail-content-' + id).innerHTML = renderSessionEditView(session);
       }
 
@@ -1814,10 +1723,10 @@ targets.forEach(function(t) {
         document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
       }
 
-function toggleSessionDetail(id) {
-  var row = document.getElementById('session-detail-' + id);
-  row.style.display = row.style.display === 'none' ? 'block' : 'none';
-}
+      function toggleSessionDetail(id) {
+        var row = document.getElementById('session-detail-' + id);
+        row.style.display = row.style.display === 'none' ? 'block' : 'none';
+      }
 
       function filterSessionLog() {
         var playerVal = document.getElementById('sessionSearch').value;
@@ -2053,15 +1962,15 @@ function toggleSessionDetail(id) {
         loadDivisionEnquiries();
       }
 
-async function updateAcademyBadge() {
-  var playerResult = await sbClient.from('sponsor_enquiries').select('id').eq('is_read', false);
-  var divisionResult = await sbClient.from('division_sponsor_enquiries').select('id').eq('is_read', false);
-  var joinResult = await sbClient.from('academy_enquiries').select('id').eq('type', 'join').eq('is_read', false);
-  var sponsorResult = await sbClient.from('academy_enquiries').select('id').eq('type', 'sponsor').eq('is_read', false);
-  var count = (playerResult.data ? playerResult.data.length : 0) + (divisionResult.data ? divisionResult.data.length : 0) + (joinResult.data ? joinResult.data.length : 0) + (sponsorResult.data ? sponsorResult.data.length : 0);
-  var btn = document.getElementById('enquiriesTabBtn');
-  if (btn) { btn.textContent = count > 0 ? 'Enquiries (' + count + ')' : 'Enquiries'; }
-}
+      async function updateAcademyBadge() {
+        var playerResult = await sbClient.from('sponsor_enquiries').select('id').eq('is_read', false);
+        var divisionResult = await sbClient.from('division_sponsor_enquiries').select('id').eq('is_read', false);
+        var joinResult = await sbClient.from('academy_enquiries').select('id').eq('type', 'join').eq('is_read', false);
+        var sponsorResult = await sbClient.from('academy_enquiries').select('id').eq('type', 'sponsor').eq('is_read', false);
+        var count = (playerResult.data ? playerResult.data.length : 0) + (divisionResult.data ? divisionResult.data.length : 0) + (joinResult.data ? joinResult.data.length : 0) + (sponsorResult.data ? sponsorResult.data.length : 0);
+        var btn = document.getElementById('enquiriesTabBtn');
+        if (btn) { btn.textContent = count > 0 ? 'Enquiries (' + count + ')' : 'Enquiries'; }
+      }
 
       async function saveNews() {
         var title = document.getElementById('newsTitle').value.trim();
@@ -2193,17 +2102,17 @@ async function updateAcademyBadge() {
         loadTournaments();
         loadLeagues();
         loadPlayers();
-        loadAcademyJoinEnquiries();
-loadAcademySponsorEnquiries();
-        loadDrillAttempts();
         loadPendingApprovals();
         loadAcademyLeagueSelects();
         loadSessionLog();
+        loadDrills();
+        loadDrillAttempts();
         loadSponsorPlayerSelect();
+        loadAcademyJoinEnquiries();
+        loadAcademySponsorEnquiries();
         loadSponsorEnquiries();
         loadDivisionEnquiries();
         loadDivisionSponsorSelect();
-        loadDrills();
         loadNews();
       });
     </script>
