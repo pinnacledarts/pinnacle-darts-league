@@ -994,21 +994,39 @@ loadDrills();
       }
 
     async function loadDrills() {
-  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
+  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
   var container = document.getElementById('drillsList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No drills created yet.</p>'; return; }
 
   container.innerHTML = result.data.map(function(d) {
-    var targets = d.drill_targets || [];
-    var targetsSummary = targets.map(function(t) {
+    return '<div class="card"><div style="cursor:pointer;font-weight:bold;" onclick="toggleManageDrill(' + d.id + ')">' + d.title + '</div>' +
+      '<div id="manage-drill-' + d.id + '" style="display:none;margin-top:12px;">' +
+      '<ul id="manage-drill-list-' + d.id + '" style="margin:0 0 12px;padding-left:20px;font-size:0.9em;color:#555;"></ul>' +
+      '<button class="btn-small" onclick="editDrill(' + d.id + ')">Edit</button> ' +
+      '<button class="btn-small danger" onclick="deleteDrill(' + d.id + ')">Delete Drill</button>' +
+      '</div></div>';
+  }).join('');
+
+  window.allDrillsData = result.data;
+}
+
+function toggleManageDrill(id) {
+  var body = document.getElementById('manage-drill-' + id);
+  var isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    var drill = window.allDrillsData.find(function(d) { return d.id === id; });
+    if (!drill) { return; }
+    var targets = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+    var itemsHtml = targets.map(function(t) {
+      if (t.is_subtitle) { return '<li style="list-style:none;font-weight:bold;margin:8px 0 4px;">— ' + t.target_name + ' —</li>'; }
+      if (t.entry_type === 'manual') { return '<li><strong>' + t.target_name + ':</strong> Manual score entry</li>'; }
       var options = t.drill_score_options || [];
       var optSummary = options.map(function(o) { return o.label + ' (' + o.points + 'pts)'; }).join(', ');
       return '<li><strong>' + t.target_name + ':</strong> ' + (optSummary || 'No score options') + '</li>';
     }).join('');
-    return '<div class="card"><h4 style="margin:0 0 8px;">' + d.title + '</h4><ul style="margin:0 0 12px;padding-left:20px;font-size:0.9em;color:#555;">' + targetsSummary + '</ul>' +
-      '<button class="btn-small" onclick="editDrill(' + d.id + ')">Edit</button> ' +
-      '<button class="btn-small danger" onclick="deleteDrill(' + d.id + ')">Delete Drill</button></div>';
-  }).join('');
+    document.getElementById('manage-drill-list-' + id).innerHTML = itemsHtml;
+  }
 }
       async function deleteDrill(id) {
         if (!confirm('Delete this drill? All player progress for it will be lost.')) { return; }
