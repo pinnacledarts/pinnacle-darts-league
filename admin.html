@@ -1406,16 +1406,15 @@
         updateAcademyBadge();
       }
 
-      async function toggleAcademyEnquiryDetail(id, type) {
-        var row = document.getElementById('academy-enquiry-detail-' + type + '-' + id);
-        var opening = row.style.display === 'none';
-        row.style.display = opening ? 'table-row' : 'none';
-        if (opening) {
-          await sbClient.from('academy_enquiries').update({ is_read: true }).eq('id', id);
-          updateAcademyBadge();
-        }
-      }
-
+     async function toggleAcademyEnquiryDetail(id, type) {
+  var row = document.getElementById('academy-enquiry-detail-' + type + '-' + id);
+  var opening = row.style.display === 'none';
+  row.style.display = opening ? 'block' : 'none';
+  if (opening) {
+    await sbClient.from('academy_enquiries').update({ is_read: true }).eq('id', id);
+    updateAcademyBadge();
+  }
+}
       async function deleteAcademyEnquiry(id, type) {
         if (!confirm('Delete this enquiry?')) { return; }
         await sbClient.from('academy_enquiries').delete().eq('id', id);
