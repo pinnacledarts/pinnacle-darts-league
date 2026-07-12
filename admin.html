@@ -1375,36 +1375,7 @@ function renderDrillAttempts(data) {
     }).join('') + '</tbody></table>';
 }
 
-function renderDrillAttemptDetailView(a) {
-  var scores = a.drill_attempt_scores || [];
-  var rowsHtml = scores.map(function(s) {
-    var targetName = s.drill_targets ? s.drill_targets.target_name : 'Unknown';
-    var label = s.drill_score_options ? s.drill_score_options.label : 'Manual Entry';
-    return '<strong>' + targetName + ':</strong> ' + label + ' (' + s.points + ' pts)<br>';
-  }).join('');
-  return (rowsHtml || 'No target breakdown available.') +
-    '<button class="btn-small" onclick="editDrillAttempt(' + a.id + ')" style="margin-top:10px;">Edit Total Score</button>';
-}
 
-function toggleDrillAttemptDetail(id) {
-  var row = document.getElementById('attempt-detail-' + id);
-  row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
-}
-
-function editDrillAttempt(id) {
-  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
-  if (!attempt) { return; }
-  document.getElementById('attempt-detail-content-' + id).innerHTML =
-    '<div class="form-group" style="max-width:200px;"><label>Total Score</label><input type="number" step="any" class="score-input" id="edit-attempt-score-' + id + '" value="' + attempt.total_score + '" style="width:100px;" /></div>' +
-    '<button class="btn-small" onclick="saveDrillAttemptEdit(' + id + ')">Save</button> ' +
-    '<button class="btn-small" onclick="cancelDrillAttemptEdit(' + id + ')">Cancel</button>';
-}
-
-function cancelDrillAttemptEdit(id) {
-  var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
-  if (!attempt) { return; }
-  document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
-}
 
 async function saveDrillAttemptEdit(id) {
   var newScore = parseFloat(document.getElementById('edit-attempt-score-' + id).value);
