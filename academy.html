@@ -1023,8 +1023,14 @@
         body.classList.toggle('open');
       }
 
-      async function submitDrillAttempt(drillId) {
-        if (!currentUserId) { window.location.href = 'login.html'; return; }
+async function submitDrillAttempt(drillId) {
+  if (!currentUserId) { window.location.href = 'login.html'; return; }
+
+  const { data: { session }, error: sessionError } = await sbClient.auth.getSession();
+  if (sessionError || !session) {
+    document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#cc0000;">Your session needs refreshing. Please log in again (in this tab), then click Submit again — your answers are still here.</span>';
+    return;
+  }
 
         var targetSelects = document.querySelectorAll('[id^="drilltarget-' + drillId + '-"]');
         if (!targetSelects.length) { return; }
