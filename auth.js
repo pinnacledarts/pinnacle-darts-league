@@ -1,11 +1,14 @@
 const SUPABASE_URL = 'https://xcygwejfphziercarakq.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhjeWd3ZWpmcGh6aWVyY2FyYWtxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI4NDQwNDIsImV4cCI6MjA5ODQyMDA0Mn0.9FZ_OlIohNt0c-5cq4YI9pS1I1V2HvrggXtvZIXfr6U';
 const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-(function() {
-  var style = document.createElement('style');
-  style.textContent = 'main { max-width: 1200px !important; }';
-  document.head.appendChild(style);
-})();
+document.addEventListener('DOMContentLoaded', function() {
+  var headerH1 = document.querySelector('header h1');
+  var headerP = document.querySelector('header p');
+  if (headerH1 && headerH1.textContent.trim() === 'Pinnacle Darts League') {
+    headerH1.textContent = 'Pinnacle Darts Online';
+    if (headerP) { headerP.style.display = 'none'; }
+  }
+});
 (function() {
   var headerH1 = document.querySelector('header h1');
   var headerP = document.querySelector('header p');
