@@ -153,12 +153,12 @@ var joinBtn = '';
 if (currentUserId) {
   if (hasJoined) {
     joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
-  } else if (isFull) {
-    joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">Tournament Full</button>';
   } else if (t.average_split && !playerHasAverage) {
     joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;" title="You need an average set before joining this tournament">Average Required</button>';
+  } else if (isFull) {
+    joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this, true)">Join as Reserve</button>';
   } else {
-    joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this)">Join Tournament</button>';
+    joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this, false)">Join Tournament</button>';
   }
 } else {
   joinBtn = '<a href="login.html" class="btn-join" style="display:inline-block;text-decoration:none;text-align:center;">Login to Join</a>';
@@ -193,24 +193,25 @@ if (myCardsHtml.length) {
 }
       }
 
-      async function joinTournament(tournamentId, btn) {
-        if (!currentUserId) { window.location.href = 'login.html'; return; }
-        btn.disabled = true;
-        btn.textContent = 'Joining...';
-        var result = await sbClient.from('tournament_players').insert([{
-          tournament_id: tournamentId,
-          player_id: currentUserId
-        }]);
-        if (result.error) {
-          btn.disabled = false;
-          btn.textContent = 'Join Tournament';
-          alert('Error joining tournament. Please try again.');
-          return;
-        }
-        btn.className = 'btn-join joined';
-        btn.textContent = '✓ Joined';
-        joinedTournaments.push(tournamentId);
-      }
+async function joinTournament(tournamentId, btn, asReserve) {
+  if (!currentUserId) { window.location.href = 'login.html'; return; }
+  btn.disabled = true;
+  btn.textContent = asReserve ? 'Joining as reserve...' : 'Joining...';
+  var result = await sbClient.from('tournament_players').insert([{
+    tournament_id: tournamentId,
+    player_id: currentUserId,
+    is_reserve: !!asReserve
+  }]);
+  if (result.error) {
+    btn.disabled = false;
+    btn.textContent = asReserve ? 'Join as Reserve' : 'Join Tournament';
+    alert('Error joining tournament. Please try again.');
+    return;
+  }
+  btn.className = 'btn-join joined';
+  btn.textContent = asReserve ? '✓ Reserve' : '✓ Joined';
+  joinedTournaments.push(tournamentId);
+}
 
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
