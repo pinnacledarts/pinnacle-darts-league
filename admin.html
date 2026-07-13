@@ -801,9 +801,7 @@
           }
           container.innerHTML = cardsHtml.join('');
         }
-        var select = document.getElementById('regLeagueSelect');
-        select.innerHTML = '<option value="">-- Select a league --</option>';
-        allLeaguesData.forEach(function(l) { select.innerHTML += '<option value="' + l.id + '">' + l.name + '</option>'; });
+
       }
 
       function toggleLeagueRow(id) {
