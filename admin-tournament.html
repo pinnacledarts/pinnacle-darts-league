@@ -441,19 +441,26 @@ async function saveTournamentDetails() {
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
 
-      async function loadPlayers() {
-        var result = await sbClient.from('tournament_players').select('player_id, profiles(full_name, username)').eq('tournament_id', tournamentId);
-        existingPlayerIds = result.data ? result.data.map(function(p) { return p.player_id; }) : [];
-        var container = document.getElementById('playersList');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
-        container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Actions</th></tr></thead><tbody>' +
-          result.data.map(function(p) {
-            var profile = p.profiles || {};
-            var name = profile.full_name || profile.username || 'Unknown';
-            var username = profile.username ? '@' + profile.username : '-';
-            return '<tr><td>' + name + '</td><td>' + username + '</td><td><button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
-          }).join('') + '</tbody></table>';
-      }
+async function loadPlayers() {
+  var result = await sbClient.from('tournament_players').select('id, player_id, checked_in, is_reserve, profiles(full_name, username)').eq('tournament_id', tournamentId).order('is_reserve').order('created_at');
+  existingPlayerIds = result.data ? result.data.map(function(p) { return p.player_id; }) : [];
+  var container = document.getElementById('playersList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
+  container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+    result.data.map(function(p) {
+      var profile = p.profiles || {};
+      var name = profile.full_name || profile.username || 'Unknown';
+      var username = profile.username ? '@' + profile.username : '-';
+      var statusLabel = p.is_reserve ? '<span style="color:#888;">Reserve</span>' : (p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Checked In</span>' : '<span style="color:#cc0000;">Not Checked In</span>');
+      var checkinBtn = p.is_reserve ? '' : '<button class="btn-small" onclick="toggleCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? 'Undo Check-in' : 'Check In') + '</button> ';
+      return '<tr><td>' + name + '</td><td>' + username + '</td><td>' + statusLabel + '</td><td>' + checkinBtn + '<button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+async function toggleCheckIn(rowId, currentStatus) {
+  await sbClient.from('tournament_players').update({ checked_in: !currentStatus }).eq('id', rowId);
+  loadPlayers();
+}
 
       async function removePlayer(playerId) {
         if (!confirm('Remove this player from the tournament?')) { return; }
