@@ -817,17 +817,7 @@
         loadLeagues();
       }
 
-      async function loadRegistrations() {
-        var leagueId = document.getElementById('regLeagueSelect').value;
-        if (!leagueId) { return; }
-        var result = await sbClient.from('league_players').select('player_id, profiles(full_name, username, platform, created_at)').eq('league_id', leagueId);
-        var tbody = document.getElementById('registrationsList');
-        if (!result.data || !result.data.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No registrations yet</td></tr>'; return; }
-        tbody.innerHTML = result.data.map(function(rp) {
-          var p = rp.profiles || {};
-          return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td>' + formatLabel(p.platform) + '</td><td>-</td><td>' + (p.created_at ? new Date(p.created_at).toLocaleDateString('en-GB') : '-') + '</td></tr>';
-        }).join('');
-      }
+
 
       async function loadPendingApprovals() {
         var result = await sbClient.from('profiles').select('*').eq('access_status', 'pending');
