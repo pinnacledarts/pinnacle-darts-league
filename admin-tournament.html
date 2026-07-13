@@ -135,7 +135,41 @@
       var profileMapAdmin = {};
       var roundOrderFull = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
       var cachedBracketsByType = {};
+async function processCheckIns() {
+  if (!tournamentData.checkin_start || !tournamentData.checkin_end) {
+    showMsg('add-player-error', 'This tournament has no check-in window set.');
+    return;
+  }
 
+  var now = new Date();
+  var checkinEnd = new Date(tournamentData.checkin_end);
+  if (now < checkinEnd) {
+    if (!confirm('The check-in window has not closed yet. Process anyway?')) { return; }
+  }
+
+  var playersResult = await sbClient.from('tournament_players').select('*').eq('tournament_id', tournamentId).eq('is_reserve', false);
+  var players = playersResult.data || [];
+
+  var notCheckedIn = players.filter(function(p) { return !p.checked_in; });
+  var checkedInCount = players.length - notCheckedIn.length;
+
+  for (var i = 0; i < notCheckedIn.length; i++) {
+    await sbClient.from('tournament_players').delete().eq('id', notCheckedIn[i].id);
+  }
+
+  var reservesResult = await sbClient.from('tournament_players').select('*').eq('tournament_id', tournamentId).eq('is_reserve', true).order('created_at', { ascending: true });
+  var reserves = reservesResult.data || [];
+
+  var promoted = 0;
+  for (var i = 0; i < notCheckedIn.length && i < reserves.length; i++) {
+    await sbClient.from('tournament_players').update({ is_reserve: false, checked_in: true }).eq('id', reserves[i].id);
+    promoted++;
+  }
+
+  showMsg('add-player-success', 'Processed! ' + notCheckedIn.length + ' removed (did not check in), ' + promoted + ' reserve(s) promoted.');
+  await loadPlayers();
+  buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+}
       if (document.referrer.includes('academy.html')) {
         var sBtn = document.getElementById('switchBtn');
         if (sBtn) { sBtn.textContent = 'Switch to Online'; sBtn.href = 'index.html'; }
@@ -280,7 +314,10 @@ async function submitManualBracket(slotCount) {
           '<div class="player-checklist" id="playerChecklist"><p class="player-checklist-empty">Loading players...</p></div>' +
           '<button class="btn btn-primary" onclick="addSelectedPlayers()" style="margin-top:8px;">Add Selected Players</button>' +
           '</div>' +
-          '<div class="card"><h3>Registered Players</h3><div id="playersList"><p class="loading">Loading...</p></div></div>' +
+'<div class="card"><h3>Registered Players</h3>' +
+'<div class="admin-bar"><button class="btn btn-primary" onclick="processCheckIns()">Process Check-ins</button></div>' +
+'<p style="color:#666;font-size:0.85em;margin-top:-8px;">Removes anyone who did not check in during the window, and promotes reserves into their spots.</p>' +
+'<div id="playersList"><p class="loading">Loading...</p></div></div>' +
           '</div>' +
 
           (isGroupKnockout ?
