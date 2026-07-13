@@ -6,6 +6,14 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   style.textContent = 'main { max-width: 1200px !important; }';
   document.head.appendChild(style);
 })();
+(function() {
+  var headerH1 = document.querySelector('header h1');
+  var headerP = document.querySelector('header p');
+  if (headerH1 && headerH1.textContent.trim() === 'Pinnacle Darts League') {
+    headerH1.textContent = 'Pinnacle Darts Online';
+    if (headerP) { headerP.style.display = 'none'; }
+  }
+})();
 async function checkAuth() {
   const { data: { session } } = await sbClient.auth.getSession();
 
