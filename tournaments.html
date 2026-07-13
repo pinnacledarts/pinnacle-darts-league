@@ -160,6 +160,8 @@ if (currentUserId) {
   } else {
     joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this)">Join Tournament</button>';
   }
+} else {
+  joinBtn = '<a href="login.html" class="btn-join" style="display:inline-block;text-decoration:none;text-align:center;">Login to Join</a>';
 }
 
   var cardHtml = '<div class="tournament-card">' +
