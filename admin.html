@@ -983,24 +983,25 @@
         document.getElementById('dropdownSection' + idx).style.display = type === 'manual' ? 'none' : 'block';
       }
 
-      function addDrillSubtitleRow() {
-        drillTargetCount++;
-        var idx = drillTargetCount;
-        var container = document.getElementById('drillTargetsList');
-        var row = document.createElement('div');
-        row.className = 'card';
-        row.style.background = '#eeeeee';
-        row.id = 'drillTargetRow' + idx;
-        row.setAttribute('data-type', 'subtitle');
-        row.innerHTML =
-          '<div class="form-row">' +
-          '<div class="form-group"><label>Subtitle Text</label><input type="text" id="subtitleName' + idx + '" placeholder="e.g. Round 1" /></div>' +
-          '<div class="form-group" style="display:flex;align-items:flex-end;">' +
-          '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Subtitle</button>' +
-          '</div>' +
-          '</div>';
-        container.appendChild(row);
-      }
+function addDrillSubtitleRow() {
+  drillTargetCount++;
+  var idx = drillTargetCount;
+  var container = document.getElementById('drillTargetsList');
+  var row = document.createElement('div');
+  row.className = 'card';
+  row.style.background = '#eeeeee';
+  row.id = 'drillTargetRow' + idx;
+  row.setAttribute('data-type', 'subtitle');
+  row.innerHTML =
+    '<div class="form-row">' +
+    '<div class="form-group"><label>Subtitle Text</label><input type="text" id="subtitleName' + idx + '" placeholder="e.g. Round 1" /></div>' +
+    '<div class="form-group" style="display:flex;align-items:flex-end;">' +
+    '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Subtitle</button>' +
+    '</div>' +
+    '</div>' +
+    '<div class="form-group"><label>Description (optional)</label><textarea id="subtitleDescription' + idx + '" rows="2" placeholder="Explain this section..."></textarea></div>';
+  container.appendChild(row);
+}
 
       function removeDrillTargetRow(idx) {
         var row = document.getElementById('drillTargetRow' + idx);
