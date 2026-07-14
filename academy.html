@@ -992,21 +992,21 @@ async function loadDrillsAccordion() {
 }
 
 function toggleDrillItem(id) {
-  var body = document.getElementById('drill-body-' + id);
-  var isOpen = body.classList.contains('open');
-  body.classList.toggle('open');
-  if (!isOpen) {
-    var drill = allDrillsRawData.find(function(d) { return d.id === id; });
-    if (!drill) { return; }
-    var steps = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-    drillStepState[id] = { stepIndex: 0, answers: {}, steps: steps };
-    renderDrillStep(id);
-  }
+  var drill = allDrillsRawData.find(function(d) { return d.id === id; });
+  if (!drill) { return; }
+  var steps = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+  drillStepState[id] = { stepIndex: 0, answers: {}, steps: steps, drillTitle: drill.title, drillDescription: drill.description };
+  document.getElementById('drillFullscreenOverlay').style.display = 'block';
+  renderDrillStep(id);
+}
+
+function closeDrillOverlay() {
+  document.getElementById('drillFullscreenOverlay').style.display = 'none';
 }
 
 function renderDrillStep(drillId) {
   var state = drillStepState[drillId];
-  var container = document.getElementById('drill-form-' + drillId);
+  var container = document.getElementById('drillOverlayContent');
   var steps = state.steps;
   var idx = state.stepIndex;
 
@@ -1014,37 +1014,52 @@ function renderDrillStep(drillId) {
   for (var i = Math.min(idx, steps.length - 1); i >= 0; i--) {
     if (steps[i].is_subtitle) { currentSubtitle = steps[i]; break; }
   }
-var subtitleBannerHtml = '';
-if (currentSubtitle) {
-  var bannerDescHtml = currentSubtitle.description ? '<div style="font-weight:normal;color:#555555;font-size:0.9em;margin-top:4px;">' + currentSubtitle.description + '</div>' : '';
-  subtitleBannerHtml = '<div style="background:#f5f5f5;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-weight:bold;color:#111111;">' + currentSubtitle.target_name + bannerDescHtml + '</div>';
-}
+  var subtitleBannerHtml = '';
+  if (currentSubtitle) {
+    var bannerDescHtml = currentSubtitle.description ? '<div style="font-weight:normal;color:#555555;font-size:0.95em;margin-top:6px;">' + currentSubtitle.description + '</div>' : '';
+    subtitleBannerHtml = '<div style="background:#eeeeee;border-radius:8px;padding:14px 18px;margin-bottom:20px;font-weight:bold;color:#111111;">' + currentSubtitle.target_name + bannerDescHtml + '</div>';
+  }
+
+  var titleHtml = '<h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;">' + state.drillTitle + '</h2>';
+
   if (idx >= steps.length) {
-    container.innerHTML = subtitleBannerHtml + '<button class="save-btn" onclick="submitDrillAttempt(' + drillId + ')">Submit Attempt</button>' +
-      (idx > 0 ? ' <button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button>' : '');
+    container.innerHTML = titleHtml + subtitleBannerHtml +
+      '<div style="text-align:center;padding:40px 20px;">' +
+      '<p style="font-size:1.1em;color:#333333;margin-bottom:24px;">You\'re all done! Ready to submit your attempt?</p>' +
+      '<button class="save-btn" onclick="submitDrillAttempt(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Submit Attempt</button>' +
+      (idx > 0 ? '<div style="margin-top:16px;"><button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button></div>' : '') +
+      '</div>';
     return;
   }
 
   var step = steps[idx];
-  var progressHtml = '<div style="font-size:0.85em;color:#888888;margin-bottom:12px;">Step ' + (idx + 1) + ' of ' + steps.length + '</div>';
-  var backBtn = idx > 0 ? '<button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button> ' : '';
+  var progressHtml = '<div style="font-size:0.85em;color:#888888;margin-bottom:16px;">Step ' + (idx + 1) + ' of ' + steps.length + '</div>';
+  var backBtn = idx > 0 ? '<button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button>' : '';
 
   if (step.is_subtitle) {
-    var subDescHtml = step.description ? '<p style="color:#555555;line-height:1.5;">' + step.description + '</p>' : '';
-    container.innerHTML = progressHtml +
-      '<h4 style="margin:0 0 10px;">' + step.target_name + '</h4>' +
+    var subDescHtml = step.description ? '<p style="color:#555555;line-height:1.6;font-size:1.05em;margin-top:12px;">' + step.description + '</p>' : '';
+    container.innerHTML = titleHtml + progressHtml +
+      '<div class="news-item-title" style="text-align:center;font-size:1.3em;padding:24px;margin-bottom:8px;">' + step.target_name + '</div>' +
       subDescHtml +
-      '<div style="margin-top:16px;">' + backBtn + '<button class="save-btn" onclick="drillStepNext(' + drillId + ')">Continue</button></div>';
+      '<div style="margin-top:28px;text-align:center;">' +
+      '<button class="save-btn" onclick="drillStepNext(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Continue</button>' +
+      (backBtn ? '<div style="margin-top:12px;">' + backBtn + '</div>' : '') +
+      '</div>';
     return;
   }
 
+  var questionHeaderHtml = '<div class="news-item-title" style="text-align:center;font-size:1.2em;padding:20px;margin-bottom:24px;">' + step.target_name + '</div>';
+
   if (step.entry_type === 'manual') {
     var existingVal = state.answers[step.id] ? state.answers[step.id].points : '';
-    var inputHtml = '<input type="number" step="any" id="drillstep-input-' + drillId + '" data-manual="true" value="' + existingVal + '" placeholder="Enter score" style="padding:10px;border:1px solid #ddd;border-radius:4px;width:100%;font-size:1em;" />';
-    container.innerHTML = subtitleBannerHtml + progressHtml +
-      '<h4 style="margin:0 0 12px;">' + step.target_name + '</h4>' +
+    var inputHtml = '<input type="number" step="any" id="drillstep-input-' + drillId + '" data-manual="true" value="' + existingVal + '" placeholder="Enter score" style="padding:16px;border:1px solid #ddd;border-radius:8px;width:100%;font-size:1.2em;text-align:center;" />';
+    container.innerHTML = titleHtml + subtitleBannerHtml + progressHtml +
+      questionHeaderHtml +
       inputHtml +
-      '<div style="margin-top:16px;">' + backBtn + '<button class="save-btn" onclick="drillStepNext(' + drillId + ')">Continue</button></div>';
+      '<div style="margin-top:28px;text-align:center;">' +
+      '<button class="save-btn" onclick="drillStepNext(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Continue</button>' +
+      (backBtn ? '<div style="margin-top:12px;">' + backBtn + '</div>' : '') +
+      '</div>';
     return;
   }
 
@@ -1053,16 +1068,16 @@ if (currentSubtitle) {
   var optionsHtml = options.map(function(o) {
     var val = o.id + '|' + o.points;
     var isSelected = val === existingSelected;
-    return '<div class="player-checklist-item" style="' + (isSelected ? 'background-color:#f0f0f0;' : '') + 'justify-content:space-between;" onclick="selectDrillAnswer(' + drillId + ', \'' + o.id + '\', ' + o.points + ')">' +
-      '<label style="cursor:pointer;">' + o.label + '</label>' +
-      '<span style="color:#888;font-size:0.9em;">' + o.points + ' pts' + (isSelected ? ' ✓' : '') + '</span>' +
+    return '<div class="news-item-title" style="cursor:pointer;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;padding:20px 24px;' + (isSelected ? 'background-color:#eeeeee;' : '') + '" onclick="selectDrillAnswer(' + drillId + ', \'' + o.id + '\', ' + o.points + ')">' +
+      '<span>' + o.label + '</span>' +
+      '<span style="color:#888888;font-size:0.85em;font-weight:normal;">' + o.points + ' pts' + (isSelected ? ' ✓' : '') + '</span>' +
       '</div>';
   }).join('');
 
-  container.innerHTML = subtitleBannerHtml + progressHtml +
-    '<h4 style="margin:0 0 12px;">' + step.target_name + '</h4>' +
-    '<div class="player-checklist">' + optionsHtml + '</div>' +
-    '<div style="margin-top:16px;">' + backBtn + '</div>';
+  container.innerHTML = titleHtml + subtitleBannerHtml + progressHtml +
+    questionHeaderHtml +
+    optionsHtml +
+    (backBtn ? '<div style="margin-top:12px;text-align:center;">' + backBtn + '</div>' : '');
 }
 
 function selectDrillAnswer(drillId, scoreOptionId, points) {
