@@ -1072,10 +1072,7 @@ function drillStepBack(drillId) {
   state.stepIndex--;
   renderDrillStep(drillId);
 }
-      function toggleDrillItem(id) {
-        var body = document.getElementById('drill-body-' + id);
-        body.classList.toggle('open');
-      }
+
 
 async function submitDrillAttempt(drillId) {
   if (!currentUserId) { window.location.href = 'login.html'; return; }
