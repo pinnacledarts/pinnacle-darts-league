@@ -959,8 +959,7 @@
       }
 
      async function loadDrillsAccordion() {
-  const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
-  const data = result.data;
+const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });  const data = result.data;
   const error = result.error;
   const container = document.getElementById('drillsAccordionList');
   if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
@@ -996,13 +995,16 @@
     }
 
 
-          var itemHtml = '<div class="news-item">' +
-            '<div class="news-item-title" onclick="toggleDrillItem(' + d.id + ')">' + d.title + '</div>' +
-            '<div class="news-item-body" id="drill-body-' + d.id + '">' +
-            '<div class="detail-row" style="border-bottom:2px solid #dddddd;font-weight:bold;">' +
-            '<span class="detail-label" style="color:#111111;">Target</span>' +
-            '<span style="color:#111111;">Score</span>' +
-            '</div>' +
+var descriptionHtml = d.description ? '<p style="color:#555555;line-height:1.5;margin:0 0 16px;">' + d.description + '</p>' : '';
+
+var itemHtml = '<div class="news-item">' +
+  '<div class="news-item-title" onclick="toggleDrillItem(' + d.id + ')">' + d.title + '</div>' +
+  '<div class="news-item-body" id="drill-body-' + d.id + '">' +
+  descriptionHtml +
+  '<div class="detail-row" style="border-bottom:2px solid #dddddd;font-weight:bold;">' +
+  '<span class="detail-label" style="color:#111111;">Target</span>' +
+  '<span style="color:#111111;">Score</span>' +
+  '</div>' +
             '<div id="drill-form-' + d.id + '">' +
             targetRowsHtml +
             '<div style="margin-top:16px;">' +
