@@ -451,8 +451,10 @@ async function loadPlayers() {
       var profile = p.profiles || {};
       var name = profile.full_name || profile.username || 'Unknown';
       var username = profile.username ? '@' + profile.username : '-';
-      var statusLabel = p.is_reserve ? '<span style="color:#888;">Reserve</span>' : (p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Checked In</span>' : '<span style="color:#cc0000;">Not Checked In</span>');
-      var checkinBtn = p.is_reserve ? '' : '<button class="btn-small" onclick="toggleCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? 'Undo Check-in' : 'Check In') + '</button> ';
+     var reserveLabel = p.is_reserve ? '<span style="color:#888;">Reserve</span> ' : '';
+var checkedInLabel = p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Checked In</span>' : '<span style="color:#cc0000;">Not Checked In</span>';
+var statusLabel = reserveLabel + checkedInLabel;
+      var checkinBtn = '<button class="btn-small" onclick="toggleCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? 'Undo Check-in' : 'Check In') + '</button> ';
       return '<tr><td>' + name + '</td><td>' + username + '</td><td>' + statusLabel + '</td><td>' + checkinBtn + '<button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
     }).join('') + '</tbody></table>';
 }
