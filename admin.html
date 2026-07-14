@@ -1149,9 +1149,10 @@ document.getElementById('drillTargetsList').innerHTML = '';
         if (result.error || !result.data) { alert('Error loading drill.'); return; }
         var drill = result.data;
 
-        editingDrillId = id;
-        document.getElementById('drillTitle').value = drill.title || '';
-        document.getElementById('drillTargetsList').innerHTML = '';
+editingDrillId = id;
+document.getElementById('drillTitle').value = drill.title || '';
+document.getElementById('drillDescription').value = drill.description || '';
+document.getElementById('drillTargetsList').innerHTML = '';
         drillTargetCount = 0;
         scoreOptionCounts = {};
 
