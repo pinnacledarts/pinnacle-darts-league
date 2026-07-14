@@ -219,20 +219,55 @@ var dateStr = tournamentData.date ? new Date(tournamentData.date).toLocaleDateSt
         loadKnockouts();
       }
 
-      async function loadPlayers() {
-        var result = await sbClient.from('tournament_players').select('player_id, profiles(full_name, username)').eq('tournament_id', tournamentId);
-        var container = document.getElementById('playersList');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">No players have joined yet.</p>'; return; }
-        container.innerHTML = '<div class="player-list">' +
-          result.data.map(function(p) {
-            var profile = p.profiles || {};
-            var name = profile.full_name || profile.username || 'Unknown';
-            var username = profile.username ? '@' + profile.username : '';
-            var initial = name[0].toUpperCase();
-            var removeBtn = isAdmin ? '<button class="btn-remove" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button>' : '';
-            return '<div class="player-item"><div class="player-info"><div class="player-avatar-small">' + initial + '</div><div><div class="player-name">' + name + '</div><div class="player-username">' + username + '</div></div></div>' + removeBtn + '</div>';
-          }).join('') + '</div>';
-      }
+async function loadPlayers() {
+  var result = await sbClient.from('tournament_players').select('id, player_id, checked_in, is_reserve, created_at, profiles(full_name, username)').eq('tournament_id', tournamentId).order('created_at', { ascending: true });
+  var container = document.getElementById('playersList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">No players have joined yet.</p>'; return; }
+
+  var mainPlayers = result.data.filter(function(p) { return !p.is_reserve; });
+  var reservePlayers = result.data.filter(function(p) { return p.is_reserve; });
+
+  var now = new Date();
+  var checkinOpen = tournamentData.checkin_start && tournamentData.checkin_end &&
+    now >= new Date(tournamentData.checkin_start) && now <= new Date(tournamentData.checkin_end);
+
+  var checkinBannerHtml = '';
+  if (tournamentData.checkin_start && tournamentData.checkin_end) {
+    var startStr = new Date(tournamentData.checkin_start).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    var endStr = new Date(tournamentData.checkin_end).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    checkinBannerHtml = '<div class="description-box" style="margin-bottom:16px;"><p><strong>Check-in window:</strong> ' + startStr + ' — ' + endStr + (checkinOpen ? ' <span style="color:#006600;font-weight:bold;">(Open now)</span>' : '') + '</p></div>';
+  }
+
+  function renderPlayerRow(p) {
+    var profile = p.profiles || {};
+    var name = profile.full_name || profile.username || 'Unknown';
+    var username = profile.username ? '@' + profile.username : '';
+    var initial = name[0].toUpperCase();
+    var removeBtn = isAdmin ? '<button class="btn-remove" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button>' : '';
+
+    var checkinHtml = '';
+    if (p.checked_in) {
+      checkinHtml = '<span style="color:#006600;font-weight:bold;font-size:0.85em;">✓ Checked In</span>';
+    } else if (currentUserId === p.player_id && checkinOpen) {
+      checkinHtml = '<button class="btn-remove" style="border-color:#006600;color:#006600;" onclick="doCheckIn(' + p.id + ')">Check In</button>';
+    } else if (currentUserId === p.player_id) {
+      checkinHtml = '<span style="color:#aaa;font-size:0.85em;">Not checked in</span>';
+    }
+
+    return '<div class="player-item"><div class="player-info"><div class="player-avatar-small">' + initial + '</div><div><div class="player-name">' + name + '</div><div class="player-username">' + username + '</div></div></div><div style="display:flex;align-items:center;gap:8px;">' + checkinHtml + removeBtn + '</div></div>';
+  }
+
+  var mainHtml = '<div class="player-list">' + mainPlayers.map(renderPlayerRow).join('') + '</div>';
+  var reserveHtml = reservePlayers.length ? '<h4 style="margin:20px 0 8px;">Reserves (in order)</h4><div class="player-list">' + reservePlayers.map(renderPlayerRow).join('') + '</div>' : '';
+
+  container.innerHTML = checkinBannerHtml + mainHtml + reserveHtml;
+}
+
+async function doCheckIn(rowId) {
+  var result = await sbClient.from('tournament_players').update({ checked_in: true }).eq('id', rowId);
+  if (result.error) { alert('Error checking in: ' + result.error.message); return; }
+  loadPlayers();
+}
 
       async function removePlayer(playerId) {
         if (!confirm('Remove this player from the tournament?')) { return; }
