@@ -376,10 +376,14 @@
           <div class="success-msg" id="drill-success"></div>
           <div class="error-msg" id="drill-error"></div>
           <div class="form-group">
-            <label>Drill Title</label>
-            <input type="text" id="drillTitle" placeholder="e.g. Around the Clock" />
-          </div>
-          <div id="drillTargetsList"></div>
+  <label>Drill Title</label>
+  <input type="text" id="drillTitle" placeholder="e.g. Around the Clock" />
+</div>
+<div class="form-group">
+  <label>Description (optional)</label>
+  <textarea id="drillDescription" rows="3" placeholder="Explain how to complete this drill..."></textarea>
+</div>
+<div id="drillTargetsList"></div>
           <button class="btn btn-secondary" onclick="addDrillTargetRow()">+ Add Target</button>
           <button class="btn btn-secondary" onclick="addDrillSubtitleRow()" style="margin-bottom:16px;">+ Add Subtitle</button>
           <button class="btn btn-primary" onclick="saveDrill()">Create Drill</button>
@@ -1029,17 +1033,19 @@
         var targetRows = document.querySelectorAll('#drillTargetsList > div');
         if (!targetRows.length) { showMsg('drill-error', 'Please add at least one target.'); return; }
 
-        var drillId;
-        if (editingDrillId) {
-          var updateResult = await sbClient.from('drills').update({ title: title }).eq('id', editingDrillId);
-          if (updateResult.error) { showMsg('drill-error', 'Error updating drill: ' + updateResult.error.message); return; }
-          drillId = editingDrillId;
-          await sbClient.from('drill_targets').delete().eq('drill_id', drillId);
-        } else {
-          var drillResult = await sbClient.from('drills').insert([{ title: title }]).select();
-          if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
-          drillId = drillResult.data[0].id;
-        }
+var description = document.getElementById('drillDescription').value.trim();
+
+var drillId;
+if (editingDrillId) {
+  var updateResult = await sbClient.from('drills').update({ title: title, description: description || null }).eq('id', editingDrillId);
+  if (updateResult.error) { showMsg('drill-error', 'Error updating drill: ' + updateResult.error.message); return; }
+  drillId = editingDrillId;
+  await sbClient.from('drill_targets').delete().eq('drill_id', drillId);
+} else {
+  var drillResult = await sbClient.from('drills').insert([{ title: title, description: description || null }]).select();
+  if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
+  drillId = drillResult.data[0].id;
+}
 
         var targetOrder = 0;
         for (var i = 0; i < targetRows.length; i++) {
@@ -1090,9 +1096,10 @@
           }
         }
 
-        showMsg('drill-success', editingDrillId ? 'Drill updated successfully!' : 'Drill created successfully!');
-        document.getElementById('drillTitle').value = '';
-        document.getElementById('drillTargetsList').innerHTML = '';
+showMsg('drill-success', editingDrillId ? 'Drill updated successfully!' : 'Drill created successfully!');
+document.getElementById('drillTitle').value = '';
+document.getElementById('drillDescription').value = '';
+document.getElementById('drillTargetsList').innerHTML = '';
         document.querySelector('button[onclick="saveDrill()"]').textContent = 'Create Drill';
         drillTargetCount = 0;
         scoreOptionCounts = {};
