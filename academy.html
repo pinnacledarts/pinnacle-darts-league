@@ -1003,8 +1003,14 @@ function renderDrillStep(drillId) {
   var steps = state.steps;
   var idx = state.stepIndex;
 
+  var currentSubtitle = null;
+  for (var i = Math.min(idx, steps.length - 1); i >= 0; i--) {
+    if (steps[i].is_subtitle) { currentSubtitle = steps[i]; break; }
+  }
+  var subtitleBannerHtml = currentSubtitle ? '<div style="background:#f5f5f5;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-weight:bold;color:#111111;">' + currentSubtitle.target_name + '</div>' : '';
+
   if (idx >= steps.length) {
-    container.innerHTML = '<button class="save-btn" onclick="submitDrillAttempt(' + drillId + ')">Submit Attempt</button>' +
+    container.innerHTML = subtitleBannerHtml + '<button class="save-btn" onclick="submitDrillAttempt(' + drillId + ')">Submit Attempt</button>' +
       (idx > 0 ? ' <button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button>' : '');
     return;
   }
@@ -1037,7 +1043,7 @@ function renderDrillStep(drillId) {
       '<option value="">-- Select score --</option>' + optionsHtml + '</select>';
   }
 
-  container.innerHTML = progressHtml +
+  container.innerHTML = subtitleBannerHtml + progressHtml +
     '<h4 style="margin:0 0 12px;">' + step.target_name + '</h4>' +
     inputHtml +
     '<div style="margin-top:16px;">' + backBtn + '<button class="save-btn" onclick="drillStepNext(' + drillId + ')">' + (idx === steps.length - 1 ? 'Next' : 'Next') + '</button></div>';
