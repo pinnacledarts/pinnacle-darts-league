@@ -367,8 +367,8 @@ async function saveTournamentDetails() {
     platform: document.getElementById('detPlatform').value,
     max_players: document.getElementById('detMax').value || null,
     average_split: document.getElementById('detAvgSplit').checked,
-    checkin_start: document.getElementById('detCheckinStart').value || null,
-    checkin_end: document.getElementById('detCheckinEnd').value || null,
+checkin_start: document.getElementById('detCheckinStart').value ? new Date(document.getElementById('detCheckinStart').value).toISOString() : null,
+checkin_end: document.getElementById('detCheckinEnd').value ? new Date(document.getElementById('detCheckinEnd').value).toISOString() : null,
     description: document.getElementById('detDesc').value.trim() || null
   };
 var result = await sbClient.from('tournaments').update(update).eq('id', tournamentId);
