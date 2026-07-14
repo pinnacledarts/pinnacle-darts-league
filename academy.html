@@ -958,6 +958,9 @@
         if (name === 'progress') { loadProgressDrillOptions(); }
       }
 
+var allDrillsRawData = [];
+var drillStepState = {};
+
 async function loadDrillsAccordion() {
   const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
   const data = result.data;
@@ -965,63 +968,110 @@ async function loadDrillsAccordion() {
   const container = document.getElementById('drillsAccordionList');
   if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
 
-  var htmlPieces = [];
-  for (var di = 0; di < data.length; di++) {
-    var d = data[di];
-    var targets = (d.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-    var targetRowsHtml = '';
-    for (var ti = 0; ti < targets.length; ti++) {
-      var t = targets[ti];
+  allDrillsRawData = data;
 
-if (t.is_subtitle) {
-  var subtitleDescHtml = t.description ? '<div style="font-weight:normal;color:#555555;font-size:0.9em;margin-top:4px;">' + t.description + '</div>' : '';
-  targetRowsHtml += '<div style="font-weight:bold;margin:16px 0 8px;padding-top:12px;border-top:1px solid #eeeeee;color:#111111;">' + t.target_name + subtitleDescHtml + '</div>';
-  continue;
+  var htmlPieces = data.map(function(d) {
+    var descriptionHtml = d.description ? '<p style="color:#555555;line-height:1.5;margin:0 0 16px;">' + d.description + '</p>' : '';
+    return '<div class="news-item">' +
+      '<div class="news-item-title" onclick="toggleDrillItem(' + d.id + ')">' + d.title + '</div>' +
+      '<div class="news-item-body" id="drill-body-' + d.id + '">' +
+      descriptionHtml +
+      '<div id="drill-form-' + d.id + '"></div>' +
+      '<div id="drill-msg-' + d.id + '" style="margin-top:10px;font-size:0.9em;"></div>' +
+      '</div></div>';
+  });
+
+  container.innerHTML = htmlPieces.join('');
 }
 
-      if (t.entry_type === 'manual') {
-        targetRowsHtml += '<div class="detail-row"><span class="detail-label">' + t.target_name + '</span>' +
-          '<input type="number" step="any" id="drilltarget-' + d.id + '-' + t.id + '" data-manual="true" placeholder="Enter score" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;width:120px;" /></div>';
-        continue;
-      }
+function toggleDrillItem(id) {
+  var body = document.getElementById('drill-body-' + id);
+  var isOpen = body.classList.contains('open');
+  body.classList.toggle('open');
+  if (!isOpen) {
+    var drill = allDrillsRawData.find(function(d) { return d.id === id; });
+    if (!drill) { return; }
+    var steps = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+    drillStepState[id] = { stepIndex: 0, answers: {}, steps: steps };
+    renderDrillStep(id);
+  }
+}
 
-      var options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-      var optionsHtml = '';
-      for (var oi = 0; oi < options.length; oi++) {
-        var o = options[oi];
-        optionsHtml += '<option value="' + o.id + '|' + o.points + '">' + o.label + ' (' + o.points + ' pts)</option>';
-      }
-      targetRowsHtml += '<div class="detail-row"><span class="detail-label">' + t.target_name + '</span>' +
-        '<select id="drilltarget-' + d.id + '-' + t.id + '" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;">' +
-        '<option value="">-- Select score --</option>' + optionsHtml + '</select></div>';
+function renderDrillStep(drillId) {
+  var state = drillStepState[drillId];
+  var container = document.getElementById('drill-form-' + drillId);
+  var steps = state.steps;
+  var idx = state.stepIndex;
+
+  if (idx >= steps.length) {
+    container.innerHTML = '<button class="save-btn" onclick="submitDrillAttempt(' + drillId + ')">Submit Attempt</button>' +
+      (idx > 0 ? ' <button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button>' : '');
+    return;
+  }
+
+  var step = steps[idx];
+  var progressHtml = '<div style="font-size:0.85em;color:#888888;margin-bottom:12px;">Step ' + (idx + 1) + ' of ' + steps.length + '</div>';
+  var backBtn = idx > 0 ? '<button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button> ' : '';
+
+  if (step.is_subtitle) {
+    var subDescHtml = step.description ? '<p style="color:#555555;line-height:1.5;">' + step.description + '</p>' : '';
+    container.innerHTML = progressHtml +
+      '<h4 style="margin:0 0 10px;">' + step.target_name + '</h4>' +
+      subDescHtml +
+      '<div style="margin-top:16px;">' + backBtn + '<button class="save-btn" onclick="drillStepNext(' + drillId + ')">Continue</button></div>';
+    return;
+  }
+
+  var inputHtml;
+  if (step.entry_type === 'manual') {
+    var existingVal = state.answers[step.id] ? state.answers[step.id].points : '';
+    inputHtml = '<input type="number" step="any" id="drillstep-input-' + drillId + '" data-manual="true" value="' + existingVal + '" placeholder="Enter score" style="padding:10px;border:1px solid #ddd;border-radius:4px;width:100%;font-size:1em;" />';
+  } else {
+    var options = (step.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+    var existingSelected = state.answers[step.id] ? (state.answers[step.id].score_option_id + '|' + state.answers[step.id].points) : '';
+    var optionsHtml = options.map(function(o) {
+      var val = o.id + '|' + o.points;
+      return '<option value="' + val + '"' + (val === existingSelected ? ' selected' : '') + '>' + o.label + ' (' + o.points + ' pts)</option>';
+    }).join('');
+    inputHtml = '<select id="drillstep-input-' + drillId + '" style="padding:10px;border:1px solid #ddd;border-radius:4px;width:100%;font-size:1em;">' +
+      '<option value="">-- Select score --</option>' + optionsHtml + '</select>';
+  }
+
+  container.innerHTML = progressHtml +
+    '<h4 style="margin:0 0 12px;">' + step.target_name + '</h4>' +
+    inputHtml +
+    '<div style="margin-top:16px;">' + backBtn + '<button class="save-btn" onclick="drillStepNext(' + drillId + ')">' + (idx === steps.length - 1 ? 'Next' : 'Next') + '</button></div>';
+}
+
+function drillStepNext(drillId) {
+  var state = drillStepState[drillId];
+  var step = state.steps[state.stepIndex];
+
+  if (!step.is_subtitle) {
+    var input = document.getElementById('drillstep-input-' + drillId);
+    var isManual = input.getAttribute('data-manual') === 'true';
+
+    if (isManual) {
+      if (input.value === '') { alert('Please enter a score before continuing.'); return; }
+      var points = parseFloat(input.value);
+      if (isNaN(points)) { alert('Please enter a valid number.'); return; }
+      state.answers[step.id] = { target_id: step.id, score_option_id: null, points: points };
+    } else {
+      if (!input.value) { alert('Please select a score before continuing.'); return; }
+      var parts = input.value.split('|');
+      state.answers[step.id] = { target_id: step.id, score_option_id: parts[0], points: parseFloat(parts[1]) };
     }
+  }
 
+  state.stepIndex++;
+  renderDrillStep(drillId);
+}
 
-var descriptionHtml = d.description ? '<p style="color:#555555;line-height:1.5;margin:0 0 16px;">' + d.description + '</p>' : '';
-
-var itemHtml = '<div class="news-item">' +
-  '<div class="news-item-title" onclick="toggleDrillItem(' + d.id + ')">' + d.title + '</div>' +
-  '<div class="news-item-body" id="drill-body-' + d.id + '">' +
-  descriptionHtml +
-  '<div class="detail-row" style="border-bottom:2px solid #dddddd;font-weight:bold;">' +
-  '<span class="detail-label" style="color:#111111;">Target</span>' +
-  '<span style="color:#111111;">Score</span>' +
-  '</div>' +
-            '<div id="drill-form-' + d.id + '">' +
-            targetRowsHtml +
-            '<div style="margin-top:16px;">' +
-            '<button class="save-btn" onclick="submitDrillAttempt(' + d.id + ')">Submit Attempt</button>' +
-            '</div>' +
-            '</div>' +
-            '<div id="drill-msg-' + d.id + '" style="margin-top:10px;font-size:0.9em;"></div>' +
-            '</div></div>';
-
-          htmlPieces.push(itemHtml);
-        }
-
-        container.innerHTML = htmlPieces.join('');
-      }
-
+function drillStepBack(drillId) {
+  var state = drillStepState[drillId];
+  state.stepIndex--;
+  renderDrillStep(drillId);
+}
       function toggleDrillItem(id) {
         var body = document.getElementById('drill-body-' + id);
         body.classList.toggle('open');
