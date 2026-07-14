@@ -202,13 +202,22 @@ if (existingPhone.data) {
         }
 
         try {
-          const { data, error } = await sbClient.auth.signUp({
-            email,
-            password,
-            options: {
-              data: { full_name: fullName, username }
-            }
-          });
+const { data, error } = await sbClient.auth.signUp({
+  email,
+  password,
+  options: {
+    data: {
+      full_name: fullName,
+      username: username,
+      phone: phone,
+      date_of_birth: dob,
+      platform: platform,
+      access: initialAccess,
+      requested_access: accessRequest,
+      access_status: accessStatus
+    }
+  }
+});
 
           if (error) {
             errorMsg.textContent = error.message;
@@ -216,38 +225,7 @@ if (existingPhone.data) {
             return;
           }
 
-          if (data.user) {
-let initialAccess = 'online';
-let accessStatus = 'approved';
-
-if (accessRequest === 'both') {
-  initialAccess = 'online';
-  accessStatus = 'pending';
-} else if (accessRequest === 'academy') {
-  initialAccess = 'academy';
-  accessStatus = 'pending';
-}
-
-const { error: profileError } = await sbClient
-  .from('profiles')
-  .insert([{
-    id: data.user.id,
-    full_name: fullName,
-    username,
-    email,
-    phone,
-    date_of_birth: dob,
-    platform,
-    access: initialAccess,
-    requested_access: accessRequest,
-    access_status: accessStatus,
-    created_at: new Date().toISOString()
-  }]);
-
-            if (profileError) {
-              console.error('Profile error:', profileError);
-            }
-          }
+// Profile row is now created automatically via a database trigger — no manual insert needed here.
 
           successMsg.style.display = 'block';
 
