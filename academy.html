@@ -1007,8 +1007,11 @@ function renderDrillStep(drillId) {
   for (var i = Math.min(idx, steps.length - 1); i >= 0; i--) {
     if (steps[i].is_subtitle) { currentSubtitle = steps[i]; break; }
   }
-  var subtitleBannerHtml = currentSubtitle ? '<div style="background:#f5f5f5;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-weight:bold;color:#111111;">' + currentSubtitle.target_name + '</div>' : '';
-
+var subtitleBannerHtml = '';
+if (currentSubtitle) {
+  var bannerDescHtml = currentSubtitle.description ? '<div style="font-weight:normal;color:#555555;font-size:0.9em;margin-top:4px;">' + currentSubtitle.description + '</div>' : '';
+  subtitleBannerHtml = '<div style="background:#f5f5f5;border-radius:6px;padding:10px 14px;margin-bottom:16px;font-weight:bold;color:#111111;">' + currentSubtitle.target_name + bannerDescHtml + '</div>';
+}
   if (idx >= steps.length) {
     container.innerHTML = subtitleBannerHtml + '<button class="save-btn" onclick="submitDrillAttempt(' + drillId + ')">Submit Attempt</button>' +
       (idx > 0 ? ' <button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button>' : '');
