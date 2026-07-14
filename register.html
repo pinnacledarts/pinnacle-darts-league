@@ -195,13 +195,24 @@ if (existingPhone.data) {
           return;
         }
 
-        if (password.length < 6) {
-          errorMsg.textContent = 'Password must be at least 6 characters.';
-          errorMsg.style.display = 'block';
-          return;
-        }
+if (password.length < 6) {
+  errorMsg.textContent = 'Password must be at least 6 characters.';
+  errorMsg.style.display = 'block';
+  return;
+}
 
-        try {
+let initialAccess = 'online';
+let accessStatus = 'approved';
+
+if (accessRequest === 'both') {
+  initialAccess = 'online';
+  accessStatus = 'pending';
+} else if (accessRequest === 'academy') {
+  initialAccess = 'academy';
+  accessStatus = 'pending';
+}
+
+try {
 const { data, error } = await sbClient.auth.signUp({
   email,
   password,
