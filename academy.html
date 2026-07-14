@@ -1086,65 +1086,36 @@ async function submitDrillAttempt(drillId) {
     return;
   }
 
-        var targetSelects = document.querySelectorAll('[id^="drilltarget-' + drillId + '-"]');
-        if (!targetSelects.length) { return; }
+  var state = drillStepState[drillId];
+  var scoreEntries = Object.values(state.answers);
+  var totalScore = scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
 
-      var totalScore = 0;
-var scoreEntries = [];
-var allSelected = true;
+  var attemptResult = await sbClient.from('drill_attempts').insert([{
+    drill_id: drillId,
+    player_id: currentUserId,
+    total_score: totalScore,
+    attempt_date: new Date().toISOString().split('T')[0]
+  }]).select();
 
-for (var i = 0; i < targetSelects.length; i++) {
-  var sel = targetSelects[i];
-  var isManual = sel.getAttribute('data-manual') === 'true';
-  var targetId = sel.id.split('-')[2];
-
-  if (isManual) {
-    if (sel.value === '') { allSelected = false; continue; }
-    var manualPoints = parseFloat(sel.value);
-    if (isNaN(manualPoints)) { allSelected = false; continue; }
-    totalScore += manualPoints;
-    scoreEntries.push({ target_id: targetId, score_option_id: null, points: manualPoints });
-  } else {
-    if (!sel.value) { allSelected = false; continue; }
-    var parts = sel.value.split('|');
-    var scoreOptionId = parts[0];
-    var points = parseFloat(parts[1]);
-    totalScore += points;
-    scoreEntries.push({ target_id: targetId, score_option_id: scoreOptionId, points: points });
+  if (attemptResult.error || !attemptResult.data) {
+    document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#cc0000;">Error submitting attempt.</span>';
+    return;
   }
+
+  var attemptId = attemptResult.data[0].id;
+  for (var j = 0; j < scoreEntries.length; j++) {
+    var entry = scoreEntries[j];
+    await sbClient.from('drill_attempt_scores').insert([{
+      attempt_id: attemptId,
+      target_id: entry.target_id,
+      score_option_id: entry.score_option_id,
+      points: entry.points
+    }]);
+  }
+
+  document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#006600;">✓ Attempt submitted! Total score: ' + totalScore + '</span>';
+  document.getElementById('drill-form-' + drillId).innerHTML = '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')">Start Another Drill</button>';
 }
-
-        if (!allSelected) {
-          document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#cc0000;">Please select a score for every target.</span>';
-          return;
-        }
-
-        var attemptResult = await sbClient.from('drill_attempts').insert([{
-          drill_id: drillId,
-          player_id: currentUserId,
-          total_score: totalScore,
-          attempt_date: new Date().toISOString().split('T')[0]
-        }]).select();
-
-        if (attemptResult.error || !attemptResult.data) {
-          document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#cc0000;">Error submitting attempt.</span>';
-          return;
-        }
-
-        var attemptId = attemptResult.data[0].id;
-        for (var j = 0; j < scoreEntries.length; j++) {
-          var entry = scoreEntries[j];
-          await sbClient.from('drill_attempt_scores').insert([{
-            attempt_id: attemptId,
-            target_id: entry.target_id,
-            score_option_id: entry.score_option_id,
-            points: entry.points
-          }]);
-        }
-
-        document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#006600;">✓ Attempt submitted! Total score: ' + totalScore + '</span>';
-        document.getElementById('drill-form-' + drillId).innerHTML = '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')">Start Another Drill</button>';
-      }
 
       function resetDrillForm(drillId) {
         toggleDrillItem(drillId);
