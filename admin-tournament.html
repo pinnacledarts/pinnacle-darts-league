@@ -371,12 +371,15 @@ async function saveTournamentDetails() {
     checkin_end: document.getElementById('detCheckinEnd').value || null,
     description: document.getElementById('detDesc').value.trim() || null
   };
-        var result = await sbClient.from('tournaments').update(update).eq('id', tournamentId);
-        if (result.error) { showMsg('details-error', result.error.message); return; }
-        tournamentData.name = update.name;
-        tournamentData.average_split = update.average_split;
-        document.getElementById('pageTitle').textContent = '⚙️ Managing: ' + update.name;
-        showMsg('details-success', 'Details saved successfully! Refresh the page if you changed Format or Average Split to update the tabs shown.');
+var result = await sbClient.from('tournaments').update(update).eq('id', tournamentId);
+if (result.error) { showMsg('details-error', result.error.message); return; }
+tournamentData.name = update.name;
+tournamentData.average_split = update.average_split;
+tournamentData.max_players = update.max_players;
+tournamentData.checkin_start = update.checkin_start;
+tournamentData.checkin_end = update.checkin_end;
+document.getElementById('pageTitle').textContent = '⚙️ Managing: ' + update.name;
+showMsg('details-success', 'Details saved successfully! Refresh the page if you changed Format or Average Split to update the tabs shown.');
       }
 
       function buildPlayerChecklist(filter) {
