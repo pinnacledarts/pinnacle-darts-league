@@ -1054,15 +1054,17 @@ if (editingDrillId) {
           var rowType = row.getAttribute('data-type');
           var targetIdx = row.id.replace('drillTargetRow', '');
 
-          if (rowType === 'subtitle') {
-            var subtitleInput = document.getElementById('subtitleName' + targetIdx);
-            if (!subtitleInput) { continue; }
-            var subtitleText = subtitleInput.value.trim();
-            if (!subtitleText) { continue; }
-            targetOrder++;
-            await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: subtitleText, sort_order: targetOrder, is_subtitle: true }]);
-            continue;
-          }
+  if (rowType === 'subtitle') {
+  var subtitleInput = document.getElementById('subtitleName' + targetIdx);
+  if (!subtitleInput) { continue; }
+  var subtitleText = subtitleInput.value.trim();
+  if (!subtitleText) { continue; }
+  var subtitleDescInput = document.getElementById('subtitleDescription' + targetIdx);
+  var subtitleDesc = subtitleDescInput ? subtitleDescInput.value.trim() : '';
+  targetOrder++;
+  await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: subtitleText, description: subtitleDesc || null, sort_order: targetOrder, is_subtitle: true }]);
+  continue;
+}
 
           var targetNameInput = document.getElementById('targetName' + targetIdx);
           if (!targetNameInput) { continue; }
@@ -1146,8 +1148,7 @@ document.getElementById('drillTargetsList').innerHTML = '';
       }
 
       async function editDrill(id) {
-        var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').eq('id', id).single();
-        if (result.error || !result.data) { alert('Error loading drill.'); return; }
+var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').eq('id', id).single();        if (result.error || !result.data) { alert('Error loading drill.'); return; }
         var drill = result.data;
 
 editingDrillId = id;
@@ -1159,12 +1160,13 @@ document.getElementById('drillTargetsList').innerHTML = '';
 
         var targets = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
         targets.forEach(function(t) {
-          if (t.is_subtitle) {
-            addDrillSubtitleRow();
-            var subIdx = drillTargetCount;
-            document.getElementById('subtitleName' + subIdx).value = t.target_name || '';
-            return;
-          }
+if (t.is_subtitle) {
+  addDrillSubtitleRow();
+  var subIdx = drillTargetCount;
+  document.getElementById('subtitleName' + subIdx).value = t.target_name || '';
+  document.getElementById('subtitleDescription' + subIdx).value = t.description || '';
+  return;
+}
 
           addDrillTargetRow();
           var idx = drillTargetCount;
