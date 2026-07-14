@@ -958,8 +958,10 @@
         if (name === 'progress') { loadProgressDrillOptions(); }
       }
 
-     async function loadDrillsAccordion() {
-const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });  const error = result.error;
+async function loadDrillsAccordion() {
+  const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
+  const data = result.data;
+  const error = result.error;
   const container = document.getElementById('drillsAccordionList');
   if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
 
