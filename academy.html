@@ -959,8 +959,7 @@
       }
 
      async function loadDrillsAccordion() {
-const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });  const data = result.data;
-  const error = result.error;
+const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });  const error = result.error;
   const container = document.getElementById('drillsAccordionList');
   if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
 
@@ -972,10 +971,11 @@ const result = await sbClient.from('drills').select('*, drill_targets(id, target
     for (var ti = 0; ti < targets.length; ti++) {
       var t = targets[ti];
 
-      if (t.is_subtitle) {
-        targetRowsHtml += '<div style="font-weight:bold;margin:16px 0 8px;padding-top:12px;border-top:1px solid #eeeeee;color:#111111;">' + t.target_name + '</div>';
-        continue;
-      }
+if (t.is_subtitle) {
+  var subtitleDescHtml = t.description ? '<div style="font-weight:normal;color:#555555;font-size:0.9em;margin-top:4px;">' + t.description + '</div>' : '';
+  targetRowsHtml += '<div style="font-weight:bold;margin:16px 0 8px;padding-top:12px;border-top:1px solid #eeeeee;color:#111111;">' + t.target_name + subtitleDescHtml + '</div>';
+  continue;
+}
 
       if (t.entry_type === 'manual') {
         targetRowsHtml += '<div class="detail-row"><span class="detail-label">' + t.target_name + '</span>' +
