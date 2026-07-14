@@ -1121,9 +1121,11 @@ function drillStepBack(drillId) {
 async function submitDrillAttempt(drillId) {
   if (!currentUserId) { window.location.href = 'login.html'; return; }
 
+  var container = document.getElementById('drillOverlayContent');
+
   const { data: { session }, error: sessionError } = await sbClient.auth.getSession();
   if (sessionError || !session) {
-    document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#cc0000;">Your session needs refreshing. Please log in again (in this tab), then click Submit again — your answers are still here.</span>';
+    container.innerHTML += '<p style="color:#cc0000;text-align:center;margin-top:16px;">Your session needs refreshing. Please log in again (in this tab), then click Submit again — your answers are still here.</p>';
     return;
   }
 
@@ -1139,7 +1141,7 @@ async function submitDrillAttempt(drillId) {
   }]).select();
 
   if (attemptResult.error || !attemptResult.data) {
-    document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#cc0000;">Error submitting attempt.</span>';
+    container.innerHTML += '<p style="color:#cc0000;text-align:center;margin-top:16px;">Error submitting attempt. Please try again.</p>';
     return;
   }
 
@@ -1154,15 +1156,18 @@ async function submitDrillAttempt(drillId) {
     }]);
   }
 
-  document.getElementById('drill-msg-' + drillId).innerHTML = '<span style="color:#006600;">✓ Attempt submitted! Total score: ' + totalScore + '</span>';
-  document.getElementById('drill-form-' + drillId).innerHTML = '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')">Start Another Drill</button>';
+  container.innerHTML = '<h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;">' + state.drillTitle + '</h2>' +
+    '<div style="text-align:center;padding:40px 20px;">' +
+    '<p style="font-size:1.3em;color:#006600;font-weight:bold;margin-bottom:8px;">✓ Attempt submitted!</p>' +
+    '<p style="font-size:1.1em;color:#333333;margin-bottom:28px;">Total score: ' + totalScore + '</p>' +
+    '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Start Another Drill</button>' +
+    '<div style="margin-top:12px;"><button class="cancel-btn" onclick="closeDrillOverlay(); loadDrillsAccordion();">Close</button></div>' +
+    '</div>';
 }
 
-      function resetDrillForm(drillId) {
-        toggleDrillItem(drillId);
-        document.getElementById('drillsAccordionList').scrollIntoView({ behavior: 'smooth' });
-        loadDrillsAccordion();
-      }
+   function resetDrillForm(drillId) {
+  toggleDrillItem(drillId);
+}
 
       async function loadProgressDrillOptions() {
         var result = await sbClient.from('drills').select('id, title').order('title');
