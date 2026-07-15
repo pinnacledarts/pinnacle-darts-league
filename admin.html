@@ -553,7 +553,6 @@
   </div>
 </div>
 
-<!-- NEWS TAB -->
       <!-- NEWS TAB -->
       <div id="tab-news" class="tab-content">
         <div class="card">
@@ -657,8 +656,15 @@ async function toggleBugReport(id) {
   row.style.display = opening ? 'block' : 'none';
   if (opening) {
     await sbClient.from('bug_reports').update({ is_read: true }).eq('id', id);
-    loadBugReports();
+    updateBugReportBadge();
   }
+}
+
+async function updateBugReportBadge() {
+  var result = await sbClient.from('bug_reports').select('id').eq('is_read', false);
+  var count = result.data ? result.data.length : 0;
+  var btn = document.getElementById('bugsTabBtn');
+  if (btn) { btn.textContent = count > 0 ? 'Bug Reports (' + count + ')' : 'Bug Reports'; }
 }
 
 async function deleteBugReport(id) {
