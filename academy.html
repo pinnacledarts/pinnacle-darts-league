@@ -122,9 +122,21 @@
     </header>
 
 <main id="academyMain">
-  <div id="academyLockedView" style="display:none;">
-    <h2>Pinnacle Academy</h2>
-    <p style="color:#555;">Academy content is restricted for safeguarding purposes. Please use one of the enquiry forms below to get in touch, or log in if you already have Academy access.</p>
+<div id="academyPendingView" style="display:none;text-align:center;padding:60px 20px;">
+  <div style="font-size:3em;margin-bottom:16px;">⏳</div>
+  <h2 style="border:none;">Academy Access Pending</h2>
+  <p style="color:#555;max-width:400px;margin:0 auto;">Your request for Academy access is currently awaiting approval for safeguarding purposes. You'll be able to view this content once it's been reviewed.</p>
+</div>
+
+<div id="academyDeniedView" style="display:none;text-align:center;padding:60px 20px;">
+  <div style="font-size:3em;margin-bottom:16px;">🚫</div>
+  <h2 style="border:none;">Academy Access Not Approved</h2>
+  <p style="color:#555;max-width:400px;margin:0 auto;">Unfortunately your Academy access request wasn't approved. If you believe this is a mistake, please get in touch with us directly.</p>
+</div>
+
+<div id="academyLockedView" style="display:none;">
+  <h2>Pinnacle Academy</h2>
+  <p style="color:#555;">Academy content is restricted for safeguarding purposes. Please use one of the enquiry forms below to get in touch, or log in if you already have Academy access.</p>
 
     <div class="card" style="background-color:#ffffff;border:1px solid #dddddd;border-radius:8px;padding:24px;margin-bottom:20px;">
       <h3 style="margin:0 0 16px;padding-left:12px;border-left:4px solid #000000;">Enquire to Join Academy</h3>
@@ -1312,17 +1324,24 @@ window.addEventListener('load', async () => {
   checkAuth();
   updateSwitchButtonVisibility();
 
-  const hasAccess = await checkAcademyAccess();
-  if (!hasAccess) {
-    document.getElementById('academyLockedView').style.display = 'block';
-    document.getElementById('academyContentView').style.display = 'none';
-    return;
-  }
+  const statusResult = await getAcademyAccessStatus();
 
+  document.getElementById('academyPendingView').style.display = 'none';
+  document.getElementById('academyDeniedView').style.display = 'none';
   document.getElementById('academyLockedView').style.display = 'none';
-  document.getElementById('academyContentView').style.display = 'block';
-  loadAcademyPlayers();
-  loadAcademyNews();
+  document.getElementById('academyContentView').style.display = 'none';
+
+  if (statusResult.state === 'approved') {
+    document.getElementById('academyContentView').style.display = 'block';
+    loadAcademyPlayers();
+    loadAcademyNews();
+  } else if (statusResult.state === 'pending') {
+    document.getElementById('academyPendingView').style.display = 'block';
+  } else if (statusResult.state === 'denied') {
+    document.getElementById('academyDeniedView').style.display = 'block';
+  } else {
+    document.getElementById('academyLockedView').style.display = 'block';
+  }
 });
 
 async function submitAcademyEnquiry(type) {
