@@ -621,7 +621,51 @@
       var scoreOptionCounts = {};
       var editingDrillId = null;
       var allDrillAttemptsData = [];
+async function loadBugReports() {
+  var result = await sbClient.from('bug_reports').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
+  var container = document.getElementById('bugReportsList');
+  var count = result.data ? result.data.filter(function(b) { return !b.is_read; }).length : 0;
 
+  var btn = document.getElementById('bugsTabBtn');
+  if (btn) { btn.textContent = count > 0 ? 'Bug Reports (' + count + ')' : 'Bug Reports'; }
+
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No bug reports yet.</p>'; return; }
+
+  container.innerHTML = result.data.map(function(b) {
+    var reporter = b.profiles ? (b.profiles.full_name || b.profiles.username) : (b.reporter_email || 'Anonymous');
+    var unreadMark = !b.is_read ? ' 🔴' : '';
+    var pageLabel = b.page_url ? b.page_url.split('/').pop() || b.page_url : 'Unknown page';
+    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+      '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleBugReport(' + b.id + ')">' +
+      '<div><strong>' + reporter + unreadMark + '</strong><div style="color:#888;font-size:0.85em;">' + pageLabel + ' — ' + new Date(b.created_at).toLocaleString('en-GB') + '</div></div>' +
+      '<span style="color:#aaa;">▾</span>' +
+      '</div>' +
+      '<div id="bug-detail-' + b.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+      '<div style="padding-top:12px;">' +
+      '<strong>Page:</strong> <a href="' + b.page_url + '" target="_blank">' + b.page_url + '</a><br>' +
+      (b.reporter_email ? '<strong>Reporter Email:</strong> ' + b.reporter_email + '<br>' : '') +
+      '<strong>Description:</strong><br>' + b.description +
+      '</div>' +
+      '<button class="btn-small danger" onclick="deleteBugReport(' + b.id + ')" style="margin-top:10px;">Delete</button>' +
+      '</div></div>';
+  }).join('');
+}
+
+async function toggleBugReport(id) {
+  var row = document.getElementById('bug-detail-' + id);
+  var opening = row.style.display === 'none';
+  row.style.display = opening ? 'block' : 'none';
+  if (opening) {
+    await sbClient.from('bug_reports').update({ is_read: true }).eq('id', id);
+    loadBugReports();
+  }
+}
+
+async function deleteBugReport(id) {
+  if (!confirm('Delete this bug report?')) { return; }
+  await sbClient.from('bug_reports').delete().eq('id', id);
+  loadBugReports();
+}
       if (document.referrer.includes('academy.html')) {
         var sBtn = document.getElementById('switchBtn');
         if (sBtn) { sBtn.textContent = 'Return to Academy'; sBtn.href = 'academy.html'; }
@@ -2145,6 +2189,7 @@ function cancelNewsEdit(id) {
         refreshTemplateSelects();
         loadTournaments();
         loadLeagues();
+        loadBugReports();
         loadPlayers();
         loadPendingApprovals();
         loadAcademyLeagueSelects();
