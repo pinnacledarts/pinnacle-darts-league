@@ -406,15 +406,21 @@
   </div>
 </div>
 
-        <div id="subtab-progress" class="tab-content">
-<div class="search-box">
-  <label>Select Drill</label>
-  <select id="progressDrillSelect" onchange="loadDrillProgress()" style="width:100%;padding:10px 14px;border:1px solid #dddddd;border-radius:4px;font-size:1em;background-color:#f9f9f9;"></select>
+<div id="subtab-progress" class="tab-content">
+  <div class="search-box">
+    <label>Select Drill</label>
+    <select id="progressDrillSelect" onchange="loadDrillProgress()" style="width:100%;padding:10px 14px;border:1px solid #dddddd;border-radius:4px;font-size:1em;background-color:#f9f9f9;"></select>
+  </div>
+  <div class="round-tabs" id="progressFilterTabs">
+    <button class="round-tab active" onclick="setProgressFilter('recent15', this)">Last 15</button>
+    <button class="round-tab" onclick="setProgressFilter('today', this)">Today</button>
+    <button class="round-tab" onclick="setProgressFilter('7days', this)">7 Days</button>
+    <button class="round-tab" onclick="setProgressFilter('30days', this)">30 Days</button>
+  </div>
+  <div id="progressChartContainer" style="background-color:#ffffff;border:1px solid #dddddd;border-radius:8px;padding:20px;">
+    <p class="loading">Select a drill to view your progress.</p>
+  </div>
 </div>
-          <div id="progressChartContainer" style="background-color:#ffffff;border:1px solid #dddddd;border-radius:8px;padding:20px;">
-            <p class="loading">Select a drill to view your progress.</p>
-          </div>
-        </div>
       </div>
   </div>
     </main>
@@ -1192,14 +1198,43 @@ container.innerHTML = '<h2 style="border-bottom:3px solid #111111;padding-bottom
         select.innerHTML = optsHtml;
       }
 
-      async function loadDrillProgress() {
-        var drillId = document.getElementById('progressDrillSelect').value;
-        var container = document.getElementById('progressChartContainer');
-        if (!drillId || !currentUserId) { container.innerHTML = '<p class="loading">Select a drill to view your progress.</p>'; return; }
+var currentProgressFilter = 'recent15';
 
-        var result = await sbClient.from('drill_attempts').select('*').eq('drill_id', drillId).eq('player_id', currentUserId).order('attempt_date', { ascending: true });
-        var data = result.data;
-        if (!data || !data.length) { container.innerHTML = '<p class="coming-soon">No attempts logged yet for this drill.</p>'; return; }
+function setProgressFilter(filter, btn) {
+  currentProgressFilter = filter;
+  document.querySelectorAll('#progressFilterTabs .round-tab').forEach(function(t) { t.classList.remove('active'); });
+  btn.classList.add('active');
+  loadDrillProgress();
+}
+
+async function loadDrillProgress() {
+  var drillId = document.getElementById('progressDrillSelect').value;
+  var container = document.getElementById('progressChartContainer');
+  if (!drillId || !currentUserId) { container.innerHTML = '<p class="loading">Select a drill to view your progress.</p>'; return; }
+
+  var result = await sbClient.from('drill_attempts').select('*').eq('drill_id', drillId).eq('player_id', currentUserId).order('attempt_date', { ascending: true });
+  var allData = result.data || [];
+
+  var data = allData;
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (currentProgressFilter === 'today') {
+    var todayStr = today.toISOString().split('T')[0];
+    data = allData.filter(function(a) { return a.attempt_date === todayStr; });
+  } else if (currentProgressFilter === '7days') {
+    var cutoff7 = new Date(today);
+    cutoff7.setDate(cutoff7.getDate() - 7);
+    data = allData.filter(function(a) { return new Date(a.attempt_date) >= cutoff7; });
+  } else if (currentProgressFilter === '30days') {
+    var cutoff30 = new Date(today);
+    cutoff30.setDate(cutoff30.getDate() - 30);
+    data = allData.filter(function(a) { return new Date(a.attempt_date) >= cutoff30; });
+  } else {
+    data = allData.slice(-15);
+  }
+
+  if (!data || !data.length) { container.innerHTML = '<p class="coming-soon">No attempts in this range.</p>'; return; }
 
         var maxScore = 0;
         for (var i = 0; i < data.length; i++) { if (data[i].total_score > maxScore) { maxScore = data[i].total_score; } }
