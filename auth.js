@@ -138,6 +138,27 @@ async function checkAcademyAccess() {
   return profile.access === 'academy' || profile.access === 'both';
 }
 
+async function getAcademyAccessStatus() {
+  const { data: { session } } = await sbClient.auth.getSession();
+  if (!session) { return { state: 'loggedOut' }; }
+
+  const { data: profile } = await sbClient.from('profiles').select('access, requested_access, access_status').eq('id', session.user.id).single();
+  if (!profile) { return { state: 'loggedOut' }; }
+
+  if (profile.access === 'academy' || profile.access === 'both') {
+    return { state: 'approved' };
+  }
+
+  if ((profile.requested_access === 'academy' || profile.requested_access === 'both') && profile.access_status === 'pending') {
+    return { state: 'pending' };
+  }
+
+  if ((profile.requested_access === 'academy' || profile.requested_access === 'both') && profile.access_status === 'denied') {
+    return { state: 'denied' };
+  }
+
+  return { state: 'noRequest' };
+}
 async function updateSwitchButtonVisibility() {
   const switchBtn = document.getElementById('switchBtn');
   if (!switchBtn) { return; }
