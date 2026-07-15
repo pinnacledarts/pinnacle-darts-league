@@ -1017,15 +1017,20 @@ function renderDrillStep(drillId) {
   var steps = state.steps;
   var idx = state.stepIndex;
 
-  var currentSubtitle = null;
+var hasAnySubtitle = steps.some(function(s) { return s.is_subtitle; });
+var currentSubtitle = null;
+if (hasAnySubtitle) {
   for (var i = Math.min(idx, steps.length - 1); i >= 0; i--) {
     if (steps[i].is_subtitle) { currentSubtitle = steps[i]; break; }
   }
-  var subtitleBannerHtml = '';
-  if (currentSubtitle) {
-    var bannerDescHtml = currentSubtitle.description ? '<div style="font-weight:normal;color:#555555;font-size:0.95em;margin-top:6px;">' + currentSubtitle.description + '</div>' : '';
-    subtitleBannerHtml = '<div style="background:#eeeeee;border-radius:8px;padding:14px 18px;margin-bottom:20px;font-weight:bold;color:#111111;">' + currentSubtitle.target_name + bannerDescHtml + '</div>';
-  }
+}
+var subtitleBannerHtml = '';
+if (currentSubtitle) {
+  var bannerDescHtml = currentSubtitle.description ? '<div style="font-weight:normal;color:#555555;font-size:0.95em;margin-top:6px;">' + currentSubtitle.description + '</div>' : '';
+  subtitleBannerHtml = '<div style="background:#eeeeee;border-radius:8px;padding:14px 18px;margin-bottom:20px;font-weight:bold;color:#111111;">' + currentSubtitle.target_name + bannerDescHtml + '</div>';
+} else if (!hasAnySubtitle && state.drillDescription) {
+  subtitleBannerHtml = '<div style="background:#eeeeee;border-radius:8px;padding:14px 18px;margin-bottom:20px;color:#555555;">' + state.drillDescription + '</div>';
+}
 
   var titleHtml = '<h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;">' + state.drillTitle + '</h2>';
 
