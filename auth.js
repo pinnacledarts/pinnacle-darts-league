@@ -13,11 +13,17 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   document.head.appendChild(link);
 })();
 document.addEventListener('DOMContentLoaded', function() {
-  var btn = document.createElement('button');
-  btn.textContent = '🐛 Report a Bug';
-  btn.style.cssText = 'position:fixed;bottom:16px;right:16px;background-color:#111111;color:#ffffff;border:none;padding:10px 18px;border-radius:24px;font-size:0.85em;cursor:pointer;font-family:Arial, sans-serif;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
-  btn.onclick = openBugReportModal;
-  document.body.appendChild(btn);
+  var linkWrap = document.createElement('p');
+  linkWrap.style.cssText = 'text-align:center;margin:20px 0 40px;';
+  var link = document.createElement('a');
+  link.textContent = '🐛 Report a Bug';
+  link.href = '#';
+  link.style.cssText = 'color:#555555;font-size:0.9em;text-decoration:none;';
+  link.onclick = function(e) { e.preventDefault(); openBugReportModal(); };
+  linkWrap.appendChild(link);
+
+  var main = document.querySelector('main');
+  if (main) { main.appendChild(linkWrap); } else { document.body.appendChild(linkWrap); }
 
   var overlay = document.createElement('div');
   overlay.id = 'bugReportOverlay';
