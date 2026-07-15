@@ -7,7 +7,6 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   document.head.appendChild(style);
 })();
 document.addEventListener('DOMContentLoaded', function() {
-document.addEventListener('DOMContentLoaded', function() {
   var header = document.querySelector('header');
   if (!header) { return; }
 
