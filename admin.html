@@ -869,11 +869,24 @@
         loadPlayers();
       }
 
-      async function loadPlayers() {
-        var result = await sbClient.from('profiles').select('*').order('created_at', { ascending: false });
-        allPlayersData = result.data || [];
-        renderPlayersList(allPlayersData);
-      }
+async function loadPlayers() {
+  var result = await sbClient.from('profiles').select('*').order('created_at', { ascending: false });
+  allPlayersData = result.data || [];
+  renderPlayersList(allPlayersData);
+  updateRegistrationStats();
+}
+
+function updateRegistrationStats() {
+  var total = allPlayersData.length;
+  var sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  var newCount = allPlayersData.filter(function(p) {
+    return p.created_at && new Date(p.created_at) >= sevenDaysAgo;
+  }).length;
+
+  document.getElementById('statTotalPlayers').textContent = total;
+  document.getElementById('statNewPlayers').textContent = newCount;
+}
 
       function renderPlayersList(data) {
         var container = document.getElementById('playersList');
