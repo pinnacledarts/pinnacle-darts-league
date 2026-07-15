@@ -12,7 +12,65 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   link.href = 'logo.png';
   document.head.appendChild(link);
 })();
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.createElement('button');
+  btn.textContent = '🐛 Report a Bug';
+  btn.style.cssText = 'position:fixed;bottom:16px;right:16px;background-color:#111111;color:#ffffff;border:none;padding:10px 18px;border-radius:24px;font-size:0.85em;cursor:pointer;font-family:Arial, sans-serif;z-index:999;box-shadow:0 2px 8px rgba(0,0,0,0.2);';
+  btn.onclick = openBugReportModal;
+  document.body.appendChild(btn);
 
+  var overlay = document.createElement('div');
+  overlay.id = 'bugReportOverlay';
+  overlay.style.cssText = 'display:none;position:fixed;inset:0;background-color:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;padding:20px;';
+  overlay.innerHTML =
+    '<div style="background-color:#ffffff;border-radius:8px;padding:24px;max-width:400px;width:100%;">' +
+    '<h3 style="margin:0 0 16px;">Report a Bug</h3>' +
+    '<div id="bugReportSuccess" style="display:none;background:#f0fff0;border:1px solid #cceecc;color:#006600;padding:10px;border-radius:4px;margin-bottom:16px;font-size:0.9em;">Thanks! Your report has been sent.</div>' +
+    '<textarea id="bugReportText" rows="5" placeholder="Describe what went wrong..." style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;font-family:Arial, sans-serif;font-size:1em;box-sizing:border-box;"></textarea>' +
+    '<div style="margin-top:16px;display:flex;gap:8px;">' +
+    '<button onclick="submitBugReport()" style="background-color:#111111;color:#ffffff;border:none;padding:10px 20px;border-radius:4px;cursor:pointer;">Send</button>' +
+    '<button onclick="closeBugReportModal()" style="background:none;border:1px solid #dddddd;padding:10px 20px;border-radius:4px;cursor:pointer;">Cancel</button>' +
+    '</div></div>';
+  document.body.appendChild(overlay);
+});
+
+function openBugReportModal() {
+  document.getElementById('bugReportOverlay').style.display = 'flex';
+  document.getElementById('bugReportSuccess').style.display = 'none';
+  document.getElementById('bugReportText').value = '';
+}
+
+function closeBugReportModal() {
+  document.getElementById('bugReportOverlay').style.display = 'none';
+}
+
+async function submitBugReport() {
+  var description = document.getElementById('bugReportText').value.trim();
+  if (!description) { alert('Please describe the issue before sending.'); return; }
+
+  var reporterId = null;
+  var reporterEmail = null;
+  const { data: { session } } = await sbClient.auth.getSession();
+  if (session) {
+    reporterId = session.user.id;
+    reporterEmail = session.user.email;
+  }
+
+  const { error } = await sbClient.from('bug_reports').insert([{
+    reporter_id: reporterId,
+    reporter_email: reporterEmail,
+    page_url: window.location.href,
+    description: description
+  }]);
+
+  if (error) {
+    alert('Error sending report. Please try again.');
+    return;
+  }
+
+  document.getElementById('bugReportSuccess').style.display = 'block';
+  document.getElementById('bugReportText').value = '';
+}
 document.addEventListener('DOMContentLoaded', function() {
   var headerH1 = document.querySelector('header h1');
   var headerP = document.querySelector('header p');
