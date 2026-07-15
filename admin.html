@@ -273,12 +273,26 @@
         </div>
       </div>
 
-      <!-- PLAYERS TAB -->
-      <div id="tab-players" class="tab-content">
-        <div class="card">
-          <h3>Pending Academy Approvals</h3>
-          <div id="pendingApprovalsList"><p class="empty-state">Loading...</p></div>
-        </div>
+<!-- PLAYERS TAB -->
+<div id="tab-players" class="tab-content">
+  <div class="card">
+    <h3>Registration Overview</h3>
+    <div class="key-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="stat-box" style="border:1px solid #dddddd;border-radius:8px;padding:20px;text-align:center;">
+        <div style="font-size:0.8em;color:#888888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Total Players</div>
+        <div style="font-size:2em;font-weight:bold;" id="statTotalPlayers">-</div>
+      </div>
+      <div class="stat-box" style="border:1px solid #dddddd;border-radius:8px;padding:20px;text-align:center;">
+        <div style="font-size:0.8em;color:#888888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">New (Last 7 Days)</div>
+        <div style="font-size:2em;font-weight:bold;" id="statNewPlayers">-</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3>Pending Academy Approvals</h3>
+    <div id="pendingApprovalsList"><p class="empty-state">Loading...</p></div>
+  </div>
         <div class="card">
           <h3>Registered Players</h3>
           <input type="text" class="search-bar" id="playerSearch" placeholder="Search by name or username..." oninput="filterPlayersList()" />
