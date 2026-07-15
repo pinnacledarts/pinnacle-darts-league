@@ -6,6 +6,19 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   style.textContent = 'main { max-width: 1200px !important; }';
   document.head.appendChild(style);
 })();
+document.addEventListener('DOMContentLoaded', function() {
+  var stickyStyle = document.createElement('style');
+  stickyStyle.textContent = 'header { position: sticky; top: 0; z-index: 500; }';
+  document.head.appendChild(stickyStyle);
+
+  var nav = document.querySelector('nav');
+  var hamburger = document.querySelector('.hamburger');
+  if (nav && hamburger) {
+    var navStyle = document.createElement('style');
+    navStyle.textContent = '.hamburger { display: block !important; } nav { display: none !important; } nav.open { display: flex !important; }';
+    document.head.appendChild(navStyle);
+  }
+});
 (function() {
   var link = document.createElement('link');
   link.rel = 'icon';
