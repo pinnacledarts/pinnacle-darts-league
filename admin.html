@@ -1029,12 +1029,13 @@ function updateRegistrationStats() {
         loadPlayers();
       }
 
-      async function deletePlayer(id, username) {
-        if (username === 'Macca23') { alert('This account is protected and cannot be deleted.'); return; }
-        if (!confirm('Remove this player?')) { return; }
-        await sbClient.from('profiles').delete().eq('id', id);
-        loadPlayers();
-      }
+async function deletePlayer(id, username) {
+  if (username === 'Macca23') { alert('This account is protected and cannot be deleted.'); return; }
+  if (!confirm('Remove this player?')) { return; }
+  var result = await sbClient.from('profiles').delete().eq('id', id);
+  if (result.error) { alert('Error removing player: ' + result.error.message); console.error(result.error); return; }
+  loadPlayers();
+}
 
       function addDrillTargetRow() {
         drillTargetCount++;
