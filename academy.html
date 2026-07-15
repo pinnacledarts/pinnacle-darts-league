@@ -426,7 +426,14 @@
       let allAcademyLeagues = [];
       let isCurrentUserAdmin = false;
       let academyNewsLikes = {};
-
+      
+function formatDrillTime(totalSeconds) {
+  if (totalSeconds == null) return '-';
+  var mins = Math.floor(totalSeconds / 60);
+  var secs = totalSeconds % 60;
+  if (mins === 0) { return secs + 's'; }
+  return mins + 'm ' + secs + 's';
+}
       const fieldLabels = {
         highest_checkout: 'profileCheckout',
         hometown: 'profileHometown',
@@ -995,7 +1002,7 @@ function toggleDrillItem(id) {
   var drill = allDrillsRawData.find(function(d) { return d.id === id; });
   if (!drill) { return; }
   var steps = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-  drillStepState[id] = { stepIndex: 0, answers: {}, steps: steps, drillTitle: drill.title, drillDescription: drill.description };
+  drillStepState[id] = { stepIndex: 0, answers: {}, steps: steps, drillTitle: drill.title, drillDescription: drill.description, startTime: Date.now() };
   document.getElementById('drillFullscreenOverlay').style.display = 'block';
   renderDrillStep(id);
 }
@@ -1128,16 +1135,18 @@ async function submitDrillAttempt(drillId) {
     return;
   }
 
-  var state = drillStepState[drillId];
-  var scoreEntries = Object.values(state.answers);
-  var totalScore = scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
+var state = drillStepState[drillId];
+var scoreEntries = Object.values(state.answers);
+var totalScore = scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
+var timeTakenSeconds = Math.round((Date.now() - state.startTime) / 1000);
 
-  var attemptResult = await sbClient.from('drill_attempts').insert([{
-    drill_id: drillId,
-    player_id: currentUserId,
-    total_score: totalScore,
-    attempt_date: new Date().toISOString().split('T')[0]
-  }]).select();
+var attemptResult = await sbClient.from('drill_attempts').insert([{
+  drill_id: drillId,
+  player_id: currentUserId,
+  total_score: totalScore,
+  time_taken_seconds: timeTakenSeconds,
+  attempt_date: new Date().toISOString().split('T')[0]
+}]).select();
 
   if (attemptResult.error || !attemptResult.data) {
     container.innerHTML += '<p style="color:#cc0000;text-align:center;margin-top:16px;">Error submitting attempt. Please try again.</p>';
@@ -1155,10 +1164,12 @@ async function submitDrillAttempt(drillId) {
     }]);
   }
 
-  container.innerHTML = '<h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;">' + state.drillTitle + '</h2>' +
-    '<div style="text-align:center;padding:40px 20px;">' +
-    '<p style="font-size:1.3em;color:#006600;font-weight:bold;margin-bottom:8px;">✓ Attempt submitted!</p>' +
-    '<p style="font-size:1.1em;color:#333333;margin-bottom:28px;">Total score: ' + totalScore + '</p>' +
+var timeLabel = formatDrillTime(timeTakenSeconds);
+container.innerHTML = '<h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;">' + state.drillTitle + '</h2>' +
+  '<div style="text-align:center;padding:40px 20px;">' +
+  '<p style="font-size:1.3em;color:#006600;font-weight:bold;margin-bottom:8px;">✓ Attempt submitted!</p>' +
+  '<p style="font-size:1.1em;color:#333333;margin-bottom:4px;">Total score: ' + totalScore + '</p>' +
+  '<p style="font-size:0.95em;color:#888888;margin-bottom:28px;">Time taken: ' + timeLabel + '</p>' +
     '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Start Another Drill</button>' +
     '<div style="margin-top:12px;"><button class="cancel-btn" onclick="closeDrillOverlay(); loadDrillsAccordion();">Close</button></div>' +
     '</div>';
