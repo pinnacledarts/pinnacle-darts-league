@@ -108,8 +108,9 @@
         <button class="tab" onclick="showTab('leagues', event)">Leagues</button>
         <button class="tab" onclick="showTab('players', event)" id="playersTabBtn">Players</button>
         <button class="tab" onclick="showTab('academy', event)">Academy</button>
-        <button class="tab" onclick="showTab('enquiries', event)" id="enquiriesTabBtn">Enquiries</button>
-        <button class="tab" onclick="showTab('news', event)">News</button>
+<button class="tab" onclick="showTab('enquiries', event)" id="enquiriesTabBtn">Enquiries</button>
+<button class="tab" onclick="showTab('bugs', event)" id="bugsTabBtn">Bug Reports</button>
+<button class="tab" onclick="showTab('news', event)">News</button>        <button class="tab" onclick="showTab('news', event)">News</button>
       </div>
 
       <!-- TOURNAMENTS TAB -->
@@ -544,7 +545,15 @@
 <div id="divisionEnquiriesList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
       </div>
+<!-- BUG REPORTS TAB -->
+<div id="tab-bugs" class="tab-content">
+  <div class="card">
+    <h3>Bug Reports</h3>
+    <div id="bugReportsList"><p class="empty-state">Loading...</p></div>
+  </div>
+</div>
 
+<!-- NEWS TAB -->
       <!-- NEWS TAB -->
       <div id="tab-news" class="tab-content">
         <div class="card">
