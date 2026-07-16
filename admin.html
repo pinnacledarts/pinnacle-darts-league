@@ -1144,9 +1144,12 @@ function addDrillSubtitleRow() {
         if (!title) { showMsg('drill-error', 'Please enter a drill title.'); return; }
 
         var targetRows = document.querySelectorAll('#drillTargetsList > div');
-        if (!targetRows.length) { showMsg('drill-error', 'Please add at least one target.'); return; }
+if (!targetRows.length) { showMsg('drill-error', 'Please add at least one target.'); return; }
 
-var description = document.getElementById('drillDescription').value.trim();
+if (editingDrillId && editingOriginalTargetCount > 0 && targetRows.length < editingOriginalTargetCount) {
+  var confirmMsg = 'Warning: this drill originally had ' + editingOriginalTargetCount + ' rows, but you\'re about to save only ' + targetRows.length + '. Anything not shown will be permanently deleted. Are you sure you want to continue?';
+  if (!confirm(confirmMsg)) { return; }
+}
 
 var drillId;
 if (editingDrillId) {
@@ -1259,11 +1262,15 @@ document.getElementById('drillTargetsList').innerHTML = '';
         }
       }
 
-      async function editDrill(id) {
-var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').eq('id', id).single();        if (result.error || !result.data) { alert('Error loading drill.'); return; }
-        var drill = result.data;
+var editingOriginalTargetCount = 0;
 
-editingDrillId = id;
+async function editDrill(id) {
+  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').eq('id', id).single();
+  if (result.error || !result.data) { alert('Error loading drill.'); return; }
+  var drill = result.data;
+
+  editingOriginalTargetCount = (drill.drill_targets || []).length;
+  editingDrillId = id;
 document.getElementById('drillTitle').value = drill.title || '';
 document.getElementById('drillDescription').value = drill.description || '';
 document.getElementById('drillTargetsList').innerHTML = '';
