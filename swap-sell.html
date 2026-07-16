@@ -179,32 +179,54 @@
           '</div></div>';
       }
 
-      function openListingForm(id) {
-        editingListingId = id || null;
-        var listing = id ? allListings.find(function(l) { return l.id === id; }) : null;
+     var editingImageUrls = [];
 
-        document.getElementById('listingFormContainer').innerHTML =
-          '<div class="form-box">' +
-          '<h3>' + (id ? 'Edit Listing' : 'Post a Listing') + '</h3>' +
-          '<div class="success-msg" id="listing-success"></div>' +
-          '<div class="error-msg" id="listing-error"></div>' +
-          '<div class="form-group"><label>Title</label><input type="text" id="listingTitle" value="' + (listing ? listing.title.replace(/"/g, '&quot;') : '') + '" placeholder="e.g. Target Darts Steel Tips" /></div>' +
-          '<div class="form-row">' +
-          '<div class="form-group"><label>Weight</label><input type="text" id="listingWeight" value="' + (listing ? (listing.weight || '') : '') + '" placeholder="e.g. 23g" /></div>' +
-          '<div class="form-group"><label>Price (£, optional)</label><input type="number" id="listingPrice" value="' + (listing && listing.price != null ? listing.price : '') + '" placeholder="e.g. 25" /></div>' +
-          '</div>' +
-          '<div class="form-group" style="display:flex;align-items:center;gap:8px;">' +
-          '<input type="checkbox" id="listingSwap" style="width:18px;height:18px;"' + (listing && listing.allow_swap ? ' checked' : '') + ' />' +
-          '<label style="margin:0;">Open to swap</label>' +
-          '</div>' +
-          '<div class="form-group"><label>Description</label><textarea id="listingDesc" rows="3" placeholder="Describe the item...">' + (listing ? (listing.description || '') : '') + '</textarea></div>' +
-          '<div class="form-group"><label>Images (up to 4)</label><input type="file" id="listingImages" accept="image/*" multiple /></div>' +
-          '<button class="btn btn-primary" onclick="saveListing()">' + (id ? 'Save Changes' : 'Post Listing') + '</button> ' +
-          '<button class="btn btn-secondary" onclick="closeListingForm()">Cancel</button>' +
-          '</div>';
+function openListingForm(id) {
+  editingListingId = id || null;
+  var listing = id ? allListings.find(function(l) { return l.id === id; }) : null;
+  editingImageUrls = listing && listing.image_urls ? listing.image_urls.slice() : [];
 
-        document.getElementById('listingFormContainer').scrollIntoView({ behavior: 'smooth' });
-      }
+  document.getElementById('listingFormContainer').innerHTML =
+    '<div class="form-box">' +
+    '<h3>' + (id ? 'Edit Listing' : 'Post a Listing') + '</h3>' +
+    '<div class="success-msg" id="listing-success"></div>' +
+    '<div class="error-msg" id="listing-error"></div>' +
+    '<div class="form-group"><label>Title</label><input type="text" id="listingTitle" value="' + (listing ? listing.title.replace(/"/g, '&quot;') : '') + '" placeholder="e.g. Target Darts Steel Tips" /></div>' +
+    '<div class="form-row">' +
+    '<div class="form-group"><label>Weight</label><input type="text" id="listingWeight" value="' + (listing ? (listing.weight || '') : '') + '" placeholder="e.g. 23g" /></div>' +
+    '<div class="form-group"><label>Price (£, optional)</label><input type="number" id="listingPrice" value="' + (listing && listing.price != null ? listing.price : '') + '" placeholder="e.g. 25" /></div>' +
+    '</div>' +
+    '<div class="form-group" style="display:flex;align-items:center;gap:8px;">' +
+    '<input type="checkbox" id="listingSwap" style="width:18px;height:18px;"' + (listing && listing.allow_swap ? ' checked' : '') + ' />' +
+    '<label style="margin:0;">Open to swap</label>' +
+    '</div>' +
+    '<div class="form-group"><label>Description</label><textarea id="listingDesc" rows="3" placeholder="Describe the item...">' + (listing ? (listing.description || '') : '') + '</textarea></div>' +
+    '<div class="form-group"><label>Current Images</label><div id="currentImagesList"></div></div>' +
+    '<div class="form-group"><label>Add New Images</label><input type="file" id="listingImages" accept="image/*" multiple /></div>' +
+    '<button class="btn btn-primary" onclick="saveListing()">' + (id ? 'Save Changes' : 'Post Listing') + '</button> ' +
+    '<button class="btn btn-secondary" onclick="closeListingForm()">Cancel</button>' +
+    '</div>';
+
+  renderCurrentImagesList();
+  document.getElementById('listingFormContainer').scrollIntoView({ behavior: 'smooth' });
+}
+
+function renderCurrentImagesList() {
+  var container = document.getElementById('currentImagesList');
+  if (!container) { return; }
+  if (!editingImageUrls.length) { container.innerHTML = '<p style="color:#888;font-size:0.85em;">No images yet.</p>'; return; }
+  container.innerHTML = '<div style="display:flex;gap:10px;flex-wrap:wrap;">' + editingImageUrls.map(function(url, i) {
+    return '<div style="position:relative;">' +
+      '<img src="' + url + '" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" />' +
+      '<button onclick="removeExistingImage(' + i + ')" style="position:absolute;top:-6px;right:-6px;background:#cc0000;color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.8em;">✕</button>' +
+      '</div>';
+  }).join('') + '</div>';
+}
+
+function removeExistingImage(index) {
+  editingImageUrls.splice(index, 1);
+  renderCurrentImagesList();
+}
 
       function closeListingForm() {
         document.getElementById('listingFormContainer').innerHTML = '';
@@ -223,13 +245,9 @@
         var fileInput = document.getElementById('listingImages');
         var files = Array.from(fileInput.files || []).slice(0, 4);
 
-        var imageUrls = [];
-        if (editingListingId) {
-          var existing = allListings.find(function(l) { return l.id === editingListingId; });
-          if (existing && existing.image_urls) { imageUrls = existing.image_urls.slice(); }
-        }
+var imageUrls = editingImageUrls.slice();
 
-        for (var i = 0; i < files.length; i++) {
+for (var i = 0; i < files.length; i++) {
           var file = files[i];
           var fileExt = file.name.split('.').pop();
           var fileName = (currentUserId || 'anon') + '_' + Date.now() + '_' + i + '.' + fileExt;
