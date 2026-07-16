@@ -678,6 +678,9 @@ async function deleteBugReport(id) {
   await sbClient.from('bug_reports').delete().eq('id', id);
   loadBugReports();
 }
+      function toggleMenu() {
+  document.getElementById('mainNav').classList.toggle('open');
+}
       if (document.referrer.includes('academy.html')) {
         var sBtn = document.getElementById('switchBtn');
         if (sBtn) { sBtn.textContent = 'Return to Academy'; sBtn.href = 'academy.html'; }
