@@ -405,9 +405,11 @@ main { padding: 24px 20px; }
   <textarea id="drillDescription" rows="3" placeholder="Explain how to complete this drill..."></textarea>
 </div>
 <div id="drillTargetsList"></div>
-          <button class="btn btn-secondary" onclick="addDrillTargetRow()">+ Add Target</button>
-          <button class="btn btn-secondary" onclick="addDrillSubtitleRow()" style="margin-bottom:16px;">+ Add Subtitle</button>
-          <button class="btn btn-primary" onclick="saveDrill()">Create Drill</button>
+<button class="btn btn-secondary" onclick="addDrillTargetRow()">+ Add Target</button>
+<button class="btn btn-secondary" onclick="addDrillSubtitleRow()" style="margin-bottom:16px;">+ Add Subtitle</button>
+<div style="position:sticky;bottom:0;background-color:#ffffff;padding:12px 0;border-top:1px solid #eeeeee;margin-top:8px;z-index:10;">
+  <button class="btn btn-primary" onclick="saveDrill()">Create Drill</button>
+</div>
         </div>
 
         <div class="card">
