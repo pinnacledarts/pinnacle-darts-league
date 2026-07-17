@@ -52,8 +52,10 @@
       .side-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
       .side-tab { padding: 10px 24px; cursor: pointer; font-size: 0.95em; border: 1px solid #dddddd; background: #ffffff; color: #555555; border-radius: 4px 4px 0 0; }
       .side-tab.active { background: #000000; color: #ffffff; border-color: #000000; }
-      .canvas-wrap { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 0 8px 8px 8px; padding: 20px; display: flex; justify-content: center; }
-      .canvas-panel { display: none; }
+.canvas-wrap { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 0 8px 8px 8px; padding: 20px; display: flex; justify-content: center; width: 100%; box-sizing: border-box; }
+.canvas-wrap .canvas-container { margin: 0 auto !important; }
+.zoom-controls { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+.zoom-controls button { padding: 6px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 4px; cursor: pointer; font-size: 1em; }      .canvas-panel { display: none; }
       .canvas-panel.active { display: block; }
       .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
       .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
@@ -66,8 +68,8 @@
         main { padding: 24px 16px; }
         h2 { font-size: 1.3em; }
 .builder-layout { flex-direction: column; }
-.canvas-area { order: -1; width: 100%; }
-.toolbar { flex: 1 1 100%; order: 2; }
+.canvas-area { order: -1; width: 100%; max-width: 100%; }
+.toolbar { width: 100% !important; max-width: 100%; flex: none !important; order: 2; }
       }
     </style>
   </head>
@@ -187,14 +189,19 @@
               <button class="side-tab active" id="frontTab" onclick="switchSide('front')">Front</button>
               <button class="side-tab" id="backTab" onclick="switchSide('back')">Back</button>
             </div>
-            <div class="canvas-wrap">
-              <div class="canvas-panel active" id="frontPanel">
-                <canvas id="frontCanvas" width="280" height="340"></canvas>
-              </div>
-              <div class="canvas-panel" id="backPanel">
-                <canvas id="backCanvas" width="360" height="440"></canvas>
-              </div>
-            </div>
+<div class="canvas-wrap">
+  <div class="canvas-panel active" id="frontPanel">
+    <canvas id="frontCanvas" width="280" height="340"></canvas>
+  </div>
+  <div class="canvas-panel" id="backPanel">
+    <canvas id="backCanvas" width="280" height="340"></canvas>
+  </div>
+</div>
+<div class="zoom-controls">
+  <button onclick="zoomOut()">− Zoom Out</button>
+  <button onclick="resetZoom()">Reset</button>
+  <button onclick="zoomIn()">+ Zoom In</button>
+</div>
           </div>
         </div>
       </div>
@@ -484,7 +491,29 @@ function addLogo(event) {
         el.textContent = msg;
         el.style.display = 'block';
       }
+var currentZoomLevel = 1;
 
+function applyZoom() {
+  document.getElementById('frontPanel').style.transform = 'scale(' + currentZoomLevel + ')';
+  document.getElementById('backPanel').style.transform = 'scale(' + currentZoomLevel + ')';
+  document.getElementById('frontPanel').style.transformOrigin = 'center top';
+  document.getElementById('backPanel').style.transformOrigin = 'center top';
+}
+
+function zoomIn() {
+  currentZoomLevel = Math.min(currentZoomLevel + 0.15, 2);
+  applyZoom();
+}
+
+function zoomOut() {
+  currentZoomLevel = Math.max(currentZoomLevel - 0.15, 0.5);
+  applyZoom();
+}
+
+function resetZoom() {
+  currentZoomLevel = 1;
+  applyZoom();
+}
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
