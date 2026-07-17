@@ -150,7 +150,7 @@
 <button class="btn btn-secondary" onclick="duplicateSelected()">Duplicate</button>
 <button class="btn btn-secondary" onclick="copyToOtherSide()">Copy to Other Side</button>
 <button class="btn btn-secondary" onclick="splitAtEdge()">Split at Edge (Wrap)</button>
-<button class="btn btn-danger" onclick="deleteSelected()">Delete Selected</button>
+<button class="btn btn-danger" onmousedown="event.preventDefault();" onclick="deleteSelected()">Delete Selected</button>
             </div>
 
             <div class="toolbar-section">
