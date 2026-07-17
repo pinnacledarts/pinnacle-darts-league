@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shirt Builder | Pinnacle Darts League</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="auth.js?t=999999"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
+      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }
+      header img { height: 70px; }
+      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
+      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
+      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
+      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
+      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
+      .hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      nav.open { display: flex; }
+      nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; }
+      nav a:hover { background-color: #222222; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
+      main { padding: 40px; max-width: 1000px; margin: 0 auto; }
+      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; }
+      .builder-layout { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
+      .toolbar { flex: 0 0 240px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; }
+      .toolbar h4 { margin: 0 0 12px; font-size: 0.95em; padding-left: 10px; border-left: 3px solid #000000; }
+      .toolbar-section { margin-bottom: 20px; }
+      .btn { display: block; width: 100%; padding: 10px; border: none; border-radius: 4px; font-size: 0.9em; cursor: pointer; font-family: Arial, sans-serif; margin-bottom: 8px; }
+      .btn-primary { background-color: #000000; color: #ffffff; }
+      .btn-primary:hover { background-color: #333333; }
+      .btn-secondary { background-color: #f5f5f5; color: #111111; border: 1px solid #dddddd; }
+      .btn-secondary:hover { background-color: #eeeeee; }
+      .btn-danger { background-color: #ffffff; color: #cc0000; border: 1px solid #cc0000; }
+      .btn-danger:hover { background-color: #fff0f0; }
+      input[type="color"] { width: 100%; height: 40px; border: 1px solid #dddddd; border-radius: 4px; cursor: pointer; margin-bottom: 8px; }
+      .canvas-area { flex: 1; min-width: 300px; }
+      .side-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+      .side-tab { padding: 10px 24px; cursor: pointer; font-size: 0.95em; border: 1px solid #dddddd; background: #ffffff; color: #555555; border-radius: 4px 4px 0 0; }
+      .side-tab.active { background: #000000; color: #ffffff; border-color: #000000; }
+      .canvas-wrap { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 0 8px 8px 8px; padding: 20px; display: flex; justify-content: center; }
+      .canvas-panel { display: none; }
+      .canvas-panel.active { display: block; }
+      .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
+      .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
+      .loading-overlay { text-align: center; padding: 60px 20px; color: #888888; }
+      @media (max-width: 700px) {
+        header { flex-wrap: wrap; padding: 16px 20px; }
+        header img { height: 50px; }
+        header h1 { font-size: 1.4em; }
+        header p { font-size: 0.85em; }
+        main { padding: 24px 16px; }
+        h2 { font-size: 1.3em; }
+        .builder-layout { flex-direction: column; }
+        .toolbar { flex: 1 1 100%; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <img src="logo.png" alt="Pinnacle Darts Logo">
+      <div>
+        <h1>Pinnacle Darts League</h1>
+        <p>Official League Website</p>
+      </div>
+      <button class="hamburger" onclick="toggleMenu()">☰</button>
+      <nav id="mainNav">
+        <a href="index.html">Home</a>
+        <a href="leagues.html">Leagues</a>
+        <a href="tournaments.html">Tournaments</a>
+        <a href="players.html">Players</a>
+        <a href="swap-sell.html">Swap / Sell</a>
+        <a href="shirt-builder.html">Shirt Builder</a>
+        <a href="academy.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Academy</a>
+        <div id="authButtons" style="padding:14px 24px;"></div>
+      </nav>
+    </header>
+
+    <main>
+      <h2>Shirt Builder</h2>
+
+      <div id="loggedOutMsg" class="loading-overlay" style="display:none;">
+        <p>Please <a href="login.html">log in</a> to design and submit a shirt.</p>
+      </div>
+
+      <div id="builderContent" style="display:none;">
+        <div class="success-msg" id="builder-success"></div>
+        <div class="error-msg" id="builder-error"></div>
+        <p style="color:#666;">Design your shirt, then submit it for the admin team to review.</p>
+
+        <div class="builder-layout">
+          <div class="toolbar">
+            <div class="toolbar-section">
+              <h4>Shirt Colour</h4>
+              <input type="color" id="shirtColor" value="#1a1a1a" onchange="setShirtColor(this.value)" />
+            </div>
+            <div class="toolbar-section">
+              <h4>Add Elements</h4>
+              <button class="btn btn-secondary" onclick="addText()">+ Add Text</button>
+              <label class="btn btn-secondary" style="text-align:center;cursor:pointer;">
+                + Add Logo / Image
+                <input type="file" id="logoUpload" accept="image/*" style="display:none;" onchange="addLogo(event)" />
+              </label>
+            </div>
+            <div class="toolbar-section">
+              <h4>Selected Element</h4>
+              <button class="btn btn-secondary" onclick="bringForward()">Bring Forward</button>
+              <button class="btn btn-secondary" onclick="sendBackward()">Send Backward</button>
+              <button class="btn btn-secondary" onclick="duplicateSelected()">Duplicate</button>
+              <button class="btn btn-danger" onclick="deleteSelected()">Delete Selected</button>
+            </div>
+            <div class="toolbar-section">
+              <button class="btn btn-primary" onclick="submitDesign()">Submit Design</button>
+            </div>
+          </div>
+
+          <div class="canvas-area">
+            <div class="side-tabs">
+              <button class="side-tab active" id="frontTab" onclick="switchSide('front')">Front</button>
+              <button class="side-tab" id="backTab" onclick="switchSide('back')">Back</button>
+            </div>
+            <div class="canvas-wrap">
+              <div class="canvas-panel active" id="frontPanel">
+                <canvas id="frontCanvas" width="360" height="440"></canvas>
+              </div>
+              <div class="canvas-panel" id="backPanel">
+                <canvas id="backCanvas" width="360" height="440"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p style="text-align:center;margin-top:30px;"><a href="terms.html" style="color:#555;font-size:0.9em;">View Terms & Conditions →</a></p>
+    </main>
+
+    <script>
+      var currentUserId = null;
+      var currentSide = 'front';
+      var frontCanvas, backCanvas;
+
+      var SHIRT_PATH = 'M 130 20 C 145 40 195 40 210 20 L 290 60 L 250 120 L 215 95 L 215 400 L 125 400 L 125 95 L 90 120 L 50 60 Z';
+
+      function buildShirtCanvas(canvasId) {
+        var canvas = new fabric.Canvas(canvasId, { preserveObjectStacking: true });
+        var shirt = new fabric.Path(SHIRT_PATH, {
+          left: 0, top: 0, fill: '#1a1a1a', selectable: false, evented: false,
+          scaleX: 1, scaleY: 1
+        });
+        canvas.add(shirt);
+        canvas.shirtShape = shirt;
+        canvas.on('object:added', function(e) {
+          if (e.target !== shirt) { shirt.sendToBack(); }
+        });
+        return canvas;
+      }
+
+      function switchSide(side) {
+        currentSide = side;
+        document.getElementById('frontTab').classList.toggle('active', side === 'front');
+        document.getElementById('backTab').classList.toggle('active', side === 'back');
+        document.getElementById('frontPanel').classList.toggle('active', side === 'front');
+        document.getElementById('backPanel').classList.toggle('active', side === 'back');
+      }
+
+      function getActiveCanvas() {
+        return currentSide === 'front' ? frontCanvas : backCanvas;
+      }
+
+      function setShirtColor(color) {
+        frontCanvas.shirtShape.set('fill', color);
+        backCanvas.shirtShape.set('fill', color);
+        frontCanvas.renderAll();
+        backCanvas.renderAll();
+      }
+
+      function addText() {
+        var canvas = getActiveCanvas();
+        var text = new fabric.IText('Your Text', {
+          left: 150, top: 180, fontSize: 24, fill: '#ffffff', fontFamily: 'Arial'
+        });
+        canvas.add(text);
+        canvas.setActiveObject(text);
+      }
+
+      function addLogo(event) {
+        var file = event.target.files[0];
+        if (!file) { return; }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          fabric.Image.fromURL(e.target.result, function(img) {
+            img.scaleToWidth(100);
+            img.set({ left: 150, top: 150 });
+            var canvas = getActiveCanvas();
+            canvas.add(img);
+            canvas.setActiveObject(img);
+          });
+        };
+        reader.readAsDataURL(file);
+        event.target.value = '';
+      }
+
+      function deleteSelected() {
+        var canvas = getActiveCanvas();
+        var obj = canvas.getActiveObject();
+        if (obj && obj !== canvas.shirtShape) { canvas.remove(obj); }
+      }
+
+      function duplicateSelected() {
+        var canvas = getActiveCanvas();
+        var obj = canvas.getActiveObject();
+        if (!obj || obj === canvas.shirtShape) { return; }
+        obj.clone(function(cloned) {
+          cloned.set({ left: obj.left + 15, top: obj.top + 15 });
+          canvas.add(cloned);
+          canvas.setActiveObject(cloned);
+        });
+      }
+
+      function bringForward() {
+        var canvas = getActiveCanvas();
+        var obj = canvas.getActiveObject();
+        if (obj && obj !== canvas.shirtShape) { canvas.bringForward(obj); }
+      }
+
+      function sendBackward() {
+        var canvas = getActiveCanvas();
+        var obj = canvas.getActiveObject();
+        if (obj && obj !== canvas.shirtShape) {
+          canvas.sendBackwards(obj);
+          canvas.shirtShape.sendToBack();
+        }
+      }
+
+      async function submitDesign() {
+        if (!currentUserId) { window.location.href = 'login.html'; return; }
+
+        document.getElementById('builder-error').style.display = 'none';
+        document.getElementById('builder-success').style.display = 'none';
+
+        frontCanvas.discardActiveObject();
+        backCanvas.discardActiveObject();
+        frontCanvas.renderAll();
+        backCanvas.renderAll();
+
+        var frontDataUrl = frontCanvas.toDataURL({ format: 'png' });
+        var backDataUrl = backCanvas.toDataURL({ format: 'png' });
+
+        var frontBlob = await (await fetch(frontDataUrl)).blob();
+        var backBlob = await (await fetch(backDataUrl)).blob();
+
+        var frontFileName = currentUserId + '_front_' + Date.now() + '.png';
+        var backFileName = currentUserId + '_back_' + Date.now() + '.png';
+
+        var frontUpload = await sbClient.storage.from('shirt-designs').upload(frontFileName, frontBlob);
+        if (frontUpload.error) { showBuilderMsg('builder-error', 'Error uploading front design: ' + frontUpload.error.message); return; }
+        var backUpload = await sbClient.storage.from('shirt-designs').upload(backFileName, backBlob);
+        if (backUpload.error) { showBuilderMsg('builder-error', 'Error uploading back design: ' + backUpload.error.message); return; }
+
+        var frontUrl = sbClient.storage.from('shirt-designs').getPublicUrl(frontFileName).data.publicUrl;
+        var backUrl = sbClient.storage.from('shirt-designs').getPublicUrl(backFileName).data.publicUrl;
+
+        var result = await sbClient.from('shirt_design_submissions').insert([{
+          player_id: currentUserId,
+          front_image_url: frontUrl,
+          back_image_url: backUrl,
+          front_design_data: frontCanvas.toJSON(),
+          back_design_data: backCanvas.toJSON(),
+          status: 'pending'
+        }]);
+
+        if (result.error) { showBuilderMsg('builder-error', 'Error saving submission: ' + result.error.message); return; }
+
+        showBuilderMsg('builder-success', 'Your design has been submitted for review!');
+      }
+
+      function showBuilderMsg(id, msg) {
+        var el = document.getElementById(id);
+        el.textContent = msg;
+        el.style.display = 'block';
+      }
+
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+      }
+
+      window.addEventListener('load', async function() {
+        checkAuth();
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (!session) {
+          document.getElementById('loggedOutMsg').style.display = 'block';
+          return;
+        }
+        currentUserId = session.user.id;
+        document.getElementById('builderContent').style.display = 'block';
+
+        frontCanvas = buildShirtCanvas('frontCanvas');
+        backCanvas = buildShirtCanvas('backCanvas');
+      });
+    </script>
+
+  </body>
+</html>
