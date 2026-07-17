@@ -147,8 +147,7 @@
       var currentSide = 'front';
       var frontCanvas, backCanvas;
 
-      var SHIRT_PATH = 'M 130 20 C 145 40 195 40 210 20 L 290 60 L 250 120 L 215 95 L 215 400 L 125 400 L 125 95 L 90 120 L 50 60 Z';
-
+var SHIRT_PATH = 'M150,45 Q180,60 210,45 L240,55 L310,90 L280,150 L230,115 L230,400 L130,400 L130,115 L80,150 L50,90 L120,55 Z';
       function buildShirtCanvas(canvasId) {
         var canvas = new fabric.Canvas(canvasId, { preserveObjectStacking: true });
         var shirt = new fabric.Path(SHIRT_PATH, {
