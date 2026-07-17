@@ -407,7 +407,61 @@ function addLogo(event) {
           targetCanvas.setActiveObject(cloned);
         });
       }
+function splitAtEdge() {
+  var canvas = getActiveCanvas();
+  var otherCanvas = canvas === frontCanvas ? backCanvas : frontCanvas;
+  var obj = canvas.getActiveObject();
+  if (!obj || obj === canvas.shirtShape) { alert('Select an element first.'); return; }
 
+  var shirtRect = canvas.shirtShape.getBoundingRect();
+  var shirtLeft = shirtRect.left;
+  var shirtRight = shirtRect.left + shirtRect.width;
+  var objRect = obj.getBoundingRect();
+  var objLeft = objRect.left;
+  var objRight = objRect.left + objRect.width;
+
+  var overflowsRight = objRight > shirtRight;
+  var overflowsLeft = objLeft < shirtLeft;
+
+  if (!overflowsRight && !overflowsLeft) {
+    alert('This element is fully inside the shirt outline on this side — nothing to split.');
+    return;
+  }
+
+  var otherShirtRect = otherCanvas.shirtShape.getBoundingRect();
+  var otherShirtLeft = otherShirtRect.left;
+  var otherShirtRight = otherShirtRect.left + otherShirtRect.width;
+
+  var frontClip = new fabric.Rect({
+    left: shirtLeft, top: -1000, width: shirtRect.width, height: 3000,
+    absolutePositioned: true
+  });
+  obj.clipPath = frontClip;
+  obj.dirty = true;
+
+  var seamX = overflowsRight ? shirtRight : shirtLeft;
+  var otherSeamX = overflowsRight ? otherShirtLeft : otherShirtRight;
+  var shift = otherSeamX - seamX;
+
+  obj.clone(function(clone) {
+    clone.set({ left: obj.left + shift, top: obj.top });
+    var backClip = new fabric.Rect({
+      left: otherShirtLeft, top: -1000, width: otherShirtRect.width, height: 3000,
+      absolutePositioned: true
+    });
+    clone.clipPath = backClip;
+    clone.dirty = true;
+    otherCanvas.add(clone);
+    otherCanvas.renderAll();
+    pushHistory(otherCanvas);
+  });
+
+  canvas.discardActiveObject();
+  canvas.renderAll();
+  pushHistory(canvas);
+
+  alert('Split complete! The overflowing portion now appears on the ' + (canvas === frontCanvas ? 'Back' : 'Front') + '.');
+}
       function bringForward() {
         var canvas = getActiveCanvas();
         var obj = canvas.getActiveObject();
