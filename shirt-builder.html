@@ -451,10 +451,19 @@ function splitAtEdge() {
     if (xsThis.length < 2 || xsOther.length < 2) { continue; }
     var seamX = overflowsRight ? xsThis[xsThis.length - 1] : xsThis[0];
     var otherSeamX = overflowsRight ? xsOther[0] : xsOther[xsOther.length - 1];
+    var otherAvailWidth = xsOther[xsOther.length - 1] - xsOther[0];
+    var overflowWidth, clipLeft, clipWidth;
+    if (overflowsRight) {
+      overflowWidth = (objRect.left + objRect.width) - seamX;
+      clipWidth = Math.min(overflowWidth, otherAvailWidth);
+      clipLeft = otherSeamX;
+    } else {
+      overflowWidth = seamX - objRect.left;
+      clipWidth = Math.min(overflowWidth, otherAvailWidth);
+      clipLeft = otherSeamX - clipWidth;
+    }
+    if (overflowWidth <= 0.5 || clipWidth <= 0.5) { continue; }
     var localShift = otherSeamX - seamX;
-    var clipLeft = xsOther[0];
-    var clipWidth = xsOther[xsOther.length - 1] - clipLeft;
-    if (clipWidth <= 0) { continue; }
 
     attempted++;
     pending++;
