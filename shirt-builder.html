@@ -413,9 +413,15 @@ function splitAtEdge() {
   var obj = canvas.getActiveObject();
   if (!obj || obj === canvas.shirtShape) { alert('Select an element first.'); return; }
 
+  var RAW_SHIRT_LEFT = 31;
+  var RAW_TORSO_LEFT = 86;
+  var RAW_TORSO_RIGHT = 194;
+
   var shirtRect = canvas.shirtShape.getBoundingRect();
-  var shirtLeft = shirtRect.left;
-  var shirtRight = shirtRect.left + shirtRect.width;
+  var shift = shirtRect.left - RAW_SHIRT_LEFT;
+  var shirtLeft = RAW_TORSO_LEFT + shift;
+  var shirtRight = RAW_TORSO_RIGHT + shift;
+
   var objRect = obj.getBoundingRect();
   var objLeft = objRect.left;
   var objRight = objRect.left + objRect.width;
@@ -428,14 +434,15 @@ function splitAtEdge() {
     return;
   }
 
-  var otherShirtRect = otherCanvas.shirtShape.getBoundingRect();
-  var otherShirtLeft = otherShirtRect.left;
-  var otherShirtRight = otherShirtRect.left + otherShirtRect.width;
+var otherShirtRect = otherCanvas.shirtShape.getBoundingRect();
+var otherShift = otherShirtRect.left - RAW_SHIRT_LEFT;
+var otherShirtLeft = RAW_TORSO_LEFT + otherShift;
+var otherShirtRight = RAW_TORSO_RIGHT + otherShift;
 
-  var frontClip = new fabric.Rect({
-    left: shirtLeft, top: -1000, width: shirtRect.width, height: 3000,
-    absolutePositioned: true
-  });
+var frontClip = new fabric.Rect({
+  left: shirtLeft, top: -1000, width: shirtRight - shirtLeft, height: 3000,
+  absolutePositioned: true
+});
   obj.clipPath = frontClip;
   obj.dirty = true;
 
@@ -445,10 +452,10 @@ function splitAtEdge() {
 
   obj.clone(function(clone) {
     clone.set({ left: obj.left + shift, top: obj.top });
-    var backClip = new fabric.Rect({
-      left: otherShirtLeft, top: -1000, width: otherShirtRect.width, height: 3000,
-      absolutePositioned: true
-    });
+var backClip = new fabric.Rect({
+  left: otherShirtLeft, top: -1000, width: otherShirtRight - otherShirtLeft, height: 3000,
+  absolutePositioned: true
+});
     clone.clipPath = backClip;
     clone.dirty = true;
     otherCanvas.add(clone);
