@@ -438,58 +438,41 @@ function splitAtEdge() {
   obj.clipPath = makeShirtClipPath(canvas);
   obj.dirty = true;
 
-  var stripCount = Math.min(30, Math.max(6, Math.round(objRect.height / 6)));
-  var stripH = objRect.height / stripCount;
-  var attempted = 0;
-  var pending = 0;
+  var sampleCount = Math.min(30, Math.max(6, Math.round(objRect.height / 6)));
+  var sampleH = objRect.height / sampleCount;
+  var sumShiftWeighted = 0;
+  var sumWeight = 0;
 
-  for (var i = 0; i < stripCount; i++) {
-    var stripTop = objRect.top + i * stripH;
-    var stripCenterY = stripTop + stripH / 2;
-    var xsThis = getPolygonXIntersections(polygon, stripCenterY);
-    var xsOther = getPolygonXIntersections(otherPolygon, stripCenterY);
+  for (var i = 0; i < sampleCount; i++) {
+    var sampleY = objRect.top + (i + 0.5) * sampleH;
+    var xsThis = getPolygonXIntersections(polygon, sampleY);
+    var xsOther = getPolygonXIntersections(otherPolygon, sampleY);
     if (xsThis.length < 2 || xsOther.length < 2) { continue; }
-    var seamX = overflowsRight ? xsThis[xsThis.length - 1] : xsThis[0];
-    var otherSeamX = overflowsRight ? xsOther[0] : xsOther[xsOther.length - 1];
-    var otherAvailWidth = xsOther[xsOther.length - 1] - xsOther[0];
-    var overflowWidth, clipLeft, clipWidth;
-    if (overflowsRight) {
-      overflowWidth = (objRect.left + objRect.width) - seamX;
-      clipWidth = Math.min(overflowWidth, otherAvailWidth);
-      clipLeft = otherSeamX;
-    } else {
-      overflowWidth = seamX - objRect.left;
-      clipWidth = Math.min(overflowWidth, otherAvailWidth);
-      clipLeft = otherSeamX - clipWidth;
-    }
-if (overflowWidth <= 0.5 || clipWidth <= 0.5) { continue; }
-    var localShift = otherSeamX - seamX;
-    console.log('row', i, 'y', stripCenterY.toFixed(1), 'seamX', seamX.toFixed(1), 'otherSeamX', otherSeamX.toFixed(1), 'shift', localShift.toFixed(1), 'clipLeft', clipLeft.toFixed(1), 'clipWidth', clipWidth.toFixed(1));
-
-    attempted++;
-    pending++;
-    (function(shiftAmt, cLeft, cWidth, cTop, cHeight) {
-      obj.clone(function(clone) {
-        clone.set({ left: obj.left + shiftAmt, top: obj.top });
-        clone.clipPath = new fabric.Rect({
-          left: cLeft, top: cTop, width: cWidth, height: cHeight,
-          absolutePositioned: true
-        });
-        clone.dirty = true;
-        otherCanvas.add(clone);
-        pending--;
-        if (pending === 0) {
-          otherCanvas.renderAll();
-          pushHistory(otherCanvas);
-        }
-      });
-    })(localShift, clipLeft, clipWidth, stripTop, stripH);
+    var seamXRow = overflowsRight ? xsThis[xsThis.length - 1] : xsThis[0];
+    var otherSeamXRow = overflowsRight ? xsOther[0] : xsOther[xsOther.length - 1];
+    var overflowWidthRow = overflowsRight
+      ? (objRect.left + objRect.width) - seamXRow
+      : seamXRow - objRect.left;
+    if (overflowWidthRow <= 0.5) { continue; }
+    sumShiftWeighted += (otherSeamXRow - seamXRow) * overflowWidthRow;
+    sumWeight += overflowWidthRow;
   }
 
-  if (attempted === 0) {
+  if (sumWeight === 0) {
     alert('Could not find a matching wrap area on the other side for this element.');
     return;
   }
+
+  var avgShift = sumShiftWeighted / sumWeight;
+
+  obj.clone(function(clone) {
+    clone.set({ left: obj.left + avgShift, top: obj.top });
+    clone.clipPath = makeShirtClipPath(otherCanvas);
+    clone.dirty = true;
+    otherCanvas.add(clone);
+    otherCanvas.renderAll();
+    pushHistory(otherCanvas);
+  });
 
   canvas.discardActiveObject();
   canvas.renderAll();
