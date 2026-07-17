@@ -16,14 +16,23 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 document.addEventListener('DOMContentLoaded', function() {
   var nav = document.getElementById('mainNav');
   if (!nav) { return; }
-  if (nav.querySelector('a[href="swap-sell.html"]')) { return; }
   var playersLink = nav.querySelector('a[href="players.html"]');
   if (!playersLink) { return; }
 
-  var swapLink = document.createElement('a');
-  swapLink.href = 'swap-sell.html';
-  swapLink.textContent = 'Swap / Sell';
-  playersLink.insertAdjacentElement('afterend', swapLink);
+  if (!nav.querySelector('a[href="swap-sell.html"]')) {
+    var swapLink = document.createElement('a');
+    swapLink.href = 'swap-sell.html';
+    swapLink.textContent = 'Swap / Sell';
+    playersLink.insertAdjacentElement('afterend', swapLink);
+  }
+
+  if (!nav.querySelector('a[href="shirt-builder.html"]')) {
+    var shirtLink = document.createElement('a');
+    shirtLink.href = 'shirt-builder.html';
+    shirtLink.textContent = 'Shirt Builder';
+    var swapLinkRef = nav.querySelector('a[href="swap-sell.html"]');
+    swapLinkRef.insertAdjacentElement('afterend', shirtLink);
+  }
 });
 document.addEventListener('DOMContentLoaded', function() {
   var linkWrap = document.createElement('p');
