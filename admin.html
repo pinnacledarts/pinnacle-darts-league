@@ -672,7 +672,79 @@ async function loadBugReports() {
       '</div></div>';
   }).join('');
 }
+async function loadShirtDesigns() {
+  var result = await sbClient.from('shirt_design_submissions').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
+  var container = document.getElementById('shirtDesignsList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No shirt designs submitted yet.</p>'; return; }
 
+  container.innerHTML = result.data.map(function(s) {
+    var player = s.profiles || {};
+    var name = player.full_name || player.username || 'Unknown';
+    var statusColor = s.status === 'approved' ? '#006600' : (s.status === 'rejected' ? '#cc0000' : '#888888');
+    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+      '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleShirtDesign(' + s.id + ')">' +
+      '<div><strong>' + name + '</strong><div style="color:' + statusColor + ';font-size:0.85em;text-transform:capitalize;">' + s.status + ' — ' + new Date(s.created_at).toLocaleDateString('en-GB') + '</div></div>' +
+      '<span style="color:#aaa;">▾</span>' +
+      '</div>' +
+      '<div id="shirt-detail-' + s.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
+      '<div id="shirt-detail-content-' + s.id + '" style="padding-top:12px;"></div>' +
+      '</div></div>';
+  }).join('');
+
+  window.allShirtDesignsData = result.data;
+}
+
+function toggleShirtDesign(id) {
+  var row = document.getElementById('shirt-detail-' + id);
+  var opening = row.style.display === 'none';
+  row.style.display = opening ? 'block' : 'none';
+  if (opening) { renderShirtDesignDetail(id); }
+}
+
+function renderShirtDesignDetail(id) {
+  var s = window.allShirtDesignsData.find(function(x) { return x.id === id; });
+  if (!s) { return; }
+
+  var originalImagesHtml = extractOriginalImagesHtml(s.front_design_data, 'Front') + extractOriginalImagesHtml(s.back_design_data, 'Back');
+
+  document.getElementById('shirt-detail-content-' + id).innerHTML =
+    '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;">' +
+    '<div><p style="font-weight:bold;margin:0 0 6px;">Front</p><img src="' + s.front_image_url + '" style="width:160px;border:1px solid #ddd;border-radius:6px;" /><br><a href="' + s.front_image_url + '" download target="_blank" style="font-size:0.85em;">Download Front Shirt</a></div>' +
+    '<div><p style="font-weight:bold;margin:0 0 6px;">Back</p><img src="' + s.back_image_url + '" style="width:160px;border:1px solid #ddd;border-radius:6px;" /><br><a href="' + s.back_image_url + '" download target="_blank" style="font-size:0.85em;">Download Back Shirt</a></div>' +
+    '</div>' +
+    (s.description ? '<p><strong>Notes:</strong> ' + s.description + '</p>' : '') +
+    (originalImagesHtml ? '<p style="font-weight:bold;margin:16px 0 8px;">Original Uploaded Images</p><div style="display:flex;gap:12px;flex-wrap:wrap;">' + originalImagesHtml + '</div>' : '<p style="color:#888;font-size:0.85em;">No separate logo images were used in this design.</p>') +
+    '<div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">' +
+    '<select id="shirt-status-' + id + '" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;">' +
+    '<option value="pending"' + (s.status === 'pending' ? ' selected' : '') + '>Pending</option>' +
+    '<option value="approved"' + (s.status === 'approved' ? ' selected' : '') + '>Approved</option>' +
+    '<option value="rejected"' + (s.status === 'rejected' ? ' selected' : '') + '>Rejected</option>' +
+    '</select>' +
+    '<button class="btn-small" onclick="updateShirtStatus(' + id + ')">Update Status</button>' +
+    '<button class="btn-small danger" onclick="deleteShirtDesign(' + id + ')">Delete</button>' +
+    '</div>';
+}
+
+function extractOriginalImagesHtml(designData, sideLabel) {
+  if (!designData || !designData.objects) { return ''; }
+  var images = designData.objects.filter(function(o) { return o.type === 'image'; });
+  return images.map(function(img, i) {
+    return '<div><a href="' + img.src + '" download="' + sideLabel.toLowerCase() + '-logo-' + (i + 1) + '.png" target="_blank"><img src="' + img.src + '" style="width:80px;height:80px;object-fit:contain;border:1px solid #ddd;border-radius:4px;" /></a><div style="font-size:0.75em;color:#888;text-align:center;">' + sideLabel + ' logo</div></div>';
+  }).join('');
+}
+
+async function updateShirtStatus(id) {
+  var status = document.getElementById('shirt-status-' + id).value;
+  var result = await sbClient.from('shirt_design_submissions').update({ status: status }).eq('id', id);
+  if (result.error) { alert('Error updating status: ' + result.error.message); return; }
+  loadShirtDesigns();
+}
+
+async function deleteShirtDesign(id) {
+  if (!confirm('Delete this shirt design submission?')) { return; }
+  await sbClient.from('shirt_design_submissions').delete().eq('id', id);
+  loadShirtDesigns();
+}
 async function toggleBugReport(id) {
   var row = document.getElementById('bug-detail-' + id);
   var opening = row.style.display === 'none';
@@ -2249,6 +2321,7 @@ function cancelNewsEdit(id) {
         loadLeagues();
         loadBugReports();
         loadPlayers();
+        loadShirtDesigns();
         loadPendingApprovals();
         loadAcademyLeagueSelects();
         loadSessionLog();
