@@ -216,8 +216,7 @@
       var backHistory = [];
       var suppressHistory = false;
 
-var SHIRT_PATH = 'M117,54 L86,54 L31,101 L62,148 L86,124 L86,249 L194,249 L194,124 L218,148 L249,101 L194,54 L163,54 Q140,78 117,54 Z';
-var SWATCH_COLORS = ['#000000', '#ffffff', '#cc0000', '#0044cc', '#006600', '#ffaa00', '#800080', '#888888'];
+var SHIRT_PATH = 'M117,73 L86,73 L31,120 L62,167 L86,143 L86,268 L194,268 L194,143 L218,167 L249,120 L194,73 L163,73 Q140,97 117,73 Z';var SWATCH_COLORS = ['#000000', '#ffffff', '#cc0000', '#0044cc', '#006600', '#ffaa00', '#800080', '#888888'];
 
       function buildShirtCanvas(canvasId) {
         var canvas = new fabric.Canvas(canvasId, { preserveObjectStacking: true });
@@ -295,24 +294,22 @@ var SWATCH_COLORS = ['#000000', '#ffffff', '#cc0000', '#0044cc', '#006600', '#ff
         }).join('');
       }
 
-    function addText() {
+  function addText() {
   var canvas = getActiveCanvas();
   var text = new fabric.IText('Your Text', {
-    left: 117, top: 140, fontSize: 20, fill: '#ffffff', fontFamily: 'Arial'
+    left: 117, top: 159, fontSize: 20, fill: '#ffffff', fontFamily: 'Arial'
   });
   canvas.add(text);
   canvas.setActiveObject(text);
 }
-
 function addNumber() {
   var canvas = getActiveCanvas();
   var num = new fabric.IText('7', {
-    left: 121, top: 148, fontSize: 46, fill: '#ffffff', fontFamily: 'Impact', fontWeight: 'bold'
+    left: 121, top: 167, fontSize: 46, fill: '#ffffff', fontFamily: 'Impact', fontWeight: 'bold'
   });
   canvas.add(num);
   canvas.setActiveObject(num);
 }
-
 function addLogo(event) {
   var file = event.target.files[0];
   if (!file) { return; }
@@ -320,7 +317,7 @@ function addLogo(event) {
   reader.onload = function(e) {
     fabric.Image.fromURL(e.target.result, function(img) {
       img.scaleToWidth(80);
-      img.set({ left: 117, top: 117 });
+      img.set({ left: 117, top: 136 });
       var canvas = getActiveCanvas();
       canvas.add(img);
       canvas.setActiveObject(img);
