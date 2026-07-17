@@ -117,9 +117,13 @@
               <button class="btn btn-secondary" onclick="duplicateSelected()">Duplicate</button>
               <button class="btn btn-danger" onclick="deleteSelected()">Delete Selected</button>
             </div>
-            <div class="toolbar-section">
-              <button class="btn btn-primary" onclick="submitDesign()">Submit Design</button>
-            </div>
+<div class="toolbar-section">
+  <h4>Notes for Admin</h4>
+  <textarea id="designDescription" rows="3" placeholder="Any special requests or notes..." style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;font-family:Arial, sans-serif;font-size:0.9em;"></textarea>
+</div>
+<div class="toolbar-section">
+  <button class="btn btn-primary" onclick="submitDesign()">Submit Design</button>
+</div>
           </div>
 
           <div class="canvas-area">
@@ -267,14 +271,15 @@ var SHIRT_PATH = 'M150,70 L110,70 L40,130 L80,190 L110,160 L110,320 L250,320 L25
         var frontUrl = sbClient.storage.from('shirt-designs').getPublicUrl(frontFileName).data.publicUrl;
         var backUrl = sbClient.storage.from('shirt-designs').getPublicUrl(backFileName).data.publicUrl;
 
-        var result = await sbClient.from('shirt_design_submissions').insert([{
-          player_id: currentUserId,
-          front_image_url: frontUrl,
-          back_image_url: backUrl,
-          front_design_data: frontCanvas.toJSON(),
-          back_design_data: backCanvas.toJSON(),
-          status: 'pending'
-        }]);
+var result = await sbClient.from('shirt_design_submissions').insert([{
+  player_id: currentUserId,
+  front_image_url: frontUrl,
+  back_image_url: backUrl,
+  front_design_data: frontCanvas.toJSON(),
+  back_design_data: backCanvas.toJSON(),
+  description: document.getElementById('designDescription').value.trim() || null,
+  status: 'pending'
+}]);
 
         if (result.error) { showBuilderMsg('builder-error', 'Error saving submission: ' + result.error.message); return; }
 
