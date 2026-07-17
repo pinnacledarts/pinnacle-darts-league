@@ -673,7 +673,7 @@ async function loadBugReports() {
   }).join('');
 }
 async function loadShirtDesigns() {
-  var result = await sbClient.from('shirt_design_submissions').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
+  var result = await sbClient.from('shirt_design_submissions').select('*, profiles(full_name, username, phone)').order('created_at', { ascending: false });
   var container = document.getElementById('shirtDesignsList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No shirt designs submitted yet.</p>'; return; }
 
@@ -702,13 +702,29 @@ function toggleShirtDesign(id) {
   if (opening) { renderShirtDesignDetail(id); }
 }
 
+function buildAdminWhatsAppLink(phone) {
+  if (!phone) { return null; }
+  var hasPlus = phone.trim().startsWith('+');
+  var digits = phone.replace(/[^\d]/g, '');
+  if (!digits) { return null; }
+  if (!hasPlus && digits.startsWith('0')) {
+    digits = '44' + digits.substring(1);
+  }
+  return 'https://wa.me/' + digits;
+}
+
 function renderShirtDesignDetail(id) {
   var s = window.allShirtDesignsData.find(function(x) { return x.id === id; });
   if (!s) { return; }
 
+  var player = s.profiles || {};
+  var waLink = buildAdminWhatsAppLink(player.phone);
+  var waButtonHtml = waLink ? '<a href="' + waLink + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background-color:#25D366;color:#ffffff;padding:6px 14px;border-radius:20px;font-size:0.85em;text-decoration:none;font-weight:bold;margin-bottom:12px;">💬 WhatsApp Player</a>' : '<p style="color:#888;font-size:0.85em;">No phone number on file for this player.</p>';
+
   var originalImagesHtml = extractOriginalImagesHtml(s.front_design_data, 'Front') + extractOriginalImagesHtml(s.back_design_data, 'Back');
 
   document.getElementById('shirt-detail-content-' + id).innerHTML =
+    waButtonHtml +
     '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;">' +
     '<div><p style="font-weight:bold;margin:0 0 6px;">Front</p><img src="' + s.front_image_url + '" style="width:160px;border:1px solid #ddd;border-radius:6px;" /><br><a href="' + s.front_image_url + '" download target="_blank" style="font-size:0.85em;">Download Front Shirt</a></div>' +
     '<div><p style="font-weight:bold;margin:0 0 6px;">Back</p><img src="' + s.back_image_url + '" style="width:160px;border:1px solid #ddd;border-radius:6px;" /><br><a href="' + s.back_image_url + '" download target="_blank" style="font-size:0.85em;">Download Back Shirt</a></div>' +
