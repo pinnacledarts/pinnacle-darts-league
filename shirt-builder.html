@@ -408,7 +408,8 @@ function addLogo(event) {
         });
       }
 var RAW_SHIRT_LEFT = 31;
-var RAW_SHIRT_POLYGON = [[117,73],[86,73],[31,120],[62,167],[86,143],[86,268],[194,268],[194,143],[218,167],[249,120],[194,73],[163,73]];
+var RAW_SHIRT_TOP = 73;
+      var RAW_SHIRT_POLYGON = [[117,73],[86,73],[31,120],[62,167],[86,143],[86,268],[194,268],[194,143],[218,167],[249,120],[194,73],[163,73]];
 
 function pointInPolygon(x, y, polygon) {
   var inside = false;
@@ -423,16 +424,16 @@ function pointInPolygon(x, y, polygon) {
 
 function getShiftedPolygon(canvas) {
   var shirtRect = canvas.shirtShape.getBoundingRect();
-  var shift = shirtRect.left - RAW_SHIRT_LEFT;
-  return RAW_SHIRT_POLYGON.map(function(p) { return [p[0] + shift, p[1]]; });
+  var shiftX = shirtRect.left - RAW_SHIRT_LEFT;
+  var shiftY = shirtRect.top - RAW_SHIRT_TOP;
+  return RAW_SHIRT_POLYGON.map(function(p) { return [p[0] + shiftX, p[1] + shiftY]; });
 }
 
 function makeShirtClipPath(canvas) {
   var shirtRect = canvas.shirtShape.getBoundingRect();
-  var shift = shirtRect.left - RAW_SHIRT_LEFT;
-  return new fabric.Path(SHIRT_PATH, {
-    left: shift, top: 0, absolutePositioned: true
-  });
+  var clip = new fabric.Path(SHIRT_PATH, { absolutePositioned: true });
+  clip.set({ left: shirtRect.left, top: shirtRect.top });
+  return clip;
 }
 
 function splitAtEdge() {
