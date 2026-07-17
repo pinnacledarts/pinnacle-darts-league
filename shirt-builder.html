@@ -30,7 +30,7 @@
       main { padding: 40px; max-width: 1000px; margin: 0 auto; }
       h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; }
       .builder-layout { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
-      .toolbar { flex: 0 0 240px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; }
+      .toolbar { flex: 0 0 260px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; }
       .toolbar h4 { margin: 0 0 12px; font-size: 0.95em; padding-left: 10px; border-left: 3px solid #000000; }
       .toolbar-section { margin-bottom: 20px; }
       .btn { display: block; width: 100%; padding: 10px; border: none; border-radius: 4px; font-size: 0.9em; cursor: pointer; font-family: Arial, sans-serif; margin-bottom: 8px; }
@@ -40,7 +40,14 @@
       .btn-secondary:hover { background-color: #eeeeee; }
       .btn-danger { background-color: #ffffff; color: #cc0000; border: 1px solid #cc0000; }
       .btn-danger:hover { background-color: #fff0f0; }
-      input[type="color"] { width: 100%; height: 40px; border: 1px solid #dddddd; border-radius: 4px; cursor: pointer; margin-bottom: 8px; }
+      .btn-row { display: flex; gap: 6px; margin-bottom: 8px; }
+      .btn-row .btn { margin-bottom: 0; }
+      .btn-icon { flex: 1; padding: 8px; font-size: 0.85em; }
+      .btn-icon.active { background-color: #000000; color: #ffffff; }
+      input[type="color"] { width: 100%; height: 36px; border: 1px solid #dddddd; border-radius: 4px; cursor: pointer; margin-bottom: 8px; }
+      .swatches { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+      .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 0 0 1px #dddddd; cursor: pointer; }
+      select, textarea { width: 100%; padding: 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; font-family: Arial, sans-serif; margin-bottom: 8px; }
       .canvas-area { flex: 1; min-width: 300px; }
       .side-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
       .side-tab { padding: 10px 24px; cursor: pointer; font-size: 0.95em; border: 1px solid #dddddd; background: #ffffff; color: #555555; border-radius: 4px 4px 0 0; }
@@ -101,29 +108,74 @@
             <div class="toolbar-section">
               <h4>Shirt Colour</h4>
               <input type="color" id="shirtColor" value="#1a1a1a" onchange="setShirtColor(this.value)" />
+              <div class="swatches" id="shirtSwatches"></div>
             </div>
+
             <div class="toolbar-section">
               <h4>Add Elements</h4>
               <button class="btn btn-secondary" onclick="addText()">+ Add Text</button>
+              <button class="btn btn-secondary" onclick="addNumber()">+ Add Number</button>
               <label class="btn btn-secondary" style="text-align:center;cursor:pointer;">
                 + Add Logo / Image
                 <input type="file" id="logoUpload" accept="image/*" style="display:none;" onchange="addLogo(event)" />
               </label>
             </div>
+
+            <div class="toolbar-section" id="textStylingSection" style="display:none;">
+              <h4>Text Styling</h4>
+              <select id="fontFamilySelect" onchange="applyTextStyle()">
+                <option value="Arial">Arial</option>
+                <option value="Georgia">Georgia</option>
+                <option value="Impact">Impact</option>
+                <option value="Courier New">Courier New</option>
+                <option value="Verdana">Verdana</option>
+                <option value="Times New Roman">Times New Roman</option>
+              </select>
+              <div class="btn-row">
+                <button class="btn btn-secondary btn-icon" id="boldBtn" onclick="toggleBold()"><b>B</b></button>
+                <button class="btn btn-secondary btn-icon" id="italicBtn" onclick="toggleItalic()"><i>I</i></button>
+              </div>
+              <input type="color" id="textColor" value="#ffffff" onchange="applyTextStyle()" />
+              <input type="number" id="textSize" value="24" min="8" max="120" onchange="applyTextStyle()" placeholder="Font size" />
+            </div>
+
             <div class="toolbar-section">
               <h4>Selected Element</h4>
-              <button class="btn btn-secondary" onclick="bringForward()">Bring Forward</button>
-              <button class="btn btn-secondary" onclick="sendBackward()">Send Backward</button>
+              <div class="btn-row">
+                <button class="btn btn-secondary btn-icon" onclick="bringForward()">Forward</button>
+                <button class="btn btn-secondary btn-icon" onclick="sendBackward()">Backward</button>
+              </div>
               <button class="btn btn-secondary" onclick="duplicateSelected()">Duplicate</button>
+              <button class="btn btn-secondary" onclick="copyToOtherSide()">Copy to Other Side</button>
               <button class="btn btn-danger" onclick="deleteSelected()">Delete Selected</button>
             </div>
-<div class="toolbar-section">
-  <h4>Notes for Admin</h4>
-  <textarea id="designDescription" rows="3" placeholder="Any special requests or notes..." style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;font-family:Arial, sans-serif;font-size:0.9em;"></textarea>
-</div>
-<div class="toolbar-section">
-  <button class="btn btn-primary" onclick="submitDesign()">Submit Design</button>
-</div>
+
+            <div class="toolbar-section">
+              <div class="btn-row">
+                <button class="btn btn-secondary btn-icon" onclick="undoAction()">↺ Undo</button>
+                <button class="btn btn-danger btn-icon" onclick="clearCanvas()">Clear Side</button>
+              </div>
+            </div>
+
+            <div class="toolbar-section">
+              <h4>Shirt Size</h4>
+              <select id="shirtSize">
+                <option value="S">Small</option>
+                <option value="M" selected>Medium</option>
+                <option value="L">Large</option>
+                <option value="XL">X-Large</option>
+                <option value="XXL">XX-Large</option>
+              </select>
+            </div>
+
+            <div class="toolbar-section">
+              <h4>Notes for Admin</h4>
+              <textarea id="designDescription" rows="3" placeholder="Any special requests or notes..."></textarea>
+            </div>
+
+            <div class="toolbar-section">
+              <button class="btn btn-primary" onclick="submitDesign()">Submit Design</button>
+            </div>
           </div>
 
           <div class="canvas-area">
@@ -150,20 +202,60 @@
       var currentUserId = null;
       var currentSide = 'front';
       var frontCanvas, backCanvas;
+      var frontHistory = [];
+      var backHistory = [];
+      var suppressHistory = false;
 
-var SHIRT_PATH = 'M150,70 L110,70 L40,130 L80,190 L110,160 L110,320 L250,320 L250,160 L280,190 L320,130 L250,70 L210,70 Q180,100 150,70 Z';
+      var SHIRT_PATH = 'M150,70 L110,70 L40,130 L80,190 L110,160 L110,320 L250,320 L250,160 L280,190 L320,130 L250,70 L210,70 Q180,100 150,70 Z';
+      var SWATCH_COLORS = ['#000000', '#ffffff', '#cc0000', '#0044cc', '#006600', '#ffaa00', '#800080', '#888888'];
+
       function buildShirtCanvas(canvasId) {
         var canvas = new fabric.Canvas(canvasId, { preserveObjectStacking: true });
         var shirt = new fabric.Path(SHIRT_PATH, {
-          left: 0, top: 0, fill: '#1a1a1a', selectable: false, evented: false,
-          scaleX: 1, scaleY: 1
+          left: 0, top: 0, fill: '#1a1a1a', selectable: false, evented: false
         });
         canvas.add(shirt);
         canvas.shirtShape = shirt;
         canvas.on('object:added', function(e) {
           if (e.target !== shirt) { shirt.sendToBack(); }
+          pushHistory(canvas);
+        });
+        canvas.on('object:modified', function() { pushHistory(canvas); });
+        canvas.on('object:removed', function() { pushHistory(canvas); });
+        canvas.on('selection:created', updateTextStylingPanel);
+        canvas.on('selection:updated', updateTextStylingPanel);
+        canvas.on('selection:cleared', function() {
+          document.getElementById('textStylingSection').style.display = 'none';
         });
         return canvas;
+      }
+
+      function pushHistory(canvas) {
+        if (suppressHistory) { return; }
+        var history = canvas === frontCanvas ? frontHistory : backHistory;
+        history.push(JSON.stringify(canvas.toJSON()));
+        if (history.length > 20) { history.shift(); }
+      }
+
+      function undoAction() {
+        var canvas = getActiveCanvas();
+        var history = canvas === frontCanvas ? frontHistory : backHistory;
+        if (history.length < 2) { return; }
+        history.pop();
+        var prevState = history[history.length - 1];
+        suppressHistory = true;
+        canvas.loadFromJSON(prevState, function() {
+          canvas.renderAll();
+          canvas.shirtShape = canvas.getObjects().find(function(o) { return o.type === 'path'; });
+          suppressHistory = false;
+        });
+      }
+
+      function clearCanvas() {
+        if (!confirm('Clear everything on this side?')) { return; }
+        var canvas = getActiveCanvas();
+        var toRemove = canvas.getObjects().filter(function(o) { return o !== canvas.shirtShape; });
+        toRemove.forEach(function(o) { canvas.remove(o); });
       }
 
       function switchSide(side) {
@@ -172,6 +264,7 @@ var SHIRT_PATH = 'M150,70 L110,70 L40,130 L80,190 L110,160 L110,320 L250,320 L25
         document.getElementById('backTab').classList.toggle('active', side === 'back');
         document.getElementById('frontPanel').classList.toggle('active', side === 'front');
         document.getElementById('backPanel').classList.toggle('active', side === 'back');
+        document.getElementById('textStylingSection').style.display = 'none';
       }
 
       function getActiveCanvas() {
@@ -185,6 +278,13 @@ var SHIRT_PATH = 'M150,70 L110,70 L40,130 L80,190 L110,160 L110,320 L250,320 L25
         backCanvas.renderAll();
       }
 
+      function buildSwatches() {
+        var container = document.getElementById('shirtSwatches');
+        container.innerHTML = SWATCH_COLORS.map(function(c) {
+          return '<div class="swatch" style="background-color:' + c + ';" onclick="document.getElementById(\'shirtColor\').value=\'' + c + '\';setShirtColor(\'' + c + '\');"></div>';
+        }).join('');
+      }
+
       function addText() {
         var canvas = getActiveCanvas();
         var text = new fabric.IText('Your Text', {
@@ -192,6 +292,15 @@ var SHIRT_PATH = 'M150,70 L110,70 L40,130 L80,190 L110,160 L110,320 L250,320 L25
         });
         canvas.add(text);
         canvas.setActiveObject(text);
+      }
+
+      function addNumber() {
+        var canvas = getActiveCanvas();
+        var num = new fabric.IText('7', {
+          left: 155, top: 190, fontSize: 60, fill: '#ffffff', fontFamily: 'Impact', fontWeight: 'bold'
+        });
+        canvas.add(num);
+        canvas.setActiveObject(num);
       }
 
       function addLogo(event) {
@@ -211,6 +320,57 @@ var SHIRT_PATH = 'M150,70 L110,70 L40,130 L80,190 L110,160 L110,320 L250,320 L25
         event.target.value = '';
       }
 
+      function updateTextStylingPanel() {
+        var canvas = getActiveCanvas();
+        var obj = canvas.getActiveObject();
+        var panel = document.getElementById('textStylingSection');
+        if (obj && (obj.type === 'i-text' || obj.type === 'text')) {
+          panel.style.display = 'block';
+          document.getElementById('fontFamilySelect').value = obj.fontFamily || 'Arial';
+          document.getElementById('textColor').value = obj.fill || '#ffffff';
+          document.getElementById('textSize').value = obj.fontSize || 24;
+          document.getElementById('boldBtn').classList.toggle('active', obj.fontWeight === 'bold');
+          document.getElementById('italicBtn').classList.toggle('active', obj.fontStyle === 'italic');
+        } else {
+          panel.style.display = 'none';
+        }
+      }
+
+      function applyTextStyle() {
+        var canvas = getActiveCanvas();
+        var obj = canvas.getActiveObject();
+        if (!obj || (obj.type !== 'i-text' && obj.type !== 'text')) { return; }
+        obj.set({
+          fontFamily: document.getElementById('fontFamilySelect').value,
+          fill: document.getElementById('textColor').value,
+          fontSize: parseInt(document.getElementById('textSize').value) || 24
+        });
+        canvas.renderAll();
+        pushHistory(canvas);
+      }
+
+      function toggleBold() {
+        var canvas = getActiveCanvas();
+        var obj = canvas.getActiveObject();
+        if (!obj || (obj.type !== 'i-text' && obj.type !== 'text')) { return; }
+        var isBold = obj.fontWeight === 'bold';
+        obj.set('fontWeight', isBold ? 'normal' : 'bold');
+        canvas.renderAll();
+        document.getElementById('boldBtn').classList.toggle('active', !isBold);
+        pushHistory(canvas);
+      }
+
+      function toggleItalic() {
+        var canvas = getActiveCanvas();
+        var obj = canvas.getActiveObject();
+        if (!obj || (obj.type !== 'i-text' && obj.type !== 'text')) { return; }
+        var isItalic = obj.fontStyle === 'italic';
+        obj.set('fontStyle', isItalic ? 'normal' : 'italic');
+        canvas.renderAll();
+        document.getElementById('italicBtn').classList.toggle('active', !isItalic);
+        pushHistory(canvas);
+      }
+
       function deleteSelected() {
         var canvas = getActiveCanvas();
         var obj = canvas.getActiveObject();
@@ -228,6 +388,17 @@ var SHIRT_PATH = 'M150,70 L110,70 L40,130 L80,190 L110,160 L110,320 L250,320 L25
         });
       }
 
+      function copyToOtherSide() {
+        var sourceCanvas = getActiveCanvas();
+        var targetCanvas = sourceCanvas === frontCanvas ? backCanvas : frontCanvas;
+        var obj = sourceCanvas.getActiveObject();
+        if (!obj || obj === sourceCanvas.shirtShape) { return; }
+        obj.clone(function(cloned) {
+          targetCanvas.add(cloned);
+          targetCanvas.setActiveObject(cloned);
+        });
+      }
+
       function bringForward() {
         var canvas = getActiveCanvas();
         var obj = canvas.getActiveObject();
@@ -242,6 +413,24 @@ var SHIRT_PATH = 'M150,70 L110,70 L40,130 L80,190 L110,160 L110,320 L250,320 L25
           canvas.shirtShape.sendToBack();
         }
       }
+
+      document.addEventListener('keydown', function(e) {
+        if (!frontCanvas || !backCanvas) { return; }
+        var active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) { return; }
+        var canvas = getActiveCanvas();
+        var obj = canvas.getActiveObject();
+        if (!obj || obj === canvas.shirtShape) { return; }
+        if (obj.isEditing) { return; }
+
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+          e.preventDefault();
+          canvas.remove(obj);
+        } else if (e.key === 'ArrowUp') { e.preventDefault(); obj.top -= 2; canvas.renderAll(); }
+        else if (e.key === 'ArrowDown') { e.preventDefault(); obj.top += 2; canvas.renderAll(); }
+        else if (e.key === 'ArrowLeft') { e.preventDefault(); obj.left -= 2; canvas.renderAll(); }
+        else if (e.key === 'ArrowRight') { e.preventDefault(); obj.left += 2; canvas.renderAll(); }
+      });
 
       async function submitDesign() {
         if (!currentUserId) { window.location.href = 'login.html'; return; }
@@ -271,15 +460,15 @@ var SHIRT_PATH = 'M150,70 L110,70 L40,130 L80,190 L110,160 L110,320 L250,320 L25
         var frontUrl = sbClient.storage.from('shirt-designs').getPublicUrl(frontFileName).data.publicUrl;
         var backUrl = sbClient.storage.from('shirt-designs').getPublicUrl(backFileName).data.publicUrl;
 
-var result = await sbClient.from('shirt_design_submissions').insert([{
-  player_id: currentUserId,
-  front_image_url: frontUrl,
-  back_image_url: backUrl,
-  front_design_data: frontCanvas.toJSON(),
-  back_design_data: backCanvas.toJSON(),
-  description: document.getElementById('designDescription').value.trim() || null,
-  status: 'pending'
-}]);
+        var result = await sbClient.from('shirt_design_submissions').insert([{
+          player_id: currentUserId,
+          front_image_url: frontUrl,
+          back_image_url: backUrl,
+          front_design_data: frontCanvas.toJSON(),
+          back_design_data: backCanvas.toJSON(),
+          description: (document.getElementById('designDescription').value.trim() || '') + ' [Size: ' + document.getElementById('shirtSize').value + ']',
+          status: 'pending'
+        }]);
 
         if (result.error) { showBuilderMsg('builder-error', 'Error saving submission: ' + result.error.message); return; }
 
@@ -306,6 +495,7 @@ var result = await sbClient.from('shirt_design_submissions').insert([{
         currentUserId = session.user.id;
         document.getElementById('builderContent').style.display = 'block';
 
+        buildSwatches();
         frontCanvas = buildShirtCanvas('frontCanvas');
         backCanvas = buildShirtCanvas('backCanvas');
       });
