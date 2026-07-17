@@ -422,8 +422,20 @@ function pointInPolygon(x, y, polygon) {
   return inside;
 }
 
-function getShiftedPolygon(canvas) {
-  var shirtRect = canvas.shirtShape.getBoundingRect();
+function getPolygonXIntersections(polygon, y) {
+  var xs = [];
+  for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    var xi = polygon[i][0], yi = polygon[i][1];
+    var xj = polygon[j][0], yj = polygon[j][1];
+    if ((yi <= y && yj > y) || (yj <= y && yi > y)) {
+      xs.push(xi + (y - yi) * (xj - xi) / (yj - yi));
+    }
+  }
+  xs.sort(function(a, b) { return a - b; });
+  return xs;
+}
+function getShiftedPolygon(canvas) 
+{  var shirtRect = canvas.shirtShape.getBoundingRect();
   var shiftX = shirtRect.left - RAW_SHIRT_LEFT;
   var shiftY = shirtRect.top - RAW_SHIRT_TOP;
   return RAW_SHIRT_POLYGON.map(function(p) { return [p[0] + shiftX, p[1] + shiftY]; });
@@ -458,13 +470,15 @@ function splitAtEdge() {
   }
 
 var shirtRect = canvas.shirtShape.getBoundingRect();
-  var otherShirtRect = otherCanvas.shirtShape.getBoundingRect();
   var objCenterX = objRect.left + objRect.width / 2;
+  var objCenterY = objRect.top + objRect.height / 2;
   var overflowsRight = objCenterX > (shirtRect.left + shirtRect.width / 2);
-  var seamX = overflowsRight ? shirtRect.left + shirtRect.width : shirtRect.left;
-  var otherSeamX = overflowsRight ? otherShirtRect.left : otherShirtRect.left + otherShirtRect.width;
-  var newRectLeft = seamX + otherSeamX - (objRect.left + objRect.width);
-  var deltaLeft = newRectLeft - objRect.left;
+  var otherPolygon = getShiftedPolygon(otherCanvas);
+  var xsThisSide = getPolygonXIntersections(polygon, objCenterY);
+  var xsOtherSide = getPolygonXIntersections(otherPolygon, objCenterY);
+  var seamX = overflowsRight ? xsThisSide[xsThisSide.length - 1] : xsThisSide[0];
+  var otherSeamX = overflowsRight ? xsOtherSide[0] : xsOtherSide[xsOtherSide.length - 1];
+  var deltaLeft = otherSeamX - seamX;
   obj.clipPath = makeShirtClipPath(canvas);
   obj.dirty = true;
   obj.clone(function(clone) {
