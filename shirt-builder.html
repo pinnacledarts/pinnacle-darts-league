@@ -462,8 +462,9 @@ function splitAtEdge() {
       clipWidth = Math.min(overflowWidth, otherAvailWidth);
       clipLeft = otherSeamX - clipWidth;
     }
-    if (overflowWidth <= 0.5 || clipWidth <= 0.5) { continue; }
+if (overflowWidth <= 0.5 || clipWidth <= 0.5) { continue; }
     var localShift = otherSeamX - seamX;
+    console.log('row', i, 'y', stripCenterY.toFixed(1), 'seamX', seamX.toFixed(1), 'otherSeamX', otherSeamX.toFixed(1), 'shift', localShift.toFixed(1), 'clipLeft', clipLeft.toFixed(1), 'clipWidth', clipWidth.toFixed(1));
 
     attempted++;
     pending++;
