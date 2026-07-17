@@ -407,56 +407,70 @@ function addLogo(event) {
           targetCanvas.setActiveObject(cloned);
         });
       }
+var RAW_SHIRT_LEFT = 31;
+var RAW_SHIRT_POLYGON = [[117,73],[86,73],[31,120],[62,167],[86,143],[86,268],[194,268],[194,143],[218,167],[249,120],[194,73],[163,73]];
+
+function pointInPolygon(x, y, polygon) {
+  var inside = false;
+  for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    var xi = polygon[i][0], yi = polygon[i][1];
+    var xj = polygon[j][0], yj = polygon[j][1];
+    var intersect = ((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+    if (intersect) { inside = !inside; }
+  }
+  return inside;
+}
+
+function getShiftedPolygon(canvas) {
+  var shirtRect = canvas.shirtShape.getBoundingRect();
+  var shift = shirtRect.left - RAW_SHIRT_LEFT;
+  return RAW_SHIRT_POLYGON.map(function(p) { return [p[0] + shift, p[1]]; });
+}
+
+function makeShirtClipPath(canvas) {
+  var shirtRect = canvas.shirtShape.getBoundingRect();
+  var shift = shirtRect.left - RAW_SHIRT_LEFT;
+  return new fabric.Path(SHIRT_PATH, {
+    left: shift, top: 0, absolutePositioned: true
+  });
+}
+
 function splitAtEdge() {
   var canvas = getActiveCanvas();
   var otherCanvas = canvas === frontCanvas ? backCanvas : frontCanvas;
   var obj = canvas.getActiveObject();
   if (!obj || obj === canvas.shirtShape) { alert('Select an element first.'); return; }
 
-  var RAW_SHIRT_LEFT = 31;
-  var RAW_TORSO_LEFT = 86;
-  var RAW_TORSO_RIGHT = 194;
-
-  var shirtRect = canvas.shirtShape.getBoundingRect();
-  var shift = shirtRect.left - RAW_SHIRT_LEFT;
-  var shirtLeft = RAW_TORSO_LEFT + shift;
-  var shirtRight = RAW_TORSO_RIGHT + shift;
-
+  var polygon = getShiftedPolygon(canvas);
   var objRect = obj.getBoundingRect();
-  var objLeft = objRect.left;
-  var objRight = objRect.left + objRect.width;
+  var corners = [
+    [objRect.left, objRect.top],
+    [objRect.left + objRect.width, objRect.top],
+    [objRect.left, objRect.top + objRect.height],
+    [objRect.left + objRect.width, objRect.top + objRect.height]
+  ];
+  var allInside = corners.every(function(c) { return pointInPolygon(c[0], c[1], polygon); });
 
-  var overflowsRight = objRight > shirtRight;
-  var overflowsLeft = objLeft < shirtLeft;
-
-  if (!overflowsRight && !overflowsLeft) {
+  if (allInside) {
     alert('This element is fully inside the shirt outline on this side — nothing to split.');
     return;
   }
 
-var otherShirtRect = otherCanvas.shirtShape.getBoundingRect();
-var otherShift = otherShirtRect.left - RAW_SHIRT_LEFT;
-var otherShirtLeft = RAW_TORSO_LEFT + otherShift;
-var otherShirtRight = RAW_TORSO_RIGHT + otherShift;
+  var shirtRect = canvas.shirtShape.getBoundingRect();
+  var otherShirtRect = otherCanvas.shirtShape.getBoundingRect();
 
-var frontClip = new fabric.Rect({
-  left: shirtLeft, top: -1000, width: shirtRight - shirtLeft, height: 3000,
-  absolutePositioned: true
-});
-  obj.clipPath = frontClip;
-  obj.dirty = true;
-
-  var seamX = overflowsRight ? shirtRight : shirtLeft;
-  var otherSeamX = overflowsRight ? otherShirtLeft : otherShirtRight;
+  var objCenterX = objRect.left + objRect.width / 2;
+  var overflowsRight = objCenterX > (shirtRect.left + shirtRect.width / 2);
+  var seamX = overflowsRight ? shirtRect.left + shirtRect.width : shirtRect.left;
+  var otherSeamX = overflowsRight ? otherShirtRect.left : otherShirtRect.left + otherShirtRect.width;
   var shift = otherSeamX - seamX;
+
+  obj.clipPath = makeShirtClipPath(canvas);
+  obj.dirty = true;
 
   obj.clone(function(clone) {
     clone.set({ left: obj.left + shift, top: obj.top });
-var backClip = new fabric.Rect({
-  left: otherShirtLeft, top: -1000, width: otherShirtRight - otherShirtLeft, height: 3000,
-  absolutePositioned: true
-});
-    clone.clipPath = backClip;
+    clone.clipPath = makeShirtClipPath(otherCanvas);
     clone.dirty = true;
     otherCanvas.add(clone);
     otherCanvas.renderAll();
