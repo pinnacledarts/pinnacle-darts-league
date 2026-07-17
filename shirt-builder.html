@@ -218,13 +218,14 @@
 
 var SHIRT_PATH = 'M117,73 L86,73 L31,120 L62,167 L86,143 L86,268 L194,268 L194,143 L218,167 L249,120 L194,73 L163,73 Q140,97 117,73 Z';var SWATCH_COLORS = ['#000000', '#ffffff', '#cc0000', '#0044cc', '#006600', '#ffaa00', '#800080', '#888888'];
 
-      function buildShirtCanvas(canvasId) {
-        var canvas = new fabric.Canvas(canvasId, { preserveObjectStacking: true });
-        var shirt = new fabric.Path(SHIRT_PATH, {
-          left: 0, top: 0, fill: '#1a1a1a', selectable: false, evented: false
-        });
-        canvas.add(shirt);
-        canvas.shirtShape = shirt;
+function buildShirtCanvas(canvasId) {
+  var canvas = new fabric.Canvas(canvasId, { preserveObjectStacking: true });
+  var shirt = new fabric.Path(SHIRT_PATH, {
+    fill: '#1a1a1a', selectable: false, evented: false
+  });
+  canvas.add(shirt);
+  canvas.centerObject(shirt);
+  canvas.shirtShape = shirt;
         canvas.on('object:added', function(e) {
           if (e.target !== shirt) { shirt.sendToBack(); }
           pushHistory(canvas);
