@@ -466,15 +466,17 @@ function splitAtEdge() {
   var otherSeamX = overflowsRight ? otherShirtRect.left : otherShirtRect.left + otherShirtRect.width;
   var shift = otherSeamX - seamX;
 
-  obj.clipPath = makeShirtClipPath(canvas);
+obj.clipPath = makeShirtClipPath(canvas);
   obj.dirty = true;
-
+  console.log('shirtRect', shirtRect, 'otherShirtRect', otherShirtRect, 'seamX', seamX, 'otherSeamX', otherSeamX, 'shift', shift, 'obj.left/top', obj.left, obj.top);
   obj.clone(function(clone) {
     clone.set({ left: obj.left + shift, top: obj.top });
     clone.clipPath = makeShirtClipPath(otherCanvas);
     clone.dirty = true;
+    console.log('clone.left/top', clone.left, clone.top, 'clone bbox', clone.getBoundingRect(), 'clip left/top', clone.clipPath.left, clone.clipPath.top);
     otherCanvas.add(clone);
     otherCanvas.renderAll();
+    console.log('otherCanvas objects after add', otherCanvas.getObjects().length);
     pushHistory(otherCanvas);
   });
 
