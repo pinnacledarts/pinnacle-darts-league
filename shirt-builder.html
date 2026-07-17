@@ -52,8 +52,9 @@
       .side-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
       .side-tab { padding: 10px 24px; cursor: pointer; font-size: 0.95em; border: 1px solid #dddddd; background: #ffffff; color: #555555; border-radius: 4px 4px 0 0; }
       .side-tab.active { background: #000000; color: #ffffff; border-color: #000000; }
-.canvas-wrap { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 0 8px 8px 8px; padding: 20px; width: fit-content; max-width: 100%; margin: 0 auto; box-sizing: border-box; }
-.zoom-controls { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+.canvas-wrap { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 0 8px 8px 8px; width: 100%; max-width: 340px; height: 400px; margin: 0 auto; display: flex; align-items: center; justify-content: center; overflow: hidden; box-sizing: border-box; }
+.canvas-panel { display: none; }
+.canvas-panel.active { display: flex; align-items: center; justify-content: center; }.zoom-controls { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
 .zoom-controls button { padding: 6px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 4px; cursor: pointer; font-size: 1em; }      .canvas-panel { display: none; }
       .canvas-panel.active { display: block; }
       .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
