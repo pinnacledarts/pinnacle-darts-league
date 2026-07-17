@@ -471,11 +471,12 @@ function splitAtEdge() {
 
 var shirtRect = canvas.shirtShape.getBoundingRect();
   var objCenterX = objRect.left + objRect.width / 2;
-  var objCenterY = objRect.top + objRect.height / 2;
+  var outsideCorners = corners.filter(function(c) { return !pointInPolygon(c[0], c[1], polygon); });
+  var seamY = outsideCorners.reduce(function(sum, c) { return sum + c[1]; }, 0) / outsideCorners.length;
   var overflowsRight = objCenterX > (shirtRect.left + shirtRect.width / 2);
   var otherPolygon = getShiftedPolygon(otherCanvas);
-  var xsThisSide = getPolygonXIntersections(polygon, objCenterY);
-  var xsOtherSide = getPolygonXIntersections(otherPolygon, objCenterY);
+  var xsThisSide = getPolygonXIntersections(polygon, seamY);
+  var xsOtherSide = getPolygonXIntersections(otherPolygon, seamY);
   var seamX = overflowsRight ? xsThisSide[xsThisSide.length - 1] : xsThisSide[0];
   var otherSeamX = overflowsRight ? xsOtherSide[0] : xsOtherSide[xsOtherSide.length - 1];
   var deltaLeft = otherSeamX - seamX;
