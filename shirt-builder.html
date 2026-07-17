@@ -73,7 +73,6 @@
     </style>
   </head>
   <body>
-
     <header>
       <img src="logo.png" alt="Pinnacle Darts Logo">
       <div>
@@ -92,19 +91,15 @@
         <div id="authButtons" style="padding:14px 24px;"></div>
       </nav>
     </header>
-
     <main>
       <h2>Shirt Builder</h2>
-
       <div id="loggedOutMsg" class="loading-overlay" style="display:none;">
         <p>Please <a href="login.html">log in</a> to design and submit a shirt.</p>
       </div>
-
       <div id="builderContent" style="display:none;">
         <div class="success-msg" id="builder-success"></div>
         <div class="error-msg" id="builder-error"></div>
         <p style="color:#666;">Design your shirt, then submit it for the admin team to review.</p>
-
         <div class="builder-layout">
           <div class="toolbar">
             <div class="toolbar-section">
@@ -112,7 +107,6 @@
               <input type="color" id="shirtColor" value="#1a1a1a" onchange="setShirtColor(this.value)" />
               <div class="swatches" id="shirtSwatches"></div>
             </div>
-
             <div class="toolbar-section">
               <h4>Add Elements</h4>
               <button class="btn btn-secondary" onclick="addText()">+ Add Text</button>
@@ -122,7 +116,6 @@
                 <input type="file" id="logoUpload" accept="image/*" style="display:none;" onchange="addLogo(event)" />
               </label>
             </div>
-
             <div class="toolbar-section" id="textStylingSection" style="display:none;">
               <h4>Text Styling</h4>
               <select id="fontFamilySelect" onchange="applyTextStyle()">
@@ -140,7 +133,6 @@
               <input type="color" id="textColor" value="#ffffff" onchange="applyTextStyle()" />
               <input type="number" id="textSize" value="24" min="8" max="120" onchange="applyTextStyle()" placeholder="Font size" />
             </div>
-
             <div class="toolbar-section">
               <h4>Selected Element</h4>
               <div class="btn-row">
@@ -152,14 +144,12 @@
 <button class="btn btn-secondary" onclick="splitAtEdge()">Split at Edge (Wrap)</button>
 <button class="btn btn-danger" onmousedown="event.preventDefault();" onclick="deleteSelected()">Delete Selected</button>
             </div>
-
             <div class="toolbar-section">
               <div class="btn-row">
                 <button class="btn btn-secondary btn-icon" onclick="undoAction()">↺ Undo</button>
                 <button class="btn btn-danger btn-icon" onclick="clearCanvas()">Clear Side</button>
               </div>
             </div>
-
             <div class="toolbar-section">
               <h4>Shirt Size</h4>
 <select id="shirtSize">
@@ -173,17 +163,14 @@
   <option value="XXXXXL">5XL</option>
 </select>
             </div>
-
             <div class="toolbar-section">
               <h4>Notes for Admin</h4>
               <textarea id="designDescription" rows="3" placeholder="Any special requests or notes..."></textarea>
             </div>
-
             <div class="toolbar-section">
               <button class="btn btn-primary" onclick="submitDesign()">Submit Design</button>
             </div>
           </div>
-
           <div class="canvas-area">
             <div class="side-tabs">
               <button class="side-tab active" id="frontTab" onclick="switchSide('front')">Front</button>
@@ -205,10 +192,8 @@
           </div>
         </div>
       </div>
-
       <p style="text-align:center;margin-top:30px;"><a href="terms.html" style="color:#555;font-size:0.9em;">View Terms & Conditions →</a></p>
     </main>
-
     <script>
       var currentUserId = null;
       var currentSide = 'front';
@@ -216,9 +201,7 @@
       var frontHistory = [];
       var backHistory = [];
       var suppressHistory = false;
-
 var SHIRT_PATH = 'M117,73 L86,73 L31,120 L62,167 L86,143 L86,268 L194,268 L194,143 L218,167 L249,120 L194,73 L163,73 Q140,97 117,73 Z';var SWATCH_COLORS = ['#000000', '#ffffff', '#cc0000', '#0044cc', '#006600', '#ffaa00', '#800080', '#888888'];
-
 function buildShirtCanvas(canvasId) {
   var canvas = new fabric.Canvas(canvasId, { preserveObjectStacking: true });
   var shirt = new fabric.Path(SHIRT_PATH, {
@@ -240,14 +223,12 @@ function buildShirtCanvas(canvasId) {
         });
         return canvas;
       }
-
       function pushHistory(canvas) {
         if (suppressHistory) { return; }
         var history = canvas === frontCanvas ? frontHistory : backHistory;
         history.push(JSON.stringify(canvas.toJSON()));
         if (history.length > 20) { history.shift(); }
       }
-
       function undoAction() {
         var canvas = getActiveCanvas();
         var history = canvas === frontCanvas ? frontHistory : backHistory;
@@ -261,14 +242,12 @@ function buildShirtCanvas(canvasId) {
           suppressHistory = false;
         });
       }
-
       function clearCanvas() {
         if (!confirm('Clear everything on this side?')) { return; }
         var canvas = getActiveCanvas();
         var toRemove = canvas.getObjects().filter(function(o) { return o !== canvas.shirtShape; });
         toRemove.forEach(function(o) { canvas.remove(o); });
       }
-
       function switchSide(side) {
         currentSide = side;
         document.getElementById('frontTab').classList.toggle('active', side === 'front');
@@ -277,25 +256,21 @@ function buildShirtCanvas(canvasId) {
         document.getElementById('backPanel').classList.toggle('active', side === 'back');
         document.getElementById('textStylingSection').style.display = 'none';
       }
-
       function getActiveCanvas() {
         return currentSide === 'front' ? frontCanvas : backCanvas;
       }
-
       function setShirtColor(color) {
         frontCanvas.shirtShape.set('fill', color);
         backCanvas.shirtShape.set('fill', color);
         frontCanvas.renderAll();
         backCanvas.renderAll();
       }
-
       function buildSwatches() {
         var container = document.getElementById('shirtSwatches');
         container.innerHTML = SWATCH_COLORS.map(function(c) {
           return '<div class="swatch" style="background-color:' + c + ';" onclick="document.getElementById(\'shirtColor\').value=\'' + c + '\';setShirtColor(\'' + c + '\');"></div>';
         }).join('');
       }
-
   function addText() {
   var canvas = getActiveCanvas();
   var text = new fabric.IText('Your Text', {
@@ -328,7 +303,6 @@ function addLogo(event) {
   reader.readAsDataURL(file);
   event.target.value = '';
 }
-
       function updateTextStylingPanel() {
         var canvas = getActiveCanvas();
         var obj = canvas.getActiveObject();
@@ -344,7 +318,6 @@ function addLogo(event) {
           panel.style.display = 'none';
         }
       }
-
       function applyTextStyle() {
         var canvas = getActiveCanvas();
         var obj = canvas.getActiveObject();
@@ -357,7 +330,6 @@ function addLogo(event) {
         canvas.renderAll();
         pushHistory(canvas);
       }
-
       function toggleBold() {
         var canvas = getActiveCanvas();
         var obj = canvas.getActiveObject();
@@ -368,7 +340,6 @@ function addLogo(event) {
         document.getElementById('boldBtn').classList.toggle('active', !isBold);
         pushHistory(canvas);
       }
-
       function toggleItalic() {
         var canvas = getActiveCanvas();
         var obj = canvas.getActiveObject();
@@ -379,13 +350,11 @@ function addLogo(event) {
         document.getElementById('italicBtn').classList.toggle('active', !isItalic);
         pushHistory(canvas);
       }
-
       function deleteSelected() {
         var canvas = getActiveCanvas();
         var obj = canvas.getActiveObject();
         if (obj && obj !== canvas.shirtShape) { canvas.remove(obj); }
       }
-
       function duplicateSelected() {
         var canvas = getActiveCanvas();
         var obj = canvas.getActiveObject();
@@ -396,7 +365,6 @@ function addLogo(event) {
           canvas.setActiveObject(cloned);
         });
       }
-
       function copyToOtherSide() {
         var sourceCanvas = getActiveCanvas();
         var targetCanvas = sourceCanvas === frontCanvas ? backCanvas : frontCanvas;
@@ -409,8 +377,7 @@ function addLogo(event) {
       }
 var RAW_SHIRT_LEFT = 31;
 var RAW_SHIRT_TOP = 73;
-      var RAW_SHIRT_POLYGON = [[117,73],[86,73],[31,120],[62,167],[86,143],[86,268],[194,268],[194,143],[218,167],[249,120],[194,73],[163,73]];
-
+var RAW_SHIRT_POLYGON = [[117,73],[86,73],[31,120],[62,167],[86,143],[86,268],[194,268],[194,143],[218,167],[249,120],[194,73],[163,73]];
 function pointInPolygon(x, y, polygon) {
   var inside = false;
   for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -421,7 +388,6 @@ function pointInPolygon(x, y, polygon) {
   }
   return inside;
 }
-
 function getPolygonXIntersections(polygon, y) {
   var xs = [];
   for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
@@ -434,26 +400,23 @@ function getPolygonXIntersections(polygon, y) {
   xs.sort(function(a, b) { return a - b; });
   return xs;
 }
-function getShiftedPolygon(canvas) 
-{  var shirtRect = canvas.shirtShape.getBoundingRect();
+function getShiftedPolygon(canvas) {
+  var shirtRect = canvas.shirtShape.getBoundingRect();
   var shiftX = shirtRect.left - RAW_SHIRT_LEFT;
   var shiftY = shirtRect.top - RAW_SHIRT_TOP;
   return RAW_SHIRT_POLYGON.map(function(p) { return [p[0] + shiftX, p[1] + shiftY]; });
 }
-
 function makeShirtClipPath(canvas) {
   var shirtRect = canvas.shirtShape.getBoundingRect();
   var clip = new fabric.Path(SHIRT_PATH, { absolutePositioned: true });
   clip.set({ left: shirtRect.left, top: shirtRect.top });
   return clip;
 }
-
 function splitAtEdge() {
   var canvas = getActiveCanvas();
   var otherCanvas = canvas === frontCanvas ? backCanvas : frontCanvas;
   var obj = canvas.getActiveObject();
   if (!obj || obj === canvas.shirtShape) { alert('Select an element first.'); return; }
-
   var polygon = getShiftedPolygon(canvas);
   var objRect = obj.getBoundingRect();
   var corners = [
@@ -463,38 +426,64 @@ function splitAtEdge() {
     [objRect.left + objRect.width, objRect.top + objRect.height]
   ];
   var allInside = corners.every(function(c) { return pointInPolygon(c[0], c[1], polygon); });
-
   if (allInside) {
     alert('This element is fully inside the shirt outline on this side — nothing to split.');
     return;
   }
-
-var shirtRect = canvas.shirtShape.getBoundingRect();
+  var shirtRect = canvas.shirtShape.getBoundingRect();
   var objCenterX = objRect.left + objRect.width / 2;
-  var outsideCorners = corners.filter(function(c) { return !pointInPolygon(c[0], c[1], polygon); });
-  var seamY = outsideCorners.reduce(function(sum, c) { return sum + c[1]; }, 0) / outsideCorners.length;
   var overflowsRight = objCenterX > (shirtRect.left + shirtRect.width / 2);
   var otherPolygon = getShiftedPolygon(otherCanvas);
-  var xsThisSide = getPolygonXIntersections(polygon, seamY);
-  var xsOtherSide = getPolygonXIntersections(otherPolygon, seamY);
-  var seamX = overflowsRight ? xsThisSide[xsThisSide.length - 1] : xsThisSide[0];
-  var otherSeamX = overflowsRight ? xsOtherSide[0] : xsOtherSide[xsOtherSide.length - 1];
-  var deltaLeft = otherSeamX - seamX;
+
   obj.clipPath = makeShirtClipPath(canvas);
   obj.dirty = true;
-  obj.clone(function(clone) {
-    clone.set({ left: obj.left + deltaLeft, top: obj.top });
-    clone.clipPath = makeShirtClipPath(otherCanvas);
-    clone.dirty = true;
-    otherCanvas.add(clone);
-    otherCanvas.renderAll();
-    pushHistory(otherCanvas);
-  });
+
+  var stripCount = Math.min(30, Math.max(6, Math.round(objRect.height / 6)));
+  var stripH = objRect.height / stripCount;
+  var attempted = 0;
+  var pending = 0;
+
+  for (var i = 0; i < stripCount; i++) {
+    var stripTop = objRect.top + i * stripH;
+    var stripCenterY = stripTop + stripH / 2;
+    var xsThis = getPolygonXIntersections(polygon, stripCenterY);
+    var xsOther = getPolygonXIntersections(otherPolygon, stripCenterY);
+    if (xsThis.length < 2 || xsOther.length < 2) { continue; }
+    var seamX = overflowsRight ? xsThis[xsThis.length - 1] : xsThis[0];
+    var otherSeamX = overflowsRight ? xsOther[0] : xsOther[xsOther.length - 1];
+    var localShift = otherSeamX - seamX;
+    var clipLeft = xsOther[0];
+    var clipWidth = xsOther[xsOther.length - 1] - clipLeft;
+    if (clipWidth <= 0) { continue; }
+
+    attempted++;
+    pending++;
+    (function(shiftAmt, cLeft, cWidth, cTop, cHeight) {
+      obj.clone(function(clone) {
+        clone.set({ left: obj.left + shiftAmt, top: obj.top });
+        clone.clipPath = new fabric.Rect({
+          left: cLeft, top: cTop, width: cWidth, height: cHeight,
+          absolutePositioned: true
+        });
+        clone.dirty = true;
+        otherCanvas.add(clone);
+        pending--;
+        if (pending === 0) {
+          otherCanvas.renderAll();
+          pushHistory(otherCanvas);
+        }
+      });
+    })(localShift, clipLeft, clipWidth, stripTop, stripH);
+  }
+
+  if (attempted === 0) {
+    alert('Could not find a matching wrap area on the other side for this element.');
+    return;
+  }
 
   canvas.discardActiveObject();
   canvas.renderAll();
   pushHistory(canvas);
-
   alert('Split complete! The overflowing portion now appears on the ' + (canvas === frontCanvas ? 'Back' : 'Front') + '.');
 }
       function bringForward() {
@@ -502,7 +491,6 @@ var shirtRect = canvas.shirtShape.getBoundingRect();
         var obj = canvas.getActiveObject();
         if (obj && obj !== canvas.shirtShape) { canvas.bringForward(obj); }
       }
-
       function sendBackward() {
         var canvas = getActiveCanvas();
         var obj = canvas.getActiveObject();
@@ -511,7 +499,6 @@ var shirtRect = canvas.shirtShape.getBoundingRect();
           canvas.shirtShape.sendToBack();
         }
       }
-
       document.addEventListener('keydown', function(e) {
         if (!frontCanvas || !backCanvas) { return; }
         var active = document.activeElement;
@@ -520,7 +507,6 @@ var shirtRect = canvas.shirtShape.getBoundingRect();
         var obj = canvas.getActiveObject();
         if (!obj || obj === canvas.shirtShape) { return; }
         if (obj.isEditing) { return; }
-
         if (e.key === 'Delete' || e.key === 'Backspace') {
           e.preventDefault();
           canvas.remove(obj);
@@ -529,35 +515,26 @@ var shirtRect = canvas.shirtShape.getBoundingRect();
         else if (e.key === 'ArrowLeft') { e.preventDefault(); obj.left -= 2; canvas.renderAll(); }
         else if (e.key === 'ArrowRight') { e.preventDefault(); obj.left += 2; canvas.renderAll(); }
       });
-
       async function submitDesign() {
         if (!currentUserId) { window.location.href = 'login.html'; return; }
-
         document.getElementById('builder-error').style.display = 'none';
         document.getElementById('builder-success').style.display = 'none';
-
         frontCanvas.discardActiveObject();
         backCanvas.discardActiveObject();
         frontCanvas.renderAll();
         backCanvas.renderAll();
-
         var frontDataUrl = frontCanvas.toDataURL({ format: 'png' });
         var backDataUrl = backCanvas.toDataURL({ format: 'png' });
-
         var frontBlob = await (await fetch(frontDataUrl)).blob();
         var backBlob = await (await fetch(backDataUrl)).blob();
-
         var frontFileName = currentUserId + '_front_' + Date.now() + '.png';
         var backFileName = currentUserId + '_back_' + Date.now() + '.png';
-
         var frontUpload = await sbClient.storage.from('shirt-designs').upload(frontFileName, frontBlob);
         if (frontUpload.error) { showBuilderMsg('builder-error', 'Error uploading front design: ' + frontUpload.error.message); return; }
         var backUpload = await sbClient.storage.from('shirt-designs').upload(backFileName, backBlob);
         if (backUpload.error) { showBuilderMsg('builder-error', 'Error uploading back design: ' + backUpload.error.message); return; }
-
         var frontUrl = sbClient.storage.from('shirt-designs').getPublicUrl(frontFileName).data.publicUrl;
         var backUrl = sbClient.storage.from('shirt-designs').getPublicUrl(backFileName).data.publicUrl;
-
         var result = await sbClient.from('shirt_design_submissions').insert([{
           player_id: currentUserId,
           front_image_url: frontUrl,
@@ -567,36 +544,29 @@ var shirtRect = canvas.shirtShape.getBoundingRect();
           description: (document.getElementById('designDescription').value.trim() || '') + ' [Size: ' + document.getElementById('shirtSize').value + ']',
           status: 'pending'
         }]);
-
         if (result.error) { showBuilderMsg('builder-error', 'Error saving submission: ' + result.error.message); return; }
-
         showBuilderMsg('builder-success', 'Your design has been submitted for review!');
       }
-
       function showBuilderMsg(id, msg) {
         var el = document.getElementById(id);
         el.textContent = msg;
         el.style.display = 'block';
       }
 var currentZoomLevel = 1;
-
 function applyZoom() {
   document.getElementById('frontPanel').style.transform = 'scale(' + currentZoomLevel + ')';
   document.getElementById('backPanel').style.transform = 'scale(' + currentZoomLevel + ')';
   document.getElementById('frontPanel').style.transformOrigin = 'center top';
   document.getElementById('backPanel').style.transformOrigin = 'center top';
 }
-
 function zoomIn() {
   currentZoomLevel = Math.min(currentZoomLevel + 0.15, 2);
   applyZoom();
 }
-
 function zoomOut() {
   currentZoomLevel = Math.max(currentZoomLevel - 0.15, 0.5);
   applyZoom();
 }
-
 function resetZoom() {
   currentZoomLevel = 1;
   applyZoom();
@@ -604,7 +574,6 @@ function resetZoom() {
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
-
       window.addEventListener('load', async function() {
         checkAuth();
         const { data: { session } } = await sbClient.auth.getSession();
@@ -614,12 +583,10 @@ function resetZoom() {
         }
         currentUserId = session.user.id;
         document.getElementById('builderContent').style.display = 'block';
-
         buildSwatches();
         frontCanvas = buildShirtCanvas('frontCanvas');
         backCanvas = buildShirtCanvas('backCanvas');
       });
     </script>
-
   </body>
 </html>
