@@ -1258,7 +1258,7 @@ if (editingDrillId && editingOriginalTargetCount > 0 && targetRows.length < edit
   var confirmMsg = 'Warning: this drill originally had ' + editingOriginalTargetCount + ' rows, but you\'re about to save only ' + targetRows.length + '. Anything not shown will be permanently deleted. Are you sure you want to continue?';
   if (!confirm(confirmMsg)) { return; }
 }
-
+var description = document.getElementById('drillDescription').value.trim();
 var drillId;
 if (editingDrillId) {
   var updateResult = await sbClient.from('drills').update({ title: title, description: description || null }).eq('id', editingDrillId);
