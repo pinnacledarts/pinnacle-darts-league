@@ -574,8 +574,8 @@ async function loadPlayers() {
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error saving score: ' + result.error.message); return; }
 
-        if (a1Val && p1Id) { await updatePlayerAverage(p1Id); }
-        if (a2Val && p2Id) { await updatePlayerAverage(p2Id); }
+if (a1Val && p1Id) { await updatePlayerAverage(p1Id); await updatePlayerStats(p1Id); }
+if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2Id); }
 
         loadFixtures();
         loadStandings();
@@ -821,8 +821,8 @@ async function loadPlayers() {
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error saving score: ' + result.error.message); return; }
 
-        if (a1Val && p1Id) { await updatePlayerAverage(p1Id); }
-        if (a2Val && p2Id) { await updatePlayerAverage(p2Id); }
+   if (a1Val && p1Id) { await updatePlayerAverage(p1Id); await updatePlayerStats(p1Id); }
+if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2Id); }
 
         if (currentRound === 'Semi Final') {
           var semisQuery = sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff').eq('round', 'Semi Final');
