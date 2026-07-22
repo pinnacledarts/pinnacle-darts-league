@@ -1057,10 +1057,10 @@ if (currentSubtitle) {
   var titleHtml = '<h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;">' + state.drillTitle + '</h2>';
 
   if (idx >= steps.length) {
-    container.innerHTML = titleHtml + subtitleBannerHtml +
-      '<div style="text-align:center;padding:40px 20px;">' +
-      '<p style="font-size:1.1em;color:#333333;margin-bottom:24px;">You\'re all done! Ready to submit your attempt?</p>' +
-      '<button class="save-btn" onclick="submitDrillAttempt(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Submit Attempt</button>' +
+   container.innerHTML = titleHtml + subtitleBannerHtml +
+  '<div style="text-align:center;padding:40px 20px;">' +
+  '<p style="font-size:1.1em;color:#333333;margin-bottom:24px;">You\'re all done! Ready to submit your attempt?</p>' +
+  '<button class="save-btn" id="drillSubmitBtn-' + drillId + '" onclick="submitDrillAttempt(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Submit Attempt</button>' +
       (idx > 0 ? '<div style="margin-top:16px;"><button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button></div>' : '') +
       '</div>';
     return;
@@ -1151,47 +1151,60 @@ function drillStepBack(drillId) {
 }
 
 
+var submittingDrill = false;
+
 async function submitDrillAttempt(drillId) {
   if (!currentUserId) { window.location.href = 'login.html'; return; }
+  if (submittingDrill) { return; }
+  submittingDrill = true;
 
   var container = document.getElementById('drillOverlayContent');
+  var submitBtn = document.getElementById('drillSubmitBtn-' + drillId);
+  if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
 
   const { data: { session }, error: sessionError } = await sbClient.auth.getSession();
   if (sessionError || !session) {
     container.innerHTML += '<p style="color:#cc0000;text-align:center;margin-top:16px;">Your session needs refreshing. Please log in again (in this tab), then click Submit again — your answers are still here.</p>';
+    submittingDrill = false;
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Attempt'; }
     return;
   }
 
-var state = drillStepState[drillId];
-var scoreEntries = Object.values(state.answers);
-var totalScore = scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
-var timeTakenSeconds = Math.round((Date.now() - state.startTime) / 1000);
+  var state = drillStepState[drillId];
+  var scoreEntries = Object.values(state.answers);
+  var totalScore = scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
+  var timeTakenSeconds = Math.round((Date.now() - state.startTime) / 1000);
 
-var attemptResult = await sbClient.from('drill_attempts').insert([{
-  drill_id: drillId,
-  player_id: currentUserId,
-  total_score: totalScore,
-  time_taken_seconds: timeTakenSeconds,
-  attempt_date: new Date().toISOString().split('T')[0]
-}]).select();
+  var attemptResult = await sbClient.from('drill_attempts').insert([{
+    drill_id: drillId,
+    player_id: currentUserId,
+    total_score: totalScore,
+    time_taken_seconds: timeTakenSeconds,
+    attempt_date: new Date().toISOString().split('T')[0]
+  }]).select();
 
   if (attemptResult.error || !attemptResult.data) {
     container.innerHTML += '<p style="color:#cc0000;text-align:center;margin-top:16px;">Error submitting attempt. Please try again.</p>';
+    submittingDrill = false;
+    if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Attempt'; }
     return;
   }
 
   var attemptId = attemptResult.data[0].id;
-  for (var j = 0; j < scoreEntries.length; j++) {
-    var entry = scoreEntries[j];
-    await sbClient.from('drill_attempt_scores').insert([{
+  var scoreRows = scoreEntries.map(function(entry) {
+    return {
       attempt_id: attemptId,
       target_id: entry.target_id,
       score_option_id: entry.score_option_id,
       points: entry.points
-    }]);
+    };
+  });
+  if (scoreRows.length) {
+    await sbClient.from('drill_attempt_scores').insert(scoreRows);
   }
 
-var timeLabel = formatDrillTime(timeTakenSeconds);
+  submittingDrill = false;
+  var timeLabel = formatDrillTime(timeTakenSeconds);
 container.innerHTML = '<h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;">' + state.drillTitle + '</h2>' +
   '<div style="text-align:center;padding:40px 20px;">' +
   '<p style="font-size:1.3em;color:#006600;font-weight:bold;margin-bottom:8px;">✓ Attempt submitted!</p>' +
