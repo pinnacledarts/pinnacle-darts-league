@@ -583,8 +583,8 @@ async function updateScore(matchId, p1Id, p2Id) {
   var result = await sbClient.from('tournament_matches').update(update).eq('id', matchId);
   if (result.error) { alert('Error saving score: ' + result.error.message); return; }
 
-  if (a1Val && p1Id) { await updatePlayerAverage(p1Id); }
-  if (a2Val && p2Id) { await updatePlayerAverage(p2Id); }
+if (a1Val && p1Id) { await updatePlayerAverage(p1Id); await updatePlayerStats(p1Id); }
+if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2Id); }
 
   loadGroups();
 }
@@ -858,8 +858,8 @@ async function saveKnockoutScore(matchId, currentRound, matchOrder, bracketType,
   var result = await sbClient.from('tournament_matches').update(update).eq('id', matchId);
   if (result.error) { alert('Error saving score: ' + result.error.message); return; }
 
-  if (a1Val && p1Id) { await updatePlayerAverage(p1Id); }
-  if (a2Val && p2Id) { await updatePlayerAverage(p2Id); }
+if (a1Val && p1Id) { await updatePlayerAverage(p1Id); await updatePlayerStats(p1Id); }
+if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2Id); }
 
   var advanced = await advanceWinner(matchId, currentRound, matchOrder, bracketType);
   var isPlate = bracketType.indexOf('PLATE') > -1 || bracketType === 'B';
