@@ -16,6 +16,7 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 document.addEventListener('DOMContentLoaded', function() {
   var nav = document.getElementById('mainNav');
   if (!nav) { return; }
+  if (window.location.pathname.includes('admin')) { return; }
 
   var playersLink = nav.querySelector('a[href="players.html"]');
 
