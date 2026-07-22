@@ -288,8 +288,14 @@ async function submitManualBracket(slotCount) {
           '<option value="both"' + (tournamentData.platform === 'both' ? ' selected' : '') + '>Both</option>' +
           '</select></div>' +
 '<div class="form-group"><label>Max Players</label><input type="number" id="detMax" value="' + (tournamentData.max_players || '') + '" /></div>' +
+'<div class="form-group" style="display:flex;align-items:center;gap:8px;">' +
+'<input type="checkbox" id="detNoCheckin" style="width:18px;height:18px;"' + (!tournamentData.checkin_start && !tournamentData.checkin_end ? ' checked' : '') + ' onchange="toggleDetCheckinFields()" />' +
+'<label style="margin:0;">No check-in required for this tournament</label>' +
+'</div>' +
+'<div class="form-row" id="detCheckinFields" style="display:' + (!tournamentData.checkin_start && !tournamentData.checkin_end ? 'none' : 'grid') + ';">' +
 '<div class="form-group"><label>Check-in Opens</label><input type="datetime-local" id="detCheckinStart" value="' + (tournamentData.checkin_start ? tournamentData.checkin_start.substring(0,16) : '') + '" /></div>' +
 '<div class="form-group"><label>Check-in Closes</label><input type="datetime-local" id="detCheckinEnd" value="' + (tournamentData.checkin_end ? tournamentData.checkin_end.substring(0,16) : '') + '" /></div>' +
+'</div>' +
           '<div class="form-group" style="display:flex;align-items:center;gap:8px;">' +
           '<input type="checkbox" id="detAvgSplit" style="width:18px;height:18px;"' + (tournamentData.average_split ? ' checked' : '') + ' />' +
           '<label style="margin:0;">Average Split (splits into two cups by average)</label>' +
@@ -354,7 +360,17 @@ async function submitManualBracket(slotCount) {
         loadKnockouts();
       }
 
+function toggleDetCheckinFields() {
+  var noCheckin = document.getElementById('detNoCheckin').checked;
+  document.getElementById('detCheckinFields').style.display = noCheckin ? 'none' : 'grid';
+  if (noCheckin) {
+    document.getElementById('detCheckinStart').value = '';
+    document.getElementById('detCheckinEnd').value = '';
+  }
+}
+
 async function saveTournamentDetails() {
+  var noCheckin = document.getElementById('detNoCheckin').checked;
   var update = {
     name: document.getElementById('detName').value.trim(),
     date: document.getElementById('detDate').value || null,
@@ -363,8 +379,8 @@ async function saveTournamentDetails() {
     platform: document.getElementById('detPlatform').value,
     max_players: document.getElementById('detMax').value || null,
     average_split: document.getElementById('detAvgSplit').checked,
-checkin_start: document.getElementById('detCheckinStart').value ? new Date(document.getElementById('detCheckinStart').value).toISOString() : null,
-checkin_end: document.getElementById('detCheckinEnd').value ? new Date(document.getElementById('detCheckinEnd').value).toISOString() : null,
+checkin_start: noCheckin ? null : (document.getElementById('detCheckinStart').value ? new Date(document.getElementById('detCheckinStart').value).toISOString() : null),
+checkin_end: noCheckin ? null : (document.getElementById('detCheckinEnd').value ? new Date(document.getElementById('detCheckinEnd').value).toISOString() : null),
     description: document.getElementById('detDesc').value.trim() || null
   };
 var result = await sbClient.from('tournaments').update(update).eq('id', tournamentId);
