@@ -709,20 +709,29 @@ async function loadMerchOrders() {
     var listing = o.merch_listings || {};
     var waLink = buildAdminWhatsAppLink(buyer.phone);
     var waButtonHtml = waLink ? '<a href="' + waLink + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background-color:#25D366;color:#ffffff;padding:4px 10px;border-radius:20px;font-size:0.8em;text-decoration:none;font-weight:bold;">💬 WhatsApp</a>' : '<span style="color:#888;font-size:0.8em;">No phone on file</span>';
+    var paidLabel = o.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Not confirmed paid</span>';
+    var borderColor = o.paid ? '#cceecc' : '#ffcccc';
 
-    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;border-color:' + borderColor + ';">' +
       '<div style="padding:14px 16px;">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">' +
       '<div><strong>' + buyerName + '</strong><div style="color:#888;font-size:0.85em;">' + (listing.title || 'Unknown item') + ' — £' + (listing.price != null ? listing.price : '-') + '</div>' +
       (o.selected_option ? '<div style="color:#111;font-size:0.85em;margin-top:4px;"><strong>Option:</strong> ' + o.selected_option + '</div>' : '') +
+      '<div style="margin-top:4px;">' + paidLabel + '</div>' +
       '<div style="color:#aaa;font-size:0.8em;margin-top:4px;">' + new Date(o.created_at).toLocaleString('en-GB') + '</div>' +
       '</div>' +
       '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">' +
       waButtonHtml +
+      '<button class="btn-small" onclick="toggleMerchOrderPaid(' + o.id + ', ' + o.paid + ')">' + (o.paid ? 'Mark Unpaid' : 'Mark Paid') + '</button>' +
       '<button class="btn-small danger" onclick="deleteMerchOrder(' + o.id + ')">Delete</button>' +
       '</div>' +
       '</div></div></div>';
   }).join('');
+}
+
+async function toggleMerchOrderPaid(id, currentStatus) {
+  await sbClient.from('merch_orders').update({ paid: !currentStatus }).eq('id', id);
+  loadMerchOrders();
 }
 
 async function deleteMerchOrder(id) {
