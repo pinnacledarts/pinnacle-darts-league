@@ -16,22 +16,39 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 document.addEventListener('DOMContentLoaded', function() {
   var nav = document.getElementById('mainNav');
   if (!nav) { return; }
+
   var playersLink = nav.querySelector('a[href="players.html"]');
-  if (!playersLink) { return; }
 
-  if (!nav.querySelector('a[href="swap-sell.html"]')) {
-    var swapLink = document.createElement('a');
-    swapLink.href = 'swap-sell.html';
-    swapLink.textContent = 'Swap / Sell';
-    playersLink.insertAdjacentElement('afterend', swapLink);
-  }
+  if (playersLink) {
+    if (!nav.querySelector('a[href="swap-sell.html"]')) {
+      var swapLink = document.createElement('a');
+      swapLink.href = 'swap-sell.html';
+      swapLink.textContent = 'Swap / Sell';
+      playersLink.insertAdjacentElement('afterend', swapLink);
+    }
 
-  if (!nav.querySelector('a[href="shirt-builder.html"]')) {
-    var shirtLink = document.createElement('a');
-    shirtLink.href = 'shirt-builder.html';
-    shirtLink.textContent = 'Shirt Builder';
-    var swapLinkRef = nav.querySelector('a[href="swap-sell.html"]');
-    swapLinkRef.insertAdjacentElement('afterend', shirtLink);
+    if (!nav.querySelector('a[href="shirt-builder.html"]')) {
+      var shirtLink = document.createElement('a');
+      shirtLink.href = 'shirt-builder.html';
+      shirtLink.textContent = 'Shirt Builder';
+      var swapLinkRef = nav.querySelector('a[href="swap-sell.html"]');
+      swapLinkRef.insertAdjacentElement('afterend', shirtLink);
+    }
+
+    if (!nav.querySelector('a[href="merch.html"]')) {
+      var merchLink = document.createElement('a');
+      merchLink.href = 'merch.html';
+      merchLink.textContent = 'Merch';
+      var shirtLinkRef = nav.querySelector('a[href="shirt-builder.html"]');
+      shirtLinkRef.insertAdjacentElement('afterend', merchLink);
+    }
+  } else {
+    if (!nav.querySelector('a[href="merch.html"]')) {
+      var merchLinkAcademy = document.createElement('a');
+      merchLinkAcademy.href = 'merch.html';
+      merchLinkAcademy.textContent = 'Merch';
+      nav.insertBefore(merchLinkAcademy, nav.firstChild);
+    }
   }
 });
 document.addEventListener('DOMContentLoaded', function() {
