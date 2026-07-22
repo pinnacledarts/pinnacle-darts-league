@@ -339,11 +339,18 @@ async function submitManualBracket(slotCount) {
           '<div class="success-msg" id="knockouts-success"></div>' +
           '<div class="error-msg" id="knockouts-error"></div>' +
           (isGroupKnockout ?
-          '<div class="admin-bar">' +
-          '<label>Players per group to progress:</label><input type="number" id="progressPerGroup" value="2" min="1" max="4" />' +
-          '<button class="btn btn-primary" onclick="generateKnockouts()">Generate Knockouts</button>' +
-          '<button class="btn btn-danger" onclick="clearKnockouts()">Clear Knockouts</button>' +
-          '</div>' : '') +
+'<div class="admin-bar">' +
+'<label>Players per group to progress:</label><input type="number" id="progressPerGroup" value="2" min="1" max="4" />' +
+'</div>' +
+'<div class="admin-bar">' +
+'<input type="checkbox" id="generateBCheckbox" style="width:18px;height:18px;" onchange="toggleGenerateBInput()" />' +
+'<label style="margin:0;">Generate B bracket from next finishing positions</label>' +
+'<input type="number" id="generateBCount" value="2" min="1" max="4" style="display:none;width:70px;" />' +
+'</div>' +
+'<div class="admin-bar">' +
+'<button class="btn btn-primary" onclick="generateKnockouts()">Generate Knockouts</button>' +
+'<button class="btn btn-danger" onclick="clearKnockouts()">Clear Knockouts</button>' +
+'</div>' : '') +
 (isSingleElim ?
 '<div class="admin-bar">' +
 (tournamentData.average_split ? '<button class="btn btn-primary" onclick="splitByAverage()">Split by Average</button>' : '<button class="btn btn-primary" onclick="generateSingleElimination()">Auto-Generate Bracket</button>') +
