@@ -176,7 +176,11 @@ main { padding: 24px 20px; }
   <input type="checkbox" id="tournamentAvgSplit" style="width:18px;height:18px;" />
   <label style="margin:0;">Average Split (splits into two cups by average)</label>
 </div>
-            <div class="form-row">
+<div class="form-group" style="display:flex;align-items:center;gap:8px;">
+  <input type="checkbox" id="tournamentNoCheckin" style="width:18px;height:18px;" onchange="toggleTournamentCheckinFields()" />
+  <label style="margin:0;">No check-in required for this tournament</label>
+</div>
+<div class="form-row" id="tournamentCheckinFields">
   <div class="form-group">
     <label>Check-in Opens</label>
     <input type="datetime-local" id="tournamentCheckinStart" />
@@ -1109,9 +1113,19 @@ async function deleteBugReport(id) {
         }
       }
 
+function toggleTournamentCheckinFields() {
+  var noCheckin = document.getElementById('tournamentNoCheckin').checked;
+  document.getElementById('tournamentCheckinFields').style.display = noCheckin ? 'none' : 'grid';
+  if (noCheckin) {
+    document.getElementById('tournamentCheckinStart').value = '';
+    document.getElementById('tournamentCheckinEnd').value = '';
+  }
+}
+
 async function createTournament() {
   var name = document.getElementById('tournamentName').value.trim();
   if (!name) { showMsg('tournament-error', 'Please enter a tournament name.'); return; }
+  var noCheckin = document.getElementById('tournamentNoCheckin').checked;
   var result = await sbClient.from('tournaments').insert([{
     name: name,
     date: document.getElementById('tournamentDate').value || null,
@@ -1121,8 +1135,8 @@ async function createTournament() {
     max_players: document.getElementById('tournamentMax').value || null,
     status: 'upcoming',
     average_split: document.getElementById('tournamentAvgSplit').checked,
-    checkin_start: document.getElementById('tournamentCheckinStart').value ? new Date(document.getElementById('tournamentCheckinStart').value).toISOString() : null,
-    checkin_end: document.getElementById('tournamentCheckinEnd').value ? new Date(document.getElementById('tournamentCheckinEnd').value).toISOString() : null,
+    checkin_start: noCheckin ? null : (document.getElementById('tournamentCheckinStart').value ? new Date(document.getElementById('tournamentCheckinStart').value).toISOString() : null),
+    checkin_end: noCheckin ? null : (document.getElementById('tournamentCheckinEnd').value ? new Date(document.getElementById('tournamentCheckinEnd').value).toISOString() : null),
     description: document.getElementById('tournamentDesc').value.trim() || null
   }]);
   if (result.error) { showMsg('tournament-error', result.error.message); return; }
