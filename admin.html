@@ -683,6 +683,130 @@ main { padding: 24px 20px; }
       var scoreOptionCounts = {};
       var editingDrillId = null;
       var allDrillAttemptsData = [];
+      var editingMerchId = null;
+var editingMerchImages = [];
+
+async function loadMerchItems() {
+  var result = await sbClient.from('merch_listings').select('*').order('created_at', { ascending: false });
+  var container = document.getElementById('merchList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No merch items yet.</p>'; return; }
+
+  window.allMerchData = result.data;
+
+  container.innerHTML = result.data.map(function(m) {
+    var images = m.image_urls || [];
+    var thumb = images.length ? '<img src="' + images[0] + '" style="width:50px;height:50px;object-fit:cover;border-radius:4px;margin-right:10px;" />' : '';
+    var statusLabel = m.active ? '<span style="color:#006600;">Active</span>' : '<span style="color:#888;">Hidden</span>';
+    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+      '<div style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">' +
+      '<div style="display:flex;align-items:center;">' + thumb +
+      '<div><strong>' + m.title + '</strong><div style="color:#888;font-size:0.85em;">£' + m.price + ' — ' + statusLabel + '</div></div>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;">' +
+      '<button class="btn-small" onclick="editMerchItem(' + m.id + ')">Edit</button>' +
+      '<button class="btn-small danger" onclick="deleteMerchItem(' + m.id + ')">Delete</button>' +
+      '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+function renderMerchCurrentImages() {
+  var container = document.getElementById('merchCurrentImages');
+  if (!editingMerchImages.length) { container.innerHTML = '<p style="color:#888;font-size:0.85em;">No images yet.</p>'; return; }
+  container.innerHTML = '<div style="display:flex;gap:10px;flex-wrap:wrap;">' + editingMerchImages.map(function(url, i) {
+    return '<div style="position:relative;">' +
+      '<img src="' + url + '" style="width:80px;height:80px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" />' +
+      '<button onclick="removeMerchImage(' + i + ')" style="position:absolute;top:-6px;right:-6px;background:#cc0000;color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:0.8em;">✕</button>' +
+      '</div>';
+  }).join('') + '</div>';
+}
+
+function removeMerchImage(index) {
+  editingMerchImages.splice(index, 1);
+  renderMerchCurrentImages();
+}
+
+function editMerchItem(id) {
+  var item = window.allMerchData.find(function(m) { return m.id === id; });
+  if (!item) { return; }
+
+  editingMerchId = id;
+  editingMerchImages = item.image_urls ? item.image_urls.slice() : [];
+
+  document.getElementById('merchFormTitle').textContent = 'Edit Merch Item';
+  document.getElementById('merchTitle').value = item.title || '';
+  document.getElementById('merchPrice').value = item.price != null ? item.price : '';
+  document.getElementById('merchStripeLink').value = item.stripe_link || '';
+  document.getElementById('merchActive').checked = item.active;
+  document.getElementById('merchSaveBtn').textContent = 'Save Changes';
+  document.getElementById('merchCancelBtn').style.display = 'inline-block';
+  renderMerchCurrentImages();
+
+  document.getElementById('merchFormTitle').scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelMerchEdit() {
+  editingMerchId = null;
+  editingMerchImages = [];
+  document.getElementById('merchFormTitle').textContent = 'Add Merch Item';
+  document.getElementById('merchTitle').value = '';
+  document.getElementById('merchPrice').value = '';
+  document.getElementById('merchStripeLink').value = '';
+  document.getElementById('merchActive').checked = true;
+  document.getElementById('merchSaveBtn').textContent = 'Add Item';
+  document.getElementById('merchCancelBtn').style.display = 'none';
+  renderMerchCurrentImages();
+}
+
+async function saveMerchItem() {
+  var title = document.getElementById('merchTitle').value.trim();
+  if (!title) { showMsg('merch-error', 'Please enter a title.'); return; }
+
+  var price = document.getElementById('merchPrice').value;
+  var stripeLink = document.getElementById('merchStripeLink').value.trim();
+  var active = document.getElementById('merchActive').checked;
+  var fileInput = document.getElementById('merchImages');
+  var files = Array.from(fileInput.files || []);
+
+  var imageUrls = editingMerchImages.slice();
+  for (var i = 0; i < files.length; i++) {
+    var file = files[i];
+    var fileExt = file.name.split('.').pop();
+    var fileName = 'merch_' + Date.now() + '_' + i + '.' + fileExt;
+    var uploadResult = await sbClient.storage.from('merch-images').upload(fileName, file);
+    if (uploadResult.error) { showMsg('merch-error', 'Error uploading image: ' + uploadResult.error.message); return; }
+    var urlData = sbClient.storage.from('merch-images').getPublicUrl(fileName);
+    imageUrls.push(urlData.data.publicUrl);
+  }
+
+  var payload = {
+    title: title,
+    price: price ? parseFloat(price) : null,
+    stripe_link: stripeLink || null,
+    active: active,
+    image_urls: imageUrls
+  };
+
+  var result;
+  if (editingMerchId) {
+    result = await sbClient.from('merch_listings').update(payload).eq('id', editingMerchId);
+  } else {
+    result = await sbClient.from('merch_listings').insert([payload]);
+  }
+
+  if (result.error) { showMsg('merch-error', result.error.message); return; }
+
+  showMsg('merch-success', editingMerchId ? 'Item updated!' : 'Item added!');
+  fileInput.value = '';
+  cancelMerchEdit();
+  loadMerchItems();
+}
+
+async function deleteMerchItem(id) {
+  if (!confirm('Delete this merch item?')) { return; }
+  await sbClient.from('merch_listings').delete().eq('id', id);
+  loadMerchItems();
+}
 async function loadBugReports() {
   var result = await sbClient.from('bug_reports').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
   var container = document.getElementById('bugReportsList');
@@ -2381,6 +2505,7 @@ function cancelNewsEdit(id) {
         loadPlayers();
         loadShirtDesigns();
         loadPendingApprovals();
+        loadMerchItems();
         loadAcademyLeagueSelects();
         loadSessionLog();
         loadDrills();
