@@ -296,10 +296,17 @@ async function submitManualBracket(slotCount) {
 '<div class="form-group"><label>Check-in Opens</label><input type="datetime-local" id="detCheckinStart" value="' + (tournamentData.checkin_start ? tournamentData.checkin_start.substring(0,16) : '') + '" /></div>' +
 '<div class="form-group"><label>Check-in Closes</label><input type="datetime-local" id="detCheckinEnd" value="' + (tournamentData.checkin_end ? tournamentData.checkin_end.substring(0,16) : '') + '" /></div>' +
 '</div>' +
-          '<div class="form-group" style="display:flex;align-items:center;gap:8px;">' +
-          '<input type="checkbox" id="detAvgSplit" style="width:18px;height:18px;"' + (tournamentData.average_split ? ' checked' : '') + ' />' +
-          '<label style="margin:0;">Average Split (splits into two cups by average)</label>' +
-          '</div>' +
+'<div class="form-group" style="display:flex;align-items:center;gap:8px;">' +
+'<input type="checkbox" id="detAvgSplit" style="width:18px;height:18px;"' + (tournamentData.average_split ? ' checked' : '') + ' />' +
+'<label style="margin:0;">Average Split (splits into two cups by average)</label>' +
+'</div>' +
+'<div class="form-group"><label>Scoreline Format (used for BYE auto-wins)</label><select id="detByeScoreline" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
+'<option value="3"' + ((tournamentData.bye_scoreline || 3) === 3 ? ' selected' : '') + '>First to 3</option>' +
+'<option value="4"' + (tournamentData.bye_scoreline === 4 ? ' selected' : '') + '>First to 4</option>' +
+'<option value="5"' + (tournamentData.bye_scoreline === 5 ? ' selected' : '') + '>First to 5</option>' +
+'<option value="6"' + (tournamentData.bye_scoreline === 6 ? ' selected' : '') + '>First to 6</option>' +
+'<option value="7"' + (tournamentData.bye_scoreline === 7 ? ' selected' : '') + '>First to 7</option>' +
+'</select></div>' +
           '<div class="form-group"><label>Description</label><textarea id="detDesc" rows="3" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-family:Arial, sans-serif;">' + (tournamentData.description || '') + '</textarea></div>' +
           '<button class="btn btn-primary" onclick="saveTournamentDetails()">Save Details</button>' +
           '</div>' +
@@ -385,7 +392,8 @@ async function saveTournamentDetails() {
     format: document.getElementById('detFormat').value,
     platform: document.getElementById('detPlatform').value,
     max_players: document.getElementById('detMax').value || null,
-    average_split: document.getElementById('detAvgSplit').checked,
+average_split: document.getElementById('detAvgSplit').checked,
+bye_scoreline: parseInt(document.getElementById('detByeScoreline').value),
 checkin_start: noCheckin ? null : (document.getElementById('detCheckinStart').value ? new Date(document.getElementById('detCheckinStart').value).toISOString() : null),
 checkin_end: noCheckin ? null : (document.getElementById('detCheckinEnd').value ? new Date(document.getElementById('detCheckinEnd').value).toISOString() : null),
     description: document.getElementById('detDesc').value.trim() || null
@@ -397,7 +405,7 @@ tournamentData.average_split = update.average_split;
 tournamentData.max_players = update.max_players;
 tournamentData.checkin_start = update.checkin_start;
 tournamentData.checkin_end = update.checkin_end;
-document.getElementById('pageTitle').textContent = '⚙️ Managing: ' + update.name;
+tournamentData.bye_scoreline = update.bye_scoreline;
 showMsg('details-success', 'Details saved successfully! Refresh the page if you changed Format or Average Split to update the tabs shown.');
       }
 
