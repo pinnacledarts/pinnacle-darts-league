@@ -726,7 +726,8 @@ async function loadMerchOrders() {
       '<button class="btn-small danger" onclick="deleteMerchOrder(' + o.id + ')">Delete</button>' +
       '</div>' +
       '</div></div></div>';
-  }).join('');
+}).join('');
+  updateAcademyBadge();
 }
 
 async function toggleMerchOrderPaid(id, currentStatus) {
