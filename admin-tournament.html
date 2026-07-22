@@ -611,36 +611,67 @@ if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2
         }
       }
 
-      async function createBracketRounds(players, bracketType) {
-        bracketType = bracketType || 'A';
-        var paddedLength = 1;
-        while (paddedLength < players.length) { paddedLength *= 2; }
-        while (players.length < paddedLength) { players.push(null); }
+async function createBracketRounds(players, bracketType) {
+  bracketType = bracketType || 'A';
+  var paddedLength = 1;
+  while (paddedLength < players.length) { paddedLength *= 2; }
+  while (players.length < paddedLength) { players.push(null); }
+  var matchCount = players.length / 2;
+  var firstRoundName = getRoundName(matchCount);
+  var round1Inserted = [];
+  for (var i = 0; i < players.length; i += 2) {
+    var insertResult = await sbClient.from('tournament_matches').insert([{
+      tournament_id: parseInt(tournamentId),
+      player1_id: players[i] ? players[i].player_id : null,
+      player2_id: players[i + 1] ? players[i + 1].player_id : null,
+      stage: 'knockout', round: firstRoundName, match_order: i / 2, status: 'pending', bracket_type: bracketType
+    }]).select();
+    if (insertResult.data && insertResult.data[0]) { round1Inserted.push(insertResult.data[0]); }
+  }
+  var count = matchCount / 2;
+  while (count >= 1) {
+    var rName = getRoundName(count);
+    for (var j = 0; j < count; j++) {
+      await sbClient.from('tournament_matches').insert([{
+        tournament_id: parseInt(tournamentId),
+        player1_id: null, player2_id: null,
+        stage: 'knockout', round: rName, match_order: j, status: 'pending', bracket_type: bracketType
+      }]);
+    }
+    count = count / 2;
+  }
 
-        var matchCount = players.length / 2;
-        var firstRoundName = getRoundName(matchCount);
-        for (var i = 0; i < players.length; i += 2) {
-          await sbClient.from('tournament_matches').insert([{
-            tournament_id: parseInt(tournamentId),
-            player1_id: players[i] ? players[i].player_id : null,
-            player2_id: players[i + 1] ? players[i + 1].player_id : null,
-            stage: 'knockout', round: firstRoundName, match_order: i / 2, status: 'pending', bracket_type: bracketType
-          }]);
-        }
+  await resolveByes(round1Inserted, firstRoundName, bracketType);
+}
 
-        var count = matchCount / 2;
-        while (count >= 1) {
-          var rName = getRoundName(count);
-          for (var j = 0; j < count; j++) {
-            await sbClient.from('tournament_matches').insert([{
-              tournament_id: parseInt(tournamentId),
-              player1_id: null, player2_id: null,
-              stage: 'knockout', round: rName, match_order: j, status: 'pending', bracket_type: bracketType
-            }]);
-          }
-          count = count / 2;
-        }
+async function resolveByes(round1Matches, firstRoundName, bracketType) {
+  var byeScore = (tournamentData && tournamentData.bye_scoreline) ? tournamentData.bye_scoreline : 3;
+
+  for (var k = 0; k < round1Matches.length; k++) {
+    var m = round1Matches[k];
+    var hasP1 = !!m.player1_id;
+    var hasP2 = !!m.player2_id;
+    if (hasP1 === hasP2) { continue; }
+
+    var updateData = hasP1
+      ? { player1_score: byeScore, player2_score: 0, status: 'completed' }
+      : { player1_score: 0, player2_score: byeScore, status: 'completed' };
+    await sbClient.from('tournament_matches').update(updateData).eq('id', m.id);
+
+    var winnerId = hasP1 ? m.player1_id : m.player2_id;
+    var nextRound = getNextRoundName(firstRoundName);
+    if (nextRound) {
+      var nextOrder = Math.floor(m.match_order / 2);
+      var slot = m.match_order % 2 === 0 ? 'player1_id' : 'player2_id';
+      var nextMatch = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout').eq('round', nextRound).eq('match_order', nextOrder).eq('bracket_type', bracketType).single();
+      if (nextMatch.data) {
+        var upd = {};
+        upd[slot] = winnerId;
+        await sbClient.from('tournament_matches').update(upd).eq('id', nextMatch.data.id);
       }
+    }
+  }
+}
 
       async function generateSingleElimination() {
         var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
