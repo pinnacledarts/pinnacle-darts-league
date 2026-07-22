@@ -694,47 +694,82 @@ if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2
         return null;
       }
 
-      async function generateKnockouts() {
-        var progressPerGroup = parseInt(document.getElementById('progressPerGroup').value) || 2;
-        var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
-        if (existing.data && existing.data.length > 0) {
-          if (!confirm('Knockout bracket already exists. Regenerate?')) { return; }
-          await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
-        }
-        var groupsResult = await sbClient.from('tournament_groups').select('*, tournament_group_players(player_id)').eq('tournament_id', tournamentId).order('group_name');
-        if (!groupsResult.data || !groupsResult.data.length) { showMsg('knockouts-error', 'No groups found. Generate groups first.'); return; }
-        var matchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'group');
-        var matches = matchesResult.data || [];
-        var qualifiers = [];
-        groupsResult.data.forEach(function(group) {
-          var groupPlayers = group.tournament_group_players || [];
-          var standings = groupPlayers.map(function(gp) {
-            var pts = 0, won = 0;
-            matches.forEach(function(m) {
-              if (m.group_id !== group.id || m.status !== 'completed') { return; }
-              if (m.player1_id === gp.player_id && m.player1_score > m.player2_score) { pts += 3; won++; }
-              else if (m.player2_id === gp.player_id && m.player2_score > m.player1_score) { pts += 3; won++; }
-            });
-            return { player_id: gp.player_id, pts: pts, won: won };
-          }).sort(function(a, b) { return b.pts - a.pts || b.won - a.won; });
-          for (var i = 0; i < Math.min(progressPerGroup, standings.length); i++) {
-            qualifiers.push({ player_id: standings[i].player_id, seed: i + 1 });
-          }
-        });
-        if (qualifiers.length < 2) { showMsg('knockouts-error', 'Not enough players to generate knockouts.'); return; }
-        var winners = qualifiers.filter(function(q) { return q.seed === 1; });
-        var runnersUp = qualifiers.filter(function(q) { return q.seed === 2; });
-        var others = qualifiers.filter(function(q) { return q.seed > 2; });
-        var seeded = [];
-        for (var i = 0; i < Math.max(winners.length, runnersUp.length); i++) {
-          if (winners[i]) { seeded.push(winners[i]); }
-          if (runnersUp[i]) { seeded.push(runnersUp[i]); }
-        }
-        others.forEach(function(o) { seeded.push(o); });
-        await createBracketRounds(seeded, 'A');
-        showMsg('knockouts-success', 'Knockout bracket generated!');
-        loadKnockouts();
+function toggleGenerateBInput() {
+  var checked = document.getElementById('generateBCheckbox').checked;
+  document.getElementById('generateBCount').style.display = checked ? 'inline-block' : 'none';
+}
+
+function pairAvoidingSameGroup(qualifiers) {
+  var remaining = qualifiers.slice();
+  for (var i = remaining.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = remaining[i]; remaining[i] = remaining[j]; remaining[j] = temp;
+  }
+  var pairsOrdered = [];
+  while (remaining.length > 1) {
+    var p1 = remaining.shift();
+    var idx = remaining.findIndex(function(p) { return p.group_id !== p1.group_id; });
+    if (idx === -1) { idx = 0; }
+    var p2 = remaining.splice(idx, 1)[0];
+    pairsOrdered.push(p1, p2);
+  }
+  if (remaining.length === 1) { pairsOrdered.push(remaining[0]); }
+  return pairsOrdered;
+}
+
+async function generateKnockouts() {
+  var progressPerGroup = parseInt(document.getElementById('progressPerGroup').value) || 2;
+  var generateB = document.getElementById('generateBCheckbox').checked;
+  var generateBCount = parseInt(document.getElementById('generateBCount').value) || 0;
+
+  var existing = await sbClient.from('tournament_matches').select('id').eq('tournament_id', tournamentId).eq('stage', 'knockout');
+  if (existing.data && existing.data.length > 0) {
+    if (!confirm('Knockout bracket already exists. Regenerate?')) { return; }
+    await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
+  }
+  var groupsResult = await sbClient.from('tournament_groups').select('*, tournament_group_players(player_id)').eq('tournament_id', tournamentId).order('group_name');
+  if (!groupsResult.data || !groupsResult.data.length) { showMsg('knockouts-error', 'No groups found. Generate groups first.'); return; }
+  var matchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'group');
+  var matches = matchesResult.data || [];
+
+  var mainQualifiers = [];
+  var bQualifiers = [];
+
+  groupsResult.data.forEach(function(group) {
+    var groupPlayers = group.tournament_group_players || [];
+    var standings = groupPlayers.map(function(gp) {
+      var pts = 0, won = 0;
+      matches.forEach(function(m) {
+        if (m.group_id !== group.id || m.status !== 'completed') { return; }
+        if (m.player1_id === gp.player_id && m.player1_score > m.player2_score) { pts += 3; won++; }
+        else if (m.player2_id === gp.player_id && m.player2_score > m.player1_score) { pts += 3; won++; }
+      });
+      return { player_id: gp.player_id, pts: pts, won: won };
+    }).sort(function(a, b) { return b.pts - a.pts || b.won - a.won; });
+
+    for (var i = 0; i < Math.min(progressPerGroup, standings.length); i++) {
+      mainQualifiers.push({ player_id: standings[i].player_id, group_id: group.id });
+    }
+    if (generateB) {
+      for (var j = progressPerGroup; j < Math.min(progressPerGroup + generateBCount, standings.length); j++) {
+        bQualifiers.push({ player_id: standings[j].player_id, group_id: group.id });
       }
+    }
+  });
+
+  if (mainQualifiers.length < 2) { showMsg('knockouts-error', 'Not enough players to generate knockouts.'); return; }
+
+  var mainPaired = pairAvoidingSameGroup(mainQualifiers);
+  await createBracketRounds(mainPaired, 'A');
+
+  if (generateB && bQualifiers.length >= 2) {
+    var bPaired = pairAvoidingSameGroup(bQualifiers);
+    await createBracketRounds(bPaired, 'B');
+  }
+
+  showMsg('knockouts-success', 'Knockout bracket generated!' + (generateB && bQualifiers.length >= 2 ? ' B bracket also generated.' : ''));
+  loadKnockouts();
+}
 
       async function clearKnockouts() {
         if (!confirm('Delete the bracket?')) { return; }
