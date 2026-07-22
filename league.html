@@ -360,7 +360,7 @@ function buildWhatsAppLink(phone) {
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error submitting score. Please try again.'); return; }
 
-        await updatePlayerAverage(currentUserId);
+        await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
 
         loadFixtures();
         loadStandings();
@@ -375,7 +375,7 @@ function buildWhatsAppLink(phone) {
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error saving average. Please try again.'); return; }
 
-        await updatePlayerAverage(currentUserId);
+        await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
         loadFixtures();
       }
 
@@ -449,7 +449,7 @@ function buildWhatsAppLink(phone) {
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error submitting score. Please try again.'); return; }
 
-        await updatePlayerAverage(currentUserId);
+        await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
 
         if (currentRound === 'Semi Final') {
           var semisQuery = sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff').eq('round', 'Semi Final');
@@ -479,7 +479,7 @@ function buildWhatsAppLink(phone) {
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error saving average. Please try again.'); return; }
 
-        await updatePlayerAverage(currentUserId);
+        await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
         loadPlayoffs();
       }
 
