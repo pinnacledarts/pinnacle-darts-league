@@ -116,6 +116,7 @@ main { padding: 24px 20px; }
         <button class="tab" onclick="showTab('academy', event)">Academy</button>
 <button class="tab" onclick="showTab('enquiries', event)" id="enquiriesTabBtn">Enquiries</button>
 <button class="tab" onclick="showTab('bugs', event)" id="bugsTabBtn">Bug Reports</button>
+<button class="tab" onclick="showTab('merch', event)">Merch</button>
 <button class="tab" onclick="showTab('news', event)">News</button>
       </div>
 
@@ -575,8 +576,47 @@ main { padding: 24px 20px; }
     <div id="bugReportsList"><p class="empty-state">Loading...</p></div>
   </div>
 </div>
+<!-- MERCH TAB -->
+<div id="tab-merch" class="tab-content">
+  <div class="card">
+    <h3 id="merchFormTitle">Add Merch Item</h3>
+    <div class="success-msg" id="merch-success"></div>
+    <div class="error-msg" id="merch-error"></div>
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" id="merchTitle" placeholder="e.g. Pinnacle Darts T-Shirt" />
+    </div>
+    <div class="form-group">
+      <label>Price (£)</label>
+      <input type="number" id="merchPrice" step="0.01" placeholder="e.g. 25.00" />
+    </div>
+    <div class="form-group">
+      <label>Stripe Payment Link</label>
+      <input type="text" id="merchStripeLink" placeholder="https://buy.stripe.com/..." />
+    </div>
+    <div class="form-group">
+      <label>Current Images</label>
+      <div id="merchCurrentImages"></div>
+    </div>
+    <div class="form-group">
+      <label>Add Images</label>
+      <input type="file" id="merchImages" accept="image/*" multiple />
+    </div>
+    <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+      <input type="checkbox" id="merchActive" checked style="width:18px;height:18px;" />
+      <label style="margin:0;">Active (visible on Merch page)</label>
+    </div>
+    <button class="btn btn-primary" id="merchSaveBtn" onclick="saveMerchItem()">Add Item</button>
+    <button class="btn btn-secondary" id="merchCancelBtn" onclick="cancelMerchEdit()" style="display:none;">Cancel Edit</button>
+  </div>
 
-      <!-- NEWS TAB -->
+  <div class="card">
+    <h3>Manage Merch</h3>
+    <div id="merchList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
+  </div>
+</div>
+
+<!-- NEWS TAB -->
       <div id="tab-news" class="tab-content">
         <div class="card">
           <h3>Add News Article</h3>
