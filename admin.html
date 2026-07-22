@@ -590,10 +590,18 @@ main { padding: 24px 20px; }
       <label>Price (£)</label>
       <input type="number" id="merchPrice" step="0.01" placeholder="e.g. 25.00" />
     </div>
-    <div class="form-group">
-      <label>Stripe Payment Link</label>
-      <input type="text" id="merchStripeLink" placeholder="https://buy.stripe.com/..." />
-    </div>
+<div class="form-group">
+  <label>Stripe Payment Link</label>
+  <input type="text" id="merchStripeLink" placeholder="https://buy.stripe.com/..." />
+</div>
+<div class="form-group">
+  <label>Option Label (optional — e.g. "Ring Light Model" or "Colour")</label>
+  <input type="text" id="merchOptionLabel" placeholder="Leave blank if no options needed" />
+</div>
+<div class="form-group">
+  <label>Option Choices (comma-separated)</label>
+  <input type="text" id="merchOptionChoices" placeholder="e.g. Red, Blue, Black" />
+</div>
     <div class="form-group">
       <label>Current Images</label>
       <div id="merchCurrentImages"></div>
@@ -737,6 +745,8 @@ function editMerchItem(id) {
   document.getElementById('merchTitle').value = item.title || '';
   document.getElementById('merchPrice').value = item.price != null ? item.price : '';
   document.getElementById('merchStripeLink').value = item.stripe_link || '';
+  document.getElementById('merchOptionLabel').value = item.option_label || '';
+  document.getElementById('merchOptionChoices').value = item.option_choices ? item.option_choices.join(', ') : '';
   document.getElementById('merchActive').checked = item.active;
   document.getElementById('merchSaveBtn').textContent = 'Save Changes';
   document.getElementById('merchCancelBtn').style.display = 'inline-block';
@@ -752,6 +762,8 @@ function cancelMerchEdit() {
   document.getElementById('merchTitle').value = '';
   document.getElementById('merchPrice').value = '';
   document.getElementById('merchStripeLink').value = '';
+  document.getElementById('merchOptionLabel').value = '';
+  document.getElementById('merchOptionChoices').value = '';
   document.getElementById('merchActive').checked = true;
   document.getElementById('merchSaveBtn').textContent = 'Add Item';
   document.getElementById('merchCancelBtn').style.display = 'none';
@@ -779,13 +791,19 @@ async function saveMerchItem() {
     imageUrls.push(urlData.data.publicUrl);
   }
 
-  var payload = {
-    title: title,
-    price: price ? parseFloat(price) : null,
-    stripe_link: stripeLink || null,
-    active: active,
-    image_urls: imageUrls
-  };
+var optionLabel = document.getElementById('merchOptionLabel').value.trim();
+var optionChoicesRaw = document.getElementById('merchOptionChoices').value.trim();
+var optionChoices = optionChoicesRaw ? optionChoicesRaw.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : null;
+
+var payload = {
+  title: title,
+  price: price ? parseFloat(price) : null,
+  stripe_link: stripeLink || null,
+  option_label: optionLabel || null,
+  option_choices: optionChoices,
+  active: active,
+  image_urls: imageUrls
+};
 
   var result;
   if (editingMerchId) {
