@@ -292,6 +292,21 @@ function getStatusBadgeHtml(status) {
   var labels = { upcoming: 'Upcoming', live: 'Live', completed: 'Completed' };
   return '<span class="badge badge-status-' + status + '">' + (labels[status] || status) + '</span>';
 }
+async function updatePlayerStats(playerId) {
+  var leagueResult = await sbClient.from('league_matches').select('player1_id, player2_id, player1_score, player2_score, status').or('player1_id.eq.' + playerId + ',player2_id.eq.' + playerId).eq('status', 'completed');
+  var tournamentResult = await sbClient.from('tournament_matches').select('player1_id, player2_id, player1_score, player2_score, status').or('player1_id.eq.' + playerId + ',player2_id.eq.' + playerId).eq('status', 'completed');
+
+  var allMatches = (leagueResult.data || []).concat(tournamentResult.data || []);
+  var matchesPlayed = allMatches.length;
+  var wins = 0;
+
+  allMatches.forEach(function(m) {
+    if (m.player1_id === playerId && m.player1_score > m.player2_score) { wins++; }
+    else if (m.player2_id === playerId && m.player2_score > m.player1_score) { wins++; }
+  });
+
+  await sbClient.from('profiles').update({ wins: wins, matches: matchesPlayed }).eq('id', playerId);
+}
 async function updatePlayerAverage(playerId) {
   var leagueResult = await sbClient.from('league_matches').select('player1_id, player2_id, player1_avg, player2_avg').or('player1_id.eq.' + playerId + ',player2_id.eq.' + playerId);
   var tournamentResult = await sbClient.from('tournament_matches').select('player1_id, player2_id, player1_avg, player2_avg').or('player1_id.eq.' + playerId + ',player2_id.eq.' + playerId);
