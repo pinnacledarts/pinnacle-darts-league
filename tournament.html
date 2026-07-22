@@ -353,7 +353,7 @@ async function submitGroupScore(matchId, isP1) {
   var result = await sbClient.from('tournament_matches').update(update).eq('id', matchId);
   if (result.error) { alert('Error submitting score. Please try again.'); return; }
 
-  await updatePlayerAverage(currentUserId);
+  await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
   loadGroups();
 }
 
@@ -366,7 +366,7 @@ async function submitGroupAverageOnly(matchId, isP1) {
   var result = await sbClient.from('tournament_matches').update(update).eq('id', matchId);
   if (result.error) { alert('Error saving average. Please try again.'); return; }
 
-  await updatePlayerAverage(currentUserId);
+  await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
   loadGroups();
 }
 
@@ -495,7 +495,7 @@ async function submitGroupAverageOnly(matchId, isP1) {
   var result = await sbClient.from('tournament_matches').update(update0).eq('id', matchId);
   if (result.error) { alert('Error submitting score. Please try again.'); return; }
 
-  await updatePlayerAverage(currentUserId);
+  await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
 
   var matchRow = (await sbClient.from('tournament_matches').select('*').eq('id', matchId).single()).data;
   var winnerId = matchRow.player1_score > matchRow.player2_score ? matchRow.player1_id : matchRow.player2_id;
@@ -524,7 +524,7 @@ async function submitKnockoutAverageOnly(matchId, isP1) {
   var result = await sbClient.from('tournament_matches').update(update).eq('id', matchId);
   if (result.error) { alert('Error saving average. Please try again.'); return; }
 
-  await updatePlayerAverage(currentUserId);
+  await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
   loadKnockouts();
 }
 
