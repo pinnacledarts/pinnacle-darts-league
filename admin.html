@@ -655,24 +655,11 @@ main { padding: 24px 20px; }
 </div>
 <!-- CREDIT TAB -->
 <div id="tab-credit" class="tab-content">
-<div class="card">
-    <h3>Check Player Balance</h3>
-    <div class="form-group">
-      <label>Search Players</label>
-      <input type="text" class="search-bar" id="creditBalanceSearch" placeholder="Search by name or username..." oninput="filterCreditBalanceSearch()" />
-    </div>
-    <div id="creditBalanceResults"></div>
-  </div>
-
-  <div class="card">
-    <h3>Manually Adjust Player Balance</h3>
-    <p style="color:#666;font-size:0.9em;margin-top:-8px;">Use this for cash payments, goodwill credit, or corrections.</p>
-    <div class="success-msg" id="creditAdjust-success"></div>
-    <div class="error-msg" id="creditAdjust-error"></div>
-    <div class="form-row">
+<div class="form-row">
       <div class="form-group">
         <label>Player</label>
-        <select id="creditAdjustPlayer"></select>
+        <select id="creditAdjustPlayer" onchange="showSelectedPlayerBalance()"></select>
+        <p style="font-size:0.85em;color:#555;margin-top:6px;">Current balance: <strong id="selectedPlayerBalance">-</strong></p>
       </div>
       <div class="form-group">
         <label>Amount (£, use negative to deduct)</label>
@@ -811,13 +798,22 @@ var editingMerchImages = [];
 
   await sbClient.from('profiles').update({ credit_balance: balance }).eq('id', playerId);
 }
-      async function loadCreditAdjustPlayerSelect() {
-  var result = await sbClient.from('profiles').select('id, full_name, username').order('full_name');
+async function loadCreditAdjustPlayerSelect() {
+  var result = await sbClient.from('profiles').select('id, full_name, username, credit_balance').order('full_name');
+  window.creditPlayerListData = result.data || [];
   var select = document.getElementById('creditAdjustPlayer');
   select.innerHTML = '';
   (result.data || []).forEach(function(p) {
     select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
   });
+  showSelectedPlayerBalance();
+}
+
+function showSelectedPlayerBalance() {
+  var playerId = document.getElementById('creditAdjustPlayer').value;
+  var player = (window.creditPlayerListData || []).find(function(p) { return p.id === playerId; });
+  var balance = player ? parseFloat(player.credit_balance || 0).toFixed(2) : '-';
+  document.getElementById('selectedPlayerBalance').textContent = '£' + balance;
 }
 
 async function adjustPlayerCredit() {
@@ -838,8 +834,9 @@ async function adjustPlayerCredit() {
   var finalProfile = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
   var finalBalance = finalProfile.data ? parseFloat(finalProfile.data.credit_balance || 0) : newBalance;
 
-  showMsg('creditAdjust-success', 'Balance updated! New balance: £' + finalBalance.toFixed(2));
+showMsg('creditAdjust-success', 'Balance updated! New balance: £' + finalBalance.toFixed(2));
   document.getElementById('creditAdjustAmount').value = '';
+  await loadCreditAdjustPlayerSelect();
 }
 
 async function addTopupPackage() {
