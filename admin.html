@@ -813,6 +813,47 @@ main { padding: 24px 20px; }
       var allDrillAttemptsData = [];
       var editingMerchId = null;
 var editingMerchImages = [];
+      async function convertGuestToFullAccount(oldId, fullName, username) {
+  var email = document.getElementById('convertEmail-' + oldId).value.trim();
+  var password = document.getElementById('convertPassword-' + oldId).value;
+
+  if (!email || !password) { alert('Please enter an email and temporary password.'); return; }
+  if (password.length < 6) { alert('Password must be at least 6 characters.'); return; }
+
+  if (!confirm('Create a full account for ' + fullName + ' and transfer all their existing data across? This cannot be undone.')) { return; }
+
+  var { data, error } = await sbClient.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+      data: {
+        full_name: fullName,
+        username: username + '_temp_' + Date.now(),
+        access: 'online',
+        requested_access: 'online',
+        access_status: 'approved'
+      }
+    }
+  });
+
+  if (error) {
+    alert('Error creating account: ' + error.message);
+    return;
+  }
+
+  var newId = data.user.id;
+
+  var migrateResult = await sbClient.rpc('migrate_guest_profile', { old_id: oldId, new_id: newId });
+  if (migrateResult.error) {
+    alert('Account created, but migrating their data failed: ' + migrateResult.error.message + '. Please check manually — their new account email is ' + email + '.');
+    return;
+  }
+
+  await sbClient.from('profiles').update({ username: username }).eq('id', newId);
+
+  alert(fullName + ' now has a full account! Share these details with them: Email: ' + email + ' — Password: ' + password + '. They\'ll need to confirm their email before logging in.');
+  loadPlayers();
+}
       async function manuallyAddPlayer() {
   var fullName = document.getElementById('manualAddFullName').value.trim();
   var username = document.getElementById('manualAddUsername').value.trim();
@@ -1665,13 +1706,22 @@ function updateRegistrationStats() {
             '<button class="btn-small" onclick="updatePhone(\'' + p.id + '\')">Save</button></div>';
           var starterAvgField = '<div style="display:flex;gap:6px;"><input type="number" step="0.01" value="' + (p.starter_average || '') + '" id="stavg-' + p.id + '" style="width:100px;padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;" placeholder="e.g. 45.5" /> ' +
             '<button class="btn-small" onclick="updateStarterAvg(\'' + p.id + '\')">Save</button></div>';
-          var isProtected = p.username === 'Macca23';
+         var isProtected = p.username === 'Macca23';
           var adminBtn = isProtected ? '<span style="color:#888;font-size:0.85em;">Protected</span>' : '<button class="btn-small" onclick="toggleAdmin(\'' + p.id + '\', ' + p.is_admin + ', \'' + p.username + '\')">' + (p.is_admin ? 'Remove Admin' : 'Make Admin') + '</button>';
           var removeBtn = isProtected ? '' : '<button class="btn-small danger" onclick="deletePlayer(\'' + p.id + '\', \'' + p.username + '\')">Remove</button>';
-
+          var guestBadge = p.is_guest ? ' <span style="background-color:#eeeeee;color:#666666;padding:2px 8px;border-radius:10px;font-size:0.75em;">Guest</span>' : '';
+          var convertSection = p.is_guest ? (
+            '<div class="form-group" style="margin-top:12px;border-top:1px solid #eee;padding-top:12px;">' +
+            '<label>Upgrade to Full Account</label>' +
+            '<p style="font-size:0.85em;color:#888;margin:0 0 8px;">Give this player login access — all their existing stats and history will carry over.</p>' +
+            '<input type="email" id="convertEmail-' + p.id + '" placeholder="Their email address" style="width:100%;margin-bottom:6px;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
+            '<input type="text" id="convertPassword-' + p.id + '" placeholder="Temporary password" style="width:100%;margin-bottom:6px;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
+            '<button class="btn-small" onclick="convertGuestToFullAccount(\'' + p.id + '\', \'' + (p.full_name || p.username || '').replace(/'/g, "\\'") + '\', \'' + (p.username || '') + '\')">Convert to Full Account</button>' +
+            '</div>'
+          ) : '';
           return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
             '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePlayerRow(\'' + p.id + '\')">' +
-            '<div><strong>' + (p.full_name || '-') + '</strong><div style="color:#888;font-size:0.85em;">' + (p.username ? '@' + p.username : '-') + '</div></div>' +
+            '<div><strong>' + (p.full_name || '-') + '</strong>' + guestBadge + '<div style="color:#888;font-size:0.85em;">' + (p.username ? '@' + p.username : '-') + '</div></div>' +
             '<span style="color:#aaa;">▾</span>' +
             '</div>' +
             '<div id="player-row-' + p.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
@@ -1681,6 +1731,7 @@ function updateRegistrationStats() {
             '<div class="form-group"><label>Access</label>' + accessSelect + '</div>' +
             '<div class="form-group"><label>Admin</label><div>' + (p.is_admin ? 'Yes' : 'No') + '</div></div>' +
             '<div style="display:flex;gap:8px;margin-top:10px;">' + adminBtn + ' ' + removeBtn + '</div>' +
+            convertSection +
             '</div></div>';
         }).join('');
       }
