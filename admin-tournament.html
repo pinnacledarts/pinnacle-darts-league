@@ -498,9 +498,21 @@ async function toggleCheckIn(rowId, currentStatus) {
   loadPlayers();
 }
 
-      async function removePlayer(playerId) {
+     async function removePlayer(playerId) {
         if (!confirm('Remove this player from the tournament?')) { return; }
+
+        var entryResult = await sbClient.from('tournament_players').select('paid, amount_owed').eq('tournament_id', tournamentId).eq('player_id', playerId).single();
+        var entry = entryResult.data;
+
         await sbClient.from('tournament_players').delete().eq('tournament_id', tournamentId).eq('player_id', playerId);
+
+        if (entry && entry.paid && entry.amount_owed > 0) {
+          var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
+          var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+          var refundedBalance = currentBalance + parseFloat(entry.amount_owed);
+          await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', playerId);
+        }
+
         await loadPlayers();
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
