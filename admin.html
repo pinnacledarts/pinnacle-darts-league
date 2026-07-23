@@ -965,7 +965,7 @@ async function adjustPlayerCredit() {
 
   var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
   var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
-  var newBalance = currentBalance + amount;
+  var newBalance = Math.max(0, Math.min(50, currentBalance + amount));
 
   var result = await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', playerId);
   if (result.error) { showMsg('creditAdjust-error', result.error.message); return; }
@@ -1060,7 +1060,7 @@ async function toggleTopUpPaid(id, currentStatus, playerId, amount) {
 
   var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
   var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
-  var newBalance = newStatus ? currentBalance + amount : currentBalance - amount;
+  var newBalance = newStatus ? Math.min(50, currentBalance + amount) : Math.max(0, currentBalance - amount);
   await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', playerId);
 
   if (newStatus) { await settlePlayerTournamentDebts(playerId); }
