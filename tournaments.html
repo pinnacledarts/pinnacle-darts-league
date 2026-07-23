@@ -136,7 +136,7 @@ for (var i = 0; i < result.data.length; i++) {
 var joinBtn = '';
 if (currentUserId) {
   if (hasJoined) {
-    joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
+    joinBtn = '<button class="btn-join" onclick="leaveTournament(' + t.id + ', this)">Leave Tournament</button>';
   } else if (t.average_split && !playerHasAverage) {
     joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;" title="You need an average set before joining this tournament">Average Required</button>';
   } else if (isFull) {
@@ -147,12 +147,14 @@ if (currentUserId) {
 } else {
   joinBtn = '<a href="login.html" class="btn-join" style="display:inline-block;text-decoration:none;text-align:center;">Login to Join</a>';
 }
+  var paidBadge = t.is_paid ? '<p><strong>💷 Entry Fee:</strong> £' + t.entry_fee + '</p>' : '';
   var cardHtml = '<div class="tournament-card">' +
     getStatusBadgeHtml(status) +
     '<h3>' + t.name + '</h3>' +
     '<p><strong>Date:</strong> ' + dateStr + timeStr + '</p>' +
     '<p><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</p>' +
     '<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
+    paidBadge +
     (t.description ? '<p>' + t.description + '</p>' : '') +
     '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
     '<div class="card-actions">' +
@@ -201,7 +203,31 @@ async function joinTournament(tournamentId, btn, asReserve) {
       paidStatus = false;
     }
   }
+async function leaveTournament(tournamentId, btn) {
+  if (!confirm('Are you sure you want to leave this tournament?')) { return; }
+  btn.disabled = true;
+  btn.textContent = 'Leaving...';
 
+  var entryResult = await sbClient.from('tournament_players').select('id, paid, amount_owed').eq('tournament_id', tournamentId).eq('player_id', currentUserId).single();
+  var entry = entryResult.data;
+
+  var result = await sbClient.from('tournament_players').delete().eq('tournament_id', tournamentId).eq('player_id', currentUserId);
+  if (result.error) {
+    btn.disabled = false;
+    btn.textContent = 'Leave Tournament';
+    alert('Error leaving tournament. Please try again.');
+    return;
+  }
+
+  if (entry && entry.paid && entry.amount_owed > 0) {
+    var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', currentUserId).single();
+    var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+    var refundedBalance = currentBalance + parseFloat(entry.amount_owed);
+    await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', currentUserId);
+  }
+
+  loadTournaments();
+}
   var result = await sbClient.from('tournament_players').insert([{
     tournament_id: tournamentId,
     player_id: currentUserId,
