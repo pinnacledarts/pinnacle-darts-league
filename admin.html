@@ -176,22 +176,32 @@ main { padding: 24px 20px; }
               <label style="margin:0;">Average Split (splits into two cups by average)</label>
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Scoreline Format (used for BYE auto-wins)</label>
-              <select id="tournamentByeScoreline">
-                <option value="3" selected>First to 3</option>
-                <option value="4">First to 4</option>
-                <option value="5">First to 5</option>
-                <option value="6">First to 6</option>
-                <option value="7">First to 7</option>
-              </select>
-            </div>
-            <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:24px;">
-              <input type="checkbox" id="tournamentNoCheckin" style="width:18px;height:18px;" onchange="toggleTournamentCheckinFields()" />
-              <label style="margin:0;">No check-in required for this tournament</label>
-            </div>
-          </div>
+         <div class="form-row">
+  <div class="form-group">
+    <label>Scoreline Format (used for BYE auto-wins)</label>
+    <select id="tournamentByeScoreline">
+      <option value="3" selected>First to 3</option>
+      <option value="4">First to 4</option>
+      <option value="5">First to 5</option>
+      <option value="6">First to 6</option>
+      <option value="7">First to 7</option>
+    </select>
+  </div>
+  <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:24px;">
+    <input type="checkbox" id="tournamentNoCheckin" style="width:18px;height:18px;" onchange="toggleTournamentCheckinFields()" />
+    <label style="margin:0;">No check-in required for this tournament</label>
+  </div>
+</div>
+<div class="form-row">
+  <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:24px;">
+    <input type="checkbox" id="tournamentIsPaid" style="width:18px;height:18px;" onchange="toggleTournamentEntryFee()" />
+    <label style="margin:0;">Paid Tournament</label>
+  </div>
+  <div class="form-group" id="tournamentEntryFeeField" style="display:none;">
+    <label>Entry Fee (£)</label>
+    <input type="number" step="0.01" id="tournamentEntryFee" placeholder="e.g. 5.00" />
+  </div>
+</div>
           <div class="form-row" id="tournamentCheckinFields">
             <div class="form-group">
               <label>Check-in Opens</label>
@@ -1282,7 +1292,11 @@ async function deleteBugReport(id) {
           document.getElementById('tournamentDesc').value = t.description || '';
         }
       }
-
+function toggleTournamentEntryFee() {
+  var isPaid = document.getElementById('tournamentIsPaid').checked;
+  document.getElementById('tournamentEntryFeeField').style.display = isPaid ? 'block' : 'none';
+  if (!isPaid) { document.getElementById('tournamentEntryFee').value = ''; }
+}
 function toggleTournamentCheckinFields() {
   var noCheckin = document.getElementById('tournamentNoCheckin').checked;
   document.getElementById('tournamentCheckinFields').style.display = noCheckin ? 'none' : 'grid';
@@ -1306,6 +1320,8 @@ async function createTournament() {
     status: 'upcoming',
 average_split: document.getElementById('tournamentAvgSplit').checked,
 bye_scoreline: parseInt(document.getElementById('tournamentByeScoreline').value),
+is_paid: document.getElementById('tournamentIsPaid').checked,
+entry_fee: document.getElementById('tournamentIsPaid').checked ? (parseFloat(document.getElementById('tournamentEntryFee').value) || 0) : 0,
 checkin_start: noCheckin ? null : (document.getElementById('tournamentCheckinStart').value ? new Date(document.getElementById('tournamentCheckinStart').value).toISOString() : null),
 checkin_end: noCheckin ? null : (document.getElementById('tournamentCheckinEnd').value ? new Date(document.getElementById('tournamentCheckinEnd').value).toISOString() : null),
 description: document.getElementById('tournamentDesc').value.trim() || null
