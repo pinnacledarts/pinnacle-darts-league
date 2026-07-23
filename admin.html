@@ -838,6 +838,9 @@ async function deleteTopupPackage(id) {
 async function loadCreditTopUps() {
   var result = await sbClient.from('credit_top_ups').select('*, profiles(full_name, username, phone), credit_topup_packages(amount)').order('created_at', { ascending: false });
   var container = document.getElementById('topupRequestsList');
+  var pendingCount = result.data ? result.data.filter(function(t) { return !t.paid; }).length : 0;
+  var creditBtn = document.getElementById('creditTabBtn');
+  if (creditBtn) { creditBtn.textContent = pendingCount > 0 ? 'Credit (' + pendingCount + ')' : 'Credit'; }
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No top-up requests yet.</p>'; return; }
 
   container.innerHTML = result.data.map(function(t) {
@@ -2620,9 +2623,8 @@ async function updateAcademyBadge() {
   var joinResult = await sbClient.from('academy_enquiries').select('id').eq('type', 'join').eq('is_read', false);
   var sponsorResult = await sbClient.from('academy_enquiries').select('id').eq('type', 'sponsor').eq('is_read', false);
   var shirtResult = await sbClient.from('shirt_design_submissions').select('id').eq('status', 'pending');
-  var merchOrderResult = await sbClient.from('merch_orders').select('id').eq('paid', false);
-  var topUpResult = await sbClient.from('credit_top_ups').select('id').eq('paid', false);
-  var count = (playerResult.data ? playerResult.data.length : 0) + (divisionResult.data ? divisionResult.data.length : 0) + (joinResult.data ? joinResult.data.length : 0) + (sponsorResult.data ? sponsorResult.data.length : 0) + (shirtResult.data ? shirtResult.data.length : 0) + (merchOrderResult.data ? merchOrderResult.data.length : 0) + (topUpResult.data ? topUpResult.data.length : 0);
+var merchOrderResult = await sbClient.from('merch_orders').select('id').eq('paid', false);
+  var count = (playerResult.data ? playerResult.data.length : 0) + (divisionResult.data ? divisionResult.data.length : 0) + (joinResult.data ? joinResult.data.length : 0) + (sponsorResult.data ? sponsorResult.data.length : 0) + (shirtResult.data ? shirtResult.data.length : 0) + (merchOrderResult.data ? merchOrderResult.data.length : 0);
   var btn = document.getElementById('enquiriesTabBtn');
   if (btn) { btn.textContent = count > 0 ? 'Enquiries (' + count + ')' : 'Enquiries'; }
 }
