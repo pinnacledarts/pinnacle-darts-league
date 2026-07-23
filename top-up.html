@@ -131,23 +131,31 @@
         }).join('');
       }
 
-      async function requestTopUp(packageId, amount, stripeLink) {
-        var result = await sbClient.from('credit_top_ups').insert([{
-          player_id: currentUserId,
-          package_id: packageId,
-          requested_amount: amount
-        }]);
+async function requestTopUp(packageId, amount, stripeLink) {
+  var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', currentUserId).single();
+  var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
 
-        if (result.error) {
-          alert('Error recording your request: ' + result.error.message);
-          return;
-        }
+  if (currentBalance + amount > 50) {
+    alert('This top-up would take your balance over the £50 limit. Your current balance is £' + currentBalance.toFixed(2) + ', so you can top up a maximum of £' + (50 - currentBalance).toFixed(2) + ' right now.');
+    return;
+  }
 
-        if (stripeLink) {
-          window.open(stripeLink, '_blank');
-        }
-        loadHistory();
-      }
+  var result = await sbClient.from('credit_top_ups').insert([{
+    player_id: currentUserId,
+    package_id: packageId,
+    requested_amount: amount
+  }]);
+
+  if (result.error) {
+    alert('Error recording your request: ' + result.error.message);
+    return;
+  }
+
+  if (stripeLink) {
+    window.open(stripeLink, '_blank');
+  }
+  loadHistory();
+}
 
       async function loadHistory() {
         var result = await sbClient.from('credit_top_ups').select('*, credit_topup_packages(amount)').eq('player_id', currentUserId).order('created_at', { ascending: false });
