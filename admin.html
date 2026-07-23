@@ -768,6 +768,27 @@ main { padding: 24px 20px; }
       var allDrillAttemptsData = [];
       var editingMerchId = null;
 var editingMerchImages = [];
+      async function settlePlayerTournamentDebts(playerId) {
+  var unpaidResult = await sbClient.from('tournament_players').select('id, amount_owed').eq('player_id', playerId).eq('paid', false).order('created_at', { ascending: true });
+  var unpaidEntries = unpaidResult.data || [];
+  if (!unpaidEntries.length) { return; }
+
+  var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
+  var balance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+
+  for (var i = 0; i < unpaidEntries.length; i++) {
+    var entry = unpaidEntries[i];
+    var owed = parseFloat(entry.amount_owed) || 0;
+    if (balance >= owed) {
+      balance -= owed;
+      await sbClient.from('tournament_players').update({ paid: true }).eq('id', entry.id);
+    } else {
+      break;
+    }
+  }
+
+  await sbClient.from('profiles').update({ credit_balance: balance }).eq('id', playerId);
+}
       async function loadCreditAdjustPlayerSelect() {
   var result = await sbClient.from('profiles').select('id, full_name, username').order('full_name');
   var select = document.getElementById('creditAdjustPlayer');
@@ -790,7 +811,12 @@ async function adjustPlayerCredit() {
   var result = await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', playerId);
   if (result.error) { showMsg('creditAdjust-error', result.error.message); return; }
 
-  showMsg('creditAdjust-success', 'Balance updated! New balance: £' + newBalance.toFixed(2));
+  if (amount > 0) { await settlePlayerTournamentDebts(playerId); }
+
+  var finalProfile = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
+  var finalBalance = finalProfile.data ? parseFloat(finalProfile.data.credit_balance || 0) : newBalance;
+
+  showMsg('creditAdjust-success', 'Balance updated! New balance: £' + finalBalance.toFixed(2));
   document.getElementById('creditAdjustAmount').value = '';
 }
 
@@ -876,6 +902,8 @@ async function toggleTopUpPaid(id, currentStatus, playerId, amount) {
   var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
   var newBalance = newStatus ? currentBalance + amount : currentBalance - amount;
   await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', playerId);
+
+  if (newStatus) { await settlePlayerTournamentDebts(playerId); }
 
   loadCreditTopUps();
 }
