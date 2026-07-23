@@ -319,6 +319,53 @@ main { padding: 24px 20px; }
 <!-- PLAYERS TAB -->
 <div id="tab-players" class="tab-content">
   <div class="card">
+    <h3>Manually Add a Player (Guest Profile)</h3>
+    <p style="color:#666;font-size:0.9em;margin-top:-8px;">For players who aren't comfortable registering themselves. Creates a profile you can add to tournaments and track stats for — no login required. They can be upgraded to a full account with login access later if they want one.</p>
+    <div class="success-msg" id="manualAdd-success"></div>
+    <div class="error-msg" id="manualAdd-error"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="manualAddFullName" placeholder="e.g. John Smith" />
+      </div>
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="manualAddUsername" placeholder="e.g. johns123" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Phone (optional)</label>
+        <input type="tel" id="manualAddPhone" placeholder="e.g. +44 7123 456789" />
+      </div>
+      <div class="form-group">
+        <label>Date of Birth (optional)</label>
+        <input type="date" id="manualAddDob" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Platform</label>
+        <select id="manualAddPlatform">
+          <option value="">-- None --</option>
+          <option value="dartcounter">Dartcounter</option>
+          <option value="scolia">Scolia</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Access</label>
+        <select id="manualAddAccess">
+          <option value="academy" selected>Academy</option>
+          <option value="online">Online</option>
+          <option value="both">Both</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="manuallyAddPlayer()">Create Guest Profile</button>
+  </div>
+
+  <div class="card">
     <h3>Registration Overview</h3>
     <div class="key-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
       <div class="stat-box" style="border:1px solid #dddddd;border-radius:8px;padding:20px;text-align:center;">
@@ -768,6 +815,57 @@ main { padding: 24px 20px; }
       var allDrillAttemptsData = [];
       var editingMerchId = null;
 var editingMerchImages = [];
+      async function manuallyAddPlayer() {
+  var fullName = document.getElementById('manualAddFullName').value.trim();
+  var username = document.getElementById('manualAddUsername').value.trim();
+  var phone = document.getElementById('manualAddPhone').value.trim();
+  var dob = document.getElementById('manualAddDob').value;
+  var platform = document.getElementById('manualAddPlatform').value;
+  var access = document.getElementById('manualAddAccess').value;
+
+  if (!fullName || !username) {
+    showMsg('manualAdd-error', 'Please fill in at least a name and username.');
+    return;
+  }
+
+  var existingUsername = await sbClient.from('profiles').select('id').eq('username', username).maybeSingle();
+  if (existingUsername.data) {
+    showMsg('manualAdd-error', 'That username is already taken.');
+    return;
+  }
+  if (phone) {
+    var existingPhone = await sbClient.from('profiles').select('id').eq('phone', phone).maybeSingle();
+    if (existingPhone.data) {
+      showMsg('manualAdd-error', 'An account with this phone number already exists.');
+      return;
+    }
+  }
+
+  var guestId = crypto.randomUUID();
+
+  var result = await sbClient.from('profiles').insert([{
+    id: guestId,
+    full_name: fullName,
+    username: username,
+    phone: phone || null,
+    date_of_birth: dob || null,
+    platform: platform || null,
+    access: access,
+    is_guest: true
+  }]);
+
+  if (result.error) {
+    showMsg('manualAdd-error', result.error.message);
+    return;
+  }
+
+  showMsg('manualAdd-success', fullName + ' has been added as a guest profile!');
+  document.getElementById('manualAddFullName').value = '';
+  document.getElementById('manualAddUsername').value = '';
+  document.getElementById('manualAddPhone').value = '';
+  document.getElementById('manualAddDob').value = '';
+  loadPlayers();
+}
       async function filterCreditBalanceSearch() {
   var val = document.getElementById('creditBalanceSearch').value.toLowerCase().trim();
   var container = document.getElementById('creditBalanceResults');
