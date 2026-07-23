@@ -758,6 +758,120 @@ main { padding: 24px 20px; }
       var allDrillAttemptsData = [];
       var editingMerchId = null;
 var editingMerchImages = [];
+      async function loadCreditAdjustPlayerSelect() {
+  var result = await sbClient.from('profiles').select('id, full_name, username').order('full_name');
+  var select = document.getElementById('creditAdjustPlayer');
+  select.innerHTML = '';
+  (result.data || []).forEach(function(p) {
+    select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
+  });
+}
+
+async function adjustPlayerCredit() {
+  var playerId = document.getElementById('creditAdjustPlayer').value;
+  var amount = parseFloat(document.getElementById('creditAdjustAmount').value);
+  if (!playerId) { showMsg('creditAdjust-error', 'Please select a player.'); return; }
+  if (isNaN(amount)) { showMsg('creditAdjust-error', 'Please enter a valid amount.'); return; }
+
+  var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
+  var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+  var newBalance = currentBalance + amount;
+
+  var result = await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', playerId);
+  if (result.error) { showMsg('creditAdjust-error', result.error.message); return; }
+
+  showMsg('creditAdjust-success', 'Balance updated! New balance: £' + newBalance.toFixed(2));
+  document.getElementById('creditAdjustAmount').value = '';
+}
+
+async function addTopupPackage() {
+  var amount = parseFloat(document.getElementById('packageAmount').value);
+  var stripeLink = document.getElementById('packageStripeLink').value.trim();
+  if (isNaN(amount) || amount <= 0) { showMsg('package-error', 'Please enter a valid amount.'); return; }
+  if (!stripeLink) { showMsg('package-error', 'Please enter a Stripe Payment Link.'); return; }
+
+  var result = await sbClient.from('credit_topup_packages').insert([{ amount: amount, stripe_link: stripeLink, active: true }]);
+  if (result.error) { showMsg('package-error', result.error.message); return; }
+
+  showMsg('package-success', 'Package added!');
+  document.getElementById('packageAmount').value = '';
+  document.getElementById('packageStripeLink').value = '';
+  loadTopupPackages();
+}
+
+async function loadTopupPackages() {
+  var result = await sbClient.from('credit_topup_packages').select('*').order('amount');
+  var container = document.getElementById('packagesList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No packages yet.</p>'; return; }
+
+  window.allPackagesData = result.data;
+
+  container.innerHTML = '<table><thead><tr><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>' +
+    result.data.map(function(p) {
+      return '<tr><td>£' + p.amount + '</td><td>' + (p.active ? 'Active' : 'Hidden') + '</td>' +
+        '<td><button class="btn-small" onclick="togglePackageActive(' + p.id + ', ' + p.active + ')">' + (p.active ? 'Hide' : 'Show') + '</button> ' +
+        '<button class="btn-small danger" onclick="deleteTopupPackage(' + p.id + ')">Delete</button></td></tr>';
+    }).join('') + '</tbody></table>';
+}
+
+async function togglePackageActive(id, currentStatus) {
+  await sbClient.from('credit_topup_packages').update({ active: !currentStatus }).eq('id', id);
+  loadTopupPackages();
+}
+
+async function deleteTopupPackage(id) {
+  if (!confirm('Delete this package?')) { return; }
+  await sbClient.from('credit_topup_packages').delete().eq('id', id);
+  loadTopupPackages();
+}
+
+async function loadCreditTopUps() {
+  var result = await sbClient.from('credit_top_ups').select('*, profiles(full_name, username, phone), credit_topup_packages(amount)').order('created_at', { ascending: false });
+  var container = document.getElementById('topupRequestsList');
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No top-up requests yet.</p>'; return; }
+
+  container.innerHTML = result.data.map(function(t) {
+    var buyer = t.profiles || {};
+    var buyerName = buyer.full_name || buyer.username || 'Unknown';
+    var pkg = t.credit_topup_packages || {};
+    var amount = pkg.amount != null ? pkg.amount : t.requested_amount;
+    var waLink = buildAdminWhatsAppLink(buyer.phone);
+    var waButtonHtml = waLink ? '<a href="' + waLink + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background-color:#25D366;color:#ffffff;padding:4px 10px;border-radius:20px;font-size:0.8em;text-decoration:none;font-weight:bold;">💬 WhatsApp</a>' : '<span style="color:#888;font-size:0.8em;">No phone on file</span>';
+    var paidLabel = t.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Not confirmed paid</span>';
+
+    return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
+      '<div style="padding:14px 16px;">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">' +
+      '<div><strong>' + buyerName + '</strong><div style="color:#888;font-size:0.85em;">£' + amount + '</div>' +
+      '<div style="margin-top:4px;">' + paidLabel + '</div>' +
+      '<div style="color:#aaa;font-size:0.8em;margin-top:4px;">' + new Date(t.created_at).toLocaleString('en-GB') + '</div>' +
+      '</div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">' +
+      waButtonHtml +
+      '<button class="btn-small" onclick="toggleTopUpPaid(' + t.id + ', ' + t.paid + ', \'' + t.player_id + '\', ' + amount + ')">' + (t.paid ? 'Mark Unpaid' : 'Mark Paid') + '</button>' +
+      '<button class="btn-small danger" onclick="deleteCreditTopUp(' + t.id + ')">Delete</button>' +
+      '</div>' +
+      '</div></div></div>';
+  }).join('');
+}
+
+async function toggleTopUpPaid(id, currentStatus, playerId, amount) {
+  var newStatus = !currentStatus;
+  await sbClient.from('credit_top_ups').update({ paid: newStatus }).eq('id', id);
+
+  var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
+  var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+  var newBalance = newStatus ? currentBalance + amount : currentBalance - amount;
+  await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', playerId);
+
+  loadCreditTopUps();
+}
+
+async function deleteCreditTopUp(id) {
+  if (!confirm('Delete this top-up request?')) { return; }
+  await sbClient.from('credit_top_ups').delete().eq('id', id);
+  loadCreditTopUps();
+}
 async function loadMerchOrders() {
   var result = await sbClient.from('merch_orders').select('*, merch_listings(title, price), profiles(full_name, username, phone)').order('created_at', { ascending: false });
   var container = document.getElementById('merchOrdersList');
@@ -2641,6 +2755,9 @@ function cancelNewsEdit(id) {
         loadPlayers();
         loadShirtDesigns();
         loadPendingApprovals();
+        loadCreditAdjustPlayerSelect();
+loadTopupPackages();
+loadCreditTopUps();
         loadMerchOrders();
         loadMerchItems();
         loadAcademyLeagueSelects();
