@@ -655,6 +655,15 @@ main { padding: 24px 20px; }
 </div>
 <!-- CREDIT TAB -->
 <div id="tab-credit" class="tab-content">
+<div class="card">
+    <h3>Check Player Balance</h3>
+    <div class="form-group">
+      <label>Search Players</label>
+      <input type="text" class="search-bar" id="creditBalanceSearch" placeholder="Search by name or username..." oninput="filterCreditBalanceSearch()" />
+    </div>
+    <div id="creditBalanceResults"></div>
+  </div>
+
   <div class="card">
     <h3>Manually Adjust Player Balance</h3>
     <p style="color:#666;font-size:0.9em;margin-top:-8px;">Use this for cash payments, goodwill credit, or corrections.</p>
@@ -768,6 +777,19 @@ main { padding: 24px 20px; }
       var allDrillAttemptsData = [];
       var editingMerchId = null;
 var editingMerchImages = [];
+      async function filterCreditBalanceSearch() {
+  var val = document.getElementById('creditBalanceSearch').value.toLowerCase().trim();
+  var container = document.getElementById('creditBalanceResults');
+  if (!val) { container.innerHTML = ''; return; }
+
+  var result = await sbClient.from('profiles').select('full_name, username, credit_balance').or('full_name.ilike.%' + val + '%,username.ilike.%' + val + '%').limit(10);
+  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No matching players.</p>'; return; }
+
+  container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Balance</th></tr></thead><tbody>' +
+    result.data.map(function(p) {
+      return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td><strong>£' + parseFloat(p.credit_balance || 0).toFixed(2) + '</strong></td></tr>';
+    }).join('') + '</tbody></table>';
+}
       async function settlePlayerTournamentDebts(playerId) {
   var unpaidResult = await sbClient.from('tournament_players').select('id, amount_owed').eq('player_id', playerId).eq('paid', false).order('created_at', { ascending: true });
   var unpaidEntries = unpaidResult.data || [];
