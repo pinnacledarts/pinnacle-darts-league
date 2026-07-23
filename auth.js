@@ -133,8 +133,9 @@ async function checkAuth() {
 
   if (session) {
     const { data: profile } = await sbClient
+const { data: profile } = await sbClient
       .from('profiles')
-      .select('username, is_admin, requested_access, access_status')
+      .select('username, is_admin, requested_access, access_status, credit_balance')
       .eq('id', session.user.id)
       .single();
 
@@ -143,9 +144,13 @@ async function checkAuth() {
       return;
     }
 
-    const username = profile ? profile.username : session.user.email;
+const username = profile ? profile.username : session.user.email;
+    const balance = profile && profile.credit_balance != null ? parseFloat(profile.credit_balance).toFixed(2) : '0.00';
+    const isAcademyPage = window.location.pathname.includes('academy');
+    const balanceHtml = isAcademyPage ? '' : `<a href="top-up.html" class="btn-username" style="text-decoration:none;">£${balance}</a>`;
 
     authButtons.innerHTML = `
+      ${balanceHtml}
       <span class="btn-username">Logged in as ${username}</span>
       <button class="btn-logout" onclick="handleLogout()">Logout</button>
     `;
