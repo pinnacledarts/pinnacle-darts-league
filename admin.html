@@ -120,20 +120,18 @@ main { padding: 24px 20px; }
 <button class="tab" onclick="showTab('news', event)">News</button>
       </div>
 
-      <!-- TOURNAMENTS TAB -->
+<!-- TOURNAMENTS TAB -->
       <div id="tab-tournaments" class="tab-content active">
         <div class="card">
           <h3>Create New Tournament</h3>
           <div class="success-msg" id="tournament-success"></div>
           <div class="error-msg" id="tournament-error"></div>
-
           <div class="template-bar">
             <label>Template:</label>
             <select id="tournamentTemplateSelect"><option value="">-- Apply a template --</option></select>
             <button class="btn btn-secondary" onclick="applyTemplate('tournament')">Apply</button>
             <button class="btn btn-secondary" onclick="saveTournamentTemplate()">Save as Template</button>
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label>Tournament Name</label>
@@ -172,35 +170,37 @@ main { padding: 24px 20px; }
                 <option value="both">Both</option>
               </select>
             </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:24px;">
+              <input type="checkbox" id="tournamentAvgSplit" style="width:18px;height:18px;" />
+              <label style="margin:0;">Average Split (splits into two cups by average)</label>
+            </div>
           </div>
-          <div class="form-group" style="display:flex;align-items:center;gap:8px;">
-  <input type="checkbox" id="tournamentAvgSplit" style="width:18px;height:18px;" />
-  <label style="margin:0;">Average Split (splits into two cups by average)</label>
-</div>
-<div class="form-group">
-  <label>Scoreline Format (used for BYE auto-wins)</label>
-  <select id="tournamentByeScoreline">
-    <option value="3" selected>First to 3</option>
-    <option value="4">First to 4</option>
-    <option value="5">First to 5</option>
-    <option value="6">First to 6</option>
-    <option value="7">First to 7</option>
-  </select>
-</div>
-<div class="form-group" style="display:flex;align-items:center;gap:8px;">
-  <input type="checkbox" id="tournamentNoCheckin" style="width:18px;height:18px;" onchange="toggleTournamentCheckinFields()" />
-  <label style="margin:0;">No check-in required for this tournament</label>
-</div>
-<div class="form-row" id="tournamentCheckinFields">
-  <div class="form-group">
-    <label>Check-in Opens</label>
-    <input type="datetime-local" id="tournamentCheckinStart" />
-  </div>
-  <div class="form-group">
-    <label>Check-in Closes</label>
-    <input type="datetime-local" id="tournamentCheckinEnd" />
-  </div>
-</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Scoreline Format (used for BYE auto-wins)</label>
+              <select id="tournamentByeScoreline">
+                <option value="3" selected>First to 3</option>
+                <option value="4">First to 4</option>
+                <option value="5">First to 5</option>
+                <option value="6">First to 6</option>
+                <option value="7">First to 7</option>
+              </select>
+            </div>
+            <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:24px;">
+              <input type="checkbox" id="tournamentNoCheckin" style="width:18px;height:18px;" onchange="toggleTournamentCheckinFields()" />
+              <label style="margin:0;">No check-in required for this tournament</label>
+            </div>
+          </div>
+          <div class="form-row" id="tournamentCheckinFields">
+            <div class="form-group">
+              <label>Check-in Opens</label>
+              <input type="datetime-local" id="tournamentCheckinStart" />
+            </div>
+            <div class="form-group">
+              <label>Check-in Closes</label>
+              <input type="datetime-local" id="tournamentCheckinEnd" />
+            </div>
+          </div>
           <div class="form-group">
             <label>Description</label>
             <textarea id="tournamentDesc" rows="3" placeholder="Tournament details..."></textarea>
