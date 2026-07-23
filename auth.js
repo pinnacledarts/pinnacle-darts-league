@@ -132,7 +132,6 @@ async function checkAuth() {
   if (!authButtons) return;
 
   if (session) {
-    const { data: profile } = await sbClient
 const { data: profile } = await sbClient
       .from('profiles')
       .select('username, is_admin, requested_access, access_status, credit_balance')
