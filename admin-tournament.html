@@ -461,10 +461,27 @@ showMsg('details-success', 'Details saved successfully! Refresh the page if you 
           }
         }
 
-        var added = 0;
+      var added = 0;
         for (var i = 0; i < checked.length; i++) {
           var playerId = checked[i].value;
-          var result = await sbClient.from('tournament_players').insert([{ tournament_id: parseInt(tournamentId), player_id: playerId }]);
+          var paidStatus = true;
+          var amountOwed = 0;
+
+          if (tournamentData.is_paid && tournamentData.entry_fee > 0) {
+            var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
+            var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+            amountOwed = tournamentData.entry_fee;
+
+            if (currentBalance >= tournamentData.entry_fee) {
+              var newBalance = currentBalance - tournamentData.entry_fee;
+              await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', playerId);
+              paidStatus = true;
+            } else {
+              paidStatus = false;
+            }
+          }
+
+          var result = await sbClient.from('tournament_players').insert([{ tournament_id: parseInt(tournamentId), player_id: playerId, paid: paidStatus, amount_owed: amountOwed }]);
           if (!result.error) { added++; }
         }
         showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
