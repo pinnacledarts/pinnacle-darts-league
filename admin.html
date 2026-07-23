@@ -117,7 +117,8 @@ main { padding: 24px 20px; }
 <button class="tab" onclick="showTab('enquiries', event)" id="enquiriesTabBtn">Enquiries</button>
 <button class="tab" onclick="showTab('bugs', event)" id="bugsTabBtn">Bug Reports</button>
 <button class="tab" onclick="showTab('merch', event)">Merch</button>
-<button class="tab" onclick="showTab('news', event)">News</button>
+<button class="tab" onclick="showTab('credit', event)" id="creditTabBtn">Credit</button>
+        <button class="tab" onclick="showTab('news', event)">News</button>
       </div>
 
 <!-- TOURNAMENTS TAB -->
@@ -642,7 +643,52 @@ main { padding: 24px 20px; }
     <div id="merchList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
   </div>
 </div>
+<!-- CREDIT TAB -->
+<div id="tab-credit" class="tab-content">
+  <div class="card">
+    <h3>Manually Adjust Player Balance</h3>
+    <p style="color:#666;font-size:0.9em;margin-top:-8px;">Use this for cash payments, goodwill credit, or corrections.</p>
+    <div class="success-msg" id="creditAdjust-success"></div>
+    <div class="error-msg" id="creditAdjust-error"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Player</label>
+        <select id="creditAdjustPlayer"></select>
+      </div>
+      <div class="form-group">
+        <label>Amount (£, use negative to deduct)</label>
+        <input type="number" step="0.01" id="creditAdjustAmount" placeholder="e.g. 10 or -5" />
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="adjustPlayerCredit()">Apply Adjustment</button>
+  </div>
 
+  <div class="card">
+    <h3>Top-Up Packages</h3>
+    <p style="color:#666;font-size:0.9em;margin-top:-8px;">Fixed amounts players can top up with, each linked to its own Stripe Payment Link.</p>
+    <div class="success-msg" id="package-success"></div>
+    <div class="error-msg" id="package-error"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Amount (£)</label>
+        <input type="number" step="0.01" id="packageAmount" placeholder="e.g. 10" />
+      </div>
+      <div class="form-group">
+        <label>Stripe Payment Link</label>
+        <input type="text" id="packageStripeLink" placeholder="https://buy.stripe.com/..." />
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="addTopupPackage()">Add Package</button>
+    <div id="packagesList" style="margin-top:16px;"></div>
+  </div>
+
+  <div class="card">
+    <h3>Top-Up Requests</h3>
+    <div id="topupRequestsList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
+  </div>
+</div>
+
+<!-- NEWS TAB -->
 <!-- NEWS TAB -->
       <div id="tab-news" class="tab-content">
         <div class="card">
