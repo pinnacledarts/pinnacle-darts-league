@@ -190,11 +190,10 @@ async function joinTournament(tournamentId, btn, asReserve) {
   var paidStatus = true;
   var amountOwed = 0;
 
-  if (isPaid && entryFee > 0) {
+if (isPaid && entryFee > 0) {
     var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', currentUserId).single();
     var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
     amountOwed = entryFee;
-
     if (currentBalance >= entryFee) {
       var newBalance = currentBalance - entryFee;
       await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', currentUserId);
@@ -203,6 +202,31 @@ async function joinTournament(tournamentId, btn, asReserve) {
       paidStatus = false;
     }
   }
+
+  var result = await sbClient.from('tournament_players').insert([{
+    tournament_id: tournamentId,
+    player_id: currentUserId,
+    is_reserve: !!asReserve,
+    paid: paidStatus,
+    amount_owed: amountOwed
+  }]);
+
+  if (result.error) {
+    btn.disabled = false;
+    btn.textContent = asReserve ? 'Join as Reserve' : 'Join Tournament';
+    alert('Error joining tournament. Please try again.');
+    return;
+  }
+
+  btn.className = 'btn-join joined';
+  if (isPaid && entryFee > 0) {
+    btn.textContent = paidStatus ? '✓ Joined (Paid)' : '✓ Joined (Payment Pending)';
+  } else {
+    btn.textContent = asReserve ? '✓ Reserve' : '✓ Joined';
+  }
+  joinedTournaments.push(tournamentId);
+}
+
 async function leaveTournament(tournamentId, btn) {
   if (!confirm('Are you sure you want to leave this tournament?')) { return; }
   btn.disabled = true;
