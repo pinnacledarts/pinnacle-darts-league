@@ -655,7 +655,12 @@ main { padding: 24px 20px; }
 </div>
 <!-- CREDIT TAB -->
 <div id="tab-credit" class="tab-content">
-<div class="form-row">
+  <div class="card">
+    <h3>Manually Adjust Player Balance</h3>
+    <p style="color:#666;font-size:0.9em;margin-top:-8px;">Use this for cash payments, goodwill credit, or corrections.</p>
+    <div class="success-msg" id="creditAdjust-success"></div>
+    <div class="error-msg" id="creditAdjust-error"></div>
+    <div class="form-row">
       <div class="form-group">
         <label>Player</label>
         <select id="creditAdjustPlayer" onchange="showSelectedPlayerBalance()"></select>
@@ -694,7 +699,6 @@ main { padding: 24px 20px; }
   </div>
 </div>
 
-<!-- NEWS TAB -->
 <!-- NEWS TAB -->
       <div id="tab-news" class="tab-content">
         <div class="card">
