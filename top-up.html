@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Site Credit | Pinnacle Darts League</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="auth.js?t=999999"></script>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
+      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }
+      header img { height: 70px; }
+      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
+      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
+      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
+      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
+      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
+      .hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      nav.open { display: flex; }
+      nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; }
+      nav a:hover { background-color: #222222; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
+      main { padding: 40px; max-width: 700px; margin: 0 auto; }
+      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; }
+      .balance-box { background-color: #000000; color: #ffffff; border-radius: 8px; padding: 30px; text-align: center; margin-bottom: 24px; }
+      .balance-box .label { font-size: 0.9em; color: #cccccc; text-transform: uppercase; letter-spacing: 1px; }
+      .balance-box .amount { font-size: 3em; font-weight: bold; margin-top: 8px; }
+      .package-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px; margin-bottom: 30px; }
+      .package-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; text-align: center; }
+      .package-card .amount { font-size: 1.6em; font-weight: bold; margin-bottom: 12px; }
+      .btn-topup { display: inline-block; background-color: #000000; color: #ffffff; border: none; padding: 10px 20px; border-radius: 4px; font-size: 0.9em; cursor: pointer; font-family: Arial, sans-serif; text-decoration: none; }
+      .btn-topup:hover { background-color: #333333; }
+      .history-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; margin-bottom: 8px; font-size: 0.9em; }
+      .status-paid { color: #006600; font-weight: bold; }
+      .status-pending { color: #cc0000; font-weight: bold; }
+      .coming-soon { text-align: center; padding: 40px 20px; color: #aaaaaa; font-size: 1em; }
+      .loading { text-align: center; padding: 40px; color: #888888; }
+      @media (max-width: 700px) {
+        header { flex-wrap: wrap; padding: 16px 20px; }
+        header img { height: 50px; }
+        header h1 { font-size: 1.4em; }
+        header p { font-size: 0.85em; }
+        main { padding: 24px 16px; }
+        h2 { font-size: 1.3em; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <header>
+      <img src="logo.png" alt="Pinnacle Darts Logo">
+      <div>
+        <h1>Pinnacle Darts League</h1>
+        <p>Official League Website</p>
+      </div>
+      <button class="hamburger" onclick="toggleMenu()">☰</button>
+      <nav id="mainNav">
+        <a href="index.html">Home</a>
+        <a href="leagues.html">Leagues</a>
+        <a href="tournaments.html">Tournaments</a>
+        <a href="players.html">Players</a>
+        <a href="swap-sell.html">Swap / Sell</a>
+        <a href="shirt-builder.html">Shirt Builder</a>
+        <a href="merch.html">Merch</a>
+        <a href="top-up.html">Site Credit</a>
+        <a href="academy.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Academy</a>
+        <div id="authButtons" style="padding:14px 24px;"></div>
+      </nav>
+    </header>
+
+    <main>
+      <h2>Site Credit</h2>
+
+      <div id="loggedOutMsg" class="coming-soon" style="display:none;">
+        <p>Please <a href="login.html">log in</a> to view and top up your site credit.</p>
+      </div>
+
+      <div id="creditContent" style="display:none;">
+        <div class="balance-box">
+          <div class="label">Your Balance</div>
+          <div class="amount" id="balanceAmount">£0.00</div>
+        </div>
+
+        <h3 style="border-bottom:3px solid #111111;padding-bottom:8px;">Top Up</h3>
+        <div id="packagesGrid" class="package-grid"><p class="loading">Loading packages...</p></div>
+
+        <h3 style="border-bottom:3px solid #111111;padding-bottom:8px;">Top-Up History</h3>
+        <div id="historyList"><p class="loading">Loading history...</p></div>
+      </div>
+    </main>
+
+    <script>
+      var currentUserId = null;
+
+      async function init() {
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (!session) {
+          document.getElementById('loggedOutMsg').style.display = 'block';
+          return;
+        }
+        currentUserId = session.user.id;
+        document.getElementById('creditContent').style.display = 'block';
+
+        loadBalance();
+        loadPackages();
+        loadHistory();
+      }
+
+      async function loadBalance() {
+        var result = await sbClient.from('profiles').select('credit_balance').eq('id', currentUserId).single();
+        var balance = result.data ? parseFloat(result.data.credit_balance || 0) : 0;
+        document.getElementById('balanceAmount').textContent = '£' + balance.toFixed(2);
+      }
+
+      async function loadPackages() {
+        var result = await sbClient.from('credit_topup_packages').select('*').eq('active', true).order('amount');
+        var container = document.getElementById('packagesGrid');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">No top-up options available right now.</p>'; return; }
+
+        container.innerHTML = result.data.map(function(p) {
+          return '<div class="package-card">' +
+            '<div class="amount">£' + p.amount + '</div>' +
+            '<button class="btn-topup" onclick="requestTopUp(' + p.id + ', ' + p.amount + ', \'' + p.stripe_link + '\')">Top Up</button>' +
+            '</div>';
+        }).join('');
+      }
+
+      async function requestTopUp(packageId, amount, stripeLink) {
+        var result = await sbClient.from('credit_top_ups').insert([{
+          player_id: currentUserId,
+          package_id: packageId,
+          requested_amount: amount
+        }]);
+
+        if (result.error) {
+          alert('Error recording your request: ' + result.error.message);
+          return;
+        }
+
+        if (stripeLink) {
+          window.open(stripeLink, '_blank');
+        }
+        loadHistory();
+      }
+
+      async function loadHistory() {
+        var result = await sbClient.from('credit_top_ups').select('*, credit_topup_packages(amount)').eq('player_id', currentUserId).order('created_at', { ascending: false });
+        var container = document.getElementById('historyList');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">No top-ups yet.</p>'; return; }
+
+        container.innerHTML = result.data.map(function(t) {
+          var pkg = t.credit_topup_packages || {};
+          var amount = pkg.amount != null ? pkg.amount : t.requested_amount;
+          var statusHtml = t.paid ? '<span class="status-paid">✓ Paid</span>' : '<span class="status-pending">Awaiting confirmation</span>';
+          return '<div class="history-item">' +
+            '<div>£' + amount + ' — ' + new Date(t.created_at).toLocaleDateString('en-GB') + '</div>' +
+            statusHtml +
+            '</div>';
+        }).join('');
+      }
+
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+      }
+
+      window.addEventListener('load', function() {
+        checkAuth();
+        init();
+      });
+    </script>
+
+  </body>
+</html>
