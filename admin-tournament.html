@@ -473,11 +473,11 @@ showMsg('details-success', 'Details saved successfully! Refresh the page if you 
       }
 
 async function loadPlayers() {
-  var result = await sbClient.from('tournament_players').select('id, player_id, checked_in, is_reserve, profiles(full_name, username)').eq('tournament_id', tournamentId).order('is_reserve').order('created_at');
+  var result = await sbClient.from('tournament_players').select('id, player_id, checked_in, is_reserve, paid, amount_owed, profiles(full_name, username)').eq('tournament_id', tournamentId).order('is_reserve').order('created_at');
   existingPlayerIds = result.data ? result.data.map(function(p) { return p.player_id; }) : [];
   var container = document.getElementById('playersList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
-  container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+  container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody>' +
     result.data.map(function(p) {
       var profile = p.profiles || {};
       var name = profile.full_name || profile.username || 'Unknown';
@@ -485,8 +485,11 @@ async function loadPlayers() {
      var reserveLabel = p.is_reserve ? '<span style="color:#888;">Reserve</span> ' : '';
 var checkedInLabel = p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Checked In</span>' : '<span style="color:#cc0000;">Not Checked In</span>';
 var statusLabel = reserveLabel + checkedInLabel;
+      var paymentLabel = p.amount_owed > 0
+        ? (p.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid (£' + p.amount_owed + ')</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Pending (£' + p.amount_owed + ')</span>')
+        : '<span style="color:#888;">-</span>';
       var checkinBtn = '<button class="btn-small" onclick="toggleCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? 'Undo Check-in' : 'Check In') + '</button> ';
-      return '<tr><td>' + name + '</td><td>' + username + '</td><td>' + statusLabel + '</td><td>' + checkinBtn + '<button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
+      return '<tr><td>' + name + '</td><td>' + username + '</td><td>' + statusLabel + '</td><td>' + paymentLabel + '</td><td>' + checkinBtn + '<button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
     }).join('') + '</tbody></table>';
 }
 
