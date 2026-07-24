@@ -55,6 +55,8 @@ nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid
       .btn { padding: 10px 24px; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; font-family: Arial, sans-serif; margin-right: 8px; }
       .btn-primary { background-color: #000000; color: #ffffff; }
       .btn-primary:hover { background-color: #333333; }
+      .btn-secondary { background-color: #ffffff; color: #111111; border: 1px solid #dddddd; }
+      .btn-secondary:hover { background-color: #f5f5f5; }
       .btn-danger { background-color: #ffffff; color: #cc0000; border: 1px solid #cc0000; }
       .btn-danger:hover { background-color: #fff0f0; }
       table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.95em; }
@@ -116,12 +118,10 @@ main { padding: 24px 20px; }
     <div id="authButtons" style="padding:14px 24px;"></div>
   </nav>
 </header>
-
     <main>
       <a href="admin.html" class="back-link">← Back to Admin</a>
       <div id="pageContent"><p class="loading">Loading...</p></div>
     </main>
-
     <script>
       var leagueId = null;
       var leagueData = null;
@@ -129,6 +129,7 @@ main { padding: 24px 20px; }
       var existingPlayerIds = [];
       var profileMapAdmin = {};
       var playoffRoundOrder = ['Semi Final', 'Final'];
+      var BYE_PROFILE_IDS = ['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000006','00000000-0000-0000-0000-000000000007','00000000-0000-0000-0000-000000000008'];
 
       if (document.referrer.includes('academy.html')) {
         var sBtn = document.getElementById('switchBtn');
@@ -139,26 +140,21 @@ main { padding: 24px 20px; }
         var params = new URLSearchParams(window.location.search);
         leagueId = params.get('id');
         if (!leagueId) { window.location.href = 'admin.html'; return; }
-
         var session = await sbClient.auth.getSession();
         if (!session.data.session) { window.location.href = 'login.html'; return; }
-
         var profile = await sbClient.from('profiles').select('is_admin').eq('id', session.data.session.user.id).single();
         if (!profile.data || !profile.data.is_admin) { window.location.href = 'index.html'; return; }
-
         var result = await sbClient.from('leagues').select('*').eq('id', leagueId).single();
         if (result.error || !result.data) { window.location.href = 'admin.html'; return; }
         leagueData = result.data;
-
         var profilesResult = await sbClient.from('profiles').select('id, full_name, username, starter_average, average').or('is_bye.is.null,is_bye.eq.false').order('full_name');
         allProfiles = profilesResult.data || [];
         allProfiles.forEach(function(p) { profileMapAdmin[p.id] = p.full_name || p.username || 'Unknown'; });
-
+        BYE_PROFILE_IDS.forEach(function(id) { profileMapAdmin[id] = 'BYE'; });
         var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'playoffs\', event)">Playoffs</button>' : '';
-
         document.getElementById('pageContent').innerHTML =
           '<h2 id="pageTitle">⚙️ Managing: ' + leagueData.name + '</h2>' +
-          '<span class="badge">' + formatLabel(leagueData.format) + (leagueData.playoffs ? ' + Playoffs' : '') + (leagueData.average_split ? ' + Avg Split' : '') + '</span>' +
+          '<span class="badge">' + formatLabel(leagueData.format) + (leagueData.playoffs ? ' + Playoffs' : '') + ' + Avg Split</span>' +
           '<div class="tabs">' +
           '<button class="tab active" onclick="showTab(\'details\', event)">Details</button>' +
           '<button class="tab" onclick="showTab(\'players\', event)">View Registrations</button>' +
@@ -166,7 +162,6 @@ main { padding: 24px 20px; }
           '<button class="tab" onclick="showTab(\'standings\', event)">Standings</button>' +
           playoffsTab +
           '</div>' +
-
           '<div id="tab-details" class="tab-content active">' +
           '<div class="card"><h3>League Details</h3>' +
           '<div class="success-msg" id="details-success"></div>' +
@@ -174,7 +169,7 @@ main { padding: 24px 20px; }
           '<div class="form-group"><label>League Name</label><input type="text" id="detName" value="' + (leagueData.name || '').replace(/"/g, '&quot;') + '" /></div>' +
           '<div class="form-group"><label>Season</label><input type="text" id="detSeason" value="' + (leagueData.season || '') + '" /></div>' +
           '<div class="form-group"><label>Start Date</label><input type="date" id="detStart" value="' + (leagueData.start_date || '') + '" /></div>' +
-          '<div class="form-group"><label>End Date</label><input type="date" id="detEnd" value="' + (leagueData.end_date || '') + '" /></div>' +
+          '<div class="form-group"><label>Matches Per Week</label><input type="number" id="detMatchesPerWeek" min="1" value="' + (leagueData.matches_per_week || 1) + '" /></div>' +
           '<div class="form-group"><label>Format</label><select id="detFormat" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
           '<option value="round_robin"' + (leagueData.format === 'round_robin' ? ' selected' : '') + '>Round Robin</option>' +
           '<option value="home_away"' + (leagueData.format === 'home_away' ? ' selected' : '') + '>Home & Away</option>' +
@@ -187,21 +182,15 @@ main { padding: 24px 20px; }
           '<option value="both"' + (leagueData.platform === 'both' ? ' selected' : '') + '>Both</option>' +
           '</select></div>' +
           '<div class="form-group"><label>Players Per Division</label><input type="number" id="detPlayersPerDiv" value="' + (leagueData.players_per_division || '') + '" /></div>' +
-          '<div class="form-group"><label>Max Players</label><input type="number" id="detMaxPlayers" value="' + (leagueData.max_players || '') + '" /></div>' +
           '<div class="form-group"><label>Swiss Games (if applicable)</label><input type="number" id="detSwissGames" value="' + (leagueData.swiss_games || '') + '" /></div>' +
           '<div class="form-group" style="display:flex;align-items:center;gap:8px;">' +
           '<input type="checkbox" id="detPlayoffs" style="width:18px;height:18px;"' + (leagueData.playoffs ? ' checked' : '') + ' />' +
           '<label style="margin:0;">Add Playoff Rounds (Top 4)</label>' +
           '</div>' +
-          '<div class="form-group" style="display:flex;align-items:center;gap:8px;">' +
-          '<input type="checkbox" id="detAvgSplit" style="width:18px;height:18px;"' + (leagueData.average_split ? ' checked' : '') + ' />' +
-          '<label style="margin:0;">Average Split (splits players into divisions by average)</label>' +
-          '</div>' +
           '<button class="btn btn-primary" onclick="saveLeagueDetails()">Save Details</button>' +
           '</div>' +
           '</div>' +
-
-'<div id="tab-players" class="tab-content">' +
+          '<div id="tab-players" class="tab-content">' +
           '<div class="card"><h3>Add Players</h3>' +
           '<div class="success-msg" id="add-player-success"></div>' +
           '<div class="error-msg" id="add-player-error"></div>' +
@@ -222,20 +211,17 @@ main { padding: 24px 20px; }
           '<div id="divisionsPreview"><p class="loading">Loading...</p></div>' +
           '</div>' +
           '</div>' +
-
           '<div id="tab-fixtures" class="tab-content">' +
           '<div class="success-msg" id="fixtures-success"></div>' +
           '<div class="error-msg" id="fixtures-error"></div>' +
-         (leagueData.format === 'swiss' ?
+          (leagueData.format === 'swiss' ?
             '<div class="admin-bar"><button class="btn btn-primary" onclick="generateNextSwissRound()">Generate Next Round</button><button class="btn btn-danger" onclick="clearFixtures()">Clear All Fixtures</button></div>' :
             '<div class="admin-bar"><p style="margin:0;color:#666;font-size:0.9em;">Fixtures are generated automatically when you confirm divisions in View Registrations.</p><button class="btn btn-danger" onclick="clearFixtures()">Clear Fixtures</button></div>') +
           '<div id="fixturesContent"><p class="empty-state">No fixtures generated yet.</p></div>' +
           '</div>' +
-
           '<div id="tab-standings" class="tab-content">' +
           '<div class="card"><h3>League Standings</h3><div id="standingsContent"><p class="loading">Loading...</p></div></div>' +
           '</div>' +
-
           (leagueData.playoffs ?
           '<div id="tab-playoffs" class="tab-content">' +
           '<div class="success-msg" id="playoffs-success"></div>' +
@@ -243,7 +229,6 @@ main { padding: 24px 20px; }
           '<div class="admin-bar"><button class="btn btn-primary" onclick="checkAndGeneratePlayoffs(true)">Check & Generate Playoffs</button><button class="btn btn-danger" onclick="clearPlayoffs()">Clear Playoffs</button></div>' +
           '<div id="playoffsContent"><p class="empty-state">Playoffs will generate automatically once the regular season is complete.</p></div>' +
           '</div>' : '');
-
         await loadPlayers();
         buildPlayerChecklist('');
         loadFixtures();
@@ -256,23 +241,23 @@ main { padding: 24px 20px; }
           name: document.getElementById('detName').value.trim(),
           season: document.getElementById('detSeason').value.trim() || null,
           start_date: document.getElementById('detStart').value || null,
-          end_date: document.getElementById('detEnd').value || null,
+          matches_per_week: parseInt(document.getElementById('detMatchesPerWeek').value) || 1,
           format: document.getElementById('detFormat').value,
           platform: document.getElementById('detPlatform').value,
           players_per_division: document.getElementById('detPlayersPerDiv').value || null,
-          max_players: document.getElementById('detMaxPlayers').value || null,
           swiss_games: document.getElementById('detSwissGames').value || null,
-          playoffs: document.getElementById('detPlayoffs').checked,
-          average_split: document.getElementById('detAvgSplit').checked
+          playoffs: document.getElementById('detPlayoffs').checked
         };
         var result = await sbClient.from('leagues').update(update).eq('id', leagueId);
         if (result.error) { showMsg('details-error', result.error.message); return; }
         leagueData.name = update.name;
+        leagueData.start_date = update.start_date;
+        leagueData.matches_per_week = update.matches_per_week;
+        leagueData.format = update.format;
         leagueData.playoffs = update.playoffs;
-        leagueData.average_split = update.average_split;
         leagueData.players_per_division = update.players_per_division;
         document.getElementById('pageTitle').textContent = '⚙️ Managing: ' + update.name;
-        showMsg('details-success', 'Details saved successfully! Refresh the page if you changed Playoffs or Average Split to update the tabs shown.');
+        showMsg('details-success', 'Details saved successfully! Refresh the page if you changed Format or Playoffs to update the tabs shown.');
       }
 
       function buildPlayerChecklist(filter) {
@@ -314,405 +299,284 @@ main { padding: 24px 20px; }
         document.getElementById('selectedCount').textContent = checked.length + ' player' + (checked.length !== 1 ? 's' : '') + ' selected';
       }
 
-async function addSelectedPlayers() {
-  var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
-  if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
+      async function addSelectedPlayers() {
+        var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
+        if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
 
-  var noAverage = [];
-  for (var c = 0; c < checked.length; c++) {
-    var p = allProfiles.find(function(pr) { return pr.id === checked[c].value; });
-    if (p && !p.average && !p.starter_average) { noAverage.push(p.full_name || p.username || 'Unknown'); }
-  }
-  if (noAverage.length) {
-    showMsg('add-player-error', 'These players have no average set yet, so they can\'t be added: ' + noAverage.join(', ') + '. Set a Starter Average for them first.');
-    return;
-  }
-
-  if (leagueData.max_players) {
-    var wouldBeTotal = existingPlayerIds.length + checked.length;
-    if (wouldBeTotal > leagueData.max_players) {
-      var canAdd = leagueData.max_players - existingPlayerIds.length;
-      showMsg('add-player-error', 'Max players is ' + leagueData.max_players + '. You can only add ' + (canAdd > 0 ? canAdd : 0) + ' more.');
-      return;
-    }
-  }
-
-  var added = 0;
-  for (var i = 0; i < checked.length; i++) {
-    var playerId = checked[i].value;
-    var result = await sbClient.from('league_players').insert([{ league_id: parseInt(leagueId), player_id: playerId }]);
-    if (!result.error) { added++; }
-  }
-  showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
-  await loadPlayers();
-  buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
-}
-var BYE_PROFILE_IDS = ['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000006','00000000-0000-0000-0000-000000000007','00000000-0000-0000-0000-000000000008'];
-
-function getEffectiveAvg(profile) {
-  if (!profile) { return 0; }
-  return parseFloat(profile.average || profile.starter_average || 0);
-}
-
-async function checkCanReopen() {
-  var result = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('status', 'completed').limit(1);
-  return !(result.data && result.data.length);
-}
-
-var BYE_PROFILE_IDS = ['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000006','00000000-0000-0000-0000-000000000007','00000000-0000-0000-0000-000000000008'];
-
-function getEffectiveAvg(profile) {
-  if (!profile) { return 0; }
-  return parseFloat(profile.average || profile.starter_average || 0);
-}
-
-async function checkCanReopen() {
-  var result = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('status', 'completed').limit(1);
-  return !(result.data && result.data.length);
-}
-
-async function toggleLeagueCheckIn(rowId, currentStatus) {
-  await sbClient.from('league_players').update({ checked_in: !currentStatus }).eq('id', rowId);
-  loadPlayers();
-}
-
-async function loadPlayers() {
-  var result = await sbClient.from('league_players').select('id, player_id, division, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
-  var allEntries = result.data || [];
-  existingPlayerIds = allEntries.filter(function(p) { return !(p.profiles && p.profiles.is_bye); }).map(function(p) { return p.player_id; });
-
-  var container = document.getElementById('divisionsPreview');
-  var actionsBar = document.getElementById('divisionActionsBar');
-
-  if (!allEntries.length) {
-    container.innerHTML = '<p class="empty-state">No players registered yet.</p>';
-    actionsBar.innerHTML = '';
-    return;
-  }
-
-  var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
-  var divisionSize = parseInt(leagueData.players_per_division) || 8;
-
-  function paymentLabelFor(p) {
-    return p.amount_owed > 0
-      ? (p.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Pending</span>')
-      : '<span style="color:#888;">-</span>';
-  }
-
-  if (leagueData.divisions_locked) {
-    var byDiv = {};
-    allEntries.forEach(function(p) {
-      var div = p.division || 1;
-      if (!byDiv[div]) { byDiv[div] = []; }
-      byDiv[div].push(p);
-    });
-    var divKeys = Object.keys(byDiv).sort(function(a, b) { return a - b; });
-    var html = '';
-    divKeys.forEach(function(dk) {
-      var members = byDiv[dk].slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
-      html += '<h4 style="margin:16px 0 8px;">Division ' + dk + '</h4><table><thead><tr><th>Player</th><th>Average</th><th>Check-in</th><th>Payment</th></tr></thead><tbody>' +
-        members.map(function(m) {
-          var profile = m.profiles || {};
-          var name = profile.full_name || profile.username || 'Unknown';
-          var avg = getEffectiveAvg(profile);
-          var isBye = name === 'BYE';
-          var checkinCell = isBye ? '-' : (checkinEnabled
-            ? '<button class="btn-small" onclick="toggleLeagueCheckIn(' + m.id + ', ' + m.checked_in + ')">' + (m.checked_in ? '✓ Checked In' : 'Check In') + '</button>'
-            : '-');
-          return '<tr><td>' + name + '</td><td>' + (avg || '-') + '</td><td>' + checkinCell + '</td><td>' + paymentLabelFor(m) + '</td></tr>';
-        }).join('') + '</tbody></table>';
-    });
-    container.innerHTML = html;
-
-    var canReopen = await checkCanReopen();
-    actionsBar.innerHTML = '<button class="btn btn-secondary" onclick="reopenDivisions()"' + (canReopen ? '' : ' disabled title="Cannot reopen once a result has been entered"') + '>Reopen Divisions</button>';
-  } else {
-    var realEntries = allEntries.filter(function(p) { return !(p.profiles && p.profiles.is_bye); });
-    var sorted = realEntries.slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
-
-    var groups = [];
-    for (var i = 0; i < sorted.length; i += divisionSize) {
-      groups.push(sorted.slice(i, i + divisionSize));
-    }
-
-    var html = '';
-    groups.forEach(function(g, idx) {
-      html += '<h4 style="margin:16px 0 8px;">Division ' + (idx + 1) + ' (Preview)</h4><table><thead><tr><th>Player</th><th>Average</th><th>Check-in</th><th>Payment</th></tr></thead><tbody>' +
-        g.map(function(p) {
-          var profile = p.profiles || {};
-          var name = profile.full_name || profile.username || 'Unknown';
-          var avg = getEffectiveAvg(profile);
-          var checkinCell = checkinEnabled
-            ? '<button class="btn-small" onclick="toggleLeagueCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? '✓ Checked In' : 'Check In') + '</button>'
-            : '-';
-          return '<tr><td>' + name + '</td><td>' + (avg || '-') + '</td><td>' + checkinCell + '</td><td>' + paymentLabelFor(p) + '</td></tr>';
-        }).join('') + '</tbody></table>';
-    });
-    container.innerHTML = html || '<p class="empty-state">No players registered yet.</p>';
-
-    actionsBar.innerHTML = '<button class="btn btn-primary" onclick="confirmAllDivisions()">Confirm All Divisions</button>';
-  }
-}
-
-async function confirmAllDivisions() {
-  var divisionSize = parseInt(leagueData.players_per_division) || 8;
-  var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
-
-  if (!confirm('Confirm all divisions now? ' + (checkinEnabled ? 'Anyone who has not checked in will be removed. ' : '') + 'This locks in the groupings ready for fixtures.')) { return; }
-
-  var result = await sbClient.from('league_players').select('id, player_id, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
-  var allEntries = (result.data || []).filter(function(p) { return !(p.profiles && p.profiles.is_bye); });
-
-  var keep = allEntries;
-  if (checkinEnabled) {
-    var notCheckedIn = allEntries.filter(function(p) { return !p.checked_in; });
-    keep = allEntries.filter(function(p) { return p.checked_in; });
-
-    for (var i = 0; i < notCheckedIn.length; i++) {
-      var entry = notCheckedIn[i];
-      await sbClient.from('league_players').delete().eq('id', entry.id);
-      if (entry.paid && entry.amount_owed > 0) {
-        var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', entry.player_id).single();
-        var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
-        await sbClient.from('profiles').update({ credit_balance: currentBalance + parseFloat(entry.amount_owed) }).eq('id', entry.player_id);
-      }
-    }
-  }
-
-  var sorted = keep.slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
-
-  var groups = [];
-  for (var i = 0; i < sorted.length; i += divisionSize) {
-    groups.push(sorted.slice(i, i + divisionSize));
-  }
-
-  for (var g = 0; g < groups.length; g++) {
-    for (var m = 0; m < groups[g].length; m++) {
-      await sbClient.from('league_players').update({ division: g + 1 }).eq('id', groups[g][m].id);
-    }
-  }
-
-  if (groups.length > 0) {
-    var lastDivisionNum = groups.length;
-    var lastDivisionCount = groups[groups.length - 1].length;
-    var needed = divisionSize - lastDivisionCount;
-    for (var b = 0; b < needed && b < BYE_PROFILE_IDS.length; b++) {
-      await sbClient.from('league_players').insert([{
-        league_id: parseInt(leagueId), player_id: BYE_PROFILE_IDS[b], division: lastDivisionNum, paid: true, amount_owed: 0, checked_in: true
-      }]);
-    }
-  }
-
-  await sbClient.from('leagues').update({ divisions_locked: true }).eq('id', leagueId);
-  leagueData.divisions_locked = true;
-
-  showMsg('divisions-success', 'Divisions confirmed!');
-  loadPlayers();
-}
-
-async function reopenDivisions() {
-  var canReopen = await checkCanReopen();
-  if (!canReopen) { showMsg('divisions-error', 'Cannot reopen — a result has already been entered.'); return; }
-  if (!confirm('Reopen divisions? This will remove any BYE placeholders and clear any generated fixtures.')) { return; }
-
-  for (var i = 0; i < BYE_PROFILE_IDS.length; i++) {
-    await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', BYE_PROFILE_IDS[i]);
-  }
-
-  await sbClient.from('league_matches').delete().eq('league_id', leagueId);
-
-  await sbClient.from('leagues').update({ divisions_locked: false }).eq('id', leagueId);
-  leagueData.divisions_locked = false;
-
-  showMsg('divisions-success', 'Divisions reopened — fixtures cleared.');
-  loadPlayers();
-  loadFixtures();
-  loadStandings();
-}
-async function confirmAllDivisions() {
-  var divisionSize = parseInt(leagueData.players_per_division) || 8;
-  var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
-
-  if (!confirm('Confirm all divisions now? ' + (checkinEnabled ? 'Anyone who has not checked in will be removed. ' : '') + 'This locks in the groupings ready for fixtures.')) { return; }
-
-  var result = await sbClient.from('league_players').select('id, player_id, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
-  var allEntries = (result.data || []).filter(function(p) { return !(p.profiles && p.profiles.is_bye); });
-
-  var keep = allEntries;
-  if (checkinEnabled) {
-    var notCheckedIn = allEntries.filter(function(p) { return !p.checked_in; });
-    keep = allEntries.filter(function(p) { return p.checked_in; });
-
-    for (var i = 0; i < notCheckedIn.length; i++) {
-      var entry = notCheckedIn[i];
-      await sbClient.from('league_players').delete().eq('id', entry.id);
-      if (entry.paid && entry.amount_owed > 0) {
-        var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', entry.player_id).single();
-        var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
-        await sbClient.from('profiles').update({ credit_balance: currentBalance + parseFloat(entry.amount_owed) }).eq('id', entry.player_id);
-      }
-    }
-  }
-
-  var sorted = keep.slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
-
-  var groups = [];
-  for (var i = 0; i < sorted.length; i += divisionSize) {
-    groups.push(sorted.slice(i, i + divisionSize));
-  }
-
-  for (var g = 0; g < groups.length; g++) {
-    for (var m = 0; m < groups[g].length; m++) {
-      await sbClient.from('league_players').update({ division: g + 1 }).eq('id', groups[g][m].id);
-    }
-  }
-
-  if (groups.length > 0) {
-    var lastDivisionNum = groups.length;
-    var lastDivisionCount = groups[groups.length - 1].length;
-    var needed = divisionSize - lastDivisionCount;
-    for (var b = 0; b < needed && b < BYE_PROFILE_IDS.length; b++) {
-      await sbClient.from('league_players').insert([{
-        league_id: parseInt(leagueId), player_id: BYE_PROFILE_IDS[b], division: lastDivisionNum, paid: true, amount_owed: 0, checked_in: true
-      }]);
-    }
-  }
-
-await sbClient.from('leagues').update({ divisions_locked: true }).eq('id', leagueId);
-  leagueData.divisions_locked = true;
-
-  await autoGenerateFixturesAfterConfirm();
-
-  showMsg('divisions-success', 'Divisions confirmed and fixtures generated!');
-  loadPlayers();
-  loadFixtures();
-  loadStandings();
-}
-
-async function autoGenerateFixturesAfterConfirm() {
-  await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'regular');
-  var playersResult = await sbClient.from('league_players').select('player_id, division').eq('league_id', leagueId);
-  if (!playersResult.data || !playersResult.data.length) { return; }
-  var divisions = {};
-  playersResult.data.forEach(function(p) {
-    var div = p.division || 1;
-    if (!divisions[div]) { divisions[div] = []; }
-    divisions[div].push(p.player_id);
-  });
-  for (var divKey in divisions) {
-    await generateFixturesForGroup(divisions[divKey], parseInt(divKey));
-  }
-}
-
-async function reopenDivisions() {
-  var canReopen = await checkCanReopen();
-  if (!canReopen) { showMsg('divisions-error', 'Cannot reopen — a result has already been entered.'); return; }
-  if (!confirm('Reopen divisions? This will remove any BYE placeholders and clear any generated fixtures.')) { return; }
-
-  for (var i = 0; i < BYE_PROFILE_IDS.length; i++) {
-    await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', BYE_PROFILE_IDS[i]);
-  }
-
-  await sbClient.from('league_matches').delete().eq('league_id', leagueId);
-
-  await sbClient.from('leagues').update({ divisions_locked: false }).eq('id', leagueId);
-  leagueData.divisions_locked = false;
-
-  showMsg('divisions-success', 'Divisions reopened — fixtures cleared.');
-  loadPlayers();
-  loadFixtures();
-  loadStandings();
-}
-      async function removePlayer(playerId) {
-  if (!confirm('Remove this player from the league? Any existing fixtures involving them will also be deleted.')) { return; }
-  await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', playerId);
-  await sbClient.from('league_matches').delete().eq('league_id', leagueId).or('player1_id.eq.' + playerId + ',player2_id.eq.' + playerId);
-  await loadPlayers();
-  buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
-}
-
-      async function assignDivisionsByAverage() {
-        var playersPerDivision = leagueData.players_per_division;
-        if (!playersPerDivision || playersPerDivision < 2) {
-          showMsg('fixtures-error', 'Please set "Players Per Division" in the Details tab first.');
+        var noAverage = [];
+        for (var c = 0; c < checked.length; c++) {
+          var p = allProfiles.find(function(pr) { return pr.id === checked[c].value; });
+          if (p && !p.average && !p.starter_average) { noAverage.push(p.full_name || p.username || 'Unknown'); }
+        }
+        if (noAverage.length) {
+          showMsg('add-player-error', 'These players have no average set yet, so they can\'t be added: ' + noAverage.join(', ') + '. Set a Starter Average for them first.');
           return;
         }
 
-        var playersResult = await sbClient.from('league_players').select('player_id, profiles(starter_average, average)').eq('league_id', leagueId);
-        if (!playersResult.data || playersResult.data.length < 2) { showMsg('fixtures-error', 'Not enough players registered.'); return; }
+        var added = 0;
+        for (var i = 0; i < checked.length; i++) {
+          var playerId = checked[i].value;
+          var result = await sbClient.from('league_players').insert([{ league_id: parseInt(leagueId), player_id: playerId }]);
+          if (!result.error) { added++; }
+        }
+        showMsg('add-player-success', added + ' player' + (added !== 1 ? 's' : '') + ' added successfully!');
+        await loadPlayers();
+        buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+      }
 
-        var playersWithAvg = playersResult.data.map(function(p) {
-          var profile = p.profiles || {};
-          var avg = profile.average || profile.starter_average || 0;
-          return { player_id: p.player_id, avg: parseFloat(avg) || 0 };
-        });
+      function getEffectiveAvg(profile) {
+        if (!profile) { return 0; }
+        return parseFloat(profile.average || profile.starter_average || 0);
+      }
 
-        var missingAvg = playersWithAvg.filter(function(p) { return !p.avg; });
-        if (missingAvg.length > 0) {
-          showMsg('fixtures-error', missingAvg.length + ' player(s) have no average set. Please set their Starter Average in the Players tab first.');
+      async function checkCanReopen() {
+        var result = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('status', 'completed').limit(1);
+        return !(result.data && result.data.length);
+      }
+
+      async function toggleLeagueCheckIn(rowId, currentStatus) {
+        await sbClient.from('league_players').update({ checked_in: !currentStatus }).eq('id', rowId);
+        loadPlayers();
+      }
+
+      async function loadPlayers() {
+        var result = await sbClient.from('league_players').select('id, player_id, division, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
+        var allEntries = result.data || [];
+        existingPlayerIds = allEntries.filter(function(p) { return !(p.profiles && p.profiles.is_bye); }).map(function(p) { return p.player_id; });
+
+        var container = document.getElementById('divisionsPreview');
+        var actionsBar = document.getElementById('divisionActionsBar');
+
+        if (!allEntries.length) {
+          container.innerHTML = '<p class="empty-state">No players registered yet.</p>';
+          actionsBar.innerHTML = '';
           return;
         }
 
-        playersWithAvg.sort(function(a, b) { return b.avg - a.avg; });
+        var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
+        var divisionSize = parseInt(leagueData.players_per_division) || 8;
 
-        for (var i = 0; i < playersWithAvg.length; i++) {
-          var divisionNum = Math.floor(i / playersPerDivision) + 1;
-          await sbClient.from('league_players').update({ division: divisionNum }).eq('league_id', leagueId).eq('player_id', playersWithAvg[i].player_id);
+        function paymentLabelFor(p) {
+          return p.amount_owed > 0
+            ? (p.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Pending</span>')
+            : '<span style="color:#888;">-</span>';
         }
 
-        var numDivisions = Math.ceil(playersWithAvg.length / playersPerDivision);
-        showMsg('fixtures-success', 'Players assigned into ' + numDivisions + ' division(s) by average!');
-      }
-
-      async function generateFixtures() {
-        var existing = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('stage', 'regular');
-        if (existing.data && existing.data.length > 0) {
-          if (!confirm('Fixtures already exist. Regenerate? This will delete existing fixtures and results.')) { return; }
-          await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'regular');
-        }
-        var playersResult = await sbClient.from('league_players').select('player_id, division').eq('league_id', leagueId);
-        if (!playersResult.data || playersResult.data.length < 2) { showMsg('fixtures-error', 'Need at least 2 players to generate fixtures.'); return; }
-
-        if (leagueData.average_split) {
-          var divisions = {};
-          playersResult.data.forEach(function(p) {
+        if (leagueData.divisions_locked) {
+          var byDiv = {};
+          allEntries.forEach(function(p) {
             var div = p.division || 1;
-            if (!divisions[div]) { divisions[div] = []; }
-            divisions[div].push(p.player_id);
+            if (!byDiv[div]) { byDiv[div] = []; }
+            byDiv[div].push(p);
           });
-          for (var divKey in divisions) {
-            await generateFixturesForGroup(divisions[divKey], parseInt(divKey));
-          }
+          var divKeys = Object.keys(byDiv).sort(function(a, b) { return a - b; });
+          var html = '';
+          divKeys.forEach(function(dk) {
+            var members = byDiv[dk].slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
+            html += '<h4 style="margin:16px 0 8px;">Division ' + dk + '</h4><table><thead><tr><th>Player</th><th>Average</th><th>Check-in</th><th>Payment</th></tr></thead><tbody>' +
+              members.map(function(m) {
+                var profile = m.profiles || {};
+                var name = profile.full_name || profile.username || 'Unknown';
+                var avg = getEffectiveAvg(profile);
+                var isBye = name === 'BYE';
+                var checkinCell = isBye ? '-' : (checkinEnabled
+                  ? '<button class="btn-small" onclick="toggleLeagueCheckIn(' + m.id + ', ' + m.checked_in + ')">' + (m.checked_in ? '✓ Checked In' : 'Check In') + '</button>'
+                  : '-');
+                return '<tr><td>' + name + '</td><td>' + (avg || '-') + '</td><td>' + checkinCell + '</td><td>' + paymentLabelFor(m) + '</td></tr>';
+              }).join('') + '</tbody></table>';
+          });
+          container.innerHTML = html;
+
+          var canReopen = await checkCanReopen();
+          actionsBar.innerHTML = '<button class="btn btn-secondary" onclick="reopenDivisions()"' + (canReopen ? '' : ' disabled title="Cannot reopen once a result has been entered"') + '>Reopen Divisions</button>';
         } else {
-          var players = playersResult.data.map(function(p) { return p.player_id; });
-          await generateFixturesForGroup(players, null);
+          var realEntries = allEntries.filter(function(p) { return !(p.profiles && p.profiles.is_bye); });
+          var sorted = realEntries.slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
+
+          var groups = [];
+          for (var i = 0; i < sorted.length; i += divisionSize) {
+            groups.push(sorted.slice(i, i + divisionSize));
+          }
+
+          var html = '';
+          groups.forEach(function(g, idx) {
+            html += '<h4 style="margin:16px 0 8px;">Division ' + (idx + 1) + ' (Preview)</h4><table><thead><tr><th>Player</th><th>Average</th><th>Check-in</th><th>Payment</th></tr></thead><tbody>' +
+              g.map(function(p) {
+                var profile = p.profiles || {};
+                var name = profile.full_name || profile.username || 'Unknown';
+                var avg = getEffectiveAvg(profile);
+                var checkinCell = checkinEnabled
+                  ? '<button class="btn-small" onclick="toggleLeagueCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? '✓ Checked In' : 'Check In') + '</button>'
+                  : '-';
+                return '<tr><td>' + name + '</td><td>' + (avg || '-') + '</td><td>' + checkinCell + '</td><td>' + paymentLabelFor(p) + '</td></tr>';
+              }).join('') + '</tbody></table>';
+          });
+          container.innerHTML = html || '<p class="empty-state">No players registered yet.</p>';
+
+          actionsBar.innerHTML = '<button class="btn btn-primary" onclick="confirmAllDivisions()">Confirm All Divisions</button>';
+        }
+      }
+
+      async function confirmAllDivisions() {
+        var divisionSize = parseInt(leagueData.players_per_division) || 8;
+        var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
+
+        if (!confirm('Confirm all divisions now? ' + (checkinEnabled ? 'Anyone who has not checked in will be removed. ' : '') + 'This locks in the groupings and generates fixtures.')) { return; }
+
+        var result = await sbClient.from('league_players').select('id, player_id, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
+        var allEntries = (result.data || []).filter(function(p) { return !(p.profiles && p.profiles.is_bye); });
+
+        var keep = allEntries;
+        if (checkinEnabled) {
+          var notCheckedIn = allEntries.filter(function(p) { return !p.checked_in; });
+          keep = allEntries.filter(function(p) { return p.checked_in; });
+
+          for (var i = 0; i < notCheckedIn.length; i++) {
+            var entry = notCheckedIn[i];
+            await sbClient.from('league_players').delete().eq('id', entry.id);
+            if (entry.paid && entry.amount_owed > 0) {
+              var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', entry.player_id).single();
+              var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+              await sbClient.from('profiles').update({ credit_balance: currentBalance + parseFloat(entry.amount_owed) }).eq('id', entry.player_id);
+            }
+          }
         }
 
-        showMsg('fixtures-success', 'Fixtures generated successfully!');
+        var sorted = keep.slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
+
+        var groups = [];
+        for (var i = 0; i < sorted.length; i += divisionSize) {
+          groups.push(sorted.slice(i, i + divisionSize));
+        }
+
+        for (var g = 0; g < groups.length; g++) {
+          for (var m = 0; m < groups[g].length; m++) {
+            await sbClient.from('league_players').update({ division: g + 1 }).eq('id', groups[g][m].id);
+          }
+        }
+
+        if (groups.length > 0) {
+          var lastDivisionNum = groups.length;
+          var lastDivisionCount = groups[groups.length - 1].length;
+          var needed = divisionSize - lastDivisionCount;
+          for (var b = 0; b < needed && b < BYE_PROFILE_IDS.length; b++) {
+            await sbClient.from('league_players').insert([{
+              league_id: parseInt(leagueId), player_id: BYE_PROFILE_IDS[b], division: lastDivisionNum, paid: true, amount_owed: 0, checked_in: true
+            }]);
+          }
+        }
+
+        await sbClient.from('leagues').update({ divisions_locked: true }).eq('id', leagueId);
+        leagueData.divisions_locked = true;
+
+        await autoGenerateFixturesAfterConfirm();
+
+        showMsg('divisions-success', 'Divisions confirmed and fixtures generated!');
+        loadPlayers();
         loadFixtures();
+        loadStandings();
       }
 
-async function generateFixturesForGroup(players, division) {
-  var byeScore = leagueData.bye_scoreline || 3;
-  for (var i = 0; i < players.length; i++) {
-    for (var j = i + 1; j < players.length; j++) {
-      var p1IsBye = BYE_PROFILE_IDS.indexOf(players[i]) > -1;
-      var p2IsBye = BYE_PROFILE_IDS.indexOf(players[j]) > -1;
-      var isBye = p1IsBye || p2IsBye;
-      var status = isBye ? 'completed' : 'pending';
-      var score1 = isBye ? (p1IsBye ? 0 : byeScore) : null;
-      var score2 = isBye ? (p2IsBye ? 0 : byeScore) : null;
-      await sbClient.from('league_matches').insert([{
-        league_id: parseInt(leagueId), player1_id: players[i], player2_id: players[j], stage: 'regular', status: status, division: division, player1_score: score1, player2_score: score2
-      }]);
-      if (leagueData.format === 'home_away') {
-        await sbClient.from('league_matches').insert([{
-          league_id: parseInt(leagueId), player1_id: players[j], player2_id: players[i], stage: 'regular', status: status, division: division, player1_score: score2, player2_score: score1
-        }]);
+      async function autoGenerateFixturesAfterConfirm() {
+        if (leagueData.format === 'swiss') { return; }
+        await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'regular');
+        var playersResult = await sbClient.from('league_players').select('player_id, division').eq('league_id', leagueId);
+        if (!playersResult.data || !playersResult.data.length) { return; }
+        var divisions = {};
+        playersResult.data.forEach(function(p) {
+          var div = p.division || 1;
+          if (!divisions[div]) { divisions[div] = []; }
+          divisions[div].push(p.player_id);
+        });
+        for (var divKey in divisions) {
+          await generateFixturesForGroup(divisions[divKey], parseInt(divKey));
+        }
       }
-    }
-  }
-}
+
+      async function reopenDivisions() {
+        var canReopen = await checkCanReopen();
+        if (!canReopen) { showMsg('divisions-error', 'Cannot reopen — a result has already been entered.'); return; }
+        if (!confirm('Reopen divisions? This will remove any BYE placeholders and clear any generated fixtures.')) { return; }
+
+        for (var i = 0; i < BYE_PROFILE_IDS.length; i++) {
+          await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', BYE_PROFILE_IDS[i]);
+        }
+
+        await sbClient.from('league_matches').delete().eq('league_id', leagueId);
+
+        await sbClient.from('leagues').update({ divisions_locked: false }).eq('id', leagueId);
+        leagueData.divisions_locked = false;
+
+        showMsg('divisions-success', 'Divisions reopened — fixtures cleared.');
+        loadPlayers();
+        loadFixtures();
+        loadStandings();
+      }
+
+      async function removePlayer(playerId) {
+        if (!confirm('Remove this player from the league? Any existing fixtures involving them will also be deleted.')) { return; }
+        await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', playerId);
+        await sbClient.from('league_matches').delete().eq('league_id', leagueId).or('player1_id.eq.' + playerId + ',player2_id.eq.' + playerId);
+        await loadPlayers();
+        buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+      }
+
+      function generateRoundRobinRounds(playerIds) {
+        var players = playerIds.slice();
+        if (players.length % 2 !== 0) { players.push(null); }
+        var n = players.length;
+        var rounds = [];
+        var arr = players.slice();
+        for (var r = 0; r < n - 1; r++) {
+          var roundPairs = [];
+          for (var i = 0; i < n / 2; i++) {
+            var p1 = arr[i];
+            var p2 = arr[n - 1 - i];
+            if (p1 !== null && p2 !== null) { roundPairs.push([p1, p2]); }
+          }
+          rounds.push(roundPairs);
+          var fixed = arr[0];
+          var rest = arr.slice(1);
+          rest.unshift(rest.pop());
+          arr = [fixed].concat(rest);
+        }
+        return rounds;
+      }
+
+      async function generateFixturesForGroup(players, division) {
+        var byeScore = leagueData.bye_scoreline || 3;
+        var matchesPerWeek = parseInt(leagueData.matches_per_week) || 1;
+        var rounds = generateRoundRobinRounds(players);
+
+        if (leagueData.format === 'home_away') {
+          var mirrored = rounds.map(function(round) {
+            return round.map(function(pair) { return [pair[1], pair[0]]; });
+          });
+          rounds = rounds.concat(mirrored);
+        }
+
+        for (var w = 0; w < rounds.length; w += matchesPerWeek) {
+          var weekNumber = Math.floor(w / matchesPerWeek) + 1;
+          var weekRounds = rounds.slice(w, w + matchesPerWeek);
+          var allPairsThisWeek = [].concat.apply([], weekRounds);
+
+          for (var p = 0; p < allPairsThisWeek.length; p++) {
+            var player1 = allPairsThisWeek[p][0];
+            var player2 = allPairsThisWeek[p][1];
+            var p1IsBye = BYE_PROFILE_IDS.indexOf(player1) > -1;
+            var p2IsBye = BYE_PROFILE_IDS.indexOf(player2) > -1;
+            var isBye = p1IsBye || p2IsBye;
+            var status = isBye ? 'completed' : 'pending';
+            var score1 = isBye ? (p1IsBye ? 0 : byeScore) : null;
+            var score2 = isBye ? (p2IsBye ? 0 : byeScore) : null;
+            await sbClient.from('league_matches').insert([{
+              league_id: parseInt(leagueId), player1_id: player1, player2_id: player2, stage: 'regular',
+              status: status, division: division, round: 'Week ' + weekNumber,
+              player1_score: score1, player2_score: score2
+            }]);
+          }
+        }
+      }
 
       async function generateNextSwissRound() {
         var maxGames = leagueData.swiss_games || 5;
@@ -722,16 +586,12 @@ async function generateFixturesForGroup(players, division) {
           return match ? parseInt(match[0]) : 0;
         });
         var nextRoundNum = roundNumbers.length ? Math.max.apply(null, roundNumbers) + 1 : 1;
-
         if (nextRoundNum > maxGames) { showMsg('fixtures-error', 'All ' + maxGames + ' rounds have been generated.'); return; }
-
         var playersResult = await sbClient.from('league_players').select('player_id').eq('league_id', leagueId);
         if (!playersResult.data || playersResult.data.length < 2) { showMsg('fixtures-error', 'Need at least 2 players.'); return; }
         var playerIds = playersResult.data.map(function(p) { return p.player_id; });
-
         var allMatches = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular');
         var matches = allMatches.data || [];
-
         var standings = playerIds.map(function(pid) {
           var pts = 0;
           matches.forEach(function(m) {
@@ -741,13 +601,11 @@ async function generateFixturesForGroup(players, division) {
           });
           return { player_id: pid, pts: pts };
         }).sort(function(a, b) { return b.pts - a.pts; });
-
         var playedPairs = {};
         matches.forEach(function(m) {
           var key = [m.player1_id, m.player2_id].sort().join('-');
           playedPairs[key] = true;
         });
-
         var remaining = standings.slice();
         var pairs = [];
         while (remaining.length > 1) {
@@ -761,14 +619,12 @@ async function generateFixturesForGroup(players, division) {
           var p2 = remaining.splice(foundIdx, 1)[0];
           pairs.push([p1.player_id, p2.player_id]);
         }
-
         for (var i = 0; i < pairs.length; i++) {
           await sbClient.from('league_matches').insert([{
             league_id: parseInt(leagueId), player1_id: pairs[i][0], player2_id: pairs[i][1],
             stage: 'regular', round: 'Round ' + nextRoundNum, status: 'pending'
           }]);
         }
-
         showMsg('fixtures-success', 'Round ' + nextRoundNum + ' generated!');
         loadFixtures();
       }
@@ -780,38 +636,45 @@ async function generateFixturesForGroup(players, division) {
         loadStandings();
       }
 
+      function getWeekCommencingDate(weekNumber) {
+        if (!leagueData.start_date) { return ''; }
+        var start = new Date(leagueData.start_date);
+        start.setDate(start.getDate() + (weekNumber - 1) * 7);
+        return start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+
+      function groupMatchesByWeek(matches) {
+        var matchesPerWeek = parseInt(leagueData.matches_per_week) || 1;
+        var byWeek = {};
+        matches.forEach(function(m) {
+          var r = m.round || 'Week 1';
+          var roundNum = parseInt((r.match(/\d+/) || ['1'])[0]);
+          var weekNumber = (leagueData.format === 'swiss') ? Math.ceil(roundNum / matchesPerWeek) : roundNum;
+          if (!byWeek[weekNumber]) { byWeek[weekNumber] = []; }
+          byWeek[weekNumber].push(m);
+        });
+        var weekNumbers = Object.keys(byWeek).map(Number).sort(function(a, b) { return a - b; });
+        return weekNumbers.map(function(wn) {
+          var dateStr = getWeekCommencingDate(wn);
+          var heading = 'Week ' + wn + (dateStr ? ' — Week commencing ' + dateStr : '');
+          return '<h4 style="margin:16px 0 8px;">' + heading + '</h4>' + byWeek[wn].map(renderFixtureItem).join('');
+        }).join('');
+      }
+
       async function loadFixtures() {
         var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular').order('id');
         var container = document.getElementById('fixturesContent');
         if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No fixtures generated yet.</p>'; return; }
-
-        if (leagueData.average_split) {
-          var byDivision = {};
-          result.data.forEach(function(m) {
-            var div = m.division || 1;
-            if (!byDivision[div]) { byDivision[div] = []; }
-            byDivision[div].push(m);
-          });
-          var divKeys = Object.keys(byDivision).sort(function(a, b) { return a - b; });
-          container.innerHTML = divKeys.map(function(dk) {
-            return '<h4 style="margin:16px 0 8px;">Division ' + dk + '</h4>' + byDivision[dk].map(renderFixtureItem).join('');
-          }).join('');
-        } else if (leagueData.format === 'swiss') {
-          var rounds = {};
-          result.data.forEach(function(m) { var r = m.round || 'Round 1'; if (!rounds[r]) { rounds[r] = []; } rounds[r].push(m); });
-          var roundNames = Object.keys(rounds).sort(function(a, b) {
-            return parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]);
-          });
-          var tabsHtml = '<div class="round-tabs">' + roundNames.map(function(r, i) {
-            return '<button class="round-tab' + (i === roundNames.length - 1 ? ' active' : '') + '" data-round="' + r + '" onclick="showFixtureRound(\'' + r + '\', this)">' + r + '</button>';
-          }).join('') + '</div>';
-          var contentHtml = roundNames.map(function(r, i) {
-            return '<div class="fixture-round-content" data-round="' + r + '" style="' + (i === roundNames.length - 1 ? '' : 'display:none;') + '">' + rounds[r].map(renderFixtureItem).join('') + '</div>';
-          }).join('');
-          container.innerHTML = tabsHtml + contentHtml;
-        } else {
-          container.innerHTML = result.data.map(renderFixtureItem).join('');
-        }
+        var byDivision = {};
+        result.data.forEach(function(m) {
+          var div = m.division || 1;
+          if (!byDivision[div]) { byDivision[div] = []; }
+          byDivision[div].push(m);
+        });
+        var divKeys = Object.keys(byDivision).sort(function(a, b) { return a - b; });
+        container.innerHTML = divKeys.map(function(dk) {
+          return '<h3 style="margin:24px 0 8px;">Division ' + dk + '</h3>' + groupMatchesByWeek(byDivision[dk]);
+        }).join('');
       }
 
       function renderFixtureItem(m) {
@@ -832,32 +695,19 @@ async function generateFixturesForGroup(players, division) {
           '</div></div>';
       }
 
-      function showFixtureRound(round, btn) {
-        document.querySelectorAll('.round-tab').forEach(function(t) { t.classList.remove('active'); });
-        btn.classList.add('active');
-        document.querySelectorAll('.fixture-round-content').forEach(function(c) {
-          c.style.display = c.getAttribute('data-round') === round ? '' : 'none';
-        });
-      }
-
       async function updateFixtureScore(matchId, p1Id, p2Id) {
         var s1 = parseInt(document.getElementById('fs1_' + matchId).value);
         var s2 = parseInt(document.getElementById('fs2_' + matchId).value);
         if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
-
         var a1Val = document.getElementById('fa1_' + matchId).value.trim();
         var a2Val = document.getElementById('fa2_' + matchId).value.trim();
-
         var update = { player1_score: s1, player2_score: s2, status: 'completed' };
         if (a1Val) { update.player1_avg = parseFloat(a1Val); }
         if (a2Val) { update.player2_avg = parseFloat(a2Val); }
-
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error saving score: ' + result.error.message); return; }
-
-if (a1Val && p1Id) { await updatePlayerAverage(p1Id); await updatePlayerStats(p1Id); }
-if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2Id); }
-
+        if (a1Val && p1Id) { await updatePlayerAverage(p1Id); await updatePlayerStats(p1Id); }
+        if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2Id); }
         loadFixtures();
         loadStandings();
         if (leagueData.playoffs) { await checkAndGeneratePlayoffs(false); loadPlayoffs(); }
@@ -920,84 +770,41 @@ if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2
 
       async function loadStandings() {
         var container = document.getElementById('standingsContent');
-
-        if (leagueData.average_split) {
-          var playersResult = await sbClient.from('league_players').select('player_id, division, profiles(full_name, username)').eq('league_id', leagueId);
-          var players = playersResult.data || [];
-          var matchesResult = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular');
-          var matches = matchesResult.data || [];
-
-          if (!players.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
-
-          var byDivision = {};
-          players.forEach(function(p) {
-            var div = p.division || 1;
-            if (!byDivision[div]) { byDivision[div] = []; }
-            byDivision[div].push(p);
-          });
-          var divKeys = Object.keys(byDivision).sort(function(a, b) { return a - b; });
-
-          var html = '';
-          for (var i = 0; i < divKeys.length; i++) {
-            var dk = divKeys[i];
-            var divMatches = matches.filter(function(m) { return (m.division || 1) == dk; });
-            var standings = await computeStandingsForPlayers(byDivision[dk], divMatches);
-            html += '<h4 style="margin:20px 0 8px;">Division ' + dk + '</h4>' + renderStandingsTable(standings);
-          }
-          container.innerHTML = html;
-        } else {
-          var standings = await computeStandings();
-          if (!standings.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
-          container.innerHTML = renderStandingsTable(standings);
+        var playersResult = await sbClient.from('league_players').select('player_id, division, profiles(full_name, username)').eq('league_id', leagueId);
+        var players = playersResult.data || [];
+        var matchesResult = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular');
+        var matches = matchesResult.data || [];
+        if (!players.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
+        var byDivision = {};
+        players.forEach(function(p) {
+          var div = p.division || 1;
+          if (!byDivision[div]) { byDivision[div] = []; }
+          byDivision[div].push(p);
+        });
+        var divKeys = Object.keys(byDivision).sort(function(a, b) { return a - b; });
+        var html = '';
+        for (var i = 0; i < divKeys.length; i++) {
+          var dk = divKeys[i];
+          var divMatches = matches.filter(function(m) { return (m.division || 1) == dk; });
+          var standings = await computeStandingsForPlayers(byDivision[dk], divMatches);
+          html += '<h4 style="margin:20px 0 8px;">Division ' + dk + '</h4>' + renderStandingsTable(standings);
         }
+        container.innerHTML = html;
       }
 
       async function checkAndGeneratePlayoffs(manualTrigger) {
-        if (leagueData.average_split) {
-          var playersResult = await sbClient.from('league_players').select('player_id, division, profiles(full_name, username)').eq('league_id', leagueId);
-          var players = playersResult.data || [];
-          var byDivision = {};
-          players.forEach(function(p) {
-            var div = p.division || 1;
-            if (!byDivision[div]) { byDivision[div] = []; }
-            byDivision[div].push(p);
-          });
-          var divKeys = Object.keys(byDivision);
-          for (var i = 0; i < divKeys.length; i++) {
-            await generatePlayoffsForDivision(divKeys[i], byDivision[divKeys[i]], manualTrigger);
-          }
-          loadPlayoffs();
-          return;
+        var playersResult = await sbClient.from('league_players').select('player_id, division, profiles(full_name, username)').eq('league_id', leagueId);
+        var players = playersResult.data || [];
+        var byDivision = {};
+        players.forEach(function(p) {
+          var div = p.division || 1;
+          if (!byDivision[div]) { byDivision[div] = []; }
+          byDivision[div].push(p);
+        });
+        var divKeys = Object.keys(byDivision);
+        for (var i = 0; i < divKeys.length; i++) {
+          await generatePlayoffsForDivision(divKeys[i], byDivision[divKeys[i]], manualTrigger);
         }
-
-        var allRegular = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular');
-        var regularMatches = allRegular.data || [];
-        if (!regularMatches.length) { if (manualTrigger) showMsg('playoffs-error', 'No regular season fixtures found.'); return; }
-
-        var allComplete = regularMatches.every(function(m) { return m.status === 'completed'; });
-        if (!allComplete) { if (manualTrigger) showMsg('playoffs-error', 'Regular season is not complete yet.'); return; }
-
-        var existingPlayoffs = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('stage', 'playoff');
-        if (existingPlayoffs.data && existingPlayoffs.data.length > 0) { if (manualTrigger) showMsg('playoffs-error', 'Playoffs already generated.'); return; }
-
-        var standings = await computeStandings();
-        if (standings.length < 4) { if (manualTrigger) showMsg('playoffs-error', 'Need at least 4 players for playoffs.'); return; }
-
-        var top4 = standings.slice(0, 4);
-        await sbClient.from('league_matches').insert([{
-          league_id: parseInt(leagueId), player1_id: top4[0].player_id, player2_id: top4[3].player_id,
-          stage: 'playoff', round: 'Semi Final', status: 'pending'
-        }]);
-        await sbClient.from('league_matches').insert([{
-          league_id: parseInt(leagueId), player1_id: top4[1].player_id, player2_id: top4[2].player_id,
-          stage: 'playoff', round: 'Semi Final', status: 'pending'
-        }]);
-        await sbClient.from('league_matches').insert([{
-          league_id: parseInt(leagueId), player1_id: null, player2_id: null,
-          stage: 'playoff', round: 'Final', status: 'pending'
-        }]);
-
-        showMsg('playoffs-success', 'Playoffs generated! 1st vs 4th and 2nd vs 3rd in the Semi Finals.');
         loadPlayoffs();
       }
 
@@ -1005,16 +812,12 @@ if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2
         var matchesResult = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular').eq('division', division);
         var divMatches = matchesResult.data || [];
         if (!divMatches.length) { return; }
-
         var allComplete = divMatches.every(function(m) { return m.status === 'completed'; });
         if (!allComplete) { return; }
-
         var existingPlayoffs = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('stage', 'playoff').eq('division', division);
         if (existingPlayoffs.data && existingPlayoffs.data.length > 0) { return; }
-
         var standings = await computeStandingsForPlayers(divPlayers, divMatches);
         if (standings.length < 4) { return; }
-
         var top4 = standings.slice(0, 4);
         await sbClient.from('league_matches').insert([{
           league_id: parseInt(leagueId), player1_id: top4[0].player_id, player2_id: top4[3].player_id,
@@ -1040,27 +843,21 @@ if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2
         var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff');
         var container = document.getElementById('playoffsContent');
         if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">Playoffs will generate automatically once the regular season is complete.</p>'; return; }
-
-        if (leagueData.average_split) {
-          var byDivision = {};
-          result.data.forEach(function(m) {
-            var div = m.division || 1;
-            if (!byDivision[div]) { byDivision[div] = []; }
-            byDivision[div].push(m);
-          });
-          var divKeys = Object.keys(byDivision).sort(function(a, b) { return a - b; });
-          container.innerHTML = divKeys.map(function(dk) {
-            return '<h4 style="margin:20px 0 8px;">Division ' + dk + '</h4>' + renderPlayoffMatches(byDivision[dk]);
-          }).join('');
-        } else {
-          container.innerHTML = renderPlayoffMatches(result.data);
-        }
+        var byDivision = {};
+        result.data.forEach(function(m) {
+          var div = m.division || 1;
+          if (!byDivision[div]) { byDivision[div] = []; }
+          byDivision[div].push(m);
+        });
+        var divKeys = Object.keys(byDivision).sort(function(a, b) { return a - b; });
+        container.innerHTML = divKeys.map(function(dk) {
+          return '<h4 style="margin:20px 0 8px;">Division ' + dk + '</h4>' + renderPlayoffMatches(byDivision[dk]);
+        }).join('');
       }
 
       function renderPlayoffMatches(matches) {
         var rounds = {};
         matches.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
-
         return playoffRoundOrder.filter(function(r) { return rounds[r]; }).map(function(r) {
           var matchesHtml = rounds[r].map(function(m) {
             var p1name = m.player1_id ? (profileMapAdmin[m.player1_id] || 'Unknown') : 'TBD';
@@ -1070,7 +867,7 @@ if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2
             var a1 = m.player1_avg != null ? m.player1_avg : '';
             var a2 = m.player2_avg != null ? m.player2_avg : '';
             var scoreHtml;
-if (m.status === 'completed') {
+            if (m.status === 'completed') {
               var pAvgLine = '<div style="font-size:0.8em;color:#888;margin-top:4px;">Avg: ' + (m.player1_avg != null ? m.player1_avg : '-') + ' vs ' + (m.player2_avg != null ? m.player2_avg : '-') + '</div>';
               scoreHtml = '<div class="score-display" style="display:block;">' + m.player1_score + ' - ' + m.player2_score + pAvgLine + '</div>';
             } else if (m.player1_id && m.player2_id) {
@@ -1092,20 +889,15 @@ if (m.status === 'completed') {
         var s2 = parseInt(document.getElementById('ps2_' + matchId).value);
         if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
         if (s1 === s2) { alert('Scores cannot be equal in a playoff match.'); return; }
-
         var a1Val = document.getElementById('pa1_' + matchId).value.trim();
         var a2Val = document.getElementById('pa2_' + matchId).value.trim();
-
         var update = { player1_score: s1, player2_score: s2, status: 'completed' };
         if (a1Val) { update.player1_avg = parseFloat(a1Val); }
         if (a2Val) { update.player2_avg = parseFloat(a2Val); }
-
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error saving score: ' + result.error.message); return; }
-
-   if (a1Val && p1Id) { await updatePlayerAverage(p1Id); await updatePlayerStats(p1Id); }
-if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2Id); }
-
+        if (a1Val && p1Id) { await updatePlayerAverage(p1Id); await updatePlayerStats(p1Id); }
+        if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2Id); }
         if (currentRound === 'Semi Final') {
           var semisQuery = sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff').eq('round', 'Semi Final');
           if (division != null && division !== 'null') { semisQuery = semisQuery.eq('division', division); }
@@ -1124,7 +916,6 @@ if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2
         } else {
           showMsg('playoffs-success', '🏆 Playoffs complete! We have a champion!');
         }
-
         loadPlayoffs();
       }
 
@@ -1161,6 +952,5 @@ if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2
         init();
       });
     </script>
-
   </body>
 </html>
