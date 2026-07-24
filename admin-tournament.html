@@ -252,8 +252,14 @@ async function submitManualBracket(slotCount) {
         if (result.error || !result.data) { window.location.href = 'admin.html'; return; }
         tournamentData = result.data;
 
-        var profilesResult = await sbClient.from('profiles').select('id, full_name, username, starter_average, average').order('full_name');
-        allProfiles = profilesResult.data || [];
+var profilesQuery = sbClient.from('profiles').select('id, full_name, username, starter_average, average, access').order('full_name');
+if (tournamentData.section === 'academy') {
+  profilesQuery = profilesQuery.or('access.eq.academy,access.eq.both');
+} else if (tournamentData.section === 'online') {
+  profilesQuery = profilesQuery.or('access.eq.online,access.eq.both');
+}
+var profilesResult = await profilesQuery;
+allProfiles = profilesResult.data || [];
         allProfiles.forEach(function(p) { profileMapAdmin[p.id] = p.full_name || p.username || 'Unknown'; });
 
         var isGroupKnockout = tournamentData.format === 'group_knockout';
