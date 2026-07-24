@@ -269,27 +269,38 @@ function buildWhatsAppLink(phone) {
           '</div>';
       }
 
+function getWeekCommencingDate(weekNumber) {
+        if (!leagueData.start_date) { return ''; }
+        var start = new Date(leagueData.start_date);
+        start.setDate(start.getDate() + (weekNumber - 1) * 7);
+        return start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+
+      function groupMatchesByWeek(matches) {
+        var matchesPerWeek = parseInt(leagueData.matches_per_week) || 1;
+        var byWeek = {};
+        matches.forEach(function(m) {
+          var r = m.round || 'Week 1';
+          var roundNum = parseInt((r.match(/\d+/) || ['1'])[0]);
+          var weekNumber = (leagueData.format === 'swiss') ? Math.ceil(roundNum / matchesPerWeek) : roundNum;
+          if (!byWeek[weekNumber]) { byWeek[weekNumber] = []; }
+          byWeek[weekNumber].push(m);
+        });
+        var weekNumbers = Object.keys(byWeek).map(Number).sort(function(a, b) { return a - b; });
+        return weekNumbers.map(function(wn) {
+          var dateStr = getWeekCommencingDate(wn);
+          var heading = 'Week ' + wn + (dateStr ? ' — Week commencing ' + dateStr : '');
+          return '<h4 style="margin:16px 0 8px;">' + heading + '</h4>' + byWeek[wn].map(renderFixtureItem).join('');
+        }).join('');
+      }
+
       async function loadFixtures() {
         var query = sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular').order('id');
         if (leagueData.average_split) { query = query.eq('division', currentDivision); }
         var result = await query;
         var container = document.getElementById('fixturesContent');
         if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">Fixtures have not been generated yet.</p>'; return; }
-
-        if (leagueData.format === 'swiss') {
-          var rounds = {};
-          result.data.forEach(function(m) { var r = m.round || 'Round 1'; if (!rounds[r]) { rounds[r] = []; } rounds[r].push(m); });
-          var roundNames = Object.keys(rounds).sort(function(a, b) { return parseInt(a.match(/\d+/)[0]) - parseInt(b.match(/\d+/)[0]); });
-          var tabsHtml = '<div class="round-tabs">' + roundNames.map(function(r, i) {
-            return '<button class="round-tab' + (i === roundNames.length - 1 ? ' active' : '') + '" data-round="' + r + '" onclick="showFixtureRound(\'' + r + '\', this)">' + r + '</button>';
-          }).join('') + '</div>';
-          var contentHtml = roundNames.map(function(r, i) {
-            return '<div class="fixture-round-content" data-round="' + r + '" style="' + (i === roundNames.length - 1 ? '' : 'display:none;') + '">' + rounds[r].map(renderFixtureItem).join('') + '</div>';
-          }).join('');
-          container.innerHTML = tabsHtml + contentHtml;
-        } else {
-          container.innerHTML = result.data.map(renderFixtureItem).join('');
-        }
+        container.innerHTML = groupMatchesByWeek(result.data);
       }
 
       function renderFixtureItem(m) {
