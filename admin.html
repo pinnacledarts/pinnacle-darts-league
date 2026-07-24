@@ -695,21 +695,22 @@ main { padding: 24px 20px; }
       <label>Title</label>
       <input type="text" id="merchTitle" placeholder="e.g. Pinnacle Darts T-Shirt" />
     </div>
-    <div class="form-group">
+   <div class="form-group">
       <label>Price (£)</label>
       <input type="number" id="merchPrice" step="0.01" placeholder="e.g. 25.00" />
     </div>
+<div class="form-group">
+  <label>Category</label>
+  <select id="merchCategory"></select>
+</div>
 <div class="form-group">
   <label>Stripe Payment Link</label>
   <input type="text" id="merchStripeLink" placeholder="https://buy.stripe.com/..." />
 </div>
 <div class="form-group">
-  <label>Option Label (optional — e.g. "Ring Light Model" or "Colour")</label>
-  <input type="text" id="merchOptionLabel" placeholder="Leave blank if no options needed" />
-</div>
-<div class="form-group">
-  <label>Option Choices (comma-separated)</label>
-  <input type="text" id="merchOptionChoices" placeholder="e.g. Red, Blue, Black" />
+  <label>Options (e.g. Colour, Size — optional)</label>
+  <div id="merchOptionGroups"></div>
+  <button type="button" class="btn-small" onclick="addMerchOptionGroup()">+ Add Option Group</button>
 </div>
     <div class="form-group">
       <label>Current Images</label>
@@ -847,6 +848,35 @@ main { padding: 24px 20px; }
       var allDrillAttemptsData = [];
       var editingMerchId = null;
 var editingMerchImages = [];
+      var merchOptionGroupCount = 0;
+
+function addMerchOptionGroup(label, choices) {
+  merchOptionGroupCount++;
+  var idx = merchOptionGroupCount;
+  var container = document.getElementById('merchOptionGroups');
+  var row = document.createElement('div');
+  row.id = 'merchOptGroup' + idx;
+  row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;';
+  row.innerHTML =
+    '<input type="text" id="merchOptLabel' + idx + '" placeholder="e.g. Colour" value="' + (label ? label.replace(/"/g, '&quot;') : '') + '" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
+    '<input type="text" id="merchOptChoices' + idx + '" placeholder="e.g. Red, Blue, Black" value="' + (choices ? choices.join(', ') : '') + '" style="flex:2;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
+    '<button type="button" class="btn-small danger" onclick="document.getElementById(\'merchOptGroup' + idx + '\').remove()">✕</button>';
+  container.appendChild(row);
+}
+
+function collectMerchOptionGroups() {
+  var rows = document.querySelectorAll('#merchOptionGroups > div');
+  var groups = [];
+  rows.forEach(function(row) {
+    var idx = row.id.replace('merchOptGroup', '');
+    var label = document.getElementById('merchOptLabel' + idx).value.trim();
+    var choicesRaw = document.getElementById('merchOptChoices' + idx).value.trim();
+    if (!label || !choicesRaw) { return; }
+    var choices = choicesRaw.split(',').map(function(s) { return s.trim(); }).filter(Boolean);
+    if (choices.length) { groups.push({ label: label, choices: choices }); }
+  });
+  return groups;
+}
       async function addMerchCategory() {
   var name = document.getElementById('categoryName').value.trim();
   if (!name) { showMsg('category-error', 'Please enter a category name.'); return; }
