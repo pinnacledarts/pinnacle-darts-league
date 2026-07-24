@@ -145,7 +145,7 @@ for (var i = 0; i < result.data.length; i++) {
 var joinBtn = '';
 if (currentUserId) {
   if (hasJoined) {
-    joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
+    joinBtn = '<button class="btn-join" onclick="leaveLeague(' + l.id + ', this)">Leave League</button>';
   } else if (isFull) {
     joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">League Full</button>';
   } else if (l.average_split && !playerHasAverage) {
@@ -190,13 +190,36 @@ if (myCardsHtml.length) {
 }
       }
 
-      async function joinLeague(leagueId, btn) {
+async function joinLeague(leagueId, btn) {
         if (!currentUserId) { window.location.href = 'login.html'; return; }
         btn.disabled = true;
         btn.textContent = 'Joining...';
+
+        var leagueResult = await sbClient.from('leagues').select('is_paid, entry_fee').eq('id', leagueId).single();
+        var league = leagueResult.data || {};
+        var isPaid = league.is_paid;
+        var entryFee = parseFloat(league.entry_fee) || 0;
+        var paidStatus = true;
+        var amountOwed = 0;
+
+        if (isPaid && entryFee > 0) {
+          var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', currentUserId).single();
+          var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+          amountOwed = entryFee;
+          if (currentBalance >= entryFee) {
+            var newBalance = currentBalance - entryFee;
+            await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', currentUserId);
+            paidStatus = true;
+          } else {
+            paidStatus = false;
+          }
+        }
+
         var result = await sbClient.from('league_players').insert([{
           league_id: leagueId,
-          player_id: currentUserId
+          player_id: currentUserId,
+          paid: paidStatus,
+          amount_owed: amountOwed
         }]);
         if (result.error) {
           btn.disabled = false;
@@ -205,8 +228,38 @@ if (myCardsHtml.length) {
           return;
         }
         btn.className = 'btn-join joined';
-        btn.textContent = '✓ Joined';
+        if (isPaid && entryFee > 0) {
+          btn.textContent = paidStatus ? '✓ Joined (Paid)' : '✓ Joined (Payment Pending)';
+        } else {
+          btn.textContent = '✓ Joined';
+        }
         joinedLeagues.push(leagueId);
+      }
+
+      async function leaveLeague(leagueId, btn) {
+        if (!confirm('Are you sure you want to leave this league?')) { return; }
+        btn.disabled = true;
+        btn.textContent = 'Leaving...';
+
+        var entryResult = await sbClient.from('league_players').select('id, paid, amount_owed').eq('league_id', leagueId).eq('player_id', currentUserId).single();
+        var entry = entryResult.data;
+
+        var result = await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', currentUserId);
+        if (result.error) {
+          btn.disabled = false;
+          btn.textContent = 'Leave League';
+          alert('Error leaving league. Please try again.');
+          return;
+        }
+
+        if (entry && entry.paid && entry.amount_owed > 0) {
+          var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', currentUserId).single();
+          var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+          var refundedBalance = currentBalance + parseFloat(entry.amount_owed);
+          await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', currentUserId);
+        }
+
+        loadLeagues();
       }
 
       function toggleMenu() {
