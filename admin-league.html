@@ -226,11 +226,9 @@ main { padding: 24px 20px; }
           '<div id="tab-fixtures" class="tab-content">' +
           '<div class="success-msg" id="fixtures-success"></div>' +
           '<div class="error-msg" id="fixtures-error"></div>' +
-          (leagueData.average_split ?
-            '<div class="admin-bar"><button class="btn btn-primary" onclick="assignDivisionsByAverage()">Assign Divisions by Average</button></div>' : '') +
-          (leagueData.format === 'swiss' ?
+         (leagueData.format === 'swiss' ?
             '<div class="admin-bar"><button class="btn btn-primary" onclick="generateNextSwissRound()">Generate Next Round</button><button class="btn btn-danger" onclick="clearFixtures()">Clear All Fixtures</button></div>' :
-            '<div class="admin-bar"><button class="btn btn-primary" onclick="generateFixtures()">Generate Fixtures</button><button class="btn btn-danger" onclick="clearFixtures()">Clear Fixtures</button></div>') +
+            '<div class="admin-bar"><p style="margin:0;color:#666;font-size:0.9em;">Fixtures are generated automatically when you confirm divisions in View Registrations.</p><button class="btn btn-danger" onclick="clearFixtures()">Clear Fixtures</button></div>') +
           '<div id="fixturesContent"><p class="empty-state">No fixtures generated yet.</p></div>' +
           '</div>' +
 
@@ -580,11 +578,30 @@ async function confirmAllDivisions() {
     }
   }
 
-  await sbClient.from('leagues').update({ divisions_locked: true }).eq('id', leagueId);
+await sbClient.from('leagues').update({ divisions_locked: true }).eq('id', leagueId);
   leagueData.divisions_locked = true;
 
-  showMsg('divisions-success', 'Divisions confirmed!');
+  await autoGenerateFixturesAfterConfirm();
+
+  showMsg('divisions-success', 'Divisions confirmed and fixtures generated!');
   loadPlayers();
+  loadFixtures();
+  loadStandings();
+}
+
+async function autoGenerateFixturesAfterConfirm() {
+  await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'regular');
+  var playersResult = await sbClient.from('league_players').select('player_id, division').eq('league_id', leagueId);
+  if (!playersResult.data || !playersResult.data.length) { return; }
+  var divisions = {};
+  playersResult.data.forEach(function(p) {
+    var div = p.division || 1;
+    if (!divisions[div]) { divisions[div] = []; }
+    divisions[div].push(p.player_id);
+  });
+  for (var divKey in divisions) {
+    await generateFixturesForGroup(divisions[divKey], parseInt(divKey));
+  }
 }
 
 async function reopenDivisions() {
