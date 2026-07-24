@@ -351,6 +351,23 @@ async function checkCanReopen() {
   return !(result.data && result.data.length);
 }
 
+var BYE_PROFILE_IDS = ['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000006','00000000-0000-0000-0000-000000000007','00000000-0000-0000-0000-000000000008'];
+
+function getEffectiveAvg(profile) {
+  if (!profile) { return 0; }
+  return parseFloat(profile.average || profile.starter_average || 0);
+}
+
+async function checkCanReopen() {
+  var result = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('status', 'completed').limit(1);
+  return !(result.data && result.data.length);
+}
+
+async function toggleLeagueCheckIn(rowId, currentStatus) {
+  await sbClient.from('league_players').update({ checked_in: !currentStatus }).eq('id', rowId);
+  loadPlayers();
+}
+
 async function loadPlayers() {
   var result = await sbClient.from('league_players').select('id, player_id, division, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
   var allEntries = result.data || [];
@@ -368,6 +385,12 @@ async function loadPlayers() {
   var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
   var divisionSize = parseInt(leagueData.players_per_division) || 8;
 
+  function paymentLabelFor(p) {
+    return p.amount_owed > 0
+      ? (p.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Pending</span>')
+      : '<span style="color:#888;">-</span>';
+  }
+
   if (leagueData.divisions_locked) {
     var byDiv = {};
     allEntries.forEach(function(p) {
@@ -379,12 +402,16 @@ async function loadPlayers() {
     var html = '';
     divKeys.forEach(function(dk) {
       var members = byDiv[dk].slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
-      html += '<h4 style="margin:16px 0 8px;">Division ' + dk + '</h4><table><thead><tr><th>Player</th><th>Average</th></tr></thead><tbody>' +
+      html += '<h4 style="margin:16px 0 8px;">Division ' + dk + '</h4><table><thead><tr><th>Player</th><th>Average</th><th>Check-in</th><th>Payment</th></tr></thead><tbody>' +
         members.map(function(m) {
           var profile = m.profiles || {};
           var name = profile.full_name || profile.username || 'Unknown';
           var avg = getEffectiveAvg(profile);
-          return '<tr><td>' + name + '</td><td>' + (avg || '-') + '</td></tr>';
+          var isBye = name === 'BYE';
+          var checkinCell = isBye ? '-' : (checkinEnabled
+            ? '<button class="btn-small" onclick="toggleLeagueCheckIn(' + m.id + ', ' + m.checked_in + ')">' + (m.checked_in ? '✓ Checked In' : 'Check In') + '</button>'
+            : '-');
+          return '<tr><td>' + name + '</td><td>' + (avg || '-') + '</td><td>' + checkinCell + '</td><td>' + paymentLabelFor(m) + '</td></tr>';
         }).join('') + '</tbody></table>';
     });
     container.innerHTML = html;
@@ -402,15 +429,15 @@ async function loadPlayers() {
 
     var html = '';
     groups.forEach(function(g, idx) {
-      html += '<h4 style="margin:16px 0 8px;">Division ' + (idx + 1) + ' (Preview)</h4><table><thead><tr><th>Player</th><th>Average</th><th>Status</th></tr></thead><tbody>' +
+      html += '<h4 style="margin:16px 0 8px;">Division ' + (idx + 1) + ' (Preview)</h4><table><thead><tr><th>Player</th><th>Average</th><th>Check-in</th><th>Payment</th></tr></thead><tbody>' +
         g.map(function(p) {
           var profile = p.profiles || {};
           var name = profile.full_name || profile.username || 'Unknown';
           var avg = getEffectiveAvg(profile);
-          var statusLabel = checkinEnabled
-            ? (p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Confirmed</span>' : '<span style="color:#cc0000;">Pending</span>')
-            : '<span style="color:#888;">-</span>';
-          return '<tr><td>' + name + '</td><td>' + (avg || '-') + '</td><td>' + statusLabel + '</td></tr>';
+          var checkinCell = checkinEnabled
+            ? '<button class="btn-small" onclick="toggleLeagueCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? '✓ Checked In' : 'Check In') + '</button>'
+            : '-';
+          return '<tr><td>' + name + '</td><td>' + (avg || '-') + '</td><td>' + checkinCell + '</td><td>' + paymentLabelFor(p) + '</td></tr>';
         }).join('') + '</tbody></table>';
     });
     container.innerHTML = html || '<p class="empty-state">No players registered yet.</p>';
@@ -419,6 +446,81 @@ async function loadPlayers() {
   }
 }
 
+async function confirmAllDivisions() {
+  var divisionSize = parseInt(leagueData.players_per_division) || 8;
+  var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
+
+  if (!confirm('Confirm all divisions now? ' + (checkinEnabled ? 'Anyone who has not checked in will be removed. ' : '') + 'This locks in the groupings ready for fixtures.')) { return; }
+
+  var result = await sbClient.from('league_players').select('id, player_id, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
+  var allEntries = (result.data || []).filter(function(p) { return !(p.profiles && p.profiles.is_bye); });
+
+  var keep = allEntries;
+  if (checkinEnabled) {
+    var notCheckedIn = allEntries.filter(function(p) { return !p.checked_in; });
+    keep = allEntries.filter(function(p) { return p.checked_in; });
+
+    for (var i = 0; i < notCheckedIn.length; i++) {
+      var entry = notCheckedIn[i];
+      await sbClient.from('league_players').delete().eq('id', entry.id);
+      if (entry.paid && entry.amount_owed > 0) {
+        var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', entry.player_id).single();
+        var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+        await sbClient.from('profiles').update({ credit_balance: currentBalance + parseFloat(entry.amount_owed) }).eq('id', entry.player_id);
+      }
+    }
+  }
+
+  var sorted = keep.slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
+
+  var groups = [];
+  for (var i = 0; i < sorted.length; i += divisionSize) {
+    groups.push(sorted.slice(i, i + divisionSize));
+  }
+
+  for (var g = 0; g < groups.length; g++) {
+    for (var m = 0; m < groups[g].length; m++) {
+      await sbClient.from('league_players').update({ division: g + 1 }).eq('id', groups[g][m].id);
+    }
+  }
+
+  if (groups.length > 0) {
+    var lastDivisionNum = groups.length;
+    var lastDivisionCount = groups[groups.length - 1].length;
+    var needed = divisionSize - lastDivisionCount;
+    for (var b = 0; b < needed && b < BYE_PROFILE_IDS.length; b++) {
+      await sbClient.from('league_players').insert([{
+        league_id: parseInt(leagueId), player_id: BYE_PROFILE_IDS[b], division: lastDivisionNum, paid: true, amount_owed: 0, checked_in: true
+      }]);
+    }
+  }
+
+  await sbClient.from('leagues').update({ divisions_locked: true }).eq('id', leagueId);
+  leagueData.divisions_locked = true;
+
+  showMsg('divisions-success', 'Divisions confirmed!');
+  loadPlayers();
+}
+
+async function reopenDivisions() {
+  var canReopen = await checkCanReopen();
+  if (!canReopen) { showMsg('divisions-error', 'Cannot reopen — a result has already been entered.'); return; }
+  if (!confirm('Reopen divisions? This will remove any BYE placeholders and clear any generated fixtures.')) { return; }
+
+  for (var i = 0; i < BYE_PROFILE_IDS.length; i++) {
+    await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', BYE_PROFILE_IDS[i]);
+  }
+
+  await sbClient.from('league_matches').delete().eq('league_id', leagueId);
+
+  await sbClient.from('leagues').update({ divisions_locked: false }).eq('id', leagueId);
+  leagueData.divisions_locked = false;
+
+  showMsg('divisions-success', 'Divisions reopened — fixtures cleared.');
+  loadPlayers();
+  loadFixtures();
+  loadStandings();
+}
 async function confirmAllDivisions() {
   var divisionSize = parseInt(leagueData.players_per_division) || 8;
   var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
