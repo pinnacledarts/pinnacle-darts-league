@@ -34,6 +34,7 @@ nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid
       .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
       .badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
       .badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
+      .badge-paid { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; margin-left: 6px; background-color: #fff8e1; color: #b8860b; border: 1px solid #f0d78c; }
       .card-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
       .btn-view { background-color: #111111; color: #ffffff; border: none; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
       .btn-view:hover { background-color: #333333; }
@@ -156,8 +157,9 @@ if (currentUserId) {
   joinBtn = '<a href="login.html" class="btn-join" style="display:inline-block;text-decoration:none;text-align:center;">Login to Join</a>';
 }
 
+var paidBadge = l.is_paid ? '<span class="badge-paid">💷 £' + l.entry_fee + ' Entry</span>' : '';
   var cardHtml = '<div class="league-card">' +
-    getStatusBadgeHtml(status) +
+    getStatusBadgeHtml(status) + paidBadge +
     '<h3>' + l.name + '</h3>' +
     (l.season ? '<p><strong>Season:</strong> ' + l.season + '</p>' : '') +
     '<p><strong>Format:</strong> ' + (formatLabels[l.format] || l.format || 'TBC') + (l.playoffs ? ' + Playoffs' : '') + '</p>' +
@@ -170,8 +172,11 @@ if (currentUserId) {
     '</div>' +
     '</div>';
 
-  cardsHtml.push(cardHtml);
-  if (hasJoined) { myCardsHtml.push(cardHtml); }
+if (hasJoined) {
+    myCardsHtml.push(cardHtml);
+  } else {
+    cardsHtml.push(cardHtml);
+  }
 }
 
 container.innerHTML = cardsHtml.length ? cardsHtml.join('') : '<p class="coming-soon">🎯 No upcoming or live leagues — check the archive for past results!</p>';
