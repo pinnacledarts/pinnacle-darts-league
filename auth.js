@@ -43,12 +43,17 @@ document.addEventListener('DOMContentLoaded', function() {
       var shirtLinkRef = nav.querySelector('a[href="shirt-builder.html"]');
       shirtLinkRef.insertAdjacentElement('afterend', merchLink);
     }
-  } else {
+} else {
     if (!nav.querySelector('a[href="merch.html"]')) {
       var merchLinkAcademy = document.createElement('a');
       merchLinkAcademy.href = 'merch.html';
       merchLinkAcademy.textContent = 'Merch';
-      nav.insertBefore(merchLinkAcademy, nav.firstChild);
+      var leaguesLinkRef = nav.querySelector('a[href="academy-leagues.html"]');
+      if (leaguesLinkRef) {
+        leaguesLinkRef.insertAdjacentElement('afterend', merchLinkAcademy);
+      } else {
+        nav.appendChild(merchLinkAcademy);
+      }
     }
   }
 });
