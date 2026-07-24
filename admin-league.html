@@ -150,7 +150,7 @@ main { padding: 24px 20px; }
         if (result.error || !result.data) { window.location.href = 'admin.html'; return; }
         leagueData = result.data;
 
-        var profilesResult = await sbClient.from('profiles').select('id, full_name, username, starter_average, average').order('full_name');
+        var profilesResult = await sbClient.from('profiles').select('id, full_name, username, starter_average, average').or('is_bye.is.null,is_bye.eq.false').order('full_name');
         allProfiles = profilesResult.data || [];
         allProfiles.forEach(function(p) { profileMapAdmin[p.id] = p.full_name || p.username || 'Unknown'; });
 
