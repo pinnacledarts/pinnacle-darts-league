@@ -201,7 +201,7 @@ main { padding: 24px 20px; }
           '</div>' +
           '</div>' +
 
-          '<div id="tab-players" class="tab-content">' +
+'<div id="tab-players" class="tab-content">' +
           '<div class="card"><h3>Add Players</h3>' +
           '<div class="success-msg" id="add-player-success"></div>' +
           '<div class="error-msg" id="add-player-error"></div>' +
@@ -213,7 +213,14 @@ main { padding: 24px 20px; }
           '<div class="player-checklist" id="playerChecklist"><p class="player-checklist-empty">Loading players...</p></div>' +
           '<button class="btn btn-primary" onclick="addSelectedPlayers()" style="margin-top:8px;">Add Selected Players</button>' +
           '</div>' +
-          '<div class="card"><h3>Registered Players</h3><div id="playersList"><p class="loading">Loading...</p></div></div>' +
+          '<div class="card">' +
+          '<h3>Division Preview</h3>' +
+          '<p style="color:#666;font-size:0.9em;margin-top:-8px;">Players are sorted by average and grouped into divisions of the size set in Details. This updates live until divisions are confirmed.</p>' +
+          '<div class="success-msg" id="divisions-success"></div>' +
+          '<div class="error-msg" id="divisions-error"></div>' +
+          '<div class="admin-bar" id="divisionActionsBar"></div>' +
+          '<div id="divisionsPreview"><p class="loading">Loading...</p></div>' +
+          '</div>' +
           '</div>' +
 
           '<div id="tab-fixtures" class="tab-content">' +
