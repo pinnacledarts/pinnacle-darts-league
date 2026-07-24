@@ -148,14 +148,13 @@ if (currentUserId) {
 } else {
   joinBtn = '<a href="login.html" class="btn-join" style="display:inline-block;text-decoration:none;text-align:center;">Login to Join</a>';
 }
-  var paidBadge = t.is_paid ? '<p><strong>💷 Entry Fee:</strong> £' + t.entry_fee + '</p>' : '';
+var paidBadge = t.is_paid ? '<span class="badge-paid">💷 £' + t.entry_fee + ' Entry</span>' : '';
   var cardHtml = '<div class="tournament-card">' +
-    getStatusBadgeHtml(status) +
+    getStatusBadgeHtml(status) + paidBadge +
     '<h3>' + t.name + '</h3>' +
     '<p><strong>Date:</strong> ' + dateStr + timeStr + '</p>' +
     '<p><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</p>' +
-    '<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
-    paidBadge +
+'<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
     (t.description ? '<p>' + t.description + '</p>' : '') +
     '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
     '<div class="card-actions">' +
