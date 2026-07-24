@@ -223,6 +223,22 @@ async function updateSwitchButtonVisibility() {
     switchBtn.style.display = hasAcademyAccess ? '' : 'none';
   }
 }
+function saveActiveTab(name) {
+  localStorage.setItem('lastTab_' + window.location.pathname + window.location.search, name);
+}
+
+function restoreActiveTab() {
+  var key = 'lastTab_' + window.location.pathname + window.location.search;
+  var lastTab = localStorage.getItem(key);
+  if (!lastTab) { return; }
+  var tabBtn = document.querySelector('.tab[onclick*="\'' + lastTab + '\'"]');
+  var tabContent = document.getElementById('tab-' + lastTab);
+  if (!tabBtn || !tabContent) { return; }
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+  tabBtn.classList.add('active');
+  tabContent.classList.add('active');
+}
 async function handleLogout() {
   await sbClient.auth.signOut();
   window.location.href = 'index.html';
