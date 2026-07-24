@@ -131,7 +131,11 @@ main { padding: 24px 20px; }
     <p>Official Academy Website</p>
   </div>
 <button class="hamburger" onclick="toggleMenu()">☰</button>
-  <nav id="mainNav">
+<nav id="mainNav">
+    <a href="#" onclick="showTab('news', event); return false;">News & Updates</a>
+    <a href="#" onclick="showTab('table', event); return false;">Academy Sessions</a>
+    <a href="#" onclick="showTab('profiles', event); return false;">Player Profiles</a>
+    <a href="#" onclick="showTab('drills', event); return false;">Drills</a>
     <a href="academy-tournaments.html">Tournaments</a>
     <a href="academy-leagues.html">Leagues</a>
     <a href="index.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Online</a>
@@ -206,12 +210,7 @@ main { padding: 24px 20px; }
   <div id="academyContentView" style="display:none;">
   <h2>Pinnacle Academy</h2>
 
-  <div class="tabs">
-    <button class="tab active" onclick="showTab('news', event)">News & Updates</button>
-    <button class="tab" onclick="showTab('table', event)">Academy Sessions</button>
-    <button class="tab" onclick="showTab('profiles', event)">Player Profiles</button>
-    <button class="tab" onclick="showTab('drills', event)">Drills</button>
-  </div>
+
 
       <div id="tab-news" class="tab-content active">
         <h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;font-size:1.3em;">Latest News</h2>
@@ -1338,12 +1337,13 @@ async function loadDrillProgress() {
           '<div style="text-align:center;font-size:0.85em;color:#888888;margin-top:8px;">' + data.length + ' attempt(s) — earliest to most recent, left to right</div>';
       }
 
-      function showTab(name, event) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+function showTab(name, event) {
+        if (event) { event.preventDefault(); }
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        event.target.classList.add('active');
         document.getElementById('tab-' + name).classList.add('active');
         if (name === 'drills') { loadDrillsAccordion(); }
+        var nav = document.getElementById('mainNav');
+        if (nav) { nav.classList.remove('open'); }
       }
 
       function toggleMenu() {
