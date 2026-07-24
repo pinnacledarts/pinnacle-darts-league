@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!nav.querySelector('a[href="merch.html"]')) {
       var merchLink = document.createElement('a');
       merchLink.href = 'merch.html';
-      merchLink.textContent = 'Merch';
+      merchLink.textContent = 'Shop';
       var shirtLinkRef = nav.querySelector('a[href="shirt-builder.html"]');
       shirtLinkRef.insertAdjacentElement('afterend', merchLink);
     }
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!nav.querySelector('a[href="merch.html"]')) {
       var merchLinkAcademy = document.createElement('a');
       merchLinkAcademy.href = 'merch.html';
-      merchLinkAcademy.textContent = 'Merch';
+      merchLinkAcademy.textContent = 'Shop';
       var leaguesLinkRef = nav.querySelector('a[href="academy-leagues.html"]');
       if (leaguesLinkRef) {
         leaguesLinkRef.insertAdjacentElement('afterend', merchLinkAcademy);
