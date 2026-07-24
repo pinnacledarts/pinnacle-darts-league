@@ -258,14 +258,14 @@ main { padding: 24px 20px; }
               <input type="text" id="leagueSeason" placeholder="e.g. 2026" />
             </div>
           </div>
-          <div class="form-row">
+       <div class="form-row">
             <div class="form-group">
               <label>Start Date</label>
               <input type="date" id="leagueStart" />
             </div>
             <div class="form-group">
-              <label>End Date</label>
-              <input type="date" id="leagueEnd" />
+              <label>Matches Per Week</label>
+              <input type="number" id="leagueMatchesPerWeek" value="1" min="1" />
             </div>
           </div>
           <div class="form-row">
@@ -1732,8 +1732,8 @@ async function createLeague() {
   var result = await sbClient.from('leagues').insert([{
     name: name,
     season: document.getElementById('leagueSeason').value.trim() || null,
-    start_date: document.getElementById('leagueStart').value || null,
-    end_date: document.getElementById('leagueEnd').value || null,
+start_date: document.getElementById('leagueStart').value || null,
+    matches_per_week: parseInt(document.getElementById('leagueMatchesPerWeek').value) || 1,
     format: document.getElementById('leagueFormat').value,
     platform: document.getElementById('leaguePlatform').value,
     status: 'upcoming',
