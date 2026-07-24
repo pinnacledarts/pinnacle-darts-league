@@ -234,9 +234,10 @@ main { padding: 24px 20px; }
           isCurrentUserAdmin = profile ? profile.is_admin : false;
         }
 
-        const { data, error } = await sbClient
+const { data, error } = await sbClient
           .from('profiles')
           .select('*')
+          .or('is_bye.is.null,is_bye.eq.false')
           .order('full_name', { ascending: true });
 
         if (error) {
