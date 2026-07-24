@@ -320,6 +320,16 @@ async function addSelectedPlayers() {
   var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
   if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
 
+  var noAverage = [];
+  for (var c = 0; c < checked.length; c++) {
+    var p = allProfiles.find(function(pr) { return pr.id === checked[c].value; });
+    if (p && !p.average && !p.starter_average) { noAverage.push(p.full_name || p.username || 'Unknown'); }
+  }
+  if (noAverage.length) {
+    showMsg('add-player-error', 'These players have no average set yet, so they can\'t be added: ' + noAverage.join(', ') + '. Set a Starter Average for them first.');
+    return;
+  }
+
   if (leagueData.max_players) {
     var wouldBeTotal = existingPlayerIds.length + checked.length;
     if (wouldBeTotal > leagueData.max_players) {
@@ -665,20 +675,27 @@ async function reopenDivisions() {
         loadFixtures();
       }
 
-      async function generateFixturesForGroup(players, division) {
-        for (var i = 0; i < players.length; i++) {
-          for (var j = i + 1; j < players.length; j++) {
-            await sbClient.from('league_matches').insert([{
-              league_id: parseInt(leagueId), player1_id: players[i], player2_id: players[j], stage: 'regular', status: 'pending', division: division
-            }]);
-            if (leagueData.format === 'home_away') {
-              await sbClient.from('league_matches').insert([{
-                league_id: parseInt(leagueId), player1_id: players[j], player2_id: players[i], stage: 'regular', status: 'pending', division: division
-              }]);
-            }
-          }
-        }
+async function generateFixturesForGroup(players, division) {
+  var byeScore = leagueData.bye_scoreline || 3;
+  for (var i = 0; i < players.length; i++) {
+    for (var j = i + 1; j < players.length; j++) {
+      var p1IsBye = BYE_PROFILE_IDS.indexOf(players[i]) > -1;
+      var p2IsBye = BYE_PROFILE_IDS.indexOf(players[j]) > -1;
+      var isBye = p1IsBye || p2IsBye;
+      var status = isBye ? 'completed' : 'pending';
+      var score1 = isBye ? (p1IsBye ? 0 : byeScore) : null;
+      var score2 = isBye ? (p2IsBye ? 0 : byeScore) : null;
+      await sbClient.from('league_matches').insert([{
+        league_id: parseInt(leagueId), player1_id: players[i], player2_id: players[j], stage: 'regular', status: status, division: division, player1_score: score1, player2_score: score2
+      }]);
+      if (leagueData.format === 'home_away') {
+        await sbClient.from('league_matches').insert([{
+          league_id: parseInt(leagueId), player1_id: players[j], player2_id: players[i], stage: 'regular', status: status, division: division, player1_score: score2, player2_score: score1
+        }]);
       }
+    }
+  }
+}
 
       async function generateNextSwissRound() {
         var maxGames = leagueData.swiss_games || 5;
