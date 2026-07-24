@@ -104,7 +104,7 @@ async function loadLeagues() {
     playerHasAverage = profileResult.data ? !!(profileResult.data.average || profileResult.data.starter_average) : false;
   }
 
-        var result = await sbClient.from('leagues').select('*').order('start_date', { ascending: true });
+        var result = await sbClient.from('leagues').select('*').or('section.eq.online,section.eq.both').order('start_date', { ascending: true });
         var container = document.getElementById('leaguesList');
 
         if (!result.data || !result.data.length) {
