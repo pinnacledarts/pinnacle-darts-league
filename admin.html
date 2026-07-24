@@ -1106,12 +1106,13 @@ async function loadMerchOrders() {
     var paidLabel = o.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Not confirmed paid</span>';
     var borderColor = o.paid ? '#cceecc' : '#ffcccc';
 
+var methodLabel = o.payment_method === 'site_credit' ? '<span style="color:#555;font-size:0.85em;">💳 Paid via Site Credit</span>' : '<span style="color:#555;font-size:0.85em;">🔗 Stripe</span>';
     return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;border-color:' + borderColor + ';">' +
       '<div style="padding:14px 16px;">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">' +
       '<div><strong>' + buyerName + '</strong><div style="color:#888;font-size:0.85em;">' + (listing.title || 'Unknown item') + ' — £' + (listing.price != null ? listing.price : '-') + '</div>' +
       (o.selected_option ? '<div style="color:#111;font-size:0.85em;margin-top:4px;"><strong>Option:</strong> ' + o.selected_option + '</div>' : '') +
-      '<div style="margin-top:4px;">' + paidLabel + '</div>' +
+      '<div style="margin-top:4px;">' + paidLabel + ' — ' + methodLabel + '</div>' +
       '<div style="color:#aaa;font-size:0.8em;margin-top:4px;">' + new Date(o.created_at).toLocaleString('en-GB') + '</div>' +
       '</div>' +
       '<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">' +
