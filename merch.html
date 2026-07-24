@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merch | Pinnacle Darts League</title>
+    <title>Shop | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
@@ -28,6 +28,8 @@
       nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
       main { padding: 40px; max-width: 1200px; margin: 0 auto; }
       h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; }
+      .category-heading { border-bottom: 3px solid #111111; padding-bottom: 8px; margin: 40px 0 20px; }
+      .category-heading:first-of-type { margin-top: 0; }
       .listings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
       .listing-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; overflow: hidden; }
       .listing-image { width: 100%; height: 220px; background-color: #eeeeee; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; color: #aaaaaa; font-size: 0.9em; position: relative; }
@@ -50,7 +52,6 @@
     </style>
   </head>
   <body>
-
     <header>
       <img src="logo.png" alt="Pinnacle Darts Logo">
       <div>
@@ -65,18 +66,16 @@
         <a href="players.html">Players</a>
         <a href="swap-sell.html">Swap / Sell</a>
         <a href="shirt-builder.html">Shirt Builder</a>
-        <a href="merch.html">Merch</a>
+        <a href="merch.html">Shop</a>
         <a href="academy.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Academy</a>
         <div id="authButtons" style="padding:14px 24px;"></div>
       </nav>
     </header>
-
     <main>
-      <h2>Merch</h2>
-      <div id="listingsGrid" class="listings-grid"><p class="loading">Loading merch...</p></div>
+      <h2>Shop</h2>
+      <div id="listingsGrid"><p class="loading">Loading shop items...</p></div>
       <p style="text-align:center;margin-top:30px;"><a href="terms.html" style="color:#555;font-size:0.9em;">View Terms & Conditions →</a></p>
     </main>
-
     <script>
       var currentUserId = null;
       var allMerchListings = [];
@@ -88,14 +87,41 @@
       }
 
       async function loadMerch() {
-        var result = await sbClient.from('merch_listings').select('*').eq('active', true).order('created_at', { ascending: false });
+        var listingsResult = await sbClient.from('merch_listings').select('*').eq('active', true).order('created_at', { ascending: false });
+        var categoriesResult = await sbClient.from('merch_categories').select('*').order('sort_order').order('name');
         var container = document.getElementById('listingsGrid');
-        allMerchListings = result.data || [];
-        if (!allMerchListings.length) { container.innerHTML = '<p class="coming-soon">No merch items available right now — check back soon!</p>'; return; }
-        container.innerHTML = allMerchListings.map(renderMerchCard).join('');
+        allMerchListings = listingsResult.data || [];
+        var categories = categoriesResult.data || [];
+
+        if (!allMerchListings.length) { container.innerHTML = '<p class="coming-soon">No items available right now — check back soon!</p>'; return; }
+
+        var byCategory = {};
+        var uncategorised = [];
+        allMerchListings.forEach(function(m) {
+          if (m.category_id) {
+            if (!byCategory[m.category_id]) { byCategory[m.category_id] = []; }
+            byCategory[m.category_id].push(m);
+          } else {
+            uncategorised.push(m);
+          }
+        });
+
+        var html = '';
+        categories.forEach(function(c) {
+          var items = byCategory[c.id];
+          if (!items || !items.length) { return; }
+          html += '<h3 class="category-heading">' + c.name + '</h3>';
+          html += '<div class="listings-grid">' + items.map(renderMerchCard).join('') + '</div>';
+        });
+        if (uncategorised.length) {
+          if (html) { html += '<h3 class="category-heading">Other Items</h3>'; }
+          html += '<div class="listings-grid">' + uncategorised.map(renderMerchCard).join('') + '</div>';
+        }
+
+        container.innerHTML = html;
       }
 
-function renderMerchCard(m) {
+      function renderMerchCard(m) {
         var images = m.image_urls || [];
         var imageHtml;
         if (images.length > 1) {
@@ -108,11 +134,12 @@ function renderMerchCard(m) {
           imageHtml = '<div class="listing-image">No image</div>';
         }
 
-        var optionHtml = '';
-        if (m.option_label && m.option_choices && m.option_choices.length) {
-          optionHtml = '<select id="merchOption-' + m.id + '"><option value="">-- Select ' + m.option_label + ' --</option>' +
-            m.option_choices.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('') + '</select>';
-        }
+        var optionsHtml = '';
+        var optionGroups = m.options || [];
+        optionGroups.forEach(function(g, i) {
+          optionsHtml += '<select id="merchOption-' + m.id + '-' + i + '" data-label="' + g.label.replace(/"/g, '&quot;') + '"><option value="">-- Select ' + g.label + ' --</option>' +
+            g.choices.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('') + '</select>';
+        });
 
         var buyBtn, creditBtn;
         if (currentUserId) {
@@ -128,9 +155,10 @@ function renderMerchCard(m) {
           '<div class="listing-body">' +
           '<div class="listing-title">' + m.title + '</div>' +
           '<div class="listing-price">£' + (m.price != null ? m.price : '-') + '</div>' +
-          '<div class="listing-actions">' + optionHtml + buyBtn + creditBtn + '</div>' +
+          '<div class="listing-actions">' + optionsHtml + buyBtn + creditBtn + '</div>' +
           '</div></div>';
       }
+
       function cycleMerchImage(el) {
         var listingId = parseInt(el.getAttribute('data-listing-id'));
         var listing = allMerchListings.find(function(m) { return m.id === listingId; });
@@ -142,19 +170,28 @@ function renderMerchCard(m) {
         var counter = el.querySelector('span');
         if (counter) { counter.textContent = (idx + 1) + ' / ' + listing.image_urls.length; }
       }
-async function handleCreditPay(id) {
+
+      function collectSelectedOptions(listing) {
+        var groups = listing.options || [];
+        var selections = [];
+        for (var i = 0; i < groups.length; i++) {
+          var select = document.getElementById('merchOption-' + listing.id + '-' + i);
+          var value = select ? select.value : '';
+          if (!value) {
+            alert('Please select a ' + groups[i].label + ' before buying.');
+            return null;
+          }
+          selections.push(groups[i].label + ': ' + value);
+        }
+        return selections.length ? selections.join(', ') : null;
+      }
+
+      async function handleCreditPay(id) {
         var listing = allMerchListings.find(function(m) { return m.id === id; });
         if (!listing) { return; }
 
-        var selectedOption = null;
-        if (listing.option_label) {
-          var select = document.getElementById('merchOption-' + id);
-          selectedOption = select ? select.value : '';
-          if (!selectedOption) {
-            alert('Please select a ' + listing.option_label + ' before buying.');
-            return;
-          }
-        }
+        var selectedOption = collectSelectedOptions(listing);
+        if (listing.options && listing.options.length && selectedOption === null) { return; }
 
         var price = parseFloat(listing.price) || 0;
         var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', currentUserId).single();
@@ -185,19 +222,13 @@ async function handleCreditPay(id) {
 
         alert('Payment successful! Your order has been placed.');
       }
+
       async function handleBuy(id) {
         var listing = allMerchListings.find(function(m) { return m.id === id; });
         if (!listing) { return; }
 
-        var selectedOption = null;
-        if (listing.option_label) {
-          var select = document.getElementById('merchOption-' + id);
-          selectedOption = select ? select.value : '';
-          if (!selectedOption) {
-            alert('Please select a ' + listing.option_label + ' before buying.');
-            return;
-          }
-        }
+        var selectedOption = collectSelectedOptions(listing);
+        if (listing.options && listing.options.length && selectedOption === null) { return; }
 
         var result = await sbClient.from('merch_orders').insert([{
           listing_id: id,
@@ -226,6 +257,5 @@ async function handleCreditPay(id) {
         init();
       });
     </script>
-
   </body>
 </html>
