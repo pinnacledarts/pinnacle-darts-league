@@ -789,8 +789,9 @@ if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2
             var a1 = m.player1_avg != null ? m.player1_avg : '';
             var a2 = m.player2_avg != null ? m.player2_avg : '';
             var scoreHtml;
-            if (m.status === 'completed') {
-              scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
+if (m.status === 'completed') {
+              var pAvgLine = '<div style="font-size:0.8em;color:#888;margin-top:4px;">Avg: ' + (m.player1_avg != null ? m.player1_avg : '-') + ' vs ' + (m.player2_avg != null ? m.player2_avg : '-') + '</div>';
+              scoreHtml = '<div class="score-display" style="display:block;">' + m.player1_score + ' - ' + m.player2_score + pAvgLine + '</div>';
             } else if (m.player1_id && m.player2_id) {
               scoreHtml = '<div class="score-inputs"><input class="score-input" type="number" id="ps1_' + m.id + '" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ps2_' + m.id + '" placeholder="0" />' +
                 '<input class="score-input" type="number" step="0.01" id="pa1_' + m.id + '" value="' + a1 + '" placeholder="Avg 1" style="width:70px;" />' +
