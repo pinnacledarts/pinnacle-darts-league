@@ -97,7 +97,7 @@ async function loadTournaments() {
     playerPlatform = profileResult.data ? profileResult.data.platform : null;
     playerHasAverage = profileResult.data ? !!(profileResult.data.average || profileResult.data.starter_average) : false;
   }
-        var result = await sbClient.from('tournaments').select('*').order('date', { ascending: true });
+        var result = await sbClient.from('tournaments').select('*').or('section.eq.online,section.eq.both').order('date', { ascending: true });
         var container = document.getElementById('tournamentsList');
         if (!result.data || !result.data.length) {
           container.innerHTML = '<p class="coming-soon">🎯 No tournaments yet — check back soon!</p>';
