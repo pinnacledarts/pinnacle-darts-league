@@ -306,18 +306,27 @@ main { padding: 24px 20px; }
               <input type="number" id="leagueMaxPlayers" placeholder="e.g. 16" />
             </div>
           </div>
-          <div class="form-row">
-            <div class="form-group" style="display:flex; align-items:center; gap:8px;">
-              <input type="checkbox" id="leaguePlayoffs" style="width:18px; height:18px;" />
-              <label style="margin:0;">Add Playoff Rounds (Top 4)</label>
-            </div>
-            <div class="form-group" style="display:flex; align-items:center; gap:8px;">
-              <input type="checkbox" id="leagueAvgSplit" style="width:18px; height:18px;" />
-              <label style="margin:0;">Average Split (divisions by average)</label>
-            </div>
-          </div>
-
-          <button class="btn btn-primary" onclick="createLeague()">Create League</button>
+        <div class="form-row">
+  <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+    <input type="checkbox" id="leaguePlayoffs" style="width:18px; height:18px;" />
+    <label style="margin:0;">Add Playoff Rounds (Top 4)</label>
+  </div>
+  <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+    <input type="checkbox" id="leagueAvgSplit" style="width:18px; height:18px;" />
+    <label style="margin:0;">Average Split (divisions by average)</label>
+  </div>
+</div>
+<div class="form-row">
+  <div class="form-group">
+    <label>Section</label>
+    <select id="leagueSection">
+      <option value="online" selected>Online</option>
+      <option value="academy">Academy</option>
+      <option value="both">Both</option>
+    </select>
+  </div>
+</div>
+<button class="btn btn-primary" onclick="createLeague()">Create League</button>
         </div>
 
         <div class="card">
@@ -1604,9 +1613,10 @@ async function deleteTournament(id) {
           status: 'upcoming',
           playoffs: document.getElementById('leaguePlayoffs').checked,
           average_split: document.getElementById('leagueAvgSplit').checked,
-          players_per_division: document.getElementById('leaguePlayersPerDiv').value || null,
-          swiss_games: document.getElementById('leagueSwissGames').value || null,
-          max_players: document.getElementById('leagueMaxPlayers').value || null
+ players_per_division: document.getElementById('leaguePlayersPerDiv').value || null,
+swiss_games: document.getElementById('leagueSwissGames').value || null,
+max_players: document.getElementById('leagueMaxPlayers').value || null,
+section: document.getElementById('leagueSection').value
         }]);
         if (result.error) { showMsg('league-error', result.error.message); return; }
         showMsg('league-success', 'League created successfully!');
