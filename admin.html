@@ -1546,19 +1546,7 @@ function showTab(name, event) {
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
         event.target.classList.add('active');
         document.getElementById('tab-' + name).classList.add('active');
-        localStorage.setItem('adminLastTab', name);
-      }
-
-      function restoreLastTab() {
-        var lastTab = localStorage.getItem('adminLastTab');
-        if (!lastTab) { return; }
-        var tabBtn = document.querySelector('.tab[onclick*="\'' + lastTab + '\'"]');
-        var tabContent = document.getElementById('tab-' + lastTab);
-        if (!tabBtn || !tabContent) { return; }
-        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
-        document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
-        tabBtn.classList.add('active');
-        tabContent.classList.add('active');
+        saveActiveTab(name);
       }
 
       function toggleSwissOptions() {
