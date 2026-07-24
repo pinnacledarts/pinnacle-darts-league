@@ -135,8 +135,18 @@ for (var i = 0; i < result.data.length; i++) {
     continue;
   }
 
-  var startStr = l.start_date ? new Date(l.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
-  var endStr = l.end_date ? new Date(l.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+var startStr = l.start_date ? new Date(l.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+  var endStr = 'TBC';
+  if (l.start_date && l.players_per_division) {
+    var divSize = parseInt(l.players_per_division);
+    var matchesPerWeek = parseInt(l.matches_per_week) || 1;
+    var rounds = l.format === 'home_away' ? 2 * (divSize - 1) : (divSize - 1);
+    if (l.format === 'swiss' && l.swiss_games) { rounds = parseInt(l.swiss_games); }
+    var weeks = Math.ceil(rounds / matchesPerWeek);
+    var estEnd = new Date(l.start_date);
+    estEnd.setDate(estEnd.getDate() + (weeks - 1) * 7);
+    endStr = estEnd.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) + ' (est.)';
+  }
   var playerCount = playerCounts[parseInt(l.id)] || 0;
   var maxStr = l.max_players ? playerCount + ' / ' + l.max_players + ' players' : playerCount + ' players';
   var isFull = l.max_players && playerCount >= l.max_players;
