@@ -123,12 +123,34 @@ async function submitBugReport() {
   document.getElementById('bugReportText').value = '';
 }
 document.addEventListener('DOMContentLoaded', function() {
-  var headerH1 = document.querySelector('header h1');
-  var headerP = document.querySelector('header p');
-  if (headerH1 && headerH1.textContent.trim() === 'Pinnacle Darts League') {
-    headerH1.textContent = 'Pinnacle Darts Online';
-    if (headerP) { headerP.style.display = 'none'; }
+  var storageKey = 'lastTab_' + window.location.pathname + window.location.search;
+
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.tab');
+    if (!btn) { return; }
+    var onclickAttr = btn.getAttribute('onclick') || '';
+    var match = onclickAttr.match(/showTab\(['"]([^'"]+)['"]/);
+    if (match) { localStorage.setItem(storageKey, match[1]); }
+  });
+
+  var lastTab = localStorage.getItem(storageKey);
+  if (!lastTab) { return; }
+
+  var attempts = 0;
+  function tryRestoreTab() {
+    attempts++;
+    var tabBtn = document.querySelector('.tab[onclick*="\'' + lastTab + '\'"]');
+    var tabContent = document.getElementById('tab-' + lastTab);
+    if (tabBtn && tabContent) {
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+      tabBtn.classList.add('active');
+      tabContent.classList.add('active');
+    } else if (attempts < 50) {
+      setTimeout(tryRestoreTab, 100);
+    }
   }
+  tryRestoreTab();
 });
 async function checkAuth() {
   const { data: { session } } = await sbClient.auth.getSession();
