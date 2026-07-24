@@ -95,7 +95,7 @@
         container.innerHTML = allMerchListings.map(renderMerchCard).join('');
       }
 
-     function renderMerchCard(m) {
+function renderMerchCard(m) {
         var images = m.image_urls || [];
         var imageHtml;
         if (images.length > 1) {
@@ -142,7 +142,49 @@
         var counter = el.querySelector('span');
         if (counter) { counter.textContent = (idx + 1) + ' / ' + listing.image_urls.length; }
       }
+async function handleCreditPay(id) {
+        var listing = allMerchListings.find(function(m) { return m.id === id; });
+        if (!listing) { return; }
 
+        var selectedOption = null;
+        if (listing.option_label) {
+          var select = document.getElementById('merchOption-' + id);
+          selectedOption = select ? select.value : '';
+          if (!selectedOption) {
+            alert('Please select a ' + listing.option_label + ' before buying.');
+            return;
+          }
+        }
+
+        var price = parseFloat(listing.price) || 0;
+        var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', currentUserId).single();
+        var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+
+        if (currentBalance < price) {
+          alert('You don\'t have enough site credit for this. Your balance is £' + currentBalance.toFixed(2) + ', and this item costs £' + price.toFixed(2) + '. Visit the Site Credit page to top up.');
+          return;
+        }
+
+        if (!confirm('Pay £' + price.toFixed(2) + ' using your site credit balance?')) { return; }
+
+        var newBalance = currentBalance - price;
+        await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', currentUserId);
+
+        var result = await sbClient.from('merch_orders').insert([{
+          listing_id: id,
+          buyer_id: currentUserId,
+          selected_option: selectedOption,
+          paid: true,
+          payment_method: 'site_credit'
+        }]);
+
+        if (result.error) {
+          alert('Error recording your order: ' + result.error.message);
+          return;
+        }
+
+        alert('Payment successful! Your order has been placed.');
+      }
       async function handleBuy(id) {
         var listing = allMerchListings.find(function(m) { return m.id === id; });
         if (!listing) { return; }
