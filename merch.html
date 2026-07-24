@@ -95,11 +95,11 @@
         container.innerHTML = allMerchListings.map(renderMerchCard).join('');
       }
 
-      function renderMerchCard(m) {
+     function renderMerchCard(m) {
         var images = m.image_urls || [];
         var imageHtml;
         if (images.length > 1) {
-          imageHtml = '<div class="listing-image" style="background-image:url(' + images[0] + ');cursor:pointer;" data-index="0" data-listing-id="' + m.id + '" onclick="cycleMerchImage(this)">' +
+          imageHtml = '<div class="listing-image" style="background-image:url(' + images[0] + ');cursor:pointer;position:relative;" data-index="0" data-listing-id="' + m.id + '" onclick="cycleMerchImage(this)">' +
             '<span style="position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,0.6);color:#fff;padding:2px 8px;border-radius:12px;font-size:0.75em;">1 / ' + images.length + '</span>' +
             '</div>';
         } else if (images.length === 1) {
@@ -114,19 +114,23 @@
             m.option_choices.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('') + '</select>';
         }
 
-        var buyBtn = currentUserId
-          ? '<button class="btn-buy" onclick="handleBuy(' + m.id + ')">Buy Now</button>'
-          : '<a href="login.html" class="btn-buy">Login to Buy</a>';
+        var buyBtn, creditBtn;
+        if (currentUserId) {
+          buyBtn = '<button class="btn-buy" onclick="handleBuy(' + m.id + ')">Buy Now</button>';
+          creditBtn = '<button class="btn-buy" style="background-color:#ffffff;color:#111111;border:1px solid #111111;margin-top:8px;" onclick="handleCreditPay(' + m.id + ')">Pay with Site Credit</button>';
+        } else {
+          buyBtn = '<a href="login.html" class="btn-buy">Login to Buy</a>';
+          creditBtn = '';
+        }
 
         return '<div class="listing-card">' +
           imageHtml +
           '<div class="listing-body">' +
           '<div class="listing-title">' + m.title + '</div>' +
           '<div class="listing-price">£' + (m.price != null ? m.price : '-') + '</div>' +
-          '<div class="listing-actions">' + optionHtml + buyBtn + '</div>' +
+          '<div class="listing-actions">' + optionHtml + buyBtn + creditBtn + '</div>' +
           '</div></div>';
       }
-
       function cycleMerchImage(el) {
         var listingId = parseInt(el.getAttribute('data-listing-id'));
         var listing = allMerchListings.find(function(m) { return m.id === listingId; });
