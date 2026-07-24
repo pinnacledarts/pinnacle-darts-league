@@ -1262,33 +1262,33 @@ function removeMerchImage(index) {
 function editMerchItem(id) {
   var item = window.allMerchData.find(function(m) { return m.id === id; });
   if (!item) { return; }
-
   editingMerchId = id;
   editingMerchImages = item.image_urls ? item.image_urls.slice() : [];
-
-  document.getElementById('merchFormTitle').textContent = 'Edit Merch Item';
+  document.getElementById('merchFormTitle').textContent = 'Edit Shop Item';
   document.getElementById('merchTitle').value = item.title || '';
   document.getElementById('merchPrice').value = item.price != null ? item.price : '';
   document.getElementById('merchStripeLink').value = item.stripe_link || '';
-  document.getElementById('merchOptionLabel').value = item.option_label || '';
-  document.getElementById('merchOptionChoices').value = item.option_choices ? item.option_choices.join(', ') : '';
+  document.getElementById('merchCategory').value = item.category_id || '';
+  document.getElementById('merchOptionGroups').innerHTML = '';
+  merchOptionGroupCount = 0;
+  (item.options || []).forEach(function(g) { addMerchOptionGroup(g.label, g.choices); });
   document.getElementById('merchActive').checked = item.active;
   document.getElementById('merchSaveBtn').textContent = 'Save Changes';
   document.getElementById('merchCancelBtn').style.display = 'inline-block';
   renderMerchCurrentImages();
-
   document.getElementById('merchFormTitle').scrollIntoView({ behavior: 'smooth' });
 }
 
 function cancelMerchEdit() {
   editingMerchId = null;
   editingMerchImages = [];
-  document.getElementById('merchFormTitle').textContent = 'Add Merch Item';
+  document.getElementById('merchFormTitle').textContent = 'Add Shop Item';
   document.getElementById('merchTitle').value = '';
   document.getElementById('merchPrice').value = '';
   document.getElementById('merchStripeLink').value = '';
-  document.getElementById('merchOptionLabel').value = '';
-  document.getElementById('merchOptionChoices').value = '';
+  document.getElementById('merchCategory').value = '';
+  document.getElementById('merchOptionGroups').innerHTML = '';
+  merchOptionGroupCount = 0;
   document.getElementById('merchActive').checked = true;
   document.getElementById('merchSaveBtn').textContent = 'Add Item';
   document.getElementById('merchCancelBtn').style.display = 'none';
@@ -1298,13 +1298,12 @@ function cancelMerchEdit() {
 async function saveMerchItem() {
   var title = document.getElementById('merchTitle').value.trim();
   if (!title) { showMsg('merch-error', 'Please enter a title.'); return; }
-
   var price = document.getElementById('merchPrice').value;
   var stripeLink = document.getElementById('merchStripeLink').value.trim();
+  var categoryId = document.getElementById('merchCategory').value;
   var active = document.getElementById('merchActive').checked;
   var fileInput = document.getElementById('merchImages');
   var files = Array.from(fileInput.files || []);
-
   var imageUrls = editingMerchImages.slice();
   for (var i = 0; i < files.length; i++) {
     var file = files[i];
@@ -1315,17 +1314,13 @@ async function saveMerchItem() {
     var urlData = sbClient.storage.from('merch-images').getPublicUrl(fileName);
     imageUrls.push(urlData.data.publicUrl);
   }
-
-var optionLabel = document.getElementById('merchOptionLabel').value.trim();
-var optionChoicesRaw = document.getElementById('merchOptionChoices').value.trim();
-var optionChoices = optionChoicesRaw ? optionChoicesRaw.split(',').map(function(s) { return s.trim(); }).filter(Boolean) : null;
-
+var optionGroups = collectMerchOptionGroups();
 var payload = {
   title: title,
   price: price ? parseFloat(price) : null,
   stripe_link: stripeLink || null,
-  option_label: optionLabel || null,
-  option_choices: optionChoices,
+  category_id: categoryId || null,
+  options: optionGroups.length ? optionGroups : null,
   active: active,
   image_urls: imageUrls
 };
