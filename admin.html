@@ -673,7 +673,22 @@ main { padding: 24px 20px; }
 <!-- MERCH TAB -->
 <div id="tab-merch" class="tab-content">
   <div class="card">
-    <h3 id="merchFormTitle">Add Merch Item</h3>
+    <h3>Shop Categories</h3>
+    <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create headers to group your products (e.g. "Pinnacle Merch", "3D Printed Items").</p>
+    <div class="success-msg" id="category-success"></div>
+    <div class="error-msg" id="category-error"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Category Name</label>
+        <input type="text" id="categoryName" placeholder="e.g. 3D Printed Items" />
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="addMerchCategory()">Add Category</button>
+    <div id="categoriesList" style="margin-top:16px;"></div>
+  </div>
+
+  <div class="card">
+    <h3 id="merchFormTitle">Add Shop Item</h3>
     <div class="success-msg" id="merch-success"></div>
     <div class="error-msg" id="merch-error"></div>
     <div class="form-group">
@@ -832,6 +847,45 @@ main { padding: 24px 20px; }
       var allDrillAttemptsData = [];
       var editingMerchId = null;
 var editingMerchImages = [];
+      async function addMerchCategory() {
+  var name = document.getElementById('categoryName').value.trim();
+  if (!name) { showMsg('category-error', 'Please enter a category name.'); return; }
+
+  var result = await sbClient.from('merch_categories').insert([{ name: name }]);
+  if (result.error) { showMsg('category-error', result.error.message); return; }
+
+  showMsg('category-success', 'Category added!');
+  document.getElementById('categoryName').value = '';
+  loadMerchCategories();
+}
+
+async function loadMerchCategories() {
+  var result = await sbClient.from('merch_categories').select('*').order('sort_order').order('name');
+  window.allCategoriesData = result.data || [];
+  var container = document.getElementById('categoriesList');
+
+  if (!window.allCategoriesData.length) {
+    container.innerHTML = '<p class="empty-state">No categories yet.</p>';
+  } else {
+    container.innerHTML = '<table><thead><tr><th>Name</th><th>Action</th></tr></thead><tbody>' +
+      window.allCategoriesData.map(function(c) {
+        return '<tr><td>' + c.name + '</td><td><button class="btn-small danger" onclick="deleteMerchCategory(' + c.id + ')">Delete</button></td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+
+  var select = document.getElementById('merchCategory');
+  if (select) {
+    select.innerHTML = '<option value="">-- No category --</option>' +
+      window.allCategoriesData.map(function(c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join('');
+  }
+}
+
+async function deleteMerchCategory(id) {
+  if (!confirm('Delete this category? Items in it will become uncategorised, not deleted.')) { return; }
+  await sbClient.from('merch_categories').delete().eq('id', id);
+  loadMerchCategories();
+  loadMerchItems();
+}
       async function convertGuestToFullAccount(oldId, fullName, username) {
   var email = document.getElementById('convertEmail-' + oldId).value.trim();
   var password = document.getElementById('convertPassword-' + oldId).value;
@@ -3012,6 +3066,7 @@ loadTopupPackages();
 loadCreditTopUps();
         loadMerchOrders();
         loadMerchItems();
+        loadMerchCategories();
         loadAcademyLeagueSelects();
         loadSessionLog();
         loadDrills();
