@@ -145,8 +145,7 @@ const { data: profile } = await sbClient
 
 const username = profile ? profile.username : session.user.email;
     const balance = profile && profile.credit_balance != null ? parseFloat(profile.credit_balance).toFixed(2) : '0.00';
-    const isAcademyPage = window.location.pathname.includes('academy');
-    const balanceHtml = isAcademyPage ? '' : `<a href="top-up.html" class="btn-username" style="text-decoration:none;">£${balance}</a>`;
+    const balanceHtml = `<a href="top-up.html" class="btn-username" style="text-decoration:none;">£${balance}</a>`;
 
     authButtons.innerHTML = `
       ${balanceHtml}
