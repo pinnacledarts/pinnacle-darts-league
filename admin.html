@@ -238,17 +238,18 @@ main { padding: 24px 20px; }
       <!-- LEAGUES TAB -->
       <div id="tab-leagues" class="tab-content">
         <div class="card">
+<!-- LEAGUES TAB -->
+      <div id="tab-leagues" class="tab-content">
+        <div class="card">
           <h3>Create New League</h3>
           <div class="success-msg" id="league-success"></div>
           <div class="error-msg" id="league-error"></div>
-
           <div class="template-bar">
             <label>Template:</label>
             <select id="leagueTemplateSelect"><option value="">-- Apply a template --</option></select>
             <button class="btn btn-secondary" onclick="applyTemplate('league')">Apply</button>
             <button class="btn btn-secondary" onclick="saveLeagueTemplate()">Save as Template</button>
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label>League Name</label>
@@ -288,45 +289,59 @@ main { padding: 24px 20px; }
               </select>
             </div>
           </div>
-
           <div id="swissOptions" class="form-row hidden">
             <div class="form-group">
               <label>Games Per Player</label>
               <input type="number" id="leagueSwissGames" placeholder="e.g. 7" />
             </div>
           </div>
-
           <div class="form-row">
             <div class="form-group">
               <label>Players Per Division</label>
               <input type="number" id="leaguePlayersPerDiv" placeholder="e.g. 8" />
             </div>
-            <div class="form-group">
-              <label>Max Players</label>
-              <input type="number" id="leagueMaxPlayers" placeholder="e.g. 16" />
+            <div class="form-group" style="display:flex; align-items:center; gap:8px; margin-top:24px;">
+              <input type="checkbox" id="leaguePlayoffs" style="width:18px; height:18px;" />
+              <label style="margin:0;">Add Playoff Rounds (Top 4)</label>
             </div>
           </div>
-        <div class="form-row">
-  <div class="form-group" style="display:flex; align-items:center; gap:8px;">
-    <input type="checkbox" id="leaguePlayoffs" style="width:18px; height:18px;" />
-    <label style="margin:0;">Add Playoff Rounds (Top 4)</label>
-  </div>
-  <div class="form-group" style="display:flex; align-items:center; gap:8px;">
-    <input type="checkbox" id="leagueAvgSplit" style="width:18px; height:18px;" />
-    <label style="margin:0;">Average Split (divisions by average)</label>
-  </div>
-</div>
-<div class="form-row">
-  <div class="form-group">
-    <label>Section</label>
-    <select id="leagueSection">
-      <option value="online" selected>Online</option>
-      <option value="academy">Academy</option>
-      <option value="both">Both</option>
-    </select>
-  </div>
-</div>
-<button class="btn btn-primary" onclick="createLeague()">Create League</button>
+          <div class="form-row">
+            <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" id="leagueNoCheckin" style="width:18px;height:18px;" onchange="toggleLeagueCheckinFields()" />
+              <label style="margin:0;">No check-in required for this league</label>
+            </div>
+          </div>
+          <div class="form-row" id="leagueCheckinFields">
+            <div class="form-group">
+              <label>Check-in Opens</label>
+              <input type="datetime-local" id="leagueCheckinStart" />
+            </div>
+            <div class="form-group">
+              <label>Check-in Closes</label>
+              <input type="datetime-local" id="leagueCheckinEnd" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="display:flex;align-items:center;gap:8px;margin-top:24px;">
+              <input type="checkbox" id="leagueIsPaid" style="width:18px;height:18px;" onchange="toggleLeagueEntryFee()" />
+              <label style="margin:0;">Paid League</label>
+            </div>
+            <div class="form-group" id="leagueEntryFeeField" style="display:none;">
+              <label>Entry Fee (£)</label>
+              <input type="number" step="0.01" id="leagueEntryFee" placeholder="e.g. 5.00" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Section</label>
+              <select id="leagueSection">
+                <option value="online" selected>Online</option>
+                <option value="academy">Academy</option>
+                <option value="both">Both</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="createLeague()">Create League</button>
         </div>
 
         <div class="card">
@@ -849,7 +864,20 @@ main { padding: 24px 20px; }
       var editingMerchId = null;
 var editingMerchImages = [];
       var merchOptionGroupCount = 0;
+function toggleLeagueCheckinFields() {
+  var noCheckin = document.getElementById('leagueNoCheckin').checked;
+  document.getElementById('leagueCheckinFields').style.display = noCheckin ? 'none' : 'grid';
+  if (noCheckin) {
+    document.getElementById('leagueCheckinStart').value = '';
+    document.getElementById('leagueCheckinEnd').value = '';
+  }
+}
 
+function toggleLeagueEntryFee() {
+  var isPaid = document.getElementById('leagueIsPaid').checked;
+  document.getElementById('leagueEntryFeeField').style.display = isPaid ? 'block' : 'none';
+  if (!isPaid) { document.getElementById('leagueEntryFee').value = ''; }
+}
 function addMerchOptionGroup(label, choices) {
   merchOptionGroupCount++;
   var idx = merchOptionGroupCount;
@@ -1680,24 +1708,30 @@ async function deleteTournament(id) {
   await sbClient.from('tournaments').delete().eq('id', id);
   loadTournaments();
 }
-      async function createLeague() {
-        var name = document.getElementById('leagueName').value.trim();
-        if (!name) { showMsg('league-error', 'Please enter a league name.'); return; }
-        var result = await sbClient.from('leagues').insert([{
-          name: name,
-          season: document.getElementById('leagueSeason').value.trim() || null,
-          start_date: document.getElementById('leagueStart').value || null,
-          end_date: document.getElementById('leagueEnd').value || null,
-          format: document.getElementById('leagueFormat').value,
-          platform: document.getElementById('leaguePlatform').value,
-          status: 'upcoming',
-          playoffs: document.getElementById('leaguePlayoffs').checked,
-          average_split: document.getElementById('leagueAvgSplit').checked,
- players_per_division: document.getElementById('leaguePlayersPerDiv').value || null,
-swiss_games: document.getElementById('leagueSwissGames').value || null,
-max_players: document.getElementById('leagueMaxPlayers').value || null,
-section: document.getElementById('leagueSection').value
-        }]);
+async function createLeague() {
+  var name = document.getElementById('leagueName').value.trim();
+  if (!name) { showMsg('league-error', 'Please enter a league name.'); return; }
+  var noCheckin = document.getElementById('leagueNoCheckin').checked;
+  var isPaid = document.getElementById('leagueIsPaid').checked;
+  var result = await sbClient.from('leagues').insert([{
+    name: name,
+    season: document.getElementById('leagueSeason').value.trim() || null,
+    start_date: document.getElementById('leagueStart').value || null,
+    end_date: document.getElementById('leagueEnd').value || null,
+    format: document.getElementById('leagueFormat').value,
+    platform: document.getElementById('leaguePlatform').value,
+    status: 'upcoming',
+    playoffs: document.getElementById('leaguePlayoffs').checked,
+    average_split: true,
+    players_per_division: document.getElementById('leaguePlayersPerDiv').value || null,
+    swiss_games: document.getElementById('leagueSwissGames').value || null,
+    max_players: null,
+    checkin_start: noCheckin ? null : (document.getElementById('leagueCheckinStart').value ? new Date(document.getElementById('leagueCheckinStart').value).toISOString() : null),
+    checkin_end: noCheckin ? null : (document.getElementById('leagueCheckinEnd').value ? new Date(document.getElementById('leagueCheckinEnd').value).toISOString() : null),
+    is_paid: isPaid,
+    entry_fee: isPaid ? (parseFloat(document.getElementById('leagueEntryFee').value) || 0) : 0,
+    section: document.getElementById('leagueSection').value
+  }]);
         if (result.error) { showMsg('league-error', result.error.message); return; }
         showMsg('league-success', 'League created successfully!');
         document.getElementById('leagueName').value = '';
