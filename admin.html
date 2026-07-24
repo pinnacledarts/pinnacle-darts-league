@@ -1047,10 +1047,16 @@ async function deleteMerchCategory(id) {
       return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td><strong>£' + parseFloat(p.credit_balance || 0).toFixed(2) + '</strong></td></tr>';
     }).join('') + '</tbody></table>';
 }
-      async function settlePlayerTournamentDebts(playerId) {
-  var unpaidResult = await sbClient.from('tournament_players').select('id, amount_owed').eq('player_id', playerId).eq('paid', false).order('created_at', { ascending: true });
-  var unpaidEntries = unpaidResult.data || [];
+async function settlePlayerTournamentDebts(playerId) {
+  var tournamentUnpaidResult = await sbClient.from('tournament_players').select('id, amount_owed, created_at').eq('player_id', playerId).eq('paid', false);
+  var leagueUnpaidResult = await sbClient.from('league_players').select('id, amount_owed, created_at').eq('player_id', playerId).eq('paid', false);
+
+  var unpaidEntries = (tournamentUnpaidResult.data || []).map(function(e) { return { id: e.id, amount_owed: e.amount_owed, created_at: e.created_at, table: 'tournament_players' }; })
+    .concat((leagueUnpaidResult.data || []).map(function(e) { return { id: e.id, amount_owed: e.amount_owed, created_at: e.created_at, table: 'league_players' }; }));
+
   if (!unpaidEntries.length) { return; }
+
+  unpaidEntries.sort(function(a, b) { return new Date(a.created_at) - new Date(b.created_at); });
 
   var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
   var balance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
@@ -1060,7 +1066,7 @@ async function deleteMerchCategory(id) {
     var owed = parseFloat(entry.amount_owed) || 0;
     if (balance >= owed) {
       balance -= owed;
-      await sbClient.from('tournament_players').update({ paid: true }).eq('id', entry.id);
+      await sbClient.from(entry.table).update({ paid: true }).eq('id', entry.id);
     } else {
       break;
     }
