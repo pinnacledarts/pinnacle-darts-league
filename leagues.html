@@ -168,12 +168,14 @@ if (currentUserId) {
 }
 
 var paidBadge = l.is_paid ? '<span class="badge-paid">💷 £' + l.entry_fee + ' Entry</span>' : '';
+  var matchesPerWeekLabel = l.matches_per_week === 0 ? 'Unlimited' : (l.matches_per_week || 1) + ' per week';
   var cardHtml = '<div class="league-card">' +
     getStatusBadgeHtml(status) + paidBadge +
     '<h3>' + l.name + '</h3>' +
     (l.season ? '<p><strong>Season:</strong> ' + l.season + '</p>' : '') +
     '<p><strong>Format:</strong> ' + (formatLabels[l.format] || l.format || 'TBC') + (l.playoffs ? ' + Playoffs' : '') + '</p>' +
     '<p><strong>Platform:</strong> ' + (platformLabels[l.platform] || l.platform || 'TBC') + '</p>' +
+    '<p><strong>Legs:</strong> First to ' + (l.bye_scoreline || 3) + ' — <strong>Matches:</strong> ' + matchesPerWeekLabel + '</p>' +
     '<p><strong>Dates:</strong> ' + startStr + ' — ' + endStr + '</p>' +
     '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
     '<div class="card-actions">' +
