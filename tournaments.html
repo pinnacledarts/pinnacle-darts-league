@@ -68,12 +68,15 @@
       .loading { text-align: center; padding: 40px; color: #888888; }
       .archive-link { text-align: center; margin-top: 8px; }
       .archive-link a { color: #555; font-size: 0.9em; text-decoration: none; }
-      @media (max-width: 700px) {
+@media (max-width: 700px) {
         header { padding: 14px 20px; }
         .hero { padding: 8px 20px 36px; }
         .hero-title { font-size: 22px; }
         main { padding: 20px 20px 32px; }
         .tournament-grid { grid-template-columns: 1fr; }
+        .tournament-card { text-align: center; }
+        .tournament-card .badges-row { justify-content: center; }
+        .tournament-card .meta-row { justify-content: center; }
       }
     </style>
   </head>
@@ -191,11 +194,11 @@ var paidBadge = t.is_paid ? '<span class="badge badge-paid"><i class="ti ti-curr
   var cardHtml = '<div class="tournament-card">' +
     '<div class="badges-row">' + statusBadge + paidBadge + '</div>' +
     '<h3>' + t.name + '</h3>' +
-    '<div class="meta-row"><i class="ti ti-trophy"></i>' + (formatLabels[t.format] || t.format || 'TBC') + '</div>' +
-    '<div class="meta-row"><i class="ti ti-calendar"></i>' + dateStr + timeStr + '</div>' +
-    '<div class="meta-row"><i class="ti ti-device-gamepad-2"></i>' + (platformLabels[t.platform] || t.platform || 'TBC') + '</div>' +
+  '<div class="meta-row"><i class="ti ti-trophy"></i><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</div>' +
+    '<div class="meta-row"><i class="ti ti-calendar"></i><strong>Date:</strong> ' + dateStr + timeStr + '</div>' +
+    '<div class="meta-row"><i class="ti ti-device-gamepad-2"></i><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</div>' +
     (t.description ? '<p class="desc">' + t.description + '</p>' : '') +
-    '<div class="meta-row"><i class="ti ti-users"></i>' + maxStr + (isFull ? ' — Full' : '') + '</div>' +
+    '<div class="meta-row"><i class="ti ti-users"></i><strong>Players:</strong> ' + maxStr + (isFull ? ' — Full' : '') + '</div>' +
     '<div class="card-actions">' +
     '<a href="tournament.html?id=' + t.id + '" class="btn-view">View</a>' +
     joinBtn +
