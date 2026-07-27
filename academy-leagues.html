@@ -109,11 +109,22 @@ async function loadLeagues() {
           return;
         }
 
-        var countResult = await sbClient.from('league_players').select('league_id');
+ var countResult = await sbClient.from('league_players').select('league_id');
         var playerCounts = {};
         if (countResult.data) {
           countResult.data.forEach(function(row) {
             playerCounts[parseInt(row.league_id)] = (playerCounts[parseInt(row.league_id)] || 0) + 1;
+          });
+        }
+
+        var matchCountResult = await sbClient.from('league_matches').select('league_id, status').eq('stage', 'regular');
+        var gamesPlayedCounts = {};
+        var gamesTotalCounts = {};
+        if (matchCountResult.data) {
+          matchCountResult.data.forEach(function(row) {
+            var lid = parseInt(row.league_id);
+            gamesTotalCounts[lid] = (gamesTotalCounts[lid] || 0) + 1;
+            if (row.status === 'completed') { gamesPlayedCounts[lid] = (gamesPlayedCounts[lid] || 0) + 1; }
           });
         }
 
@@ -133,9 +144,12 @@ for (var i = 0; i < result.data.length; i++) {
 
   var startStr = l.start_date ? new Date(l.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
   var endStr = l.end_date ? new Date(l.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
-  var playerCount = playerCounts[parseInt(l.id)] || 0;
-  var maxStr = l.max_players ? playerCount + ' / ' + l.max_players + ' players' : playerCount + ' players';
+var playerCount = playerCounts[parseInt(l.id)] || 0;
+  var maxStr = l.players_per_division ? playerCount + ' / ' + l.players_per_division + ' (division size)' : playerCount + ' players';
   var isFull = l.max_players && playerCount >= l.max_players;
+  var totalGames = gamesTotalCounts[parseInt(l.id)] || 0;
+  var playedGames = gamesPlayedCounts[parseInt(l.id)] || 0;
+  var gamesProgressStr = totalGames > 0 ? '<p><strong>Games Played:</strong> ' + playedGames + ' / ' + totalGames + '</p>' : '';
   var hasJoined = joinedLeagues.indexOf(l.id) > -1;
 
 var joinBtn = '';
@@ -153,14 +167,18 @@ if (currentUserId) {
   joinBtn = '<a href="login.html" class="btn-join" style="display:inline-block;text-decoration:none;text-align:center;">Login to Join</a>';
 }
 
+var paidBadge = l.is_paid ? '<span class="badge-paid">💷 £' + l.entry_fee + ' Entry</span>' : '';
+  var matchesPerWeekLabel = l.matches_per_week === 0 ? 'Unlimited' : (l.matches_per_week || 1) + ' per week';
   var cardHtml = '<div class="league-card">' +
-    getStatusBadgeHtml(status) +
+    getStatusBadgeHtml(status) + paidBadge +
     '<h3>' + l.name + '</h3>' +
     (l.season ? '<p><strong>Season:</strong> ' + l.season + '</p>' : '') +
     '<p><strong>Format:</strong> ' + (formatLabels[l.format] || l.format || 'TBC') + (l.playoffs ? ' + Playoffs' : '') + '</p>' +
     '<p><strong>Platform:</strong> ' + (platformLabels[l.platform] || l.platform || 'TBC') + '</p>' +
+    '<p><strong>Legs:</strong> First to ' + (l.bye_scoreline || 3) + ' — <strong>Matches:</strong> ' + matchesPerWeekLabel + '</p>' +
     '<p><strong>Dates:</strong> ' + startStr + ' — ' + endStr + '</p>' +
-    '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
+'<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
+    gamesProgressStr +
     '<div class="card-actions">' +
     '<a href="league.html?id=' + l.id + '" class="btn-view">View League</a>' +
     joinBtn +
