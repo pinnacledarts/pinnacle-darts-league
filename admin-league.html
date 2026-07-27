@@ -169,8 +169,14 @@ main { padding: 24px 20px; }
           '<div class="form-group"><label>League Name</label><input type="text" id="detName" value="' + (leagueData.name || '').replace(/"/g, '&quot;') + '" /></div>' +
           '<div class="form-group"><label>Season</label><input type="text" id="detSeason" value="' + (leagueData.season || '') + '" /></div>' +
           '<div class="form-group"><label>Start Date</label><input type="date" id="detStart" value="' + (leagueData.start_date || '') + '" /></div>' +
-          '<div class="form-group"><label>Matches Per Week</label><input type="number" id="detMatchesPerWeek" min="1" value="' + (leagueData.matches_per_week || 1) + '" /></div>' +
-          '<div class="form-group"><label>Format</label><select id="detFormat" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
+'<div class="form-group"><label>Matches Per Week</label><select id="detMatchesPerWeek" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
+          '<option value="1"' + ((leagueData.matches_per_week || 1) == 1 ? ' selected' : '') + '>1</option>' +
+          '<option value="2"' + (leagueData.matches_per_week == 2 ? ' selected' : '') + '>2</option>' +
+          '<option value="3"' + (leagueData.matches_per_week == 3 ? ' selected' : '') + '>3</option>' +
+          '<option value="4"' + (leagueData.matches_per_week == 4 ? ' selected' : '') + '>4</option>' +
+          '<option value="5"' + (leagueData.matches_per_week == 5 ? ' selected' : '') + '>5</option>' +
+          '<option value="0"' + (leagueData.matches_per_week == 0 ? ' selected' : '') + '>Unlimited</option>' +
+          '</select></div>' +          '<div class="form-group"><label>Format</label><select id="detFormat" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">' +
           '<option value="round_robin"' + (leagueData.format === 'round_robin' ? ' selected' : '') + '>Round Robin</option>' +
           '<option value="home_away"' + (leagueData.format === 'home_away' ? ' selected' : '') + '>Home & Away</option>' +
           '<option value="swiss"' + (leagueData.format === 'swiss' ? ' selected' : '') + '>Swiss System</option>' +
@@ -544,9 +550,10 @@ main { padding: 24px 20px; }
         return rounds;
       }
 
-      async function generateFixturesForGroup(players, division) {
+async function generateFixturesForGroup(players, division) {
         var byeScore = leagueData.bye_scoreline || 3;
         var matchesPerWeek = parseInt(leagueData.matches_per_week) || 1;
+        var isUnlimited = matchesPerWeek === 0;
         var rounds = generateRoundRobinRounds(players);
 
         if (leagueData.format === 'home_away') {
@@ -556,14 +563,17 @@ main { padding: 24px 20px; }
           rounds = rounds.concat(mirrored);
         }
 
-        for (var w = 0; w < rounds.length; w += matchesPerWeek) {
-          var weekNumber = Math.floor(w / matchesPerWeek) + 1;
-          var weekRounds = rounds.slice(w, w + matchesPerWeek);
-          var allPairsThisWeek = [].concat.apply([], weekRounds);
+        var groupSize = isUnlimited ? 1 : matchesPerWeek;
+        var labelPrefix = isUnlimited ? 'Round ' : 'Week ';
 
-          for (var p = 0; p < allPairsThisWeek.length; p++) {
-            var player1 = allPairsThisWeek[p][0];
-            var player2 = allPairsThisWeek[p][1];
+        for (var w = 0; w < rounds.length; w += groupSize) {
+          var groupNumber = Math.floor(w / groupSize) + 1;
+          var groupRounds = rounds.slice(w, w + groupSize);
+          var allPairsThisGroup = [].concat.apply([], groupRounds);
+
+          for (var p = 0; p < allPairsThisGroup.length; p++) {
+            var player1 = allPairsThisGroup[p][0];
+            var player2 = allPairsThisGroup[p][1];
             var p1IsBye = BYE_PROFILE_IDS.indexOf(player1) > -1;
             var p2IsBye = BYE_PROFILE_IDS.indexOf(player2) > -1;
             var isBye = p1IsBye || p2IsBye;
@@ -572,7 +582,7 @@ main { padding: 24px 20px; }
             var score2 = isBye ? (p2IsBye ? 0 : byeScore) : null;
             await sbClient.from('league_matches').insert([{
               league_id: parseInt(leagueId), player1_id: player1, player2_id: player2, stage: 'regular',
-              status: status, division: division, round: 'Week ' + weekNumber,
+              status: status, division: division, round: labelPrefix + groupNumber,
               player1_score: score1, player2_score: score2
             }]);
           }
@@ -644,21 +654,27 @@ main { padding: 24px 20px; }
         return start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
       }
 
-      function groupMatchesByWeek(matches) {
+function groupMatchesByWeek(matches) {
         var matchesPerWeek = parseInt(leagueData.matches_per_week) || 1;
-        var byWeek = {};
+        var isUnlimited = matchesPerWeek === 0;
+        var byGroup = {};
         matches.forEach(function(m) {
-          var r = m.round || 'Week 1';
+          var r = m.round || (isUnlimited ? 'Round 1' : 'Week 1');
           var roundNum = parseInt((r.match(/\d+/) || ['1'])[0]);
-          var weekNumber = (leagueData.format === 'swiss') ? Math.ceil(roundNum / matchesPerWeek) : roundNum;
-          if (!byWeek[weekNumber]) { byWeek[weekNumber] = []; }
-          byWeek[weekNumber].push(m);
+          var groupNumber = (leagueData.format === 'swiss' && !isUnlimited) ? Math.ceil(roundNum / matchesPerWeek) : roundNum;
+          if (!byGroup[groupNumber]) { byGroup[groupNumber] = []; }
+          byGroup[groupNumber].push(m);
         });
-        var weekNumbers = Object.keys(byWeek).map(Number).sort(function(a, b) { return a - b; });
-        return weekNumbers.map(function(wn) {
-          var dateStr = getWeekCommencingDate(wn);
-          var heading = 'Week ' + wn + (dateStr ? ' — Week commencing ' + dateStr : '');
-          return '<h4 style="margin:16px 0 8px;">' + heading + '</h4>' + byWeek[wn].map(renderFixtureItem).join('');
+        var groupNumbers = Object.keys(byGroup).map(Number).sort(function(a, b) { return a - b; });
+        return groupNumbers.map(function(gn) {
+          var heading;
+          if (isUnlimited) {
+            heading = 'Round ' + gn;
+          } else {
+            var dateStr = getWeekCommencingDate(gn);
+            heading = 'Week ' + gn + (dateStr ? ' — Week commencing ' + dateStr : '');
+          }
+          return '<h4 style="margin:16px 0 8px;">' + heading + '</h4>' + byGroup[gn].map(renderFixtureItem).join('');
         }).join('');
       }
 
