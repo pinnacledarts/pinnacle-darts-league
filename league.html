@@ -276,21 +276,27 @@ function getWeekCommencingDate(weekNumber) {
         return start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
       }
 
-      function groupMatchesByWeek(matches) {
+function groupMatchesByWeek(matches) {
         var matchesPerWeek = parseInt(leagueData.matches_per_week) || 1;
-        var byWeek = {};
+        var isUnlimited = matchesPerWeek === 0;
+        var byGroup = {};
         matches.forEach(function(m) {
-          var r = m.round || 'Week 1';
+          var r = m.round || (isUnlimited ? 'Round 1' : 'Week 1');
           var roundNum = parseInt((r.match(/\d+/) || ['1'])[0]);
-          var weekNumber = (leagueData.format === 'swiss') ? Math.ceil(roundNum / matchesPerWeek) : roundNum;
-          if (!byWeek[weekNumber]) { byWeek[weekNumber] = []; }
-          byWeek[weekNumber].push(m);
+          var groupNumber = (leagueData.format === 'swiss' && !isUnlimited) ? Math.ceil(roundNum / matchesPerWeek) : roundNum;
+          if (!byGroup[groupNumber]) { byGroup[groupNumber] = []; }
+          byGroup[groupNumber].push(m);
         });
-        var weekNumbers = Object.keys(byWeek).map(Number).sort(function(a, b) { return a - b; });
-        return weekNumbers.map(function(wn) {
-          var dateStr = getWeekCommencingDate(wn);
-          var heading = 'Week ' + wn + (dateStr ? ' — Week commencing ' + dateStr : '');
-          return '<h4 style="margin:16px 0 8px;">' + heading + '</h4>' + byWeek[wn].map(renderFixtureItem).join('');
+        var groupNumbers = Object.keys(byGroup).map(Number).sort(function(a, b) { return a - b; });
+        return groupNumbers.map(function(gn) {
+          var heading;
+          if (isUnlimited) {
+            heading = 'Round ' + gn;
+          } else {
+            var dateStr = getWeekCommencingDate(gn);
+            heading = 'Week ' + gn + (dateStr ? ' — Week commencing ' + dateStr : '');
+          }
+          return '<h4 style="margin:16px 0 8px;">' + heading + '</h4>' + byGroup[gn].map(renderFixtureItem).join('');
         }).join('');
       }
 
