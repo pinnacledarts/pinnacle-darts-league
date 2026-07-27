@@ -248,7 +248,7 @@ main { padding: 24px 20px; }
           name: document.getElementById('detName').value.trim(),
           season: document.getElementById('detSeason').value.trim() || null,
           start_date: document.getElementById('detStart').value || null,
-          matches_per_week: parseInt(document.getElementById('detMatchesPerWeek').value) || 1,
+          matches_per_week: parseInt(document.getElementById('detMatchesPerWeek').value),
           format: document.getElementById('detFormat').value,
           platform: document.getElementById('detPlatform').value,
           players_per_division: document.getElementById('detPlayersPerDiv').value || null,
