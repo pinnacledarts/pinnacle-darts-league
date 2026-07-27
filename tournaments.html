@@ -5,36 +5,294 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tournaments | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
     <style>
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }
-      header img { height: 70px; }
-      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
-      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
-      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
-      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-      .hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-nav.open { display: flex; }
-nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; }
-nav a:hover { background-color: #222222; }
-nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
-nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
-nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
-      main { padding: 40px; max-width: 900px; margin: 0 auto; }
-      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; }
-      .tournament-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 20px; margin-bottom: 16px; }
-      .tournament-card h3 { margin: 0 0 8px; font-size: 1.2em; }
-      .tournament-card p { margin: 4px 0; color: #555555; font-size: 0.95em; }
-      .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; }
-      .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
-      .badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-      .badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-bg-page: #f5f5f5;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-page); color: var(--pd-text-dark); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      nav.open { display: flex; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { background-color: var(--pd-bg-dark); padding: 8px 28px 44px; }
+      .hero-kicker { font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
+      .hero-title { font-size: 26px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0 0 20px; max-width: 460px; }
+      .hero-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+      .hero-stat-value { font-size: 22px; font-weight: bold; color: var(--pd-text-light); }
+      .hero-stat-label { font-size: 12px; color: var(--pd-text-light-muted); margin-top: 2px; }
+      main { padding: 24px 28px 40px; max-width: 900px; margin: -20px auto 0; background: var(--pd-bg-page); border-radius: 20px 20px 0 0; position: relative; }
+      h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-dark); }
+      .tournament-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; margin-bottom: 28px; }
+      .tournament-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); padding: 18px 20px; box-shadow: var(--pd-shadow-card); }
+      .tournament-card .badges-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+      .tournament-card h3 { margin: 0 0 6px; font-size: 16px; font-weight: bold; }
+      .tournament-card .meta-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--pd-text-muted); margin-bottom: 3px; }
+      .tournament-card .meta-row i { font-size: 14px; }
+      .tournament-card .desc { font-size: 13px; color: var(--pd-text-muted); margin: 8px 0; }
+      .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+      .badge-live { background-color: var(--pd-text-dark); color: var(--pd-text-light); }
+      .badge-upcoming { background-color: #eeeeee; color: #555555; }
+      .badge-completed { background-color: #f3f3f3; color: #888888; }
+      .badge-paid { border: 1px solid var(--pd-border-strong); color: #555555; background: none; }
+      .card-actions { display: flex; gap: 8px; margin-top: 16px; }
+      .btn-view, .btn-join { flex: 1; text-align: center; padding: 10px 0; border-radius: var(--pd-radius-btn); font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
+      .btn-view { background-color: var(--pd-text-dark); color: var(--pd-text-light); border: none; }
+      .btn-view:hover { background-color: #333333; }
+      .btn-join { background-color: var(--pd-surface); color: var(--pd-text-dark); border: 1px solid var(--pd-border-strong); }
+      .btn-join:hover { background-color: #f5f5f5; }
+      .btn-join.joined { background-color: #f5f5f5; color: var(--pd-text-muted); cursor: default; }
+      .coming-soon { text-align: center; padding: 50px 20px; color: #aaaaaa; font-size: 1em; }
+      .loading { text-align: center; padding: 40px; color: #888888; }
+      .archive-link { text-align: center; margin-top: 8px; }
+      .archive-link a { color: #555; font-size: 0.9em; text-decoration: none; }
+      @media (max-width: 700px) {
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 36px; }
+        .hero-title { font-size: 22px; }
+        main { padding: 20px 20px 32px; }
+        .tournament-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+   <header>
+    <div class="brand">
+      <img src="logo.png" alt="Pinnacle Darts Logo">
+      <div class="brand-name">Pinnacle Darts League</div>
+    </div>
+    <button class="hamburger" onclick="toggleMenu()">☰</button>
+    <nav id="mainNav">
+      <a href="index.html">Home</a>
+      <a href="leagues.html">Leagues</a>
+      <a href="tournaments.html">Tournaments</a>
+      <a href="players.html">Players</a>
+      <a href="academy.html" class="btn-switch" style="border:none;text-align:left;">Switch to Academy</a>
+      <div id="authButtons" style="padding:14px 24px;"></div>
+    </nav>
+  </header>
+  <div class="hero">
+    <div class="hero-kicker">Tournaments</div>
+    <div class="hero-title">Find your next event.</div>
+    <div class="hero-stats">
+      <div><div class="hero-stat-value" id="statLive">-</div><div class="hero-stat-label">Live now</div></div>
+      <div><div class="hero-stat-value" id="statUpcoming">-</div><div class="hero-stat-label">Upcoming</div></div>
+      <div><div class="hero-stat-value" id="statPlayers">-</div><div class="hero-stat-label">Players entered</div></div>
+    </div>
+  </div>
+  <main>
+    <div id="myTournamentsSection" style="display:none;">
+      <h2>My tournaments</h2>
+      <div id="myTournamentsList" class="tournament-grid"></div>
+    </div>
+    <h2>All tournaments</h2>
+    <div id="tournamentsList" class="tournament-grid"><p class="loading">Loading tournaments...</p></div>
+    <p class="archive-link"><a href="tournaments-archive.html">View Tournament Archive →</a></p>
+  </main>
+    <script>
+      var currentUserId = null;
+      var joinedTournaments = [];
+async function loadTournaments() {
+  var session = await sbClient.auth.getSession();
+  var playerPlatform = null;
+  var playerHasAverage = false;
+  if (session.data.session) {
+    currentUserId = session.data.session.user.id;
+    var joined = await sbClient.from('tournament_players').select('tournament_id').eq('player_id', currentUserId);
+    joinedTournaments = joined.data ? joined.data.map(function(j) { return j.tournament_id; }) : [];
+    var profileResult = await sbClient.from('profiles').select('platform, average, starter_average').eq('id', currentUserId).single();
+    playerPlatform = profileResult.data ? profileResult.data.platform : null;
+    playerHasAverage = profileResult.data ? !!(profileResult.data.average || profileResult.data.starter_average) : false;
+  }
+        var result = await sbClient.from('tournaments').select('*').or('section.eq.online,section.eq.both').order('date', { ascending: true });
+        var container = document.getElementById('tournamentsList');
+        if (!result.data || !result.data.length) {
+          container.innerHTML = '<p class="coming-soon">No tournaments yet — check back soon!</p>';
+          document.getElementById('statLive').textContent = '0';
+          document.getElementById('statUpcoming').textContent = '0';
+          document.getElementById('statPlayers').textContent = '0';
+          return;
+        }
+        var countResult = await sbClient.from('tournament_players').select('tournament_id');
+        var playerCounts = {};
+        if (countResult.data) {
+          countResult.data.forEach(function(row) {
+            playerCounts[parseInt(row.tournament_id)] = (playerCounts[parseInt(row.tournament_id)] || 0) + 1;
+          });
+        }
+        var formatLabels = {
+          single_elimination: 'Single Elimination',
+          single_elimination_b: 'Single Elimination + B Bracket',
+          group_knockout: 'Group Stages + Knockout'
+        };
+        var platformLabels = {
+          dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both'
+        };
+var cardsHtml = [];
+var myCardsHtml = [];
+var liveCount = 0;
+var upcomingCount = 0;
+var totalPlayersEntered = 0;
+for (var i = 0; i < result.data.length; i++) {
+  var t = result.data[i];
+  var status = await computeTournamentStatus(t);
+  if (status === 'completed') { continue; }
+  if (playerPlatform && playerPlatform !== 'both' && t.platform !== 'in_person' && t.platform !== 'both' && t.platform !== playerPlatform) {
+    continue;
+  }
+  if (status === 'live') { liveCount++; } else { upcomingCount++; }
+  var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
+  var timeStr = t.time ? ' at ' + t.time : '';
+  var playerCount = playerCounts[parseInt(t.id)] || 0;
+  totalPlayersEntered += playerCount;
+  var maxStr = t.max_players ? playerCount + ' / ' + t.max_players + ' players' : playerCount + ' players';
+  var isFull = t.max_players && playerCount >= t.max_players;
+  var hasJoined = joinedTournaments.indexOf(t.id) > -1;
+var joinBtn = '';
+if (currentUserId) {
+  if (hasJoined) {
+    joinBtn = '<button class="btn-join" onclick="leaveTournament(' + t.id + ', this)">Leave</button>';
+  } else if (t.average_split && !playerHasAverage) {
+    joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;" title="You need an average set before joining this tournament">Average required</button>';
+  } else if (isFull) {
+    joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this, true)">Join as reserve</button>';
+  } else {
+    joinBtn = '<button class="btn-join" onclick="joinTournament(' + t.id + ', this, false)">Join</button>';
+  }
+} else {
+  joinBtn = '<a href="login.html" class="btn-join">Login to join</a>';
+}
+var statusBadge = status === 'live'
+  ? '<span class="badge badge-live"><i class="ti ti-bolt"></i>Live</span>'
+  : '<span class="badge badge-upcoming"><i class="ti ti-clock"></i>Upcoming</span>';
+var paidBadge = t.is_paid ? '<span class="badge badge-paid"><i class="ti ti-currency-pound"></i>' + t.entry_fee + ' entry</span>' : '';
+  var cardHtml = '<div class="tournament-card">' +
+    '<div class="badges-row">' + statusBadge + paidBadge + '</div>' +
+    '<h3>' + t.name + '</h3>' +
+    '<div class="meta-row"><i class="ti ti-trophy"></i>' + (formatLabels[t.format] || t.format || 'TBC') + '</div>' +
+    '<div class="meta-row"><i class="ti ti-calendar"></i>' + dateStr + timeStr + '</div>' +
+    '<div class="meta-row"><i class="ti ti-device-gamepad-2"></i>' + (platformLabels[t.platform] || t.platform || 'TBC') + '</div>' +
+    (t.description ? '<p class="desc">' + t.description + '</p>' : '') +
+    '<div class="meta-row"><i class="ti ti-users"></i>' + maxStr + (isFull ? ' — Full' : '') + '</div>' +
+    '<div class="card-actions">' +
+    '<a href="tournament.html?id=' + t.id + '" class="btn-view">View</a>' +
+    joinBtn +
+    '</div>' +
+    '</div>';
+  if (hasJoined) {
+    myCardsHtml.push(cardHtml);
+  } else {
+    cardsHtml.push(cardHtml);
+  }
+}
+document.getElementById('statLive').textContent = liveCount;
+document.getElementById('statUpcoming').textContent = upcomingCount;
+document.getElementById('statPlayers').textContent = totalPlayersEntered;
+container.innerHTML = cardsHtml.length ? cardsHtml.join('') : (myCardsHtml.length ? '<p class="coming-soon">You have joined all available tournaments!</p>' : '<p class="coming-soon">No upcoming or live tournaments — check the archive for past results!</p>');
+var myTournamentsSection = document.getElementById('myTournamentsSection');
+if (myCardsHtml.length) {
+  myTournamentsSection.style.display = 'block';
+  document.getElementById('myTournamentsList').innerHTML = myCardsHtml.join('');
+} else {
+  myTournamentsSection.style.display = 'none';
+}
+      }
+async function joinTournament(tournamentId, btn, asReserve) {
+  if (!currentUserId) { window.location.href = 'login.html'; return; }
+  btn.disabled = true;
+  btn.textContent = asReserve ? 'Joining as reserve...' : 'Joining...';
+  var tournamentResult = await sbClient.from('tournaments').select('is_paid, entry_fee').eq('id', tournamentId).single();
+  var tournament = tournamentResult.data || {};
+  var isPaid = tournament.is_paid;
+  var entryFee = parseFloat(tournament.entry_fee) || 0;
+  var paidStatus = true;
+  var amountOwed = 0;
+if (isPaid && entryFee > 0) {
+    var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', currentUserId).single();
+    var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+    amountOwed = entryFee;
+    if (currentBalance >= entryFee) {
+      var newBalance = currentBalance - entryFee;
+      await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', currentUserId);
+      paidStatus = true;
+    } else {
+      paidStatus = false;
+    }
+  }
+  var result = await sbClient.from('tournament_players').insert([{
+    tournament_id: tournamentId,
+    player_id: currentUserId,
+    is_reserve: !!asReserve,
+    paid: paidStatus,
+    amount_owed: amountOwed
+  }]);
+  if (result.error) {
+    btn.disabled = false;
+    btn.textContent = asReserve ? 'Join as reserve' : 'Join';
+    alert('Error joining tournament. Please try again.');
+    return;
+  }
+  btn.className = 'btn-join joined';
+  if (isPaid && entryFee > 0) {
+    btn.textContent = paidStatus ? 'Joined (paid)' : 'Joined (payment pending)';
+  } else {
+    btn.textContent = asReserve ? 'Reserve' : 'Joined';
+  }
+  joinedTournaments.push(tournamentId);
+}
+async function leaveTournament(tournamentId, btn) {
+  if (!confirm('Are you sure you want to leave this tournament?')) { return; }
+  btn.disabled = true;
+  btn.textContent = 'Leaving...';
+  var entryResult = await sbClient.from('tournament_players').select('id, paid, amount_owed').eq('tournament_id', tournamentId).eq('player_id', currentUserId).single();
+  var entry = entryResult.data;
+  var result = await sbClient.from('tournament_players').delete().eq('tournament_id', tournamentId).eq('player_id', currentUserId);
+  if (result.error) {
+    btn.disabled = false;
+    btn.textContent = 'Leave';
+    alert('Error leaving tournament. Please try again.');
+    return;
+  }
+  if (entry && entry.paid && entry.amount_owed > 0) {
+    var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', currentUserId).single();
+    var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+    var refundedBalance = currentBalance + parseFloat(entry.amount_owed);
+    await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', currentUserId);
+  }
+loadTournaments();
+}
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+      }
+      window.addEventListener('load', function() {
+        checkAuth();
+        loadTournaments();
+      });
+    </script>
+  </body>
+</html>      .badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
       .badge-paid { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; margin-left: 6px; background-color: #fff8e1; color: #b8860b; border: 1px solid #f0d78c; }
       .card-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
       .btn-view { background-color: #111111; color: #ffffff; border: none; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
