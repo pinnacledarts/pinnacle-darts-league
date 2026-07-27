@@ -129,12 +129,14 @@ main { padding: 24px 20px; }
           <h3>Create New Tournament</h3>
           <div class="success-msg" id="tournament-success"></div>
           <div class="error-msg" id="tournament-error"></div>
-          <div class="template-bar">
+         <div class="template-bar">
             <label>Template:</label>
             <select id="tournamentTemplateSelect"><option value="">-- Apply a template --</option></select>
             <button class="btn btn-secondary" onclick="applyTemplate('tournament')">Apply</button>
             <button class="btn btn-secondary" onclick="saveTournamentTemplate()">Save as Template</button>
+            <button class="btn btn-secondary" onclick="toggleManageTemplates('tournament')">Manage Templates</button>
           </div>
+          <div id="manageTournamentTemplates" style="display:none;margin-bottom:20px;"></div>
         <div class="form-row">
   <div class="form-group">
     <label>Tournament Name</label>
@@ -244,12 +246,14 @@ main { padding: 24px 20px; }
           <h3>Create New League</h3>
           <div class="success-msg" id="league-success"></div>
           <div class="error-msg" id="league-error"></div>
-          <div class="template-bar">
+<div class="template-bar">
             <label>Template:</label>
             <select id="leagueTemplateSelect"><option value="">-- Apply a template --</option></select>
             <button class="btn btn-secondary" onclick="applyTemplate('league')">Apply</button>
             <button class="btn btn-secondary" onclick="saveLeagueTemplate()">Save as Template</button>
+            <button class="btn btn-secondary" onclick="toggleManageTemplates('league')">Manage Templates</button>
           </div>
+          <div id="manageLeagueTemplates" style="display:none;margin-bottom:20px;"></div>
           <div class="form-row">
             <div class="form-group">
               <label>League Name</label>
@@ -883,6 +887,45 @@ main { padding: 24px 20px; }
       var editingMerchId = null;
 var editingMerchImages = [];
       var merchOptionGroupCount = 0;
+      async function toggleManageTemplates(type) {
+  var containerId = type === 'league' ? 'manageLeagueTemplates' : 'manageTournamentTemplates';
+  var container = document.getElementById(containerId);
+  var opening = container.style.display === 'none';
+  if (!opening) { container.style.display = 'none'; return; }
+
+  var result = await sbClient.from('templates').select('*').eq('type', type).order('name');
+  var templates = result.data || [];
+
+  if (!templates.length) {
+    container.innerHTML = '<p class="empty-state">No saved templates yet.</p>';
+  } else {
+    container.innerHTML = '<table><thead><tr><th>Name</th><th>Action</th></tr></thead><tbody>' +
+      templates.map(function(t) {
+        return '<tr><td>' + t.name + '</td><td>' +
+          '<button class="btn-small" onclick="renameTemplate(' + t.id + ', \'' + t.name.replace(/'/g, "\\'") + '\', \'' + type + '\')">Rename</button> ' +
+          '<button class="btn-small danger" onclick="deleteTemplate(' + t.id + ', \'' + type + '\')">Delete</button>' +
+          '</td></tr>';
+      }).join('') + '</tbody></table>';
+  }
+  container.style.display = 'block';
+}
+
+async function renameTemplate(id, currentName, type) {
+  var newName = prompt('Rename template:', currentName);
+  if (!newName || newName === currentName) { return; }
+  await sbClient.from('templates').update({ name: newName }).eq('id', id);
+  refreshTemplateSelects();
+  toggleManageTemplates(type);
+  toggleManageTemplates(type);
+}
+
+async function deleteTemplate(id, type) {
+  if (!confirm('Delete this template?')) { return; }
+  await sbClient.from('templates').delete().eq('id', id);
+  refreshTemplateSelects();
+  toggleManageTemplates(type);
+  toggleManageTemplates(type);
+}
 function toggleLeagueCheckinFields() {
   var noCheckin = document.getElementById('leagueNoCheckin').checked;
   document.getElementById('leagueCheckinFields').style.display = noCheckin ? 'none' : 'grid';
