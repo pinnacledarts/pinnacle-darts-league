@@ -1578,20 +1578,46 @@ function showTab(name, event) {
         tournamentTemps.forEach(function(t) { tt.innerHTML += '<option value="' + t.id + '">' + t.name + '</option>'; });
       }
 
-      async function saveLeagueTemplate() {
+async function saveLeagueTemplate() {
         var name = prompt('Enter a name for this template:');
         if (!name) { return; }
         var templateData = {
           season: document.getElementById('leagueSeason').value,
+          matchesPerWeek: document.getElementById('leagueMatchesPerWeek').value,
           format: document.getElementById('leagueFormat').value,
           platform: document.getElementById('leaguePlatform').value,
           playersPerDiv: document.getElementById('leaguePlayersPerDiv').value,
+          legsFormat: document.getElementById('leagueLegsFormat').value,
           swissGames: document.getElementById('leagueSwissGames').value,
-          maxPlayers: document.getElementById('leagueMaxPlayers').value
+          playoffs: document.getElementById('leaguePlayoffs').checked,
+          noCheckin: document.getElementById('leagueNoCheckin').checked,
+          isPaid: document.getElementById('leagueIsPaid').checked,
+          entryFee: document.getElementById('leagueEntryFee').value,
+          section: document.getElementById('leagueSection').value
         };
         var result = await sbClient.from('templates').insert([{ name: name, type: 'league', data: JSON.stringify(templateData) }]);
         if (result.error) { showMsg('league-error', result.error.message); return; }
         showMsg('league-success', 'Template saved!');
+        refreshTemplateSelects();
+      }
+      async function saveTournamentTemplate() {
+        var name = prompt('Enter a name for this template:');
+        if (!name) { return; }
+        var templateData = {
+          format: document.getElementById('tournamentFormat').value,
+          platform: document.getElementById('tournamentPlatform').value,
+          max: document.getElementById('tournamentMax').value,
+          avgSplit: document.getElementById('tournamentAvgSplit').checked,
+          byeScoreline: document.getElementById('tournamentByeScoreline').value,
+          noCheckin: document.getElementById('tournamentNoCheckin').checked,
+          isPaid: document.getElementById('tournamentIsPaid').checked,
+          entryFee: document.getElementById('tournamentEntryFee').value,
+          section: document.getElementById('tournamentSection').value,
+          description: document.getElementById('tournamentDesc').value
+        };
+        var result = await sbClient.from('templates').insert([{ name: name, type: 'tournament', data: JSON.stringify(templateData) }]);
+        if (result.error) { showMsg('tournament-error', result.error.message); return; }
+        showMsg('tournament-success', 'Template saved!');
         refreshTemplateSelects();
       }
 
@@ -1610,7 +1636,7 @@ function showTab(name, event) {
         refreshTemplateSelects();
       }
 
-      async function applyTemplate(type) {
+async function applyTemplate(type) {
         if (type === 'league') {
           var idx = document.getElementById('leagueTemplateSelect').value;
           if (!idx) { return; }
@@ -1618,12 +1644,20 @@ function showTab(name, event) {
           if (result.error || !result.data) { return; }
           var t = JSON.parse(result.data.data);
           document.getElementById('leagueSeason').value = t.season || '';
+          document.getElementById('leagueMatchesPerWeek').value = t.matchesPerWeek != null ? t.matchesPerWeek : '1';
           document.getElementById('leagueFormat').value = t.format || 'round_robin';
           document.getElementById('leaguePlatform').value = t.platform || 'dartcounter';
           document.getElementById('leaguePlayersPerDiv').value = t.playersPerDiv || '';
+          document.getElementById('leagueLegsFormat').value = t.legsFormat || '3';
           document.getElementById('leagueSwissGames').value = t.swissGames || '';
-          document.getElementById('leagueMaxPlayers').value = t.maxPlayers || '';
+          document.getElementById('leaguePlayoffs').checked = !!t.playoffs;
+          document.getElementById('leagueNoCheckin').checked = !!t.noCheckin;
+          document.getElementById('leagueIsPaid').checked = !!t.isPaid;
+          document.getElementById('leagueEntryFee').value = t.entryFee || '';
+          document.getElementById('leagueSection').value = t.section || 'online';
           toggleSwissOptions();
+          toggleLeagueCheckinFields();
+          toggleLeagueEntryFee();
         } else {
           var idx = document.getElementById('tournamentTemplateSelect').value;
           if (!idx) { return; }
@@ -1633,7 +1667,15 @@ function showTab(name, event) {
           document.getElementById('tournamentFormat').value = t.format || 'single_elimination';
           document.getElementById('tournamentPlatform').value = t.platform || 'dartcounter';
           document.getElementById('tournamentMax').value = t.max || '';
+          document.getElementById('tournamentAvgSplit').checked = !!t.avgSplit;
+          document.getElementById('tournamentByeScoreline').value = t.byeScoreline || '3';
+          document.getElementById('tournamentNoCheckin').checked = !!t.noCheckin;
+          document.getElementById('tournamentIsPaid').checked = !!t.isPaid;
+          document.getElementById('tournamentEntryFee').value = t.entryFee || '';
+          document.getElementById('tournamentSection').value = t.section || 'online';
           document.getElementById('tournamentDesc').value = t.description || '';
+          toggleTournamentCheckinFields();
+          toggleTournamentEntryFee();
         }
       }
 function toggleTournamentEntryFee() {
