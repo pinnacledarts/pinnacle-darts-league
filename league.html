@@ -277,7 +277,7 @@ function getWeekCommencingDate(weekNumber) {
       }
 
 function groupMatchesByWeek(matches) {
-        var matchesPerWeek = parseInt(leagueData.matches_per_week) || 1;
+        var matchesPerWeek = leagueData.matches_per_week != null ? parseInt(leagueData.matches_per_week) : 1;
         var isUnlimited = matchesPerWeek === 0;
         var byGroup = {};
         matches.forEach(function(m) {
