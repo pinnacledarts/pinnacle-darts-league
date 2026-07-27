@@ -552,7 +552,7 @@ main { padding: 24px 20px; }
 
 async function generateFixturesForGroup(players, division) {
         var byeScore = leagueData.bye_scoreline || 3;
-        var matchesPerWeek = parseInt(leagueData.matches_per_week) || 1;
+        var matchesPerWeek = leagueData.matches_per_week != null ? parseInt(leagueData.matches_per_week) : 1;
         var isUnlimited = matchesPerWeek === 0;
         var rounds = generateRoundRobinRounds(players);
 
@@ -655,7 +655,7 @@ async function generateFixturesForGroup(players, division) {
       }
 
 function groupMatchesByWeek(matches) {
-        var matchesPerWeek = parseInt(leagueData.matches_per_week) || 1;
+        var matchesPerWeek = leagueData.matches_per_week != null ? parseInt(leagueData.matches_per_week) : 1;
         var isUnlimited = matchesPerWeek === 0;
         var byGroup = {};
         matches.forEach(function(m) {
