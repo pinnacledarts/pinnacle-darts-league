@@ -5,74 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>League | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
     <style>
-      .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
-.badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-.badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }      header img { height: 70px; }
-      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
-      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
-      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
-      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-.hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-nav.open { display: flex; }
-nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; }
-nav a:hover { background-color: #222222; }
-nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
-nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
-nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
-      main { padding: 40px; max-width: 900px; margin: 0 auto; }
-      .back-link { display: inline-block; margin-bottom: 20px; color: #111111; text-decoration: none; font-size: 0.9em; }
-      .back-link:hover { text-decoration: underline; }
-      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      nav.open { display: flex; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+      main { padding: 0 28px 40px; max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+      .back-link { position: relative; display: inline-block; margin-bottom: 16px; color: var(--pd-text-light-muted); text-decoration: none; font-size: 0.9em; }
+      .back-link:hover { color: var(--pd-text-light); }
+      h2 { position: relative; font-size: 24px; font-weight: bold; margin: 0 0 4px; color: var(--pd-text-light); }
       .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; }
-      .badge-upcoming { background-color: #111111; color: #ffffff; }
-      .badge-active { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-      .badge-completed { background-color: #dddddd; color: #111111; }
-      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
-      .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
-      .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
-      .tab:hover { color: #000000; }
+      .badge-upcoming { background-color: #eeeeee; color: #555555; }
+      .badge-live { background-color: var(--pd-text-light); color: var(--pd-text-dark); }
+      .badge-completed { background-color: #444444; color: #ffffff; }
+      .tabs { display: flex; gap: 4px; margin-top: 16px; margin-bottom: 24px; border-bottom: 1px solid #222222; flex-wrap: wrap; }
+      .tab { padding: 10px 16px; cursor: pointer; font-size: 0.9em; border: none; background: none; color: var(--pd-text-light-muted); font-family: Arial, sans-serif; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+      .tab.active { color: var(--pd-text-light); font-weight: bold; border-bottom: 2px solid var(--pd-text-light); }
+      .tab:hover { color: var(--pd-text-light); }
       .tab-content { display: none; }
       .tab-content.active { display: block; }
-      table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.95em; }
-      th { background-color: #111111; color: #ffffff; padding: 10px 12px; text-align: left; }
-      td { padding: 10px 12px; border-bottom: 1px solid #eeeeee; }
+      .card-panel { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; }
+      table { width: 100%; border-collapse: collapse; font-size: 0.9em; color: var(--pd-text-dark); }
+      th { background-color: var(--pd-text-dark); color: var(--pd-text-light); padding: 10px 12px; text-align: left; }
+      td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; }
       tr:last-child td { border-bottom: none; }
-      .key { font-size: 0.85em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
+      .key { font-size: 0.85em; color: var(--pd-text-muted); margin-top: 12px; border-top: 1px solid var(--pd-border); padding-top: 12px; }
       .key span { margin-right: 20px; display: inline-block; }
-      .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #ffffff; border: 1px solid #eeeeee; border-radius: 4px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
-      .fixture-players { font-size: 0.9em; font-weight: bold; flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
-      .fixture-vs { color: #888888; margin: 0 8px; }
+      .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #f9f9f9; border-radius: var(--pd-radius-btn); margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+      .fixture-players { font-size: 0.9em; font-weight: bold; flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; color: var(--pd-text-dark); }
+      .fixture-vs { color: var(--pd-text-muted); margin: 0 8px; }
       .score-inputs { display: flex; align-items: center; gap: 6px; }
-      .score-input { width: 50px; padding: 4px 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; text-align: center; }
-      .btn-submit-score { background-color: #111111; color: #ffffff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
+      .score-input { width: 50px; padding: 4px 8px; border: 1px solid var(--pd-border-strong); border-radius: 4px; font-size: 0.9em; text-align: center; }
+      .btn-submit-score { background-color: var(--pd-text-dark); color: var(--pd-text-light); border: none; padding: 4px 12px; border-radius: var(--pd-radius-btn); font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
       .btn-submit-score:hover { background-color: #333333; }
-      .score-display { font-weight: bold; font-size: 0.95em; }
+      .score-display { font-weight: bold; font-size: 0.95em; color: var(--pd-text-dark); }
       .winner-text { font-weight: bold; color: #006600; }
       .round-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
       .round-tab { padding: 8px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
-      .round-tab.active { background: #111111; color: #ffffff; border-color: #111111; font-weight: bold; }
-      .coming-soon { text-align: center; padding: 40px; color: #aaaaaa; font-size: 1em; }
-      .loading { text-align: center; padding: 40px; color: #888888; }
-      .division-select-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 16px 20px; margin-bottom: 24px; }
-      .division-select-box label { font-weight: bold; display: block; margin-bottom: 8px; font-size: 0.9em; }
-      .division-select-box select { width: 100%; padding: 10px 14px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; }
+      .round-tab.active { background: var(--pd-text-dark); color: var(--pd-text-light); border-color: var(--pd-text-dark); font-weight: bold; }
+      .coming-soon { text-align: center; padding: 40px; color: var(--pd-text-light-muted); font-size: 1em; }
+      .loading { text-align: center; padding: 40px; color: var(--pd-text-light-muted); }
+      .division-select-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 16px 20px; margin-bottom: 20px; }
+      .division-select-box label { font-weight: bold; display: block; margin-bottom: 8px; font-size: 0.85em; color: var(--pd-text-dark); }
+      .division-select-box select { width: 100%; padding: 10px 14px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 1em; background-color: #f9f9f9; color: var(--pd-text-dark); }
+      .subtitle-row { position: relative; color: var(--pd-text-light-muted); margin: 0 0 16px; font-size: 0.9em; }
+      h4 { color: var(--pd-text-dark); }
       @media (max-width: 700px) {
-        header { flex-wrap: wrap; padding: 16px 20px; }
-        header img { height: 50px; }
-        header h1 { font-size: 1.4em; }
-        header p { font-size: 0.85em; }
-.header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-.btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
-main { padding: 24px 20px; }
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 0 20px 32px; }
         table { font-size: 0.8em; }
         th, td { padding: 8px 6px; }
       }
@@ -80,10 +90,9 @@ main { padding: 24px 20px; }
   </head>
  <body>
     <header>
-      <img src="logo.png" alt="Pinnacle Darts Logo">
-      <div>
-        <h1>Pinnacle Darts League</h1>
-        <p>Official League Website</p>
+      <div class="brand">
+        <img src="logo.png" alt="Pinnacle Darts Logo">
+        <div class="brand-name">Pinnacle Darts League</div>
       </div>
       <button class="hamburger" onclick="toggleMenu()">☰</button>
       <nav id="mainNav">
@@ -91,16 +100,17 @@ main { padding: 24px 20px; }
         <a href="leagues.html">Leagues</a>
         <a href="tournaments.html">Tournaments</a>
         <a href="players.html">Players</a>
-        <a href="academy.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Academy</a>
+        <a href="academy.html" class="btn-switch" style="border:none;text-align:left;">Switch to Academy</a>
         <div id="authButtons" style="padding:14px 24px;"></div>
       </nav>
     </header>
-
+<div class="hero">
+  <img src="logo-watermark.png" alt="" class="hero-watermark">
+</div>
 <main>
   <a href="leagues.html" class="back-link">← Back to Leagues</a>
   <div id="leagueContent"><p class="loading">Loading...</p></div>
 </main>
-
     <script>
       var leagueId = null;
       var leagueData = null;
@@ -108,7 +118,6 @@ main { padding: 24px 20px; }
       var profileMap = {};
       var currentDivision = null;
       var allDivisions = [];
-
 function buildWhatsAppLink(phone) {
   if (!phone) { return null; }
   var hasPlus = phone.trim().startsWith('+');
@@ -119,7 +128,6 @@ function buildWhatsAppLink(phone) {
   }
   return 'https://wa.me/' + digits;
 }
-
       function whatsAppButtonHtml(opponentId) {
         var opponent = profileMap[opponentId];
         if (!opponent) { return ''; }
@@ -127,51 +135,42 @@ function buildWhatsAppLink(phone) {
         if (!link) { return ''; }
         return '<a href="' + link + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background-color:#25D366;color:#ffffff;padding:4px 10px;border-radius:20px;font-size:0.8em;text-decoration:none;font-weight:bold;">💬 WhatsApp</a>';
       }
-
       async function loadLeague() {
         var params = new URLSearchParams(window.location.search);
         leagueId = params.get('id');
         if (!leagueId) { window.location.href = 'leagues.html'; return; }
-
         var session = await sbClient.auth.getSession();
         if (session.data.session) { currentUserId = session.data.session.user.id; }
-
         var profilesResult = await sbClient.from('profiles').select('id, full_name, username, phone');
         if (profilesResult.data) {
           profilesResult.data.forEach(function(p) {
             profileMap[p.id] = { name: p.full_name || p.username || 'Unknown', phone: p.phone || null };
           });
         }
-
         var result = await sbClient.from('leagues').select('*').eq('id', leagueId).single();
         if (result.error || !result.data) { window.location.href = 'leagues.html'; return; }
         leagueData = result.data;
-
         var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System' };
         var platformLabels = { dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both' };
-
         var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'playoffs\', event)">Playoffs</button>' : '';
         var currentStatus = await computeLeagueStatus(leagueData);
-
         var divisionSelectorHtml = '';
         if (leagueData.average_split) {
           divisionSelectorHtml = '<div class="division-select-box"><label>View Division</label><select id="divisionSelect" onchange="onDivisionChange()"></select></div>';
         }
-
         document.getElementById('leagueContent').innerHTML =
          getStatusBadgeHtml(currentStatus) +
           '<h2>' + leagueData.name + '</h2>' +
-          '<p style="color:#555;margin-top:-16px;">' + (leagueData.season ? leagueData.season + ' — ' : '') + formatLabels[leagueData.format] + ' — ' + platformLabels[leagueData.platform] + '</p>' +
-          divisionSelectorHtml +
+          '<p class="subtitle-row">' + (leagueData.season ? leagueData.season + ' — ' : '') + formatLabels[leagueData.format] + ' — ' + platformLabels[leagueData.platform] + '</p>' +
           '<div class="tabs">' +
           '<button class="tab active" onclick="showTab(\'standings\', event)">Standings</button>' +
           '<button class="tab" onclick="showTab(\'fixtures\', event)">Fixtures & Results</button>' +
           playoffsTab +
           '</div>' +
+          divisionSelectorHtml +
           '<div id="tab-standings" class="tab-content active"><div id="standingsContent"><p class="loading">Loading...</p></div></div>' +
           '<div id="tab-fixtures" class="tab-content"><div id="fixturesContent"><p class="loading">Loading...</p></div></div>' +
           (leagueData.playoffs ? '<div id="tab-playoffs" class="tab-content"><div id="playoffsContent"><p class="loading">Loading...</p></div></div>' : '');
-
         if (leagueData.average_split) {
           await setupDivisionSelector();
         } else {
@@ -180,49 +179,40 @@ function buildWhatsAppLink(phone) {
           if (leagueData.playoffs) { loadPlayoffs(); }
         }
       }
-
       async function setupDivisionSelector() {
         var playersResult = await sbClient.from('league_players').select('division').eq('league_id', leagueId);
         var divisions = {};
         (playersResult.data || []).forEach(function(p) { divisions[p.division || 1] = true; });
         allDivisions = Object.keys(divisions).map(Number).sort(function(a, b) { return a - b; });
-
         var select = document.getElementById('divisionSelect');
         select.innerHTML = allDivisions.map(function(d) { return '<option value="' + d + '">Division ' + d + '</option>'; }).join('');
-
         currentDivision = allDivisions[0] || 1;
         if (currentUserId) {
           var ownResult = await sbClient.from('league_players').select('division').eq('league_id', leagueId).eq('player_id', currentUserId).single();
           if (ownResult.data && ownResult.data.division) { currentDivision = ownResult.data.division; }
         }
-
         select.value = currentDivision;
         loadStandings();
         loadFixtures();
         if (leagueData.playoffs) { loadPlayoffs(); }
       }
-
       function onDivisionChange() {
         currentDivision = parseInt(document.getElementById('divisionSelect').value);
         loadStandings();
         loadFixtures();
         if (leagueData.playoffs) { loadPlayoffs(); }
       }
-
       async function loadStandings() {
         var playersQuery = sbClient.from('league_players').select('player_id, division, profiles(full_name, username)').eq('league_id', leagueId);
         if (leagueData.average_split) { playersQuery = playersQuery.eq('division', currentDivision); }
         var playersResult = await playersQuery;
         var players = playersResult.data || [];
-
         var matchesQuery = sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular');
         if (leagueData.average_split) { matchesQuery = matchesQuery.eq('division', currentDivision); }
         var matchesResult = await matchesQuery;
         var matches = matchesResult.data || [];
-
         var container = document.getElementById('standingsContent');
         if (!players.length) { container.innerHTML = '<p class="coming-soon">No players registered yet.</p>'; return; }
-
         var standings = players.map(function(p) {
           var profile = p.profiles || {};
           var name = profile.full_name || profile.username || 'Unknown';
@@ -239,7 +229,6 @@ function buildWhatsAppLink(phone) {
           });
           return { player_id: p.player_id, name: name, played: played, won: won, lost: lost, pts: pts, diff: legsFor - legsAgainst };
         });
-
         standings.sort(function(a, b) {
           if (b.pts !== a.pts) { return b.pts - a.pts; }
           if (b.diff !== a.diff) { return b.diff - a.diff; }
@@ -256,8 +245,7 @@ function buildWhatsAppLink(phone) {
           }
           return 0;
         });
-
-        container.innerHTML = '<table><thead><tr><th>Pos</th><th>Player</th><th>P</th><th>W</th><th>L</th><th>+/-</th><th>Pts</th></tr></thead><tbody>' +
+        container.innerHTML = '<div class="card-panel"><table><thead><tr><th>Pos</th><th>Player</th><th>P</th><th>W</th><th>L</th><th>+/-</th><th>Pts</th></tr></thead><tbody>' +
           standings.map(function(s, i) {
             var diffDisplay = s.diff > 0 ? '<span style="color:#006600;font-weight:bold;">+' + s.diff + '</span>' : s.diff < 0 ? '<span style="color:#cc0000;font-weight:bold;">' + s.diff + '</span>' : '<span style="color:#888888;">0</span>';
             return '<tr><td>' + (i + 1) + '</td><td>' + s.name + '</td><td>' + s.played + '</td><td>' + s.won + '</td><td>' + s.lost + '</td><td>' + diffDisplay + '</td><td><strong>' + s.pts + '</strong></td></tr>';
@@ -266,16 +254,14 @@ function buildWhatsAppLink(phone) {
           '<div class="key">' +
           '<span><strong>P</strong> = Played</span><span><strong>W</strong> = Won</span><span><strong>L</strong> = Lost</span>' +
           '<span><strong>+/-</strong> = Leg Difference</span><span><strong>Pts</strong> = Points</span>' +
-          '</div>';
+          '</div></div>';
       }
-
 function getWeekCommencingDate(weekNumber) {
         if (!leagueData.start_date) { return ''; }
         var start = new Date(leagueData.start_date);
         start.setDate(start.getDate() + (weekNumber - 1) * 7);
         return start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
       }
-
 function groupMatchesByWeek(matches) {
         var matchesPerWeek = leagueData.matches_per_week != null ? parseInt(leagueData.matches_per_week) : 1;
         var isUnlimited = matchesPerWeek === 0;
@@ -299,7 +285,6 @@ function groupMatchesByWeek(matches) {
           return '<h4 style="margin:16px 0 8px;">' + heading + '</h4>' + byGroup[gn].map(renderFixtureItem).join('');
         }).join('');
       }
-
       async function loadFixtures() {
         var query = sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular').order('id');
         if (leagueData.average_split) { query = query.eq('division', currentDivision); }
@@ -308,26 +293,20 @@ function groupMatchesByWeek(matches) {
         if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">Fixtures have not been generated yet.</p>'; return; }
         container.innerHTML = groupMatchesByWeek(result.data);
       }
-
       function renderFixtureItem(m) {
         var p1obj = profileMap[m.player1_id];
         var p2obj = profileMap[m.player2_id];
         var p1name = p1obj ? p1obj.name : 'Unknown';
         var p2name = p2obj ? p2obj.name : 'Unknown';
-
         var whatsAppHtml = '';
         if (currentUserId === m.player1_id) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
         else if (currentUserId === m.player2_id) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
-
         var playersHtml = '<div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + whatsAppHtml + '</div>';
-
         if (m.status === 'completed') {
           var isP1c = currentUserId === m.player1_id;
           var isP2c = currentUserId === m.player2_id;
           var myAvgMissing = (isP1c && m.player1_avg == null) || (isP2c && m.player2_avg == null);
-
           var scoreBlock = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
-
           if (myAvgMissing) {
             var myAvgFieldId = isP1c ? 'myavg1_' + m.id : 'myavg2_' + m.id;
             scoreBlock += '<div style="display:flex;align-items:center;gap:6px;margin-top:6px;">' +
@@ -335,7 +314,6 @@ function groupMatchesByWeek(matches) {
               '<button class="btn-submit-score" onclick="submitMyAverageOnly(' + m.id + ', ' + isP1c + ')">Add My Avg</button>' +
               '</div>';
           }
-
           return '<div class="fixture-item">' + playersHtml + scoreBlock + '</div>';
         }
         var canSubmit = currentUserId && (currentUserId === m.player1_id || currentUserId === m.player2_id);
@@ -353,7 +331,6 @@ function groupMatchesByWeek(matches) {
         }
         return '<div class="fixture-item">' + playersHtml + '<div class="score-display" style="color:#aaa">Pending</div></div>';
       }
-
       function showFixtureRound(round, btn) {
         document.querySelectorAll('.round-tab').forEach(function(t) { t.classList.remove('active'); });
         btn.classList.add('active');
@@ -361,52 +338,40 @@ function groupMatchesByWeek(matches) {
           c.style.display = c.getAttribute('data-round') === round ? '' : 'none';
         });
       }
-
       async function submitFixtureScore(matchId, isP1) {
         var s1 = parseInt(document.getElementById('fs1_' + matchId).value);
         var s2 = parseInt(document.getElementById('fs2_' + matchId).value);
         if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
-
         var myAvgId = isP1 ? 'favg1_' + matchId : 'favg2_' + matchId;
         var myAvgVal = document.getElementById(myAvgId).value.trim();
         if (!myAvgVal) { alert('Please enter your average for this match.'); return; }
-
         var update = { player1_score: s1, player2_score: s2, status: 'completed' };
         if (isP1) { update.player1_avg = parseFloat(myAvgVal); } else { update.player2_avg = parseFloat(myAvgVal); }
-
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error submitting score. Please try again.'); return; }
-
         await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
-
         loadFixtures();
         loadStandings();
       }
-
       async function submitMyAverageOnly(matchId, isP1) {
         var fieldId = isP1 ? 'myavg1_' + matchId : 'myavg2_' + matchId;
         var val = document.getElementById(fieldId).value.trim();
         if (!val) { alert('Please enter your average.'); return; }
-
         var update = isP1 ? { player1_avg: parseFloat(val) } : { player2_avg: parseFloat(val) };
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error saving average. Please try again.'); return; }
-
         await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
         loadFixtures();
       }
-
       async function loadPlayoffs() {
         var query = sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff');
         if (leagueData.average_split) { query = query.eq('division', currentDivision); }
         var result = await query;
         var container = document.getElementById('playoffsContent');
         if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">Playoffs will appear once the regular season is complete.</p>'; return; }
-
         var rounds = {};
         result.data.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
         var roundOrder = ['Semi Final', 'Final'];
-
         container.innerHTML = roundOrder.filter(function(r) { return rounds[r]; }).map(function(r) {
           var matchesHtml = rounds[r].map(function(m) {
             var p1name = m.player1_id ? (profileMap[m.player1_id] ? profileMap[m.player1_id].name : 'Unknown') : 'TBD';
@@ -418,10 +383,8 @@ function groupMatchesByWeek(matches) {
             }
             var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
             var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
-
             var isP1 = currentUserId === m.player1_id;
             var isP2 = currentUserId === m.player2_id;
-
             var scoreHtml;
             if (m.status === 'completed') {
               scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
@@ -443,31 +406,24 @@ function groupMatchesByWeek(matches) {
             } else {
               scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
             }
-
             return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span>' + playoffWhatsAppHtml + '</div>' + scoreHtml + '</div>';
           }).join('');
           return '<h4 style="margin:16px 0 8px;">' + r + '</h4>' + matchesHtml;
         }).join('');
       }
-
       async function submitPlayoffScore(matchId, currentRound, isP1) {
         var s1 = parseInt(document.getElementById('ps1_' + matchId).value);
         var s2 = parseInt(document.getElementById('ps2_' + matchId).value);
         if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
         if (s1 === s2) { alert('Scores cannot be equal in a playoff match.'); return; }
-
         var myAvgId = isP1 ? 'pavg1_' + matchId : 'pavg2_' + matchId;
         var myAvgVal = document.getElementById(myAvgId).value.trim();
         if (!myAvgVal) { alert('Please enter your average for this match.'); return; }
-
         var update = { player1_score: s1, player2_score: s2, status: 'completed' };
         if (isP1) { update.player1_avg = parseFloat(myAvgVal); } else { update.player2_avg = parseFloat(myAvgVal); }
-
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error submitting score. Please try again.'); return; }
-
         await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
-
         if (currentRound === 'Semi Final') {
           var semisQuery = sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff').eq('round', 'Semi Final');
           if (leagueData.average_split) { semisQuery = semisQuery.eq('division', currentDivision); }
@@ -483,23 +439,18 @@ function groupMatchesByWeek(matches) {
             }
           }
         }
-
         loadPlayoffs();
       }
-
       async function submitPlayoffAverageOnly(matchId, isP1) {
         var fieldId = isP1 ? 'pmyavg1_' + matchId : 'pmyavg2_' + matchId;
         var val = document.getElementById(fieldId).value.trim();
         if (!val) { alert('Please enter your average.'); return; }
-
         var update = isP1 ? { player1_avg: parseFloat(val) } : { player2_avg: parseFloat(val) };
         var result = await sbClient.from('league_matches').update(update).eq('id', matchId);
         if (result.error) { alert('Error saving average. Please try again.'); return; }
-
         await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
         loadPlayoffs();
       }
-
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
@@ -509,16 +460,13 @@ function groupMatchesByWeek(matches) {
         if (name === 'fixtures') { loadFixtures(); }
         if (name === 'playoffs') { loadPlayoffs(); }
       }
-
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
-
       window.addEventListener('load', function() {
         checkAuth();
         loadLeague();
       });
     </script>
-
   </body>
 </html>
