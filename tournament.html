@@ -5,99 +5,105 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tournament | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
     <style>
-      .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
-.badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-.badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }      header img { height: 70px; }
-      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
-      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
-      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
-      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-.hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-nav.open { display: flex; }
-nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; }
-nav a:hover { background-color: #222222; }
-nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
-nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
-nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
-      main { padding: 40px; max-width: 900px; margin: 0 auto; }
-      .back-link { display: inline-block; margin-bottom: 20px; color: #111111; text-decoration: none; font-size: 0.9em; }
-      .back-link:hover { text-decoration: underline; }
-      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      nav.open { display: flex; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+      main { padding: 0 28px 40px; max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+      .back-link { position: relative; display: inline-block; margin-bottom: 16px; color: var(--pd-text-light-muted); text-decoration: none; font-size: 0.9em; }
+      .back-link:hover { color: var(--pd-text-light); }
+      h2 { position: relative; font-size: 24px; font-weight: bold; margin: 0 0 16px; color: var(--pd-text-light); }
       .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; }
-      .badge-upcoming { background-color: #111111; color: #ffffff; }
-      .badge-active { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-      .badge-completed { background-color: #dddddd; color: #111111; }
-      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
-      .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
-      .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
-      .tab:hover { color: #000000; }
+      .badge-upcoming { background-color: #eeeeee; color: #555555; }
+      .badge-live { background-color: var(--pd-text-light); color: var(--pd-text-dark); }
+      .badge-completed { background-color: #444444; color: #ffffff; }
+      .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid #222222; flex-wrap: wrap; }
+      .tab { padding: 10px 16px; cursor: pointer; font-size: 0.9em; border: none; background: none; color: var(--pd-text-light-muted); font-family: Arial, sans-serif; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+      .tab.active { color: var(--pd-text-light); font-weight: bold; border-bottom: 2px solid var(--pd-text-light); }
+      .tab:hover { color: var(--pd-text-light); }
       .tab-content { display: none; }
       .tab-content.active { display: block; }
-      .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
-      .info-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 16px; }
-      .info-box .label { font-size: 0.8em; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
-      .info-box .value { font-size: 1.1em; font-weight: bold; }
-      .description-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 20px; margin-bottom: 20px; }
+      .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+      .info-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 16px; }
+      .info-box .label { font-size: 0.75em; color: var(--pd-text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+      .info-box .value { font-size: 1.05em; font-weight: bold; color: var(--pd-text-dark); }
+      .description-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; margin-bottom: 16px; }
       .description-box p { margin: 0; color: #444444; line-height: 1.6; }
-      .player-list { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; overflow: hidden; }
-      .player-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #eeeeee; }
+      .player-list { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); overflow: hidden; }
+      .player-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; }
       .player-item:last-child { border-bottom: none; }
-      .player-avatar-small { width: 36px; height: 36px; border-radius: 50%; background-color: #111111; color: #ffffff; font-size: 1em; font-weight: bold; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0; }
+      .player-avatar-small { width: 34px; height: 34px; border-radius: 50%; background-color: var(--pd-text-dark); color: var(--pd-text-light); font-size: 0.95em; font-weight: bold; display: flex; align-items: center; justify-content: center; margin-right: 12px; flex-shrink: 0; }
       .player-info { display: flex; align-items: center; flex: 1; }
-      .player-name { font-weight: bold; font-size: 0.95em; }
-      .player-username { color: #888888; font-size: 0.85em; }
-      .btn-remove { background: none; border: 1px solid #cc0000; color: #cc0000; padding: 4px 10px; border-radius: 4px; font-size: 0.8em; cursor: pointer; font-family: Arial, sans-serif; }
+      .player-name { font-weight: bold; font-size: 0.92em; color: var(--pd-text-dark); }
+      .player-username { color: var(--pd-text-muted); font-size: 0.82em; }
+      .btn-remove { background: none; border: 1px solid #cc0000; color: #cc0000; padding: 4px 10px; border-radius: var(--pd-radius-btn); font-size: 0.8em; cursor: pointer; font-family: Arial, sans-serif; }
       .btn-remove:hover { background-color: #fff0f0; }
-      .group-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; margin-bottom: 20px; }
-      .group-card h3 { margin: 0 0 16px; font-size: 1.1em; padding-left: 12px; border-left: 4px solid #000000; }
-      .group-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.9em; }
-      .group-table th { background-color: #111111; color: #ffffff; padding: 8px 10px; text-align: left; }
-      .group-table td { padding: 8px 10px; border-bottom: 1px solid #eeeeee; }
+      .group-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; margin-bottom: 16px; }
+      .group-card h3 { margin: 0 0 16px; font-size: 1.05em; color: var(--pd-text-dark); }
+      .group-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 0.88em; }
+      .group-table th { background-color: var(--pd-text-dark); color: var(--pd-text-light); padding: 8px 10px; text-align: left; }
+      .group-table td { padding: 8px 10px; border-bottom: 1px solid #f0f0f0; color: var(--pd-text-dark); }
       .group-table tr:last-child td { border-bottom: none; }
-      .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #f9f9f9; border: 1px solid #eeeeee; border-radius: 4px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
-      .fixture-players { font-size: 0.9em; font-weight: bold; flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
-      .fixture-vs { color: #888888; margin: 0 8px; }
+      .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #f9f9f9; border-radius: var(--pd-radius-btn); margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+      .fixture-players { font-size: 0.9em; font-weight: bold; flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; color: var(--pd-text-dark); }
+      .fixture-vs { color: var(--pd-text-muted); margin: 0 8px; }
       .score-inputs { display: flex; align-items: center; gap: 6px; }
-      .score-input { width: 50px; padding: 4px 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; text-align: center; }
-      .btn-submit-score { background-color: #111111; color: #ffffff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
+      .score-input { width: 50px; padding: 4px 8px; border: 1px solid var(--pd-border-strong); border-radius: 4px; font-size: 0.9em; text-align: center; }
+      .btn-submit-score { background-color: var(--pd-text-dark); color: var(--pd-text-light); border: none; padding: 4px 12px; border-radius: var(--pd-radius-btn); font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
       .btn-submit-score:hover { background-color: #333333; }
-      .score-display { font-weight: bold; font-size: 0.95em; }
+      .score-display { font-weight: bold; font-size: 0.95em; color: var(--pd-text-dark); }
       .winner-text { font-weight: bold; color: #006600; }
       .round-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
       .round-tab { padding: 8px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
-      .round-tab.active { background: #111111; color: #ffffff; border-color: #111111; font-weight: bold; }
+      .round-tab.active { background: var(--pd-text-dark); color: var(--pd-text-light); border-color: var(--pd-text-dark); font-weight: bold; }
       .bracket-toggle { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-      .bracket-toggle-btn { padding: 10px 20px; border: 2px solid #111111; background: #ffffff; border-radius: 6px; font-size: 0.9em; font-weight: bold; cursor: pointer; font-family: Arial, sans-serif; color: #111111; }
-      .bracket-toggle-btn.active { background: #111111; color: #ffffff; }
-      .coming-soon { text-align: center; padding: 40px; color: #aaaaaa; font-size: 1em; }
-      .loading { text-align: center; padding: 40px; color: #888888; }
+      .bracket-toggle-btn { padding: 10px 20px; border: 2px solid var(--pd-text-light); background: none; border-radius: var(--pd-radius-btn); font-size: 0.9em; font-weight: bold; cursor: pointer; font-family: Arial, sans-serif; color: var(--pd-text-light); }
+      .bracket-toggle-btn.active { background: var(--pd-text-light); color: var(--pd-text-dark); }
+      .coming-soon { text-align: center; padding: 40px; color: var(--pd-text-light-muted); font-size: 1em; }
+      .loading { text-align: center; padding: 40px; color: var(--pd-text-light-muted); }
       @media (max-width: 700px) {
-        header { flex-wrap: wrap; padding: 16px 20px; }
-        header img { height: 50px; }
-        header h1 { font-size: 1.4em; }
-        header p { font-size: 0.85em; }
-.header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-.btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
-main { padding: 24px 20px; }
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 0 20px 32px; }
         .info-grid { grid-template-columns: 1fr; }
       }
     </style>
   </head>
   <body>
 <header>
-  <img src="logo.png" alt="Pinnacle Darts Logo">
-  <div>
-    <h1>Pinnacle Darts League</h1>
-    <p>Official League Website</p>
+  <div class="brand">
+    <img src="logo.png" alt="Pinnacle Darts Logo">
+    <div class="brand-name">Pinnacle Darts League</div>
   </div>
   <button class="hamburger" onclick="toggleMenu()">☰</button>
   <nav id="mainNav">
@@ -105,16 +111,17 @@ main { padding: 24px 20px; }
     <a href="leagues.html">Leagues</a>
     <a href="tournaments.html">Tournaments</a>
     <a href="players.html">Players</a>
-    <a href="academy.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Academy</a>
+    <a href="academy.html" class="btn-switch" style="border:none;text-align:left;">Switch to Academy</a>
     <div id="authButtons" style="padding:14px 24px;"></div>
   </nav>
 </header>
-
+<div class="hero">
+  <img src="logo-watermark.png" alt="" class="hero-watermark">
+</div>
     <main>
       <a href="tournaments.html" class="back-link">← Back to Tournaments</a>
       <div id="tournamentContent"><p class="loading">Loading...</p></div>
     </main>
-
     <script>
       var tournamentId = null;
       var isAdmin = false;
@@ -124,7 +131,6 @@ main { padding: 24px 20px; }
       var profileMap = {};
       var roundOrderFull = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
       var cachedBracketsByType = {};
-
 function buildWhatsAppLink(phone) {
   if (!phone) { return null; }
   var hasPlus = phone.trim().startsWith('+');
@@ -135,7 +141,6 @@ function buildWhatsAppLink(phone) {
   }
   return 'https://wa.me/' + digits;
 }
-
       function whatsAppButtonHtml(opponentId) {
         var opponent = profileMap[opponentId];
         if (!opponent) { return ''; }
@@ -143,32 +148,26 @@ function buildWhatsAppLink(phone) {
         if (!link) { return ''; }
         return '<a href="' + link + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background-color:#25D366;color:#ffffff;padding:4px 10px;border-radius:20px;font-size:0.8em;text-decoration:none;font-weight:bold;">💬 WhatsApp</a>';
       }
-
       async function loadTournament() {
         var params = new URLSearchParams(window.location.search);
         tournamentId = params.get('id');
         if (!tournamentId) { window.location.href = 'tournaments.html'; return; }
-
         var session = await sbClient.auth.getSession();
         if (session.data.session) {
           currentUserId = session.data.session.user.id;
           var profile = await sbClient.from('profiles').select('is_admin').eq('id', currentUserId).single();
           if (profile.data) { isAdmin = profile.data.is_admin; }
         }
-
         var profilesResult = await sbClient.from('profiles').select('id, full_name, username, phone');
         if (profilesResult.data) {
           profilesResult.data.forEach(function(p) {
             profileMap[p.id] = { name: p.full_name || p.username || 'Unknown', phone: p.phone || null };
           });
         }
-
         var result = await sbClient.from('tournaments').select('*').eq('id', tournamentId).single();
         if (result.error || !result.data) { window.location.href = 'tournaments.html'; return; }
-
         tournamentData = result.data;
         tournamentFormat = tournamentData.format;
-
         var formatLabels = {
           single_elimination: 'Single Elimination',
           single_elimination_b: 'Single Elimination + B Bracket',
@@ -177,16 +176,13 @@ function buildWhatsAppLink(phone) {
         var platformLabels = {
           dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both'
         };
-
 var dateStr = tournamentData.date ? new Date(tournamentData.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
         var timeStr = tournamentData.time || 'TBC';
         var currentStatus = await computeTournamentStatus(tournamentData);
         var isGroupKnockout = tournamentFormat === 'group_knockout';
         var isSingleElim = tournamentFormat === 'single_elimination' || tournamentFormat === 'single_elimination_b';
-
         var groupsTab = isGroupKnockout ? '<button class="tab" onclick="showTab(\'groups\', event)">Groups</button>' : '';
         var groupsContent = isGroupKnockout ? '<div id="tab-groups" class="tab-content"><div id="groupsContent"><p class="loading">Loading groups...</p></div></div>' : '';
-
         document.getElementById('tournamentContent').innerHTML =
         getStatusBadgeHtml(currentStatus) +
           '<h2>' + tournamentData.name + '</h2>' +
@@ -209,38 +205,31 @@ var dateStr = tournamentData.date ? new Date(tournamentData.date).toLocaleDateSt
           '<div id="tab-players" class="tab-content"><div id="playersList"><p class="loading">Loading players...</p></div></div>' +
           groupsContent +
           '<div id="tab-knockouts" class="tab-content"><div id="knockoutsContent"><p class="loading">Loading bracket...</p></div></div>';
-
         loadPlayers();
         if (isGroupKnockout) { loadGroups(); }
         loadKnockouts();
       }
-
 async function loadPlayers() {
   var result = await sbClient.from('tournament_players').select('id, player_id, checked_in, is_reserve, created_at, profiles(full_name, username)').eq('tournament_id', tournamentId).order('created_at', { ascending: true });
   var container = document.getElementById('playersList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">No players have joined yet.</p>'; return; }
-
   var mainPlayers = result.data.filter(function(p) { return !p.is_reserve; });
   var reservePlayers = result.data.filter(function(p) { return p.is_reserve; });
-
   var now = new Date();
   var checkinOpen = tournamentData.checkin_start && tournamentData.checkin_end &&
     now >= new Date(tournamentData.checkin_start) && now <= new Date(tournamentData.checkin_end);
-
   var checkinBannerHtml = '';
   if (tournamentData.checkin_start && tournamentData.checkin_end) {
     var startStr = new Date(tournamentData.checkin_start).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     var endStr = new Date(tournamentData.checkin_end).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
     checkinBannerHtml = '<div class="description-box" style="margin-bottom:16px;"><p><strong>Check-in window:</strong> ' + startStr + ' — ' + endStr + (checkinOpen ? ' <span style="color:#006600;font-weight:bold;">(Open now)</span>' : '') + '</p></div>';
   }
-
   function renderPlayerRow(p) {
     var profile = p.profiles || {};
     var name = profile.full_name || profile.username || 'Unknown';
     var username = profile.username ? '@' + profile.username : '';
     var initial = name[0].toUpperCase();
     var removeBtn = isAdmin ? '<button class="btn-remove" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button>' : '';
-
     var checkinHtml = '';
     if (p.checked_in) {
       checkinHtml = '<span style="color:#006600;font-weight:bold;font-size:0.85em;">✓ Checked In</span>';
@@ -249,41 +238,32 @@ async function loadPlayers() {
     } else if (currentUserId === p.player_id) {
       checkinHtml = '<span style="color:#aaa;font-size:0.85em;">Not checked in</span>';
     }
-
     return '<div class="player-item"><div class="player-info"><div class="player-avatar-small">' + initial + '</div><div><div class="player-name">' + name + '</div><div class="player-username">' + username + '</div></div></div><div style="display:flex;align-items:center;gap:8px;">' + checkinHtml + removeBtn + '</div></div>';
   }
-
   var mainHtml = '<div class="player-list">' + mainPlayers.map(renderPlayerRow).join('') + '</div>';
-  var reserveHtml = reservePlayers.length ? '<h4 style="margin:20px 0 8px;">Reserves (in order)</h4><div class="player-list">' + reservePlayers.map(renderPlayerRow).join('') + '</div>' : '';
-
+  var reserveHtml = reservePlayers.length ? '<h4 style="margin:20px 0 8px;color:var(--pd-text-light);">Reserves (in order)</h4><div class="player-list">' + reservePlayers.map(renderPlayerRow).join('') + '</div>' : '';
   container.innerHTML = checkinBannerHtml + mainHtml + reserveHtml;
 }
-
 async function doCheckIn(rowId) {
   var result = await sbClient.from('tournament_players').update({ checked_in: true }).eq('id', rowId);
   if (result.error) { alert('Error checking in: ' + result.error.message); return; }
   loadPlayers();
 }
-
       async function removePlayer(playerId) {
         if (!confirm('Remove this player from the tournament?')) { return; }
         await sbClient.from('tournament_players').delete().eq('tournament_id', tournamentId).eq('player_id', playerId);
         loadPlayers();
       }
-
      async function loadGroups() {
   var groupsResult = await sbClient.from('tournament_groups').select('*, tournament_group_players(player_id, profiles(full_name, username))').eq('tournament_id', tournamentId).order('group_name');
   var container = document.getElementById('groupsContent');
   if (!groupsResult.data || !groupsResult.data.length) { container.innerHTML = '<p class="coming-soon">Groups have not been drawn yet.</p>'; return; }
-
   var matchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'group');
   var matches = matchesResult.data || [];
-
   container.innerHTML = groupsResult.data.map(function(group) {
     var groupPlayers = group.tournament_group_players || [];
     var playerMap = {};
     groupPlayers.forEach(function(gp) { var profile = gp.profiles || {}; playerMap[gp.player_id] = profile.full_name || profile.username || 'Unknown'; });
-
     var standings = groupPlayers.map(function(gp) {
       var played = 0, won = 0, lost = 0, pts = 0;
       matches.forEach(function(m) {
@@ -293,21 +273,16 @@ async function doCheckIn(rowId) {
       });
       return { name: playerMap[gp.player_id], played: played, won: won, lost: lost, pts: pts };
     }).sort(function(a, b) { return b.pts - a.pts; });
-
     var groupFixtures = matches.filter(function(m) { return m.group_id === group.id; });
     var fixturesHtml = groupFixtures.map(function(m) {
       var p1name = playerMap[m.player1_id] || 'Unknown';
       var p2name = playerMap[m.player2_id] || 'Unknown';
-
       var whatsAppHtml = '';
       if (currentUserId === m.player1_id) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
       else if (currentUserId === m.player2_id) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
-
       var playersHtml = '<div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + whatsAppHtml + '</div>';
-
       var isP1 = currentUserId === m.player1_id;
       var isP2 = currentUserId === m.player2_id;
-
       if (m.status === 'completed') {
         var scoreBlock = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
         var myAvgMissing = (isP1 && m.player1_avg == null) || (isP2 && m.player2_avg == null);
@@ -330,59 +305,47 @@ async function doCheckIn(rowId) {
       }
       return '<div class="fixture-item">' + playersHtml + '<div class="score-display" style="color:#aaa">Pending</div></div>';
     }).join('');
-
     return '<div class="group-card"><h3>' + group.group_name + '</h3>' +
       '<table class="group-table"><thead><tr><th>Player</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead><tbody>' +
       standings.map(function(s) { return '<tr><td>' + s.name + '</td><td>' + s.played + '</td><td>' + s.won + '</td><td>' + s.lost + '</td><td><strong>' + s.pts + '</strong></td></tr>'; }).join('') +
-      '</tbody></table><h4 style="margin:16px 0 8px;font-size:0.95em;">Fixtures</h4>' + fixturesHtml + '</div>';
+      '</tbody></table><h4 style="margin:16px 0 8px;font-size:0.95em;color:var(--pd-text-dark);">Fixtures</h4>' + fixturesHtml + '</div>';
   }).join('');
 }
-
 async function submitGroupScore(matchId, isP1) {
   var s1 = parseInt(document.getElementById('s1_' + matchId).value);
   var s2 = parseInt(document.getElementById('s2_' + matchId).value);
   if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
-
   var myAvgId = isP1 ? 'gavg1_' + matchId : 'gavg2_' + matchId;
   var myAvgVal = document.getElementById(myAvgId).value.trim();
   if (!myAvgVal) { alert('Please enter your average for this match.'); return; }
-
   var update = { player1_score: s1, player2_score: s2, status: 'completed' };
   if (isP1) { update.player1_avg = parseFloat(myAvgVal); } else { update.player2_avg = parseFloat(myAvgVal); }
-
   var result = await sbClient.from('tournament_matches').update(update).eq('id', matchId);
   if (result.error) { alert('Error submitting score. Please try again.'); return; }
-
   await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
   loadGroups();
 }
-
 async function submitGroupAverageOnly(matchId, isP1) {
   var fieldId = isP1 ? 'gmyavg1_' + matchId : 'gmyavg2_' + matchId;
   var val = document.getElementById(fieldId).value.trim();
   if (!val) { alert('Please enter your average.'); return; }
-
   var update = isP1 ? { player1_avg: parseFloat(val) } : { player2_avg: parseFloat(val) };
   var result = await sbClient.from('tournament_matches').update(update).eq('id', matchId);
   if (result.error) { alert('Error saving average. Please try again.'); return; }
-
   await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
   loadGroups();
 }
-
       async function loadKnockouts() {
         var result = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').order('match_order');
         var container = document.getElementById('knockoutsContent');
         var all = result.data || [];
         if (!all.length) { container.innerHTML = '<p class="coming-soon">Bracket will appear here once generated.</p>'; return; }
-
         cachedBracketsByType = {};
         all.forEach(function(m) {
           var bt = m.bracket_type || 'A';
           if (!cachedBracketsByType[bt]) { cachedBracketsByType[bt] = []; }
           cachedBracketsByType[bt].push(m);
         });
-
         var order, labels;
         if (tournamentData.average_split) {
           order = ['CUPA', 'CUPA_PLATE', 'CUPB', 'CUPB_PLATE'];
@@ -396,35 +359,28 @@ async function submitGroupAverageOnly(matchId, isP1) {
           order = ['A', 'B'];
           labels = { A: 'Main Bracket', B: 'Plate (Consolation)' };
         }
-
         var presentTypes = order.filter(function(t) { return cachedBracketsByType[t] && cachedBracketsByType[t].length; });
-
         var toggleHtml = '';
         if (presentTypes.length > 1) {
           toggleHtml = '<div class="bracket-toggle">' + presentTypes.map(function(t, i) {
             return '<button class="bracket-toggle-btn' + (i === 0 ? ' active' : '') + '" onclick="switchBracketView(\'' + t + '\', this)">' + labels[t] + '</button>';
           }).join('') + '</div>';
         }
-
         container.innerHTML = toggleHtml + '<div id="bracketSectionContent"></div>';
         renderBracketSection(cachedBracketsByType[presentTypes[0]] || []);
       }
-
       function switchBracketView(type, btn) {
         document.querySelectorAll('.bracket-toggle-btn').forEach(function(b) { b.classList.remove('active'); });
         btn.classList.add('active');
         renderBracketSection(cachedBracketsByType[type] || []);
       }
-
       function renderBracketSection(matches) {
   var rounds = {};
   matches.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
   var roundsPresent = roundOrderFull.filter(function(r) { return rounds[r]; });
-
   var tabsHtml = '<div class="round-tabs">' + roundsPresent.map(function(r, i) {
     return '<button class="round-tab' + (i === 0 ? ' active' : '') + '" data-round="' + r + '" onclick="showKnockoutRound(\'' + r + '\', this)">' + r + '</button>';
   }).join('') + '</div>';
-
   var contentHtml = roundsPresent.map(function(r, i) {
     var rMatches = rounds[r];
     var matchesHtml = rMatches.map(function(m) {
@@ -435,13 +391,11 @@ async function submitGroupAverageOnly(matchId, isP1) {
       var isP1 = currentUserId === m.player1_id;
       var isP2 = currentUserId === m.player2_id;
       var canSubmit = currentUserId && m.status !== 'completed' && m.player1_id && m.player2_id && (isP1 || isP2);
-
       var whatsAppHtml = '';
       if (m.player1_id && m.player2_id) {
         if (isP1) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
         else if (isP2) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
       }
-
       var scoreHtml;
       if (m.status === 'completed') {
         scoreHtml = '<div class="score-display">' + m.player1_score + ' - ' + m.player2_score + '</div>';
@@ -463,12 +417,10 @@ async function submitGroupAverageOnly(matchId, isP1) {
       } else {
         scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
       }
-
       return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span>' + whatsAppHtml + '</div>' + scoreHtml + '</div>';
     }).join('');
     return '<div class="round-content" data-round="' + r + '" style="' + (i === 0 ? '' : 'display:none;') + '">' + matchesHtml + '</div>';
   }).join('');
-
   document.getElementById('bracketSectionContent').innerHTML = tabsHtml + contentHtml;
 }
       function showKnockoutRound(round, btn) {
@@ -478,28 +430,21 @@ async function submitGroupAverageOnly(matchId, isP1) {
           c.style.display = c.getAttribute('data-round') === round ? '' : 'none';
         });
       }
-
      async function submitKnockoutScore(matchId, currentRound, matchOrder, bracketType, isP1) {
   var s1 = parseInt(document.getElementById('ks1_' + matchId).value);
   var s2 = parseInt(document.getElementById('ks2_' + matchId).value);
   if (isNaN(s1) || isNaN(s2)) { alert('Please enter scores for both players.'); return; }
   if (s1 === s2) { alert('Scores cannot be equal in a knockout match.'); return; }
-
   var myAvgId = isP1 ? 'kavg1_' + matchId : 'kavg2_' + matchId;
   var myAvgVal = document.getElementById(myAvgId).value.trim();
   if (!myAvgVal) { alert('Please enter your average for this match.'); return; }
-
   var update0 = { player1_score: s1, player2_score: s2, status: 'completed' };
   if (isP1) { update0.player1_avg = parseFloat(myAvgVal); } else { update0.player2_avg = parseFloat(myAvgVal); }
-
   var result = await sbClient.from('tournament_matches').update(update0).eq('id', matchId);
   if (result.error) { alert('Error submitting score. Please try again.'); return; }
-
   await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
-
   var matchRow = (await sbClient.from('tournament_matches').select('*').eq('id', matchId).single()).data;
   var winnerId = matchRow.player1_score > matchRow.player2_score ? matchRow.player1_id : matchRow.player2_id;
-
   var nextRound = getNextRoundName(currentRound);
   if (nextRound) {
     var nextOrder = Math.floor(matchOrder / 2);
@@ -511,29 +456,23 @@ async function submitGroupAverageOnly(matchId, isP1) {
       await sbClient.from('tournament_matches').update(update).eq('id', nextMatch.data.id);
     }
   }
-
   loadKnockouts();
 }
-
 async function submitKnockoutAverageOnly(matchId, isP1) {
   var fieldId = isP1 ? 'kmyavg1_' + matchId : 'kmyavg2_' + matchId;
   var val = document.getElementById(fieldId).value.trim();
   if (!val) { alert('Please enter your average.'); return; }
-
   var update = isP1 ? { player1_avg: parseFloat(val) } : { player2_avg: parseFloat(val) };
   var result = await sbClient.from('tournament_matches').update(update).eq('id', matchId);
   if (result.error) { alert('Error saving average. Please try again.'); return; }
-
   await updatePlayerAverage(currentUserId); await updatePlayerStats(currentUserId);
   loadKnockouts();
 }
-
       function getNextRoundName(currentRound) {
         var idx = roundOrderFull.indexOf(currentRound);
         if (idx === -1 || idx === roundOrderFull.length - 1) { return null; }
         return roundOrderFull[idx + 1];
       }
-
       function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
@@ -543,16 +482,13 @@ async function submitKnockoutAverageOnly(matchId, isP1) {
         if (name === 'groups') { loadGroups(); }
         if (name === 'knockouts') { loadKnockouts(); }
       }
-
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
-
       window.addEventListener('load', function() {
         checkAuth();
         loadTournament();
       });
     </script>
-
   </body>
 </html>
