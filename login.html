@@ -9,61 +9,63 @@
 <script src="auth.js?v=2"></script>
     <style>
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-
-header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }      header img { height: 70px; }
-      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
-      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
-      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
-      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-
-.hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-nav.open { display: flex; }
-nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; }
-nav a:hover { background-color: #222222; }
-nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
-nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
-nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
-
-      main { padding: 40px; max-width: 400px; margin: 0 auto; }
-      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; }
-
-      .form-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 30px; margin-top: 30px; }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      nav.open { display: flex; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+      .hero-kicker { position: relative; font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
+      .hero-title { position: relative; font-size: 26px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0; max-width: 460px; }
+      main { padding: 8px 28px 60px; max-width: 400px; margin: 0 auto; position: relative; z-index: 1; }
+      .form-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 28px; color: var(--pd-text-dark); }
       .form-group { margin-bottom: 16px; }
-      .form-group label { display: block; font-size: 0.9em; font-weight: bold; margin-bottom: 6px; color: #333333; }
-      .form-group input { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; }
-      .form-group input:focus { outline: none; border-color: #111111; background-color: #ffffff; }
-      .btn-submit { width: 100%; padding: 12px; background-color: #111111; color: #ffffff; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; margin-top: 8px; }
+      .form-group label { display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 6px; color: #333333; }
+      .form-group input { width: 100%; padding: 10px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 1em; background-color: #f9f9f9; color: var(--pd-text-dark); }
+      .form-group input:focus { outline: none; border-color: var(--pd-text-dark); background-color: #ffffff; }
+      .btn-submit { width: 100%; padding: 12px; background-color: var(--pd-text-dark); color: #ffffff; border: none; border-radius: var(--pd-radius-btn); font-size: 1em; cursor: pointer; margin-top: 8px; }
       .btn-submit:hover { background-color: #333333; }
       .register-link { text-align: center; margin-top: 16px; font-size: 0.9em; color: #555555; }
-      .register-link a { color: #111111; font-weight: bold; text-decoration: none; }
+      .register-link a { color: var(--pd-text-dark); font-weight: bold; text-decoration: none; }
       .register-link a:hover { text-decoration: underline; }
-      .error-msg { display: none; background: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px; border-radius: 4px; margin-bottom: 16px; font-size: 0.9em; }
-      .success-msg { display: none; background: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px; border-radius: 4px; margin-bottom: 16px; font-size: 0.9em; }
-
+      .error-msg { display: none; background: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px; border-radius: var(--pd-radius-btn); margin-bottom: 16px; font-size: 0.9em; }
+      .success-msg { display: none; background: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px; border-radius: var(--pd-radius-btn); margin-bottom: 16px; font-size: 0.9em; }
       @media (max-width: 700px) {
-        header { flex-wrap: wrap; padding: 16px 20px; }
-        header img { height: 50px; }
-        header h1 { font-size: 1.4em; }
-        header p { font-size: 0.85em; }
-.header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-.btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
-main { padding: 24px 20px; }
-        h2 { font-size: 1.3em; }
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-title { font-size: 22px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 8px 20px 40px; }
       }
     </style>
   </head>
   <body>
-
    <header>
-  <img src="logo.png" alt="Pinnacle Darts Logo">
-  <div>
-    <h1>Pinnacle Darts League</h1>
-    <p>Official League Website</p>
+  <div class="brand">
+    <img src="logo.png" alt="Pinnacle Darts Logo">
+    <div class="brand-name">Pinnacle Darts League</div>
   </div>
   <button class="hamburger" onclick="toggleMenu()">☰</button>
   <nav id="mainNav">
@@ -71,16 +73,19 @@ main { padding: 24px 20px; }
     <a href="leagues.html">Leagues</a>
     <a href="tournaments.html">Tournaments</a>
     <a href="players.html">Players</a>
-    <a href="academy.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Academy</a>
+    <a href="academy.html" class="btn-switch" style="border:none;text-align:left;">Switch to Academy</a>
     <div id="authButtons" style="padding:14px 24px;"></div>
   </nav>
 </header>
+<div class="hero">
+  <img src="logo-watermark.png" alt="" class="hero-watermark">
+  <div class="hero-kicker">Welcome back</div>
+  <div class="hero-title">Login</div>
+</div>
   <main>
-  <h2>Login</h2>
   <div class="form-box" id="loginBox">
     <div class="error-msg" id="errorMsg"></div>
     <div class="success-msg" id="successMsg">Logged in successfully! Redirecting...</div>
-
     <div class="form-group">
       <label>Email</label>
       <input type="email" id="email" placeholder="Enter your email" />
@@ -97,11 +102,9 @@ main { padding: 24px 20px; }
           Don't have an account? <a href="register.html">Create one here</a>
         </div>
       </div>
-
       <div class="form-box" id="resetBox" style="display:none;">
         <div class="error-msg" id="resetErrorMsg"></div>
         <div class="success-msg" id="resetSuccessMsg">Check your email for a password reset link!</div>
-
         <div class="form-group">
           <label>Email</label>
           <input type="email" id="resetEmail" placeholder="Enter your account email" />
@@ -112,86 +115,68 @@ main { padding: 24px 20px; }
         </div>
       </div>
     </main>
-
     <script>
       async function handleLogin() {
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const errorMsg = document.getElementById('errorMsg');
         const successMsg = document.getElementById('successMsg');
-
         errorMsg.style.display = 'none';
         successMsg.style.display = 'none';
-
         if (!email || !password) {
           errorMsg.textContent = 'Please enter your email and password.';
           errorMsg.style.display = 'block';
           return;
         }
-
         try {
           const { data, error } = await sbClient.auth.signInWithPassword({ email, password });
-
           if (error) {
             errorMsg.textContent = error.message;
             errorMsg.style.display = 'block';
             return;
           }
-
           successMsg.style.display = 'block';
           setTimeout(() => window.location.href = 'index.html', 1500);
-
         } catch (err) {
           errorMsg.textContent = 'Something went wrong. Please try again.';
           errorMsg.style.display = 'block';
           console.error(err);
         }
       }
-
       function showResetForm() {
   document.getElementById('loginBox').style.display = 'none';
   document.getElementById('resetBox').style.display = 'block';
 }
-
 function showLoginForm() {
   document.getElementById('resetBox').style.display = 'none';
   document.getElementById('loginBox').style.display = 'block';
 }
-
 async function handlePasswordReset() {
   const email = document.getElementById('resetEmail').value.trim();
   const errorMsg = document.getElementById('resetErrorMsg');
   const successMsg = document.getElementById('resetSuccessMsg');
-
   errorMsg.style.display = 'none';
   successMsg.style.display = 'none';
-
   if (!email) {
     errorMsg.textContent = 'Please enter your email address.';
     errorMsg.style.display = 'block';
     return;
   }
-
   const { error } = await sbClient.auth.resetPasswordForEmail(email, {
     redirectTo: window.location.origin + window.location.pathname.replace('login.html', 'reset-password.html')
   });
-
   if (error) {
     errorMsg.textContent = error.message;
     errorMsg.style.display = 'block';
     return;
   }
-
   successMsg.style.display = 'block';
   document.getElementById('resetEmail').value = '';
 }
-
 function toggleMenu() {
   document.getElementById('mainNav').classList.toggle('open');
 }
-
 checkAuth();
     </script>
-
   </body>
 </html>
