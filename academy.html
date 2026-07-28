@@ -1233,16 +1233,16 @@ function showTab(name, event) {
 window.addEventListener('load', async () => {
   checkAuth();
   updateSwitchButtonVisibility();
-  loadDrillsAccordion();
   const statusResult = await getAcademyAccessStatus();
   document.getElementById('academyPendingView').style.display = 'none';
   document.getElementById('academyDeniedView').style.display = 'none';
   document.getElementById('academyLockedView').style.display = 'none';
   document.getElementById('academyContentView').style.display = 'none';
-  if (statusResult.state === 'approved') {
+if (statusResult.state === 'approved') {
     document.getElementById('academyContentView').style.display = 'block';
     loadAcademyPlayers();
     loadAcademyNews();
+    loadDrillsAccordion();
   } else if (statusResult.state === 'pending') {
     document.getElementById('academyPendingView').style.display = 'block';
   } else if (statusResult.state === 'denied') {
