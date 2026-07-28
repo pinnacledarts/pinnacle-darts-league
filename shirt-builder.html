@@ -5,79 +5,95 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shirt Builder | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
     <style>
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }
-      header img { height: 70px; }
-      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
-      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
-      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
-      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-      .hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
-      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
       nav.open { display: flex; }
-      nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; }
-      nav a:hover { background-color: #222222; }
-      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
-      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
-      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
-      main { padding: 40px; max-width: 1000px; margin: 0 auto; }
-      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; }
-      .builder-layout { display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; }
-      .toolbar { flex: 0 0 260px; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; }
-      .toolbar h4 { margin: 0 0 12px; font-size: 0.95em; padding-left: 10px; border-left: 3px solid #000000; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+      .hero-kicker { position: relative; font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
+      .hero-title { position: relative; font-size: 26px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0; max-width: 460px; }
+      main { padding: 8px 28px 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+      .loading-overlay { text-align: center; padding: 60px 20px; color: var(--pd-text-light-muted); }
+      .loading-overlay a { color: var(--pd-text-light); }
+      .builder-intro { color: var(--pd-text-light-muted); margin: 0 0 18px; font-size: 0.95em; }
+      .builder-layout { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+      .toolbar { flex: 0 0 260px; background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; color: var(--pd-text-dark); }
+      .toolbar h4 { margin: 0 0 12px; font-size: 13px; font-weight: bold; }
       .toolbar-section { margin-bottom: 20px; }
-      .btn { display: block; width: 100%; padding: 10px; border: none; border-radius: 4px; font-size: 0.9em; cursor: pointer; font-family: Arial, sans-serif; margin-bottom: 8px; }
-      .btn-primary { background-color: #000000; color: #ffffff; }
+      .btn { display: block; width: 100%; padding: 10px; border: none; border-radius: var(--pd-radius-btn); font-size: 0.9em; cursor: pointer; font-family: Arial, sans-serif; margin-bottom: 8px; }
+      .btn-primary { background-color: var(--pd-text-dark); color: #ffffff; }
       .btn-primary:hover { background-color: #333333; }
-      .btn-secondary { background-color: #f5f5f5; color: #111111; border: 1px solid #dddddd; }
+      .btn-secondary { background-color: #f5f5f5; color: var(--pd-text-dark); border: 1px solid var(--pd-border-strong); }
       .btn-secondary:hover { background-color: #eeeeee; }
       .btn-danger { background-color: #ffffff; color: #cc0000; border: 1px solid #cc0000; }
       .btn-danger:hover { background-color: #fff0f0; }
       .btn-row { display: flex; gap: 6px; margin-bottom: 8px; }
       .btn-row .btn { margin-bottom: 0; }
       .btn-icon { flex: 1; padding: 8px; font-size: 0.85em; }
-      .btn-icon.active { background-color: #000000; color: #ffffff; }
-      input[type="color"] { width: 100%; height: 36px; border: 1px solid #dddddd; border-radius: 4px; cursor: pointer; margin-bottom: 8px; }
+      .btn-icon.active { background-color: var(--pd-text-dark); color: #ffffff; }
+      input[type="color"] { width: 100%; height: 36px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); cursor: pointer; margin-bottom: 8px; }
       .swatches { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-      .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 0 0 1px #dddddd; cursor: pointer; }
-      select, textarea { width: 100%; padding: 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; font-family: Arial, sans-serif; margin-bottom: 8px; }
+      .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #ffffff; box-shadow: 0 0 0 1px var(--pd-border-strong); cursor: pointer; }
+      select, textarea { width: 100%; padding: 8px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 0.9em; font-family: Arial, sans-serif; margin-bottom: 8px; color: var(--pd-text-dark); background: #f9f9f9; }
       .canvas-area { flex: 1; min-width: 300px; }
-      .side-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
-      .side-tab { padding: 10px 24px; cursor: pointer; font-size: 0.95em; border: 1px solid #dddddd; background: #ffffff; color: #555555; border-radius: 4px 4px 0 0; }
-      .side-tab.active { background: #000000; color: #ffffff; border-color: #000000; }
-.canvas-wrap { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 0 8px 8px 8px; width: 100%; max-width: 340px; height: 400px; margin: 0 auto; display: flex; align-items: center; justify-content: center; overflow: hidden; box-sizing: border-box; }
-.canvas-panel { display: none; }
-.canvas-panel.active { display: flex; align-items: center; justify-content: center; }.zoom-controls { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
-.zoom-controls button { padding: 6px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 4px; cursor: pointer; font-size: 1em; }
-      .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
-      .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
-      .loading-overlay { text-align: center; padding: 60px 20px; color: #888888; }
+      .side-tabs { display: flex; gap: 4px; margin-bottom: 0; }
+      .side-tab { padding: 10px 24px; cursor: pointer; font-size: 0.9em; border: none; background: transparent; color: var(--pd-text-light-muted); border-radius: var(--pd-radius-btn) var(--pd-radius-btn) 0 0; }
+      .side-tab.active { background: var(--pd-surface); color: var(--pd-text-dark); font-weight: bold; }
+      .canvas-wrap { background-color: var(--pd-surface); border-radius: 0 var(--pd-radius-card) var(--pd-radius-card) var(--pd-radius-card); box-shadow: var(--pd-shadow-card); width: 100%; max-width: 340px; height: 400px; margin: 0 auto; display: flex; align-items: center; justify-content: center; overflow: hidden; box-sizing: border-box; }
+      .canvas-panel { display: none; }
+      .canvas-panel.active { display: flex; align-items: center; justify-content: center; }
+      .zoom-controls { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+      .zoom-controls button { padding: 6px 16px; border: 1px solid var(--pd-border-strong); background: var(--pd-surface); border-radius: var(--pd-radius-btn); cursor: pointer; font-size: 0.9em; color: var(--pd-text-dark); }
+      .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: var(--pd-radius-btn); margin-bottom: 16px; display: none; font-size: 0.9em; }
+      .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: var(--pd-radius-btn); margin-bottom: 16px; display: none; font-size: 0.9em; }
+      .terms-link { text-align: center; margin-top: 30px; }
+      .terms-link a { color: var(--pd-text-light-muted); font-size: 0.9em; text-decoration: none; }
       @media (max-width: 700px) {
-        header { flex-wrap: wrap; padding: 16px 20px; }
-        header img { height: 50px; }
-        header h1 { font-size: 1.4em; }
-        header p { font-size: 0.85em; }
-        main { padding: 24px 16px; }
-        h2 { font-size: 1.3em; }
-.builder-layout { flex-direction: column; }
-.canvas-area { order: -1; width: 100%; max-width: 100%; }
-.toolbar { width: 100% !important; max-width: 100%; flex: none !important; order: 2; }
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-title { font-size: 22px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 8px 20px 32px; }
+        .builder-layout { flex-direction: column; }
+        .canvas-area { order: -1; width: 100%; max-width: 100%; }
+        .toolbar { width: 100% !important; max-width: 100%; flex: none !important; order: 2; }
       }
     </style>
   </head>
   <body>
     <header>
-      <img src="logo.png" alt="Pinnacle Darts Logo">
-      <div>
-        <h1>Pinnacle Darts League</h1>
-        <p>Official League Website</p>
+      <div class="brand">
+        <img src="logo.png" alt="Pinnacle Darts Logo">
+        <div class="brand-name">Pinnacle Darts League</div>
       </div>
       <button class="hamburger" onclick="toggleMenu()">☰</button>
       <nav id="mainNav">
@@ -87,19 +103,23 @@
         <a href="players.html">Players</a>
         <a href="swap-sell.html">Swap / Sell</a>
         <a href="shirt-builder.html">Shirt Builder</a>
-        <a href="academy.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Academy</a>
+        <a href="academy.html" class="btn-switch" style="border:none;text-align:left;">Switch to Academy</a>
         <div id="authButtons" style="padding:14px 24px;"></div>
       </nav>
     </header>
+    <div class="hero">
+      <img src="logo-watermark.png" alt="" class="hero-watermark">
+      <div class="hero-kicker">Design</div>
+      <div class="hero-title">Shirt Builder</div>
+    </div>
     <main>
-      <h2>Shirt Builder</h2>
       <div id="loggedOutMsg" class="loading-overlay" style="display:none;">
         <p>Please <a href="login.html">log in</a> to design and submit a shirt.</p>
       </div>
       <div id="builderContent" style="display:none;">
         <div class="success-msg" id="builder-success"></div>
         <div class="error-msg" id="builder-error"></div>
-        <p style="color:#666;">Design your shirt, then submit it for the admin team to review.</p>
+        <p class="builder-intro">Design your shirt, then submit it for the admin team to review.</p>
         <div class="builder-layout">
           <div class="toolbar">
             <div class="toolbar-section">
@@ -192,7 +212,7 @@
           </div>
         </div>
       </div>
-      <p style="text-align:center;margin-top:30px;"><a href="terms.html" style="color:#555;font-size:0.9em;">View Terms & Conditions →</a></p>
+      <p class="terms-link"><a href="terms.html">View Terms & Conditions →</a></p>
     </main>
     <script>
       var currentUserId = null;
@@ -434,15 +454,12 @@ function splitAtEdge() {
   var objCenterX = objRect.left + objRect.width / 2;
   var overflowsRight = objCenterX > (shirtRect.left + shirtRect.width / 2);
   var otherPolygon = getShiftedPolygon(otherCanvas);
-
   obj.clipPath = makeShirtClipPath(canvas);
   obj.dirty = true;
-
   var sampleCount = Math.min(30, Math.max(6, Math.round(objRect.height / 6)));
   var sampleH = objRect.height / sampleCount;
   var sumShiftWeighted = 0;
   var sumWeight = 0;
-
   for (var i = 0; i < sampleCount; i++) {
     var sampleY = objRect.top + (i + 0.5) * sampleH;
     var xsThis = getPolygonXIntersections(polygon, sampleY);
@@ -457,14 +474,11 @@ function splitAtEdge() {
     sumShiftWeighted += (otherSeamXRow - seamXRow) * overflowWidthRow;
     sumWeight += overflowWidthRow;
   }
-
   if (sumWeight === 0) {
     alert('Could not find a matching wrap area on the other side for this element.');
     return;
   }
-
   var avgShift = sumShiftWeighted / sumWeight;
-
   obj.clone(function(clone) {
     clone.set({ left: obj.left + avgShift, top: obj.top });
     clone.clipPath = makeShirtClipPath(otherCanvas);
@@ -473,7 +487,6 @@ function splitAtEdge() {
     otherCanvas.renderAll();
     pushHistory(otherCanvas);
   });
-
   canvas.discardActiveObject();
   canvas.renderAll();
   pushHistory(canvas);
