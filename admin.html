@@ -1880,10 +1880,20 @@ async function deletePlayer(id, username) {
   if (result.error) { alert('Error removing player: ' + result.error.message); console.error(result.error); return; }
   loadPlayers();
 }
-      function addDrillTargetRow() {
+      function insertDrillRow(row, insertAfterIdx) {
+        var container = document.getElementById('drillTargetsList');
+        if (insertAfterIdx) {
+          var refRow = document.getElementById('drillTargetRow' + insertAfterIdx);
+          if (refRow) {
+            container.insertBefore(row, refRow.nextSibling);
+            return;
+          }
+        }
+        container.appendChild(row);
+      }
+      function addDrillTargetRow(insertAfterIdx) {
   drillTargetCount++;
   var idx = drillTargetCount;
-  var container = document.getElementById('drillTargetsList');
   var row = document.createElement('div');
   row.className = 'card';
   row.style.background = '#f9f9f9';
@@ -1901,12 +1911,16 @@ async function deletePlayer(id, username) {
     '<div id="scoreOptionsList' + idx + '"></div>' +
     '<button class="btn-small" onclick="addScoreOptionRow(' + idx + ')">+ Add Score Option</button>' +
     '</div>' +
-    '<div style="margin-top:10px;display:flex;gap:6px;">' +
+    '<div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">' +
     '<button class="btn-small" onclick="moveDrillRow(' + idx + ', -1)">↑ Move Up</button>' +
     '<button class="btn-small" onclick="moveDrillRow(' + idx + ', 1)">↓ Move Down</button>' +
     '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Target</button>' +
+    '</div>' +
+    '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">' +
+    '<button class="btn-small" onclick="addDrillTargetRow(' + idx + ')">+ Target Below</button>' +
+    '<button class="btn-small" onclick="addDrillSubtitleRow(' + idx + ')">+ Subtitle Below</button>' +
     '</div>';
-  container.appendChild(row);
+  insertDrillRow(row, insertAfterIdx);
   addScoreOptionRow(idx);
 }
 function moveDrillRow(idx, direction) {
@@ -1922,10 +1936,9 @@ function moveDrillRow(idx, direction) {
         var type = document.getElementById('targetEntryType' + idx).value;
         document.getElementById('dropdownSection' + idx).style.display = type === 'manual' ? 'none' : 'block';
       }
-function addDrillSubtitleRow() {
+function addDrillSubtitleRow(insertAfterIdx) {
   drillTargetCount++;
   var idx = drillTargetCount;
-  var container = document.getElementById('drillTargetsList');
   var row = document.createElement('div');
   row.className = 'card';
   row.style.background = '#eeeeee';
@@ -1934,14 +1947,18 @@ function addDrillSubtitleRow() {
   row.innerHTML =
     '<div class="form-row">' +
     '<div class="form-group"><label>Subtitle Text</label><input type="text" id="subtitleName' + idx + '" placeholder="e.g. Round 1" /></div>' +
-    '<div class="form-group" style="display:flex;align-items:flex-end;gap:6px;">' +
+    '<div class="form-group" style="display:flex;align-items:flex-end;gap:6px;flex-wrap:wrap;">' +
     '<button class="btn-small" onclick="moveDrillRow(' + idx + ', -1)">↑</button>' +
     '<button class="btn-small" onclick="moveDrillRow(' + idx + ', 1)">↓</button>' +
     '<button class="btn-small danger" onclick="removeDrillTargetRow(' + idx + ')">Remove Subtitle</button>' +
     '</div>' +
     '</div>' +
-    '<div class="form-group"><label>Description (optional)</label><textarea id="subtitleDescription' + idx + '" rows="2" placeholder="Explain this section..."></textarea></div>';
-  container.appendChild(row);
+    '<div class="form-group"><label>Description (optional)</label><textarea id="subtitleDescription' + idx + '" rows="2" placeholder="Explain this section..."></textarea></div>' +
+    '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap;">' +
+    '<button class="btn-small" onclick="addDrillTargetRow(' + idx + ')">+ Target Below</button>' +
+    '<button class="btn-small" onclick="addDrillSubtitleRow(' + idx + ')">+ Subtitle Below</button>' +
+    '</div>';
+  insertDrillRow(row, insertAfterIdx);
 }
       function removeDrillTargetRow(idx) {
         var row = document.getElementById('drillTargetRow' + idx);
@@ -1964,7 +1981,9 @@ function addDrillSubtitleRow() {
           '<button class="btn-small danger" onclick="document.getElementById(\'scoreOptRow' + targetIdx + '_' + optIdx + '\').remove()">✕</button>';
         container.appendChild(row);
       }
+      var savingDrill = false;
       async function saveDrill() {
+        if (savingDrill) { return; }
         var title = document.getElementById('drillTitle').value.trim();
         if (!title) { showMsg('drill-error', 'Please enter a drill title.'); return; }
         var targetRows = document.querySelectorAll('#drillTargetsList > div');
@@ -1973,6 +1992,11 @@ if (editingDrillId && editingOriginalTargetCount > 0 && targetRows.length < edit
   var confirmMsg = 'Warning: this drill originally had ' + editingOriginalTargetCount + ' rows, but you\'re about to save only ' + targetRows.length + '. Anything not shown will be permanently deleted. Are you sure you want to continue?';
   if (!confirm(confirmMsg)) { return; }
 }
+savingDrill = true;
+var saveBtn = document.querySelector('button[onclick="saveDrill()"]');
+var savingBtnOriginalText = saveBtn ? saveBtn.textContent : '';
+if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
+try {
 var description = document.getElementById('drillDescription').value.trim();
 var drillId;
 if (editingDrillId) {
@@ -2032,11 +2056,14 @@ showMsg('drill-success', editingDrillId ? 'Drill updated successfully!' : 'Drill
 document.getElementById('drillTitle').value = '';
 document.getElementById('drillDescription').value = '';
 document.getElementById('drillTargetsList').innerHTML = '';
-        document.querySelector('button[onclick="saveDrill()"]').textContent = 'Create Drill';
         drillTargetCount = 0;
         scoreOptionCounts = {};
         editingDrillId = null;
         loadDrills();
+} finally {
+  savingDrill = false;
+  if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Create Drill'; }
+}
       }
       async function loadDrills() {
         var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
