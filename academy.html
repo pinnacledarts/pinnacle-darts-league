@@ -1121,8 +1121,9 @@ container.innerHTML = '<h2 style="margin-bottom:20px;color:var(--pd-text-light);
   '<div class="trophy-icon">🏆</div>' +
   '<p class="well-done-text" style="font-size:1.4em;color:#4dd88a;font-weight:bold;margin:12px 0 8px;">Well done!</p>' +
   '<p class="well-done-text" style="font-size:1.1em;color:var(--pd-text-light-muted);margin-bottom:28px;">Total score: ' + totalScore + '</p>' +
-    '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Start Another Drill</button>' +
-'<div style="margin-top:16px;"><button class="cancel-btn" style="color:var(--pd-text-light);" onclick="drillStepBack(' + drillId + ')">Back</button></div>' : '') +    '</div>';
+'<button class="save-btn" onclick="resetDrillForm(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Start Another Drill</button>' +
+    '<div style="margin-top:12px;"><button class="cancel-btn" style="color:var(--pd-text-light);" onclick="closeDrillOverlay(); loadDrillsAccordion();">Close</button></div>' +
+    '</div>';
 }
    function resetDrillForm(drillId) {
   toggleDrillItem(drillId);
@@ -1232,6 +1233,7 @@ function showTab(name, event) {
 window.addEventListener('load', async () => {
   checkAuth();
   updateSwitchButtonVisibility();
+  loadDrillsAccordion();
   const statusResult = await getAcademyAccessStatus();
   document.getElementById('academyPendingView').style.display = 'none';
   document.getElementById('academyDeniedView').style.display = 'none';
