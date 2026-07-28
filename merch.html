@@ -5,58 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shop | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
     <style>
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }
-      header img { height: 70px; }
-      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
-      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
-      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
-      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-      .hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
-      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
       nav.open { display: flex; }
-      nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; }
-      nav a:hover { background-color: #222222; }
-      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
-      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
-      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
-      main { padding: 40px; max-width: 1200px; margin: 0 auto; }
-      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; }
-      .category-heading { border-bottom: 3px solid #111111; padding-bottom: 8px; margin: 40px 0 20px; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+      .hero-kicker { position: relative; font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
+      .hero-title { position: relative; font-size: 26px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0; max-width: 460px; }
+      main { padding: 8px 28px 40px; max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+      .category-heading { font-size: 16px; font-weight: bold; color: var(--pd-text-light); margin: 32px 0 14px; }
       .category-heading:first-of-type { margin-top: 0; }
-      .listings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
-      .listing-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; overflow: hidden; }
-      .listing-image { width: 100%; height: 220px; background-color: #eeeeee; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; color: #aaaaaa; font-size: 0.9em; position: relative; }
+      .listings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+      .listing-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); overflow: hidden; }
+      .listing-image { width: 100%; height: 200px; background-color: #f2f2f2; background-size: cover; background-position: center; display: flex; align-items: center; justify-content: center; color: #aaaaaa; font-size: 0.9em; position: relative; }
       .listing-body { padding: 16px; }
-      .listing-title { font-weight: bold; font-size: 1.1em; margin-bottom: 6px; }
-      .listing-price { font-size: 1.2em; font-weight: bold; color: #111111; margin-bottom: 12px; }
-      .listing-actions select { width: 100%; padding: 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; margin-bottom: 10px; font-family: Arial, sans-serif; }
-      .btn-buy { display: block; width: 100%; text-align: center; background-color: #000000; color: #ffffff; border: none; padding: 10px; border-radius: 4px; font-size: 0.95em; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
+      .listing-title { font-weight: bold; font-size: 1em; margin-bottom: 6px; color: var(--pd-text-dark); }
+      .listing-price { font-size: 1.15em; font-weight: bold; color: var(--pd-text-dark); margin-bottom: 12px; }
+      .listing-actions select { width: 100%; padding: 9px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 0.9em; margin-bottom: 8px; font-family: Arial, sans-serif; color: var(--pd-text-dark); background: #f9f9f9; }
+      .btn-buy { display: block; width: 100%; text-align: center; background-color: var(--pd-text-dark); color: var(--pd-text-light); border: none; padding: 10px; border-radius: var(--pd-radius-btn); font-size: 0.95em; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
       .btn-buy:hover { background-color: #333333; }
-      .coming-soon { text-align: center; padding: 60px 20px; color: #aaaaaa; font-size: 1.1em; }
-      .loading { text-align: center; padding: 40px; color: #888888; }
+      .btn-buy.secondary { background-color: var(--pd-surface); color: var(--pd-text-dark); border: 1px solid var(--pd-border-strong); margin-top: 8px; }
+      .btn-buy.secondary:hover { background-color: #f5f5f5; }
+      .coming-soon { text-align: center; padding: 50px 20px; color: var(--pd-text-light-muted); font-size: 1em; }
+      .loading { text-align: center; padding: 40px; color: var(--pd-text-light-muted); }
+      .terms-link { text-align: center; margin-top: 30px; }
+      .terms-link a { color: var(--pd-text-light-muted); font-size: 0.9em; text-decoration: none; }
       @media (max-width: 700px) {
-        header { flex-wrap: wrap; padding: 16px 20px; }
-        header img { height: 50px; }
-        header h1 { font-size: 1.4em; }
-        header p { font-size: 0.85em; }
-        main { padding: 24px 16px; }
-        h2 { font-size: 1.3em; }
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-title { font-size: 22px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 8px 20px 32px; }
       }
     </style>
   </head>
   <body>
     <header>
-      <img src="logo.png" alt="Pinnacle Darts Logo">
-      <div>
-        <h1>Pinnacle Darts League</h1>
-        <p>Official League Website</p>
+      <div class="brand">
+        <img src="logo.png" alt="Pinnacle Darts Logo">
+        <div class="brand-name">Pinnacle Darts League</div>
       </div>
       <button class="hamburger" onclick="toggleMenu()">☰</button>
       <nav id="mainNav">
@@ -67,34 +82,34 @@
         <a href="swap-sell.html">Swap / Sell</a>
         <a href="shirt-builder.html">Shirt Builder</a>
         <a href="merch.html">Shop</a>
-        <a href="academy.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Academy</a>
+        <a href="academy.html" class="btn-switch" style="border:none;text-align:left;">Switch to Academy</a>
         <div id="authButtons" style="padding:14px 24px;"></div>
       </nav>
     </header>
+    <div class="hero">
+      <img src="logo-watermark.png" alt="" class="hero-watermark">
+      <div class="hero-kicker">Shop</div>
+      <div class="hero-title">Pinnacle gear and more.</div>
+    </div>
     <main>
-      <h2>Shop</h2>
       <div id="listingsGrid"><p class="loading">Loading shop items...</p></div>
-      <p style="text-align:center;margin-top:30px;"><a href="terms.html" style="color:#555;font-size:0.9em;">View Terms & Conditions →</a></p>
+      <p class="terms-link"><a href="terms.html">View Terms & Conditions →</a></p>
     </main>
     <script>
       var currentUserId = null;
       var allMerchListings = [];
-
       async function init() {
         const { data: { session } } = await sbClient.auth.getSession();
         if (session) { currentUserId = session.user.id; }
         loadMerch();
       }
-
       async function loadMerch() {
         var listingsResult = await sbClient.from('merch_listings').select('*').eq('active', true).order('created_at', { ascending: false });
         var categoriesResult = await sbClient.from('merch_categories').select('*').order('sort_order').order('name');
         var container = document.getElementById('listingsGrid');
         allMerchListings = listingsResult.data || [];
         var categories = categoriesResult.data || [];
-
         if (!allMerchListings.length) { container.innerHTML = '<p class="coming-soon">No items available right now — check back soon!</p>'; return; }
-
         var byCategory = {};
         var uncategorised = [];
         allMerchListings.forEach(function(m) {
@@ -105,7 +120,6 @@
             uncategorised.push(m);
           }
         });
-
         var html = '';
         categories.forEach(function(c) {
           var items = byCategory[c.id];
@@ -117,10 +131,8 @@
           if (html) { html += '<h3 class="category-heading">Other Items</h3>'; }
           html += '<div class="listings-grid">' + uncategorised.map(renderMerchCard).join('') + '</div>';
         }
-
         container.innerHTML = html;
       }
-
       function renderMerchCard(m) {
         var images = m.image_urls || [];
         var imageHtml;
@@ -133,23 +145,20 @@
         } else {
           imageHtml = '<div class="listing-image">No image</div>';
         }
-
         var optionsHtml = '';
         var optionGroups = m.options || [];
         optionGroups.forEach(function(g, i) {
           optionsHtml += '<select id="merchOption-' + m.id + '-' + i + '" data-label="' + g.label.replace(/"/g, '&quot;') + '"><option value="">-- Select ' + g.label + ' --</option>' +
             g.choices.map(function(c) { return '<option value="' + c + '">' + c + '</option>'; }).join('') + '</select>';
         });
-
         var buyBtn, creditBtn;
         if (currentUserId) {
           buyBtn = '<button class="btn-buy" onclick="handleBuy(' + m.id + ')">Buy Now</button>';
-          creditBtn = '<button class="btn-buy" style="background-color:#ffffff;color:#111111;border:1px solid #111111;margin-top:8px;" onclick="handleCreditPay(' + m.id + ')">Pay with Site Credit</button>';
+          creditBtn = '<button class="btn-buy secondary" onclick="handleCreditPay(' + m.id + ')">Pay with Site Credit</button>';
         } else {
           buyBtn = '<a href="login.html" class="btn-buy">Login to Buy</a>';
           creditBtn = '';
         }
-
         return '<div class="listing-card">' +
           imageHtml +
           '<div class="listing-body">' +
@@ -158,7 +167,6 @@
           '<div class="listing-actions">' + optionsHtml + buyBtn + creditBtn + '</div>' +
           '</div></div>';
       }
-
       function cycleMerchImage(el) {
         var listingId = parseInt(el.getAttribute('data-listing-id'));
         var listing = allMerchListings.find(function(m) { return m.id === listingId; });
@@ -170,7 +178,6 @@
         var counter = el.querySelector('span');
         if (counter) { counter.textContent = (idx + 1) + ' / ' + listing.image_urls.length; }
       }
-
       function collectSelectedOptions(listing) {
         var groups = listing.options || [];
         var selections = [];
@@ -185,28 +192,21 @@
         }
         return selections.length ? selections.join(', ') : null;
       }
-
       async function handleCreditPay(id) {
         var listing = allMerchListings.find(function(m) { return m.id === id; });
         if (!listing) { return; }
-
         var selectedOption = collectSelectedOptions(listing);
         if (listing.options && listing.options.length && selectedOption === null) { return; }
-
         var price = parseFloat(listing.price) || 0;
         var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', currentUserId).single();
         var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
-
         if (currentBalance < price) {
           alert('You don\'t have enough site credit for this. Your balance is £' + currentBalance.toFixed(2) + ', and this item costs £' + price.toFixed(2) + '. Visit the Site Credit page to top up.');
           return;
         }
-
         if (!confirm('Pay £' + price.toFixed(2) + ' using your site credit balance?')) { return; }
-
         var newBalance = currentBalance - price;
         await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', currentUserId);
-
         var result = await sbClient.from('merch_orders').insert([{
           listing_id: id,
           buyer_id: currentUserId,
@@ -214,44 +214,35 @@
           paid: true,
           payment_method: 'site_credit'
         }]);
-
         if (result.error) {
           alert('Error recording your order: ' + result.error.message);
           return;
         }
-
         alert('Payment successful! Your order has been placed.');
       }
-
       async function handleBuy(id) {
         var listing = allMerchListings.find(function(m) { return m.id === id; });
         if (!listing) { return; }
-
         var selectedOption = collectSelectedOptions(listing);
         if (listing.options && listing.options.length && selectedOption === null) { return; }
-
         var result = await sbClient.from('merch_orders').insert([{
           listing_id: id,
           buyer_id: currentUserId,
           selected_option: selectedOption
         }]);
-
         if (result.error) {
           alert('Error recording your order: ' + result.error.message);
           return;
         }
-
         if (listing.stripe_link) {
           window.open(listing.stripe_link, '_blank');
         } else {
           alert('This item does not have a payment link set up yet — please contact an admin.');
         }
       }
-
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
-
       window.addEventListener('load', function() {
         checkAuth();
         init();
