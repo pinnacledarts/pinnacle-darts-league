@@ -5,94 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Academy | Pinnacle Darts</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
     <style> 
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }      header img { height: 70px; }
-      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
-      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
-      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
-      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-.hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-nav.open { display: flex; }
-      nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; display: block; }
-nav a:hover { background-color: #222222; }
-nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
-nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
-nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }      main { padding: 40px; max-width: 900px; margin: 0 auto; }
-      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
-      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
-      .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
-      .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
-      .tab:hover { color: #000000; }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      nav.open { display: flex; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; display: block; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+      main { padding: 0 28px 40px; max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+      h2 { font-size: 22px; font-weight: bold; margin: 0 0 16px; color: var(--pd-text-light); }
+      .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid #222222; flex-wrap: wrap; }
+      .tab { padding: 10px 16px; cursor: pointer; font-size: 0.9em; border: none; background: none; color: var(--pd-text-light-muted); font-family: Arial, sans-serif; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+      .tab.active { color: var(--pd-text-light); font-weight: bold; border-bottom: 2px solid var(--pd-text-light); }
+      .tab:hover { color: var(--pd-text-light); }
       .tab-content { display: none; }
       .tab-content.active { display: block; }
-      .news-item { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; margin-bottom: 12px; overflow: hidden; }
-      .news-item-title { padding: 18px 24px; font-weight: bold; font-size: 1.05em; cursor: pointer; text-align: center; }
-      .news-item-title:hover { background-color: #f9f9f9; }
-      .news-item-body { display: none; padding: 0 24px 24px; }
+      .news-item { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); margin-bottom: 12px; overflow: hidden; }
+      .news-item-title { padding: 16px 20px; font-weight: 600; font-size: 14px; cursor: pointer; color: var(--pd-text-dark); }
+      .news-item-title:hover { background-color: #fafafa; }
+      .news-item-body { display: none; padding: 0 20px 20px; }
       .news-item-body.open { display: block; }
-      .news-item-body img { width: 100%; border-radius: 6px; margin-bottom: 16px; display: block; }
-      .news-date-text { font-size: 0.85em; color: #888888; margin-bottom: 12px; }
-      .news-content-text { color: #333333; line-height: 1.6; white-space: pre-wrap; }
-      .like-row { display: flex; align-items: center; gap: 10px; margin-top: 16px; }
-      .like-btn { background: none; border: 1px solid #dddddd; border-radius: 20px; padding: 6px 16px; cursor: pointer; font-size: 0.9em; }
-      .like-btn.liked { background-color: #fff0f0; border-color: #ffcccc; color: #cc0000; }
-      table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-      th { background-color: #111111; color: #ffffff; padding: 10px 8px; text-align: left; font-size: 0.85em; }
+      .news-item-body img { width: 100%; border-radius: 10px; margin-bottom: 14px; display: block; }
+      .news-date-text { font-size: 12px; color: var(--pd-text-muted); margin-bottom: 10px; }
+      .news-content-text { color: #333333; line-height: 1.6; white-space: pre-wrap; font-size: 14px; }
+      .like-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+      .like-btn { background: none; border: 1px solid var(--pd-border-strong); border-radius: 20px; padding: 6px 16px; cursor: pointer; font-size: 0.9em; color: var(--pd-text-dark); font-family: Arial, sans-serif; }
+      .like-btn.liked { background-color: #f5f5f5; border-color: var(--pd-text-dark); }
+      table { width: 100%; border-collapse: collapse; }
+      th { background-color: var(--pd-text-dark); color: var(--pd-text-light); padding: 10px 8px; text-align: left; font-size: 0.85em; }
       th abbr { text-decoration: none; cursor: help; border-bottom: 1px dotted #ffffff; }
-      td { padding: 10px 8px; border-bottom: 1px solid #dddddd; font-size: 0.9em; }
-      tr:nth-child(4n+1), tr:nth-child(4n+2) { background-color: #eeeeee; }
+      td { padding: 10px 8px; border-bottom: 1px solid #f0f0f0; font-size: 0.9em; color: var(--pd-text-dark); }
+      tr:nth-child(4n+1), tr:nth-child(4n+2) { background-color: #f7f7f7; }
       th:last-child, td:last-child { position: sticky; right: 0; background-color: #ffffff; box-shadow: -2px 0 4px rgba(0,0,0,0.1); }
-      th:last-child { background-color: #111111; }
+      th:last-child { background-color: var(--pd-text-dark); }
       th:nth-child(2), td:nth-child(2) { position: sticky; left: 0; background-color: #ffffff; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
-      th:nth-child(2) { background-color: #111111; }
-      .key { font-size: 0.8em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
+      th:nth-child(2) { background-color: var(--pd-text-dark); }
+      .key { font-size: 0.8em; color: var(--pd-text-muted); margin-top: 12px; border-top: 1px solid var(--pd-border); padding-top: 12px; }
       .key span { margin-right: 16px; display: inline-block; }
-      .search-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 20px; margin-bottom: 30px; }
-      .search-box label { font-weight: bold; display: block; margin-bottom: 10px; }
+      .search-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; margin-bottom: 20px; }
+      .search-box label { font-weight: bold; display: block; margin-bottom: 10px; color: var(--pd-text-dark); font-size: 13px; }
       .search-controls { display: flex; gap: 12px; flex-wrap: wrap; }
-      .search-controls input, .search-controls select { flex: 1; min-width: 140px; padding: 10px 14px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; }
-      .search-controls input:focus, .search-controls select:focus { outline: none; border-color: #000000; }
-      .profile-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 30px; margin-bottom: 20px; }
-      .profile-top { display: flex; align-items: center; gap: 24px; margin-bottom: 30px; flex-wrap: wrap; }
-      .player-avatar { width: 90px; height: 90px; border-radius: 50%; background-color: #000000; color: #ffffff; font-size: 2.2em; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; background-size: cover; background-position: center; }
-      .profile-info h3 { margin: 0 0 4px; font-size: 1.8em; }
-      .profile-info .username { color: #888888; font-size: 0.95em; margin-bottom: 4px; }
-      .profile-info .location { font-size: 0.9em; color: #555555; }
-      .key-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 30px; }
-      .stat-box { border: 1px solid #dddddd; border-radius: 8px; padding: 20px; text-align: center; }
-      .stat-box .stat-label { font-size: 0.8em; color: #888888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-      .stat-box .stat-value { font-size: 2em; font-weight: bold; }
-      .details-section { border-top: 1px solid #eeeeee; padding-top: 20px; }
-      .details-section h4 { font-size: 1em; margin: 0 0 16px; padding-left: 12px; border-left: 4px solid #000000; }
-      .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.95em; }
+      .search-controls input, .search-controls select { flex: 1; min-width: 140px; padding: 10px 14px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 1em; background-color: #f9f9f9; color: var(--pd-text-dark); font-family: Arial, sans-serif; }
+      .search-controls input:focus, .search-controls select:focus { outline: none; border-color: var(--pd-text-dark); }
+      .profile-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 24px; margin-bottom: 20px; color: var(--pd-text-dark); }
+      .profile-top { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+      .player-avatar { width: 80px; height: 80px; border-radius: 50%; background-color: var(--pd-text-dark); color: var(--pd-text-light); font-size: 2em; font-weight: bold; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden; background-size: cover; background-position: center; }
+      .profile-info h3 { margin: 0 0 4px; font-size: 1.5em; }
+      .profile-info .username { color: var(--pd-text-muted); font-size: 0.9em; margin-bottom: 4px; }
+      .profile-info .location { font-size: 0.85em; color: var(--pd-text-muted); }
+      .key-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+      .stat-box { background-color: #f9f9f9; border-radius: var(--pd-radius-btn); padding: 16px; text-align: center; }
+      .stat-box .stat-label { font-size: 11px; color: var(--pd-text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+      .stat-box .stat-value { font-size: 1.6em; font-weight: bold; }
+      .details-section { border-top: 1px solid var(--pd-border); padding-top: 16px; }
+      .details-section h4 { font-size: 14px; margin: 0 0 12px; font-weight: bold; }
+      .detail-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid #f5f5f5; font-size: 0.9em; }
       .detail-row:last-child { border-bottom: none; }
-      .detail-label { color: #555555; flex-shrink: 0; }
+      .detail-label { color: var(--pd-text-muted); flex-shrink: 0; }
       .detail-value-wrap { display: flex; align-items: center; gap: 8px; justify-content: flex-end; flex: 1; }
       .detail-value { font-weight: bold; text-align: right; }
       .pencil-btn { background: none; border: none; cursor: pointer; font-size: 0.85em; color: #aaaaaa; padding: 2px 4px; }
-      .pencil-btn:hover { color: #111111; }
-      .edit-input { border: 1px solid #dddddd; border-radius: 4px; padding: 4px 8px; font-size: 0.95em; font-family: Arial, sans-serif; width: 160px; }
-      .edit-input:focus { outline: none; border-color: #000000; }
-      .edit-textarea { border: 1px solid #dddddd; border-radius: 4px; padding: 8px; font-size: 0.95em; font-family: Arial, sans-serif; width: 100%; min-height: 80px; resize: vertical; }
-      .edit-textarea:focus { outline: none; border-color: #000000; }
-      .save-btn { background-color: #111111; color: #ffffff; border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.85em; cursor: pointer; }
+      .pencil-btn:hover { color: var(--pd-text-dark); }
+      .edit-input { border: 1px solid var(--pd-border-strong); border-radius: 4px; padding: 4px 8px; font-size: 0.9em; font-family: Arial, sans-serif; width: 150px; }
+      .edit-input:focus { outline: none; border-color: var(--pd-text-dark); }
+      .edit-textarea { border: 1px solid var(--pd-border-strong); border-radius: 4px; padding: 8px; font-size: 0.9em; font-family: Arial, sans-serif; width: 100%; min-height: 80px; resize: vertical; }
+      .edit-textarea:focus { outline: none; border-color: var(--pd-text-dark); }
+      .save-btn { background-color: var(--pd-text-dark); color: var(--pd-text-light); border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.85em; cursor: pointer; }
       .save-btn:hover { background-color: #333333; }
-      .cancel-btn { background: none; border: 1px solid #dddddd; border-radius: 4px; padding: 4px 10px; font-size: 0.85em; cursor: pointer; }
+      .cancel-btn { background: none; border: 1px solid var(--pd-border-strong); border-radius: 4px; padding: 4px 10px; font-size: 0.85em; cursor: pointer; }
       .cancel-btn:hover { background-color: #f5f5f5; }
       .about-me-section { margin-bottom: 20px; }
-      .about-me-section h4 { font-size: 1em; margin: 0 0 12px; padding-left: 12px; border-left: 4px solid #000000; }
-      .about-me-text { margin: 0; font-weight: normal; text-align: left; flex: 1; color: #444444; line-height: 1.5; }
+      .about-me-section h4 { font-size: 14px; margin: 0 0 12px; font-weight: bold; }
+      .about-me-text { margin: 0; font-weight: normal; text-align: left; flex: 1; color: #444444; line-height: 1.5; font-size: 0.9em; }
       .round-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
-.round-tab { padding: 8px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
-.round-tab.active { background: #111111; color: #ffffff; border-color: #111111; font-weight: bold; }
-     @keyframes trophyPop {
+      .round-tab { padding: 8px 16px; border: 1px solid var(--pd-border-strong); background: var(--pd-surface); border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
+      .round-tab.active { background: var(--pd-text-dark); color: var(--pd-text-light); border-color: var(--pd-text-dark); font-weight: bold; }
+      @keyframes trophyPop {
   0% { transform: scale(0) rotate(-15deg); opacity: 0; }
   60% { transform: scale(1.2) rotate(8deg); opacity: 1; }
   80% { transform: scale(0.95) rotate(-4deg); }
@@ -104,134 +118,117 @@ nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid
 }
 .trophy-icon { font-size: 4.5em; display: inline-block; animation: trophyPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); }
 .well-done-text { animation: fadeUpIn 0.5s ease 0.4s both; }
-      .loading { text-align: center; padding: 40px; color: #888888; }
-      .coming-soon { text-align: center; padding: 60px 20px; color: #aaaaaa; font-size: 1.1em; }
+      .loading { text-align: center; padding: 40px; color: var(--pd-text-light-muted); }
+      .coming-soon { text-align: center; padding: 50px 20px; color: var(--pd-text-light-muted); font-size: 1em; }
+      .gate-icon { font-size: 3em; margin-bottom: 16px; }
+      .gate-text { color: var(--pd-text-light-muted); max-width: 400px; margin: 0 auto; }
       @media (max-width: 700px) {
-        header { flex-wrap: wrap; padding: 16px 20px; }
-        header img { height: 50px; }
-        header h1 { font-size: 1.4em; }
-        header p { font-size: 0.85em; }
-.header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-.btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
-main { padding: 24px 20px; }
-        h2 { font-size: 1.3em; }
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 0 20px 32px; }
         .key-stats { grid-template-columns: 1fr 1fr; }
         .profile-top { gap: 14px; }
-        .player-avatar { width: 70px; height: 70px; font-size: 1.8em; }
-        .profile-info h3 { font-size: 1.4em; }
+        .player-avatar { width: 64px; height: 64px; font-size: 1.6em; }
       }
     </style>
   </head>
   <body>
-
 <header>
-  <img src="logo.png" alt="Pinnacle Darts Logo">
-  <div>
-    <h1>Pinnacle Academy</h1>
-    <p>Official Academy Website</p>
+  <div class="brand">
+    <img src="logo.png" alt="Pinnacle Darts Logo">
+    <div class="brand-name">Pinnacle Academy</div>
   </div>
-<button class="hamburger" onclick="toggleMenu()">☰</button>
-<nav id="mainNav">
+  <button class="hamburger" onclick="toggleMenu()">☰</button>
+  <nav id="mainNav">
     <a href="#" onclick="showTab('news', event); return false;">Home</a>
     <a href="#" onclick="showTab('table', event); return false;">Academy Sessions</a>
     <a href="#" onclick="showTab('profiles', event); return false;">Player Profiles</a>
     <a href="#" onclick="showTab('drills', event); return false;">Drills</a>
     <a href="academy-tournaments.html">Tournaments</a>
     <a href="academy-leagues.html">Leagues</a>
-  <a href="index.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Online</a>
+    <a href="index.html" class="btn-switch" style="border:none;text-align:left;">Switch to Online</a>
     <div id="authButtons" style="padding:14px 24px;"></div>
   </nav>
 </header>
-
+<div class="hero">
+  <img src="logo-watermark.png" alt="" class="hero-watermark">
+</div>
 <main id="academyMain">
 <div id="academyPendingView" style="display:none;text-align:center;padding:60px 20px;">
-  <div style="font-size:3em;margin-bottom:16px;">⏳</div>
-  <h2 style="border:none;">Academy Access Pending</h2>
-  <p style="color:#555;max-width:400px;margin:0 auto;">Your request for Academy access is currently awaiting approval for safeguarding purposes. You'll be able to view this content once it's been reviewed.</p>
+  <div class="gate-icon">⏳</div>
+  <h2 style="text-align:center;">Academy Access Pending</h2>
+  <p class="gate-text">Your request for Academy access is currently awaiting approval for safeguarding purposes. You'll be able to view this content once it's been reviewed.</p>
 </div>
-
 <div id="academyDeniedView" style="display:none;text-align:center;padding:60px 20px;">
-  <div style="font-size:3em;margin-bottom:16px;">🚫</div>
-  <h2 style="border:none;">Academy Access Not Approved</h2>
-  <p style="color:#555;max-width:400px;margin:0 auto;">Unfortunately your Academy access request wasn't approved. If you believe this is a mistake, please get in touch with us directly.</p>
+  <div class="gate-icon">🚫</div>
+  <h2 style="text-align:center;">Academy Access Not Approved</h2>
+  <p class="gate-text">Unfortunately your Academy access request wasn't approved. If you believe this is a mistake, please get in touch with us directly.</p>
 </div>
-
 <div id="academyLockedView" style="display:none;">
   <h2>Pinnacle Academy</h2>
-  <p style="color:#555;">Academy content is restricted for safeguarding purposes. Please use one of the enquiry forms below to get in touch, or log in if you already have Academy access.</p>
-
-    <div class="card" style="background-color:#ffffff;border:1px solid #dddddd;border-radius:8px;padding:24px;margin-bottom:20px;">
-      <h3 style="margin:0 0 16px;padding-left:12px;border-left:4px solid #000000;">Enquire to Join Academy</h3>
+  <p style="color:var(--pd-text-light-muted);">Academy content is restricted for safeguarding purposes. Please use one of the enquiry forms below to get in touch, or log in if you already have Academy access.</p>
+    <div class="card" style="background-color:var(--pd-surface);border-radius:var(--pd-radius-card);box-shadow:var(--pd-shadow-card);padding:24px;margin-bottom:20px;color:var(--pd-text-dark);">
+      <h3 style="margin:0 0 16px;">Enquire to Join Academy</h3>
       <div class="success-msg" id="join-enquiry-success" style="display:none;background:#f0fff0;border:1px solid #cceecc;color:#006600;padding:10px;border-radius:4px;margin-bottom:16px;font-size:0.9em;"></div>
       <div class="form-group" style="margin-bottom:12px;">
         <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Name</label>
-        <input type="text" id="joinEnquiryName" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
+        <input type="text" id="joinEnquiryName" style="width:100%;padding:10px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
       </div>
       <div class="form-group" style="margin-bottom:12px;">
         <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Email</label>
-        <input type="email" id="joinEnquiryEmail" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
+        <input type="email" id="joinEnquiryEmail" style="width:100%;padding:10px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
       </div>
       <div class="form-group" style="margin-bottom:12px;">
         <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Phone Number (optional)</label>
-        <input type="tel" id="joinEnquiryPhone" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
+        <input type="tel" id="joinEnquiryPhone" style="width:100%;padding:10px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
       </div>
       <div class="form-group" style="margin-bottom:12px;">
         <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Message</label>
-        <textarea id="joinEnquiryMessage" rows="3" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;"></textarea>
+        <textarea id="joinEnquiryMessage" rows="3" style="width:100%;padding:10px;border:1px solid var(--pd-border-strong);border-radius:4px;"></textarea>
       </div>
-      <button onclick="submitAcademyEnquiry('join')" style="background-color:#111111;color:#ffffff;border:none;padding:10px 24px;border-radius:4px;cursor:pointer;">Send Enquiry</button>
+      <button onclick="submitAcademyEnquiry('join')" style="background-color:var(--pd-text-dark);color:#ffffff;border:none;padding:10px 24px;border-radius:var(--pd-radius-btn);cursor:pointer;">Send Enquiry</button>
     </div>
-
-    <div class="card" style="background-color:#ffffff;border:1px solid #dddddd;border-radius:8px;padding:24px;">
-      <h3 style="margin:0 0 16px;padding-left:12px;border-left:4px solid #000000;">Enquire About Sponsoring a Player</h3>
+    <div class="card" style="background-color:var(--pd-surface);border-radius:var(--pd-radius-card);box-shadow:var(--pd-shadow-card);padding:24px;color:var(--pd-text-dark);">
+      <h3 style="margin:0 0 16px;">Enquire About Sponsoring a Player</h3>
       <div class="success-msg" id="sponsor-enquiry-success" style="display:none;background:#f0fff0;border:1px solid #cceecc;color:#006600;padding:10px;border-radius:4px;margin-bottom:16px;font-size:0.9em;"></div>
       <div class="form-group" style="margin-bottom:12px;">
         <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Name</label>
-        <input type="text" id="sponsorEnquiryName" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
+        <input type="text" id="sponsorEnquiryName" style="width:100%;padding:10px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
       </div>
       <div class="form-group" style="margin-bottom:12px;">
         <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Email</label>
-        <input type="email" id="sponsorEnquiryEmail" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
+        <input type="email" id="sponsorEnquiryEmail" style="width:100%;padding:10px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
       </div>
       <div class="form-group" style="margin-bottom:12px;">
         <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Phone Number (optional)</label>
-        <input type="tel" id="sponsorEnquiryPhone" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;" />
+        <input type="tel" id="sponsorEnquiryPhone" style="width:100%;padding:10px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
       </div>
       <div class="form-group" style="margin-bottom:12px;">
         <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Message</label>
-        <textarea id="sponsorEnquiryMessage" rows="3" style="width:100%;padding:10px;border:1px solid #dddddd;border-radius:4px;"></textarea>
+        <textarea id="sponsorEnquiryMessage" rows="3" style="width:100%;padding:10px;border:1px solid var(--pd-border-strong);border-radius:4px;"></textarea>
       </div>
-      <button onclick="submitAcademyEnquiry('sponsor')" style="background-color:#111111;color:#ffffff;border:none;padding:10px 24px;border-radius:4px;cursor:pointer;">Send Enquiry</button>
+      <button onclick="submitAcademyEnquiry('sponsor')" style="background-color:var(--pd-text-dark);color:#ffffff;border:none;padding:10px 24px;border-radius:var(--pd-radius-btn);cursor:pointer;">Send Enquiry</button>
     </div>
-
-    <p style="text-align:center;margin-top:20px;"><a href="login.html" style="color:#555;font-size:0.9em;">Already have Academy access? Log in →</a></p>
+    <p style="text-align:center;margin-top:20px;"><a href="login.html" style="color:var(--pd-text-light-muted);font-size:0.9em;">Already have Academy access? Log in →</a></p>
   </div>
-
   <div id="academyContentView" style="display:none;">
-  <h2>Pinnacle Academy</h2>
-
-
-
       <div id="tab-news" class="tab-content active">
-        <h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;font-size:1.3em;">Latest News</h2>
+        <h2>Latest News</h2>
         <div id="academyNewsList"><p class="loading">Loading news...</p></div>
-
-        <h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin:30px 0 20px;font-size:1.3em;">Latest Announcements</h2>
+        <h2 style="margin-top:30px;">Latest Announcements</h2>
         <div id="academyAnnouncementsList"><p class="loading">Loading announcements...</p></div>
-
-        <p style="text-align:center;margin-top:20px;"><a href="academy-news.html" style="color:#555;font-size:0.9em;">View All Academy News →</a></p>
-        <p style="text-align:center;margin-top:8px;"><a href="terms.html?type=academy" style="color:#555;font-size:0.9em;">View Terms & Conditions →</a></p>
+        <p style="text-align:center;margin-top:20px;"><a href="academy-news.html" style="color:var(--pd-text-light-muted);font-size:0.9em;">View All Academy News →</a></p>
+        <p style="text-align:center;margin-top:8px;"><a href="terms.html?type=academy" style="color:var(--pd-text-light-muted);font-size:0.9em;">View Terms & Conditions →</a></p>
       </div>
-
       <div id="tab-table" class="tab-content">
-        <div class="search-box" style="margin-bottom:20px;">
+        <h2>Academy Sessions</h2>
+        <div class="search-box">
           <label>View Group</label>
-          <select id="academyLeagueViewSelect" onchange="renderAcademyStandings()" style="width:100%;padding:10px 14px;border:1px solid #dddddd;border-radius:4px;font-size:1em;background-color:#f9f9f9;"></select>
+          <select id="academyLeagueViewSelect" onchange="renderAcademyStandings()" style="width:100%;padding:10px 14px;border:1px solid var(--pd-border-strong);border-radius:var(--pd-radius-btn);font-size:1em;background-color:#f9f9f9;color:var(--pd-text-dark);"></select>
         </div>
-
         <div id="divisionSponsorLogos" style="display:flex;gap:16px;align-items:center;justify-content:center;margin-bottom:20px;flex-wrap:wrap;"></div>
-
-        <div style="overflow-x:auto;">
+        <div class="card-panel" style="background-color:var(--pd-surface);border-radius:var(--pd-radius-card);box-shadow:var(--pd-shadow-card);padding:20px;overflow-x:auto;">
         <table style="min-width:800px;">
           <thead>
             <tr>
@@ -250,7 +247,6 @@ main { padding: 24px 20px; }
           </thead>
           <tbody id="academyStandingsBody"><tr><td colspan="10" class="loading">Loading...</td></tr></tbody>
         </table>
-        </div>
         <div class="key">
           <span><strong>Att</strong> = Attendance</span>
           <span><strong>Atd</strong> = Attitude</span>
@@ -260,36 +256,35 @@ main { padding: 24px 20px; }
           <span><strong>100+</strong> = Over 100 Checkout</span>
           <span><strong>171+</strong> = 171+ Scored</span>
         </div>
-
-        <div style="text-align:center;margin-top:16px;">
-          <button onclick="openDivisionEnquiryForm()" style="background-color:#ffffff;color:#111111;border:1px solid #111111;padding:10px 20px;border-radius:4px;font-size:0.9em;cursor:pointer;font-family:Arial, sans-serif;">💼 Sponsor this Division</button>
         </div>
-
-        <div id="divisionEnquiryFormWrap" style="display:none;background-color:#f9f9f9;border:1px solid #dddddd;border-radius:6px;padding:20px;margin-top:16px;">
+        <div style="text-align:center;margin-top:16px;">
+          <button onclick="openDivisionEnquiryForm()" style="background-color:var(--pd-surface);color:var(--pd-text-dark);border:1px solid var(--pd-border-strong);padding:10px 20px;border-radius:var(--pd-radius-btn);font-size:0.9em;cursor:pointer;font-family:Arial, sans-serif;">💼 Sponsor this Division</button>
+        </div>
+        <div id="divisionEnquiryFormWrap" style="display:none;background-color:var(--pd-surface);border-radius:var(--pd-radius-card);box-shadow:var(--pd-shadow-card);padding:20px;margin-top:16px;color:var(--pd-text-dark);">
           <h4 style="margin:0 0 16px;">Division Sponsor Enquiry</h4>
           <div class="success-msg" id="division-enquiry-success" style="display:none;background:#f0fff0;border:1px solid #cceecc;color:#006600;padding:10px;border-radius:4px;margin-bottom:16px;font-size:0.9em;"></div>
           <div class="form-group" style="margin-bottom:12px;">
             <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Name</label>
-            <input type="text" id="divisionEnquiryName" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+            <input type="text" id="divisionEnquiryName" style="width:100%;padding:8px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
           </div>
           <div class="form-group" style="margin-bottom:12px;">
             <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Email</label>
-            <input type="email" id="divisionEnquiryEmail" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+            <input type="email" id="divisionEnquiryEmail" style="width:100%;padding:8px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
           </div>
           <div class="form-group" style="margin-bottom:12px;">
             <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Phone Number (optional)</label>
-            <input type="tel" id="divisionEnquiryPhone" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+            <input type="tel" id="divisionEnquiryPhone" style="width:100%;padding:8px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
           </div>
           <div class="form-group" style="margin-bottom:12px;">
             <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Message</label>
-            <textarea id="divisionEnquiryMessage" rows="3" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;"></textarea>
+            <textarea id="divisionEnquiryMessage" rows="3" style="width:100%;padding:8px;border:1px solid var(--pd-border-strong);border-radius:4px;"></textarea>
           </div>
-          <button onclick="submitDivisionEnquiry()" style="background-color:#111111;color:#ffffff;border:none;padding:10px 20px;border-radius:4px;cursor:pointer;">Send Enquiry</button>
-          <button onclick="document.getElementById('divisionEnquiryFormWrap').style.display='none'" style="background:none;border:1px solid #dddddd;padding:10px 20px;border-radius:4px;cursor:pointer;margin-left:8px;">Cancel</button>
+          <button onclick="submitDivisionEnquiry()" style="background-color:var(--pd-text-dark);color:#ffffff;border:none;padding:10px 20px;border-radius:var(--pd-radius-btn);cursor:pointer;">Send Enquiry</button>
+          <button onclick="document.getElementById('divisionEnquiryFormWrap').style.display='none'" style="background:none;border:1px solid var(--pd-border-strong);padding:10px 20px;border-radius:var(--pd-radius-btn);cursor:pointer;margin-left:8px;">Cancel</button>
         </div>
       </div>
-
       <div id="tab-profiles" class="tab-content">
+        <h2>Player Profiles</h2>
         <div class="search-box">
           <label>View Player</label>
           <div class="search-controls">
@@ -299,12 +294,11 @@ main { padding: 24px 20px; }
             </select>
           </div>
         </div>
-
         <div id="profileCard" class="profile-card" style="display:none;">
           <div class="profile-top">
             <div class="avatar-wrap" style="position:relative;">
               <div class="player-avatar" id="profileAvatar"></div>
-              <button class="avatar-edit-btn" id="avatarEditBtn" onclick="document.getElementById('avatarFileInput').click()" style="display:none;position:absolute;bottom:0;right:0;width:28px;height:28px;border-radius:50%;background-color:#111111;color:#ffffff;border:2px solid #ffffff;cursor:pointer;font-size:0.8em;">✏️</button>
+              <button class="avatar-edit-btn" id="avatarEditBtn" onclick="document.getElementById('avatarFileInput').click()" style="display:none;position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background-color:#111111;color:#ffffff;border:2px solid #ffffff;cursor:pointer;font-size:0.75em;">✏️</button>
               <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(event)" />
             </div>
             <div class="profile-info">
@@ -320,33 +314,31 @@ main { padding: 24px 20px; }
             </div>
             <div class="sponsor-area" id="sponsorArea" style="margin-left:auto;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
               <div id="sponsorLogos" style="display:flex;gap:8px;align-items:center;"></div>
-              <button class="btn-enquire" onclick="openEnquiryForm()" style="background-color:#ffffff;color:#111111;border:1px solid #111111;padding:8px 14px;border-radius:4px;font-size:0.85em;cursor:pointer;font-family:Arial, sans-serif;white-space:nowrap;">💼 Enquire about sponsoring me</button>
+              <button class="btn-enquire" onclick="openEnquiryForm()" style="background-color:var(--pd-surface);color:var(--pd-text-dark);border:1px solid var(--pd-border-strong);padding:8px 14px;border-radius:var(--pd-radius-btn);font-size:0.85em;cursor:pointer;font-family:Arial, sans-serif;white-space:nowrap;">💼 Enquire about sponsoring me</button>
             </div>
           </div>
-
-          <div id="enquiryFormWrap" style="display:none;background-color:#f9f9f9;border:1px solid #dddddd;border-radius:6px;padding:20px;margin-bottom:20px;">
+          <div id="enquiryFormWrap" style="display:none;background-color:#f9f9f9;border-radius:var(--pd-radius-btn);padding:20px;margin-bottom:20px;">
             <h4 style="margin:0 0 16px;">Sponsor Enquiry</h4>
             <div class="success-msg" id="enquiry-success" style="display:none;background:#f0fff0;border:1px solid #cceecc;color:#006600;padding:10px;border-radius:4px;margin-bottom:16px;font-size:0.9em;"></div>
             <div class="form-group" style="margin-bottom:12px;">
               <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Name</label>
-              <input type="text" id="enquiryName" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+              <input type="text" id="enquiryName" style="width:100%;padding:8px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
             </div>
             <div class="form-group" style="margin-bottom:12px;">
               <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Your Email</label>
-              <input type="email" id="enquiryEmail" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+              <input type="email" id="enquiryEmail" style="width:100%;padding:8px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
             </div>
             <div class="form-group" style="margin-bottom:12px;">
               <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Phone Number (optional)</label>
-              <input type="tel" id="enquiryPhone" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;" />
+              <input type="tel" id="enquiryPhone" style="width:100%;padding:8px;border:1px solid var(--pd-border-strong);border-radius:4px;" />
             </div>
             <div class="form-group" style="margin-bottom:12px;">
               <label style="display:block;font-size:0.9em;font-weight:bold;margin-bottom:4px;">Message</label>
-              <textarea id="enquiryMessage" rows="3" style="width:100%;padding:8px;border:1px solid #dddddd;border-radius:4px;"></textarea>
+              <textarea id="enquiryMessage" rows="3" style="width:100%;padding:8px;border:1px solid var(--pd-border-strong);border-radius:4px;"></textarea>
             </div>
-            <button onclick="submitEnquiry()" style="background-color:#111111;color:#ffffff;border:none;padding:10px 20px;border-radius:4px;cursor:pointer;">Send Enquiry</button>
-            <button onclick="document.getElementById('enquiryFormWrap').style.display='none'" style="background:none;border:1px solid #dddddd;padding:10px 20px;border-radius:4px;cursor:pointer;margin-left:8px;">Cancel</button>
+            <button onclick="submitEnquiry()" style="background-color:var(--pd-text-dark);color:#ffffff;border:none;padding:10px 20px;border-radius:var(--pd-radius-btn);cursor:pointer;">Send Enquiry</button>
+            <button onclick="document.getElementById('enquiryFormWrap').style.display='none'" style="background:none;border:1px solid var(--pd-border-strong);padding:10px 20px;border-radius:var(--pd-radius-btn);cursor:pointer;margin-left:8px;">Cancel</button>
           </div>
-
           <div class="key-stats">
             <div class="stat-box">
               <div class="stat-label">Highest Average</div>
@@ -358,7 +350,6 @@ main { padding: 24px 20px; }
             <div class="stat-box"><div class="stat-label">Wins</div><div class="stat-value" id="profileWins">-</div></div>
             <div class="stat-box"><div class="stat-label">Matches</div><div class="stat-value" id="profileMatches">-</div></div>
           </div>
-
           <div class="about-me-section">
             <h4>About Me</h4>
             <div style="display:flex;align-items:flex-start;gap:8px;">
@@ -366,7 +357,6 @@ main { padding: 24px 20px; }
               <button class="pencil-btn" id="pencil-about_me" onclick="startEdit('about_me')" style="display:none;">✏️</button>
             </div>
           </div>
-
           <div class="details-section">
             <h4>Player Details</h4>
             <div class="detail-row">
@@ -417,31 +407,27 @@ main { padding: 24px 20px; }
             </div>
           </div>
         </div>
-
         <div id="loadingMsg" class="loading">Loading players...</div>
       </div>
-
       <div id="tab-drills" class="tab-content">
-        <div class="tabs" style="border-bottom:1px solid #dddddd;margin-bottom:20px;">
+        <h2>Drills</h2>
+        <div class="tabs">
           <button class="tab active" onclick="showDrillSubTab('newdrill', event)">New Drill</button>
           <button class="tab" onclick="showDrillSubTab('progress', event)">Progress</button>
         </div>
-
 <div id="subtab-newdrill" class="tab-content active">
   <div id="drillsAccordionList"><p class="loading">Loading drills...</p></div>
 </div>
-
-<div id="drillFullscreenOverlay" style="display:none;position:fixed;inset:0;background-color:#f5f5f5;z-index:1000;overflow-y:auto;">
+<div id="drillFullscreenOverlay" style="display:none;position:fixed;inset:0;background-color:#0a0a0a;z-index:1000;overflow-y:auto;">
   <div style="max-width:600px;margin:0 auto;padding:24px 20px;min-height:100%;box-sizing:border-box;">
-    <button onclick="closeDrillOverlay()" style="background:none;border:none;font-size:1.5em;color:#888888;cursor:pointer;margin-bottom:16px;">✕</button>
+    <button onclick="closeDrillOverlay()" style="background:none;border:none;font-size:1.5em;color:var(--pd-text-light-muted);cursor:pointer;margin-bottom:16px;">✕</button>
     <div id="drillOverlayContent"></div>
   </div>
 </div>
-
 <div id="subtab-progress" class="tab-content">
   <div class="search-box">
     <label>Select Drill</label>
-    <select id="progressDrillSelect" onchange="loadDrillProgress()" style="width:100%;padding:10px 14px;border:1px solid #dddddd;border-radius:4px;font-size:1em;background-color:#f9f9f9;"></select>
+    <select id="progressDrillSelect" onchange="loadDrillProgress()" style="width:100%;padding:10px 14px;border:1px solid var(--pd-border-strong);border-radius:var(--pd-radius-btn);font-size:1em;background-color:#f9f9f9;color:var(--pd-text-dark);"></select>
   </div>
   <div class="round-tabs" id="progressFilterTabs">
     <button class="round-tab active" onclick="setProgressFilter('recent15', this)">Last 15</button>
@@ -449,14 +435,13 @@ main { padding: 24px 20px; }
     <button class="round-tab" onclick="setProgressFilter('7days', this)">7 Days</button>
     <button class="round-tab" onclick="setProgressFilter('30days', this)">30 Days</button>
   </div>
-  <div id="progressChartContainer" style="background-color:#ffffff;border:1px solid #dddddd;border-radius:8px;padding:20px;">
-    <p class="loading">Select a drill to view your progress.</p>
+  <div id="progressChartContainer" style="background-color:var(--pd-surface);border-radius:var(--pd-radius-card);box-shadow:var(--pd-shadow-card);padding:20px;color:var(--pd-text-dark);">
+    <p class="loading" style="color:var(--pd-text-muted);">Select a drill to view your progress.</p>
   </div>
 </div>
       </div>
   </div>
     </main>
-
     <script>
       let allPlayers = [];
       let currentUserId = null;
@@ -483,9 +468,7 @@ function formatDrillTime(totalSeconds) {
         full_name: 'profileName',
         username: 'profileUsername'
       };
-
       const multilineFields = ['about_me'];
-
       async function loadAcademyPlayers() {
         const { data: { session } } = await sbClient.auth.getSession();
         if (session) {
@@ -493,21 +476,17 @@ function formatDrillTime(totalSeconds) {
           const { data: profile } = await sbClient.from('profiles').select('is_admin').eq('id', currentUserId).single();
           isCurrentUserAdmin = profile ? profile.is_admin : false;
         }
-
         const { data, error } = await sbClient
           .from('profiles')
           .select('*')
           .or('access.eq.academy,access.eq.both')
           .order('full_name', { ascending: true });
-
         if (error) {
           document.getElementById('loadingMsg').textContent = 'Error loading players.';
           return;
         }
-
         allPlayers = data || [];
         document.getElementById('loadingMsg').style.display = 'none';
-
         const dropdown = document.getElementById('playerDropdown');
         dropdown.innerHTML = '<option value="">-- Select a player --</option>';
         allPlayers.forEach(p => {
@@ -516,7 +495,6 @@ function formatDrillTime(totalSeconds) {
           option.textContent = p.full_name || p.username;
           dropdown.appendChild(option);
         });
-
         if (currentUserId) {
           const ownProfile = allPlayers.find(p => p.id === currentUserId);
           if (ownProfile) {
@@ -529,42 +507,33 @@ function formatDrillTime(totalSeconds) {
         } else if (allPlayers.length > 0) {
           showPlayer(allPlayers[0]);
         }
-
         await loadAcademyLeagueOptions();
       }
-
       async function loadAcademyLeagueOptions() {
         const leaguesResult = await sbClient.from('academy_leagues').select('*').eq('status', 'active').order('name');
         allAcademyLeagues = leaguesResult.data || [];
-
         const select = document.getElementById('academyLeagueViewSelect');
         select.innerHTML = '';
         allAcademyLeagues.forEach(l => {
           select.innerHTML += `<option value="${l.id}">${l.name}</option>`;
         });
-
         if (!allAcademyLeagues.length) {
           renderAcademyStandings();
           return;
         }
-
         let defaultLeagueId = allAcademyLeagues[0].id;
         if (currentUserId) {
           const ownLink = await sbClient.from('academy_league_players').select('academy_league_id').eq('player_id', currentUserId).limit(1).single();
           if (ownLink.data) { defaultLeagueId = ownLink.data.academy_league_id; }
         }
-
         select.value = defaultLeagueId;
         renderAcademyStandings();
       }
-
       function showPlayer(p) {
         currentProfileId = p.id;
         const isOwnProfile = currentUserId && (currentUserId === p.id || isCurrentUserAdmin);
-
         document.getElementById('profileCard').style.display = 'block';
         document.getElementById('enquiryFormWrap').style.display = 'none';
-
         const avatarEl = document.getElementById('profileAvatar');
         if (p.avatar_url) {
           avatarEl.textContent = '';
@@ -573,7 +542,6 @@ function formatDrillTime(totalSeconds) {
           avatarEl.style.backgroundImage = '';
           avatarEl.textContent = (p.full_name || p.username || '?')[0].toUpperCase();
         }
-
         document.getElementById('profileName').textContent = p.full_name || p.username || '-';
         document.getElementById('profileUsername').textContent = p.username ? '@' + p.username : '-';
         document.getElementById('profileLocation').textContent = p.hometown || '-';
@@ -588,22 +556,17 @@ function formatDrillTime(totalSeconds) {
         document.getElementById('profileWalkout').textContent = p.walkout_song || '-';
         document.getElementById('profileFavPlayer').textContent = p.favourite_player || '-';
         document.getElementById('profileAboutMe').textContent = p.about_me || '-';
-
         Object.keys(fieldLabels).forEach(field => {
           const pencil = document.getElementById('pencil-' + field);
           if (pencil) pencil.style.display = isOwnProfile ? 'inline' : 'none';
         });
-
         const avgPencil = document.getElementById('pencil-academy_highest_average');
         if (avgPencil) avgPencil.style.display = isOwnProfile ? 'inline' : 'none';
-
         document.getElementById('avatarEditBtn').style.display = isOwnProfile ? 'flex' : 'none';
         document.getElementById('avatarEditBtn').style.alignItems = 'center';
         document.getElementById('avatarEditBtn').style.justifyContent = 'center';
-
         loadSponsors(p.id);
       }
-
       async function loadSponsors(playerId) {
         const { data } = await sbClient.from('player_sponsors').select('*').eq('player_id', playerId);
         const container = document.getElementById('sponsorLogos');
@@ -613,7 +576,6 @@ function formatDrillTime(totalSeconds) {
           return s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${img}</a>` : img;
         }).join('');
       }
-
       async function loadDivisionSponsors(leagueId) {
         const container = document.getElementById('divisionSponsorLogos');
         if (!leagueId) { container.innerHTML = ''; return; }
@@ -624,23 +586,19 @@ function formatDrillTime(totalSeconds) {
           return s.link ? `<a href="${s.link}" target="_blank" rel="noopener">${img}</a>` : img;
         }).join('');
       }
-
       function openEnquiryForm() {
         document.getElementById('enquiryFormWrap').style.display = 'block';
         document.getElementById('enquiry-success').style.display = 'none';
       }
-
       async function submitEnquiry() {
         const name = document.getElementById('enquiryName').value.trim();
         const email = document.getElementById('enquiryEmail').value.trim();
         const phone = document.getElementById('enquiryPhone').value.trim();
         const message = document.getElementById('enquiryMessage').value.trim();
-
         if (!name || !email || !message) {
           alert('Please fill in your name, email and message.');
           return;
         }
-
         const { error } = await sbClient.from('sponsor_enquiries').insert([{
           player_id: currentProfileId,
           enquirer_name: name,
@@ -648,12 +606,10 @@ function formatDrillTime(totalSeconds) {
           enquirer_phone: phone || null,
           message: message
         }]);
-
         if (error) {
           alert('Error sending enquiry. Please try again.');
           return;
         }
-
         document.getElementById('enquiry-success').textContent = 'Thank you! Your enquiry has been sent.';
         document.getElementById('enquiry-success').style.display = 'block';
         document.getElementById('enquiryName').value = '';
@@ -661,25 +617,21 @@ function formatDrillTime(totalSeconds) {
         document.getElementById('enquiryPhone').value = '';
         document.getElementById('enquiryMessage').value = '';
       }
-
       function openDivisionEnquiryForm() {
         document.getElementById('divisionEnquiryFormWrap').style.display = 'block';
         document.getElementById('division-enquiry-success').style.display = 'none';
       }
-
       async function submitDivisionEnquiry() {
         const leagueId = document.getElementById('academyLeagueViewSelect').value;
         const name = document.getElementById('divisionEnquiryName').value.trim();
         const email = document.getElementById('divisionEnquiryEmail').value.trim();
         const phone = document.getElementById('divisionEnquiryPhone').value.trim();
         const message = document.getElementById('divisionEnquiryMessage').value.trim();
-
         if (!leagueId) { alert('Please select a group first.'); return; }
         if (!name || !email || !message) {
           alert('Please fill in your name, email and message.');
           return;
         }
-
         const { error } = await sbClient.from('division_sponsor_enquiries').insert([{
           academy_league_id: leagueId,
           enquirer_name: name,
@@ -687,12 +639,10 @@ function formatDrillTime(totalSeconds) {
           enquirer_phone: phone || null,
           message: message
         }]);
-
         if (error) {
           alert('Error sending enquiry. Please try again.');
           return;
         }
-
         document.getElementById('division-enquiry-success').textContent = 'Thank you! Your enquiry has been sent.';
         document.getElementById('division-enquiry-success').style.display = 'block';
         document.getElementById('divisionEnquiryName').value = '';
@@ -700,7 +650,6 @@ function formatDrillTime(totalSeconds) {
         document.getElementById('divisionEnquiryPhone').value = '';
         document.getElementById('divisionEnquiryMessage').value = '';
       }
-
       function startEdit(field) {
         if (field === 'academy_highest_average') {
           const valueEl = document.getElementById('profileAverage');
@@ -713,13 +662,11 @@ function formatDrillTime(totalSeconds) {
           document.getElementById('edit-academy_highest_average').focus();
           return;
         }
-
         const valueEl = document.getElementById(fieldLabels[field]);
         let currentValue = valueEl.textContent === '-' ? '' : valueEl.textContent;
         if (field === 'username' && currentValue.startsWith('@')) { currentValue = currentValue.slice(1); }
         const wrap = valueEl.parentElement;
         const isMultiline = multilineFields.includes(field);
-
         if (isMultiline) {
           wrap.innerHTML = `
             <div style="width:100%;">
@@ -739,7 +686,6 @@ function formatDrillTime(totalSeconds) {
         }
         document.getElementById('edit-' + field).focus();
       }
-
       async function saveEdit(field) {
         if (field === 'academy_highest_average') {
           const input = document.getElementById('edit-academy_highest_average');
@@ -755,19 +701,15 @@ function formatDrillTime(totalSeconds) {
           `;
           return;
         }
-
         const input = document.getElementById('edit-' + field);
         const newValue = input.value.trim();
         const update = {};
         update[field] = newValue || null;
         const isMultiline = multilineFields.includes(field);
-
         const { error } = await sbClient.from('profiles').update(update).eq('id', currentProfileId);
         if (error) { alert('Error saving. Please try again.'); return; }
-
         const player = allPlayers.find(p => p.id === currentProfileId);
         if (player) player[field] = newValue;
-
         if (isMultiline) {
           const parentDiv = document.getElementById('edit-' + field).closest('div[style*="align-items:flex-start"]') || document.getElementById('edit-' + field).parentElement.parentElement;
           parentDiv.innerHTML = `
@@ -785,10 +727,8 @@ function formatDrillTime(totalSeconds) {
           `;
         }
       }
-
       function cancelEdit(field, originalValue) {
         const isMultiline = multilineFields.includes(field);
-
         if (isMultiline) {
           const parentDiv = document.getElementById('edit-' + field).closest('div[style*="align-items:flex-start"]') || document.getElementById('edit-' + field).parentElement.parentElement;
           parentDiv.innerHTML = `
@@ -806,43 +746,33 @@ function formatDrillTime(totalSeconds) {
           `;
         }
       }
-
       async function uploadAvatar(event) {
         const file = event.target.files[0];
         if (!file) return;
-
         const fileExt = file.name.split('.').pop();
         const fileName = `${currentProfileId}.${fileExt}`;
-
         const { error: uploadError } = await sbClient.storage
           .from('avatars')
           .upload(fileName, file, { upsert: true });
-
         if (uploadError) {
           alert('Error uploading photo: ' + uploadError.message);
           return;
         }
-
         const { data: urlData } = sbClient.storage.from('avatars').getPublicUrl(fileName);
         const avatarUrl = urlData.publicUrl + '?t=' + Date.now();
-
         const { error: updateError } = await sbClient
           .from('profiles')
           .update({ avatar_url: avatarUrl })
           .eq('id', currentProfileId);
-
         if (updateError) {
           alert('Photo uploaded but failed to save. Please try again.');
           return;
         }
-
         const player = allPlayers.find(p => p.id === currentProfileId);
         if (player) player.avatar_url = avatarUrl;
-
         document.getElementById('profileAvatar').textContent = '';
         document.getElementById('profileAvatar').style.backgroundImage = `url(${avatarUrl})`;
       }
-
       function filterPlayers() {
         const val = document.getElementById('searchInput').value.toLowerCase().trim();
         if (!val) return;
@@ -855,7 +785,6 @@ function formatDrillTime(totalSeconds) {
           showPlayer(match);
         }
       }
-
       function selectFromDropdown() {
         const id = document.getElementById('playerDropdown').value;
         const player = allPlayers.find(p => p.id === id);
@@ -864,24 +793,18 @@ function formatDrillTime(totalSeconds) {
           showPlayer(player);
         }
       }
-
       async function renderAcademyStandings() {
         const leagueId = document.getElementById('academyLeagueViewSelect').value;
         const tbody = document.getElementById('academyStandingsBody');
-
         loadDivisionSponsors(leagueId);
-
         if (!leagueId) {
           tbody.innerHTML = '<tr><td colspan="10" class="loading">No academy groups yet.</td></tr>';
           return;
         }
-
         const linkResult = await sbClient.from('academy_league_players').select('player_id, profiles(full_name, username)').eq('academy_league_id', leagueId);
         const groupPlayers = linkResult.data || [];
-
         const sessionsResult = await sbClient.from('academy_sessions').select('*').eq('academy_league_id', leagueId);
         const sessions = sessionsResult.data || [];
-
         const standings = groupPlayers.map(gp => {
           const profile = gp.profiles || {};
           const name = profile.full_name || profile.username || 'Unknown';
@@ -903,29 +826,24 @@ function formatDrillTime(totalSeconds) {
           const total = totals.attendance + totals.attitude + totals.matchWin + totals.breakThrow + totals.nineDart + totals.over100 + totals.score171 + totals.bonus;
           return { name, ...totals, total };
         }).sort((a, b) => b.total - a.total);
-
         if (!standings.length) {
           tbody.innerHTML = '<tr><td colspan="10" class="loading">No players in this group yet.</td></tr>';
           return;
         }
-
         tbody.innerHTML = standings.map((p, i) => {
           return `<tr><td>${i + 1}</td><td>${p.name}</td><td>${p.attendance}</td><td>${p.attitude}</td><td>${p.matchWin}</td><td>${p.breakThrow}</td><td>${p.nineDart}</td><td>${p.over100}</td><td>${p.score171}</td><td>${p.bonus}</td><td><strong>${p.total}</strong></td></tr>`;
         }).join('');
       }
-
       async function loadAcademyNews() {
         const { data: allArticles, error } = await sbClient
           .from('news')
           .select('*')
           .or('section.eq.academy,section.eq.both')
           .order('article_date', { ascending: false });
-
         if (error) {
           document.getElementById('academyNewsList').innerHTML = '<p class="coming-soon">Error loading news.</p>';
           return;
         }
-
         const today = new Date();
         const active = (allArticles || []).filter(a => {
           const artDate = new Date(a.article_date || a.created_at);
@@ -933,27 +851,22 @@ function formatDrillTime(totalSeconds) {
           expiry.setDate(expiry.getDate() + (a.duration_days || 30));
           return expiry >= today;
         });
-
         const newsArticles = active.filter(a => a.tag !== 'announcement');
         const announcementArticles = active.filter(a => a.tag === 'announcement');
-
         const { data: likesData } = await sbClient.from('news_likes').select('*');
         (likesData || []).forEach(l => {
           if (!academyNewsLikes[l.news_id]) academyNewsLikes[l.news_id] = [];
           academyNewsLikes[l.news_id].push(l.player_id);
         });
-
         renderAcademyNewsList('academyNewsList', newsArticles, 'No news yet — check back soon!');
         renderAcademyNewsList('academyAnnouncementsList', announcementArticles, 'No announcements yet — check back soon!');
       }
-
       function renderAcademyNewsList(containerId, articles, emptyMsg) {
         const container = document.getElementById(containerId);
         if (!articles.length) {
           container.innerHTML = `<p class="coming-soon">${emptyMsg}</p>`;
           return;
         }
-
         container.innerHTML = articles.map(a => {
           const dateStr = new Date(a.article_date || a.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
           const likes = academyNewsLikes[a.id] || [];
@@ -975,19 +888,15 @@ function formatDrillTime(totalSeconds) {
           `;
         }).join('');
       }
-
       function toggleAcademyArticle(id) {
         const body = document.getElementById('academy-article-' + id);
         body.classList.toggle('open');
       }
-
       async function toggleAcademyLike(newsId, event) {
         event.stopPropagation();
         if (!currentUserId) { window.location.href = 'login.html'; return; }
-
         const likes = academyNewsLikes[newsId] || [];
         const alreadyLiked = likes.includes(currentUserId);
-
         if (alreadyLiked) {
           await sbClient.from('news_likes').delete().eq('news_id', newsId).eq('player_id', currentUserId);
           academyNewsLikes[newsId] = likes.filter(id => id !== currentUserId);
@@ -995,13 +904,11 @@ function formatDrillTime(totalSeconds) {
           await sbClient.from('news_likes').insert([{ news_id: newsId, player_id: currentUserId }]);
           academyNewsLikes[newsId] = [...likes, currentUserId];
         }
-
         const btn = document.getElementById('academy-like-btn-' + newsId);
         const nowLiked = academyNewsLikes[newsId].includes(currentUserId);
         btn.className = 'like-btn' + (nowLiked ? ' liked' : '');
         btn.innerHTML = (nowLiked ? '❤️ Liked' : '🤍 Like') + ' (<span id="academy-like-count-' + newsId + '">' + academyNewsLikes[newsId].length + '</span>)';
       }
-
       function showDrillSubTab(name, event) {
         document.querySelectorAll('#tab-drills .tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('#tab-drills > .tab-content').forEach(function(t) { t.classList.remove('active'); });
@@ -1009,19 +916,15 @@ function formatDrillTime(totalSeconds) {
         document.getElementById('subtab-' + name).classList.add('active');
         if (name === 'progress') { loadProgressDrillOptions(); }
       }
-
 var allDrillsRawData = [];
 var drillStepState = {};
-
 async function loadDrillsAccordion() {
   const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
   const data = result.data;
   const error = result.error;
   const container = document.getElementById('drillsAccordionList');
   if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
-
   allDrillsRawData = data;
-
   var htmlPieces = data.map(function(d) {
     var descriptionHtml = d.description ? '<p style="color:#555555;line-height:1.5;margin:0 0 16px;">' + d.description + '</p>' : '';
     return '<div class="news-item">' +
@@ -1032,10 +935,8 @@ async function loadDrillsAccordion() {
       '<div id="drill-msg-' + d.id + '" style="margin-top:10px;font-size:0.9em;"></div>' +
       '</div></div>';
   });
-
   container.innerHTML = htmlPieces.join('');
 }
-
 function toggleDrillItem(id) {
   var drill = allDrillsRawData.find(function(d) { return d.id === id; });
   if (!drill) { return; }
@@ -1044,17 +945,14 @@ function toggleDrillItem(id) {
   document.getElementById('drillFullscreenOverlay').style.display = 'block';
   renderDrillStep(id);
 }
-
 function closeDrillOverlay() {
   document.getElementById('drillFullscreenOverlay').style.display = 'none';
 }
-
 function renderDrillStep(drillId) {
   var state = drillStepState[drillId];
   var container = document.getElementById('drillOverlayContent');
   var steps = state.steps;
   var idx = state.stepIndex;
-
 var currentSubtitle = null;
 for (var i = Math.min(idx, steps.length - 1); i >= 0; i--) {
   if (steps[i].is_subtitle) { currentSubtitle = steps[i]; break; }
@@ -1062,27 +960,23 @@ for (var i = Math.min(idx, steps.length - 1); i >= 0; i--) {
 var subtitleBannerHtml = '';
 if (currentSubtitle) {
   var bannerDescHtml = currentSubtitle.description ? '<div style="font-weight:normal;color:#555555;font-size:0.95em;margin-top:6px;">' + currentSubtitle.description + '</div>' : '';
-  subtitleBannerHtml = '<div style="background:#eeeeee;border-radius:8px;padding:14px 18px;margin-bottom:20px;font-weight:bold;color:#111111;">' + currentSubtitle.target_name + bannerDescHtml + '</div>';
+  subtitleBannerHtml = '<div style="background:#ffffff;border-radius:12px;padding:14px 18px;margin-bottom:20px;font-weight:bold;color:#111111;">' + currentSubtitle.target_name + bannerDescHtml + '</div>';
 } else if (state.drillDescription) {
-  subtitleBannerHtml = '<div style="background:#eeeeee;border-radius:8px;padding:14px 18px;margin-bottom:20px;color:#555555;">' + state.drillDescription + '</div>';
+  subtitleBannerHtml = '<div style="background:#ffffff;border-radius:12px;padding:14px 18px;margin-bottom:20px;color:#555555;">' + state.drillDescription + '</div>';
 }
-
-  var titleHtml = '<h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;">' + state.drillTitle + '</h2>';
-
+  var titleHtml = '<h2 style="margin-bottom:20px;color:var(--pd-text-light);">' + state.drillTitle + '</h2>';
   if (idx >= steps.length) {
    container.innerHTML = titleHtml + subtitleBannerHtml +
   '<div style="text-align:center;padding:40px 20px;">' +
-  '<p style="font-size:1.1em;color:#333333;margin-bottom:24px;">You\'re all done! Ready to submit your attempt?</p>' +
+  '<p style="font-size:1.1em;color:var(--pd-text-light-muted);margin-bottom:24px;">You\'re all done! Ready to submit your attempt?</p>' +
   '<button class="save-btn" id="drillSubmitBtn-' + drillId + '" onclick="submitDrillAttempt(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Submit Attempt</button>' +
       (idx > 0 ? '<div style="margin-top:16px;"><button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button></div>' : '') +
       '</div>';
     return;
   }
-
   var step = steps[idx];
-  var progressHtml = '<div style="font-size:0.85em;color:#888888;margin-bottom:16px;">Step ' + (idx + 1) + ' of ' + steps.length + '</div>';
+  var progressHtml = '<div style="font-size:0.85em;color:var(--pd-text-light-muted);margin-bottom:16px;">Step ' + (idx + 1) + ' of ' + steps.length + '</div>';
   var backBtn = idx > 0 ? '<button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button>' : '';
-
   if (step.is_subtitle) {
     var subDescHtml = step.description ? '<p style="color:#555555;line-height:1.6;font-size:1.05em;margin-top:12px;">' + step.description + '</p>' : '';
     container.innerHTML = titleHtml + progressHtml +
@@ -1094,7 +988,6 @@ if (currentSubtitle) {
       '</div>';
     return;
   }
-
 var questionHeaderHtml = '<div class="news-item-title" style="text-align:center;font-size:1.8em;font-weight:bold;padding:32px 24px;margin-bottom:28px;">' + step.target_name + '</div>';
   if (step.entry_type === 'manual') {
     var existingVal = state.answers[step.id] ? state.answers[step.id].points : '';
@@ -1108,7 +1001,6 @@ var questionHeaderHtml = '<div class="news-item-title" style="text-align:center;
       '</div>';
     return;
   }
-
   var options = (step.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
   var existingSelected = state.answers[step.id] ? (state.answers[step.id].score_option_id + '|' + state.answers[step.id].points) : '';
   var optionsHtml = options.map(function(o) {
@@ -1119,13 +1011,11 @@ var questionHeaderHtml = '<div class="news-item-title" style="text-align:center;
       '<span style="color:#888888;font-size:0.85em;font-weight:normal;">' + o.points + ' pts' + (isSelected ? ' ✓' : '') + '</span>' +
       '</div>';
   }).join('');
-
   container.innerHTML = titleHtml + subtitleBannerHtml + progressHtml +
     questionHeaderHtml +
     optionsHtml +
     (backBtn ? '<div style="margin-top:12px;text-align:center;">' + backBtn + '</div>' : '');
 }
-
 function selectDrillAnswer(drillId, scoreOptionId, points) {
   var state = drillStepState[drillId];
   var step = state.steps[state.stepIndex];
@@ -1136,11 +1026,9 @@ function selectDrillAnswer(drillId, scoreOptionId, points) {
 function drillStepNext(drillId) {
   var state = drillStepState[drillId];
   var step = state.steps[state.stepIndex];
-
   if (!step.is_subtitle) {
     var input = document.getElementById('drillstep-input-' + drillId);
     var isManual = input.getAttribute('data-manual') === 'true';
-
     if (isManual) {
       if (input.value === '') { alert('Please enter a score before continuing.'); return; }
       var points = parseFloat(input.value);
@@ -1152,42 +1040,33 @@ function drillStepNext(drillId) {
       state.answers[step.id] = { target_id: step.id, score_option_id: parts[0], points: parseFloat(parts[1]) };
     }
   }
-
   state.stepIndex++;
   renderDrillStep(drillId);
 }
-
 function drillStepBack(drillId) {
   var state = drillStepState[drillId];
   state.stepIndex--;
   renderDrillStep(drillId);
 }
-
-
 var submittingDrill = false;
-
 async function submitDrillAttempt(drillId) {
   if (!currentUserId) { window.location.href = 'login.html'; return; }
   if (submittingDrill) { return; }
   submittingDrill = true;
-
   var container = document.getElementById('drillOverlayContent');
   var submitBtn = document.getElementById('drillSubmitBtn-' + drillId);
   if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
-
   const { data: { session }, error: sessionError } = await sbClient.auth.getSession();
   if (sessionError || !session) {
-    container.innerHTML += '<p style="color:#cc0000;text-align:center;margin-top:16px;">Your session needs refreshing. Please log in again (in this tab), then click Submit again — your answers are still here.</p>';
+    container.innerHTML += '<p style="color:#ff6b6b;text-align:center;margin-top:16px;">Your session needs refreshing. Please log in again (in this tab), then click Submit again — your answers are still here.</p>';
     submittingDrill = false;
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Attempt'; }
     return;
   }
-
   var state = drillStepState[drillId];
   var scoreEntries = Object.values(state.answers);
   var totalScore = scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
   var timeTakenSeconds = Math.round((Date.now() - state.startTime) / 1000);
-
   var attemptResult = await sbClient.from('drill_attempts').insert([{
     drill_id: drillId,
     player_id: currentUserId,
@@ -1195,14 +1074,12 @@ async function submitDrillAttempt(drillId) {
     time_taken_seconds: timeTakenSeconds,
     attempt_date: new Date().toISOString().split('T')[0]
   }]).select();
-
   if (attemptResult.error || !attemptResult.data) {
-    container.innerHTML += '<p style="color:#cc0000;text-align:center;margin-top:16px;">Error submitting attempt. Please try again.</p>';
+    container.innerHTML += '<p style="color:#ff6b6b;text-align:center;margin-top:16px;">Error submitting attempt. Please try again.</p>';
     submittingDrill = false;
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Attempt'; }
     return;
   }
-
   var attemptId = attemptResult.data[0].id;
   var scoreRows = scoreEntries.map(function(entry) {
     return {
@@ -1215,22 +1092,19 @@ async function submitDrillAttempt(drillId) {
   if (scoreRows.length) {
     await sbClient.from('drill_attempt_scores').insert(scoreRows);
   }
-
   submittingDrill = false;
-container.innerHTML = '<h2 style="border-bottom:3px solid #111111;padding-bottom:8px;margin-bottom:20px;">' + state.drillTitle + '</h2>' +
+container.innerHTML = '<h2 style="margin-bottom:20px;color:var(--pd-text-light);">' + state.drillTitle + '</h2>' +
   '<div style="text-align:center;padding:40px 20px;">' +
   '<div class="trophy-icon">🏆</div>' +
-  '<p class="well-done-text" style="font-size:1.4em;color:#006600;font-weight:bold;margin:12px 0 8px;">Well done!</p>' +
-  '<p class="well-done-text" style="font-size:1.1em;color:#333333;margin-bottom:28px;">Total score: ' + totalScore + '</p>' +
+  '<p class="well-done-text" style="font-size:1.4em;color:#4dd88a;font-weight:bold;margin:12px 0 8px;">Well done!</p>' +
+  '<p class="well-done-text" style="font-size:1.1em;color:var(--pd-text-light-muted);margin-bottom:28px;">Total score: ' + totalScore + '</p>' +
     '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Start Another Drill</button>' +
     '<div style="margin-top:12px;"><button class="cancel-btn" onclick="closeDrillOverlay(); loadDrillsAccordion();">Close</button></div>' +
     '</div>';
 }
-
    function resetDrillForm(drillId) {
   toggleDrillItem(drillId);
 }
-
       async function loadProgressDrillOptions() {
         var result = await sbClient.from('drills').select('id, title').order('title');
         var data = result.data || [];
@@ -1241,28 +1115,22 @@ container.innerHTML = '<h2 style="border-bottom:3px solid #111111;padding-bottom
         }
         select.innerHTML = optsHtml;
       }
-
 var currentProgressFilter = 'recent15';
-
 function setProgressFilter(filter, btn) {
   currentProgressFilter = filter;
   document.querySelectorAll('#progressFilterTabs .round-tab').forEach(function(t) { t.classList.remove('active'); });
   btn.classList.add('active');
   loadDrillProgress();
 }
-
 async function loadDrillProgress() {
   var drillId = document.getElementById('progressDrillSelect').value;
   var container = document.getElementById('progressChartContainer');
-  if (!drillId || !currentUserId) { container.innerHTML = '<p class="loading">Select a drill to view your progress.</p>'; return; }
-
+  if (!drillId || !currentUserId) { container.innerHTML = '<p class="loading" style="color:var(--pd-text-muted);">Select a drill to view your progress.</p>'; return; }
   var result = await sbClient.from('drill_attempts').select('*').eq('drill_id', drillId).eq('player_id', currentUserId).order('attempt_date', { ascending: true });
   var allData = result.data || [];
-
   var data = allData;
   var today = new Date();
   today.setHours(0, 0, 0, 0);
-
   if (currentProgressFilter === 'today') {
     var todayStr = today.toISOString().split('T')[0];
     data = allData.filter(function(a) { return a.attempt_date === todayStr; });
@@ -1277,20 +1145,16 @@ async function loadDrillProgress() {
   } else {
     data = allData.slice(-15);
   }
-
-  if (!data || !data.length) { container.innerHTML = '<p class="coming-soon">No attempts in this range.</p>'; return; }
-
+  if (!data || !data.length) { container.innerHTML = '<p class="coming-soon" style="color:var(--pd-text-muted);">No attempts in this range.</p>'; return; }
         var maxScore = 0;
         for (var i = 0; i < data.length; i++) { if (data[i].total_score > maxScore) { maxScore = data[i].total_score; } }
         var chartMax = maxScore > 0 ? maxScore : 1;
-
         var leftPad = 14;
         var rightPad = 4;
         var topPad = 8;
         var bottomPad = 16;
         var chartWidth = 100 - leftPad - rightPad;
         var chartHeight = 100 - topPad - bottomPad;
-
         var points = [];
         for (var i = 0; i < data.length; i++) {
           var d = data[i];
@@ -1300,12 +1164,10 @@ async function loadDrillProgress() {
           var dateLabel = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
           points.push({ x: x, y: y, score: d.total_score, dateLabel: dateLabel, fullDate: d.attempt_date });
         }
-
         var pathD = '';
         for (var i = 0; i < points.length; i++) {
           pathD += (i === 0 ? 'M' : 'L') + points[i].x + ',' + points[i].y + ' ';
         }
-
         var yAxisLabels = '';
         var yAxisGrid = '';
         var steps = 4;
@@ -1315,7 +1177,6 @@ async function loadDrillProgress() {
           yAxisLabels += '<text x="' + (leftPad - 3) + '" y="' + (yPos + 1) + '" font-size="3" text-anchor="end" fill="#888888">' + val + '</text>';
           yAxisGrid += '<line x1="' + leftPad + '" y1="' + yPos + '" x2="' + (100 - rightPad) + '" y2="' + yPos + '" stroke="#eeeeee" stroke-width="0.3" />';
         }
-
         var dotsHtml = '';
         var scoreLabelsHtml = '';
         var dateLabelsHtml = '';
@@ -1325,7 +1186,6 @@ async function loadDrillProgress() {
           scoreLabelsHtml += '<text x="' + p.x + '" y="' + (p.y - 3) + '" font-size="3" text-anchor="middle" fill="#555555">' + p.score + '</text>';
           dateLabelsHtml += '<text x="' + p.x + '" y="' + (100 - bottomPad + 6) + '" font-size="3" text-anchor="middle" fill="#888888">' + p.dateLabel + '</text>';
         }
-
         container.innerHTML = '<svg viewBox="0 0 100 100" style="width:100%;height:320px;">' +
           yAxisGrid +
           '<line x1="' + leftPad + '" y1="' + topPad + '" x2="' + leftPad + '" y2="' + (100 - bottomPad) + '" stroke="#dddddd" stroke-width="0.5" />' +
@@ -1334,9 +1194,8 @@ async function loadDrillProgress() {
           '<path d="' + pathD + '" fill="none" stroke="#111111" stroke-width="1" />' +
           dotsHtml + scoreLabelsHtml + dateLabelsHtml +
           '</svg>' +
-          '<div style="text-align:center;font-size:0.85em;color:#888888;margin-top:8px;">' + data.length + ' attempt(s) — earliest to most recent, left to right</div>';
+          '<div style="text-align:center;font-size:0.85em;color:var(--pd-text-muted);margin-top:8px;">' + data.length + ' attempt(s) — earliest to most recent, left to right</div>';
       }
-
 function showTab(name, event) {
         if (event) { event.preventDefault(); }
         document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
@@ -1345,22 +1204,17 @@ function showTab(name, event) {
         var nav = document.getElementById('mainNav');
         if (nav) { nav.classList.remove('open'); }
       }
-
       function toggleMenu() {
         document.getElementById('mainNav') && document.getElementById('mainNav').classList.toggle('open');
       }
-
 window.addEventListener('load', async () => {
   checkAuth();
   updateSwitchButtonVisibility();
-
   const statusResult = await getAcademyAccessStatus();
-
   document.getElementById('academyPendingView').style.display = 'none';
   document.getElementById('academyDeniedView').style.display = 'none';
   document.getElementById('academyLockedView').style.display = 'none';
   document.getElementById('academyContentView').style.display = 'none';
-
   if (statusResult.state === 'approved') {
     document.getElementById('academyContentView').style.display = 'block';
     loadAcademyPlayers();
@@ -1373,19 +1227,16 @@ window.addEventListener('load', async () => {
     document.getElementById('academyLockedView').style.display = 'block';
   }
 });
-
 async function submitAcademyEnquiry(type) {
   const prefix = type === 'join' ? 'joinEnquiry' : 'sponsorEnquiry';
   const name = document.getElementById(prefix + 'Name').value.trim();
   const email = document.getElementById(prefix + 'Email').value.trim();
   const phone = document.getElementById(prefix + 'Phone').value.trim();
   const message = document.getElementById(prefix + 'Message').value.trim();
-
   if (!name || !email || !message) {
     alert('Please fill in your name, email and message.');
     return;
   }
-
   const { error } = await sbClient.from('academy_enquiries').insert([{
     type: type,
     name: name,
@@ -1393,12 +1244,10 @@ async function submitAcademyEnquiry(type) {
     phone: phone || null,
     message: message
   }]);
-
   if (error) {
     alert('Error sending enquiry. Please try again.');
     return;
   }
-
   const successId = type === 'join' ? 'join-enquiry-success' : 'sponsor-enquiry-success';
   document.getElementById(successId).textContent = 'Thank you! Your enquiry has been sent.';
   document.getElementById(successId).style.display = 'block';
@@ -1408,6 +1257,5 @@ async function submitAcademyEnquiry(type) {
   document.getElementById(prefix + 'Message').value = '';
 }
     </script>
-
   </body>
 </html>
