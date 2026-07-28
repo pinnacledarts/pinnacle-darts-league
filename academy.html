@@ -979,8 +979,8 @@ if (currentSubtitle) {
   var backBtn = idx > 0 ? '<button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button>' : '';
   if (step.is_subtitle) {
     var subDescHtml = step.description ? '<p style="color:#555555;line-height:1.6;font-size:1.05em;margin-top:12px;">' + step.description + '</p>' : '';
-container.innerHTML = titleHtml + progressHtml +
-      '<div class="news-item-title" style="background-color:#ffffff;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);text-align:center;font-size:1.3em;padding:24px;margin-bottom:8px;">' + step.target_name + '</div>' +
+    container.innerHTML = titleHtml + progressHtml +
+      '<div class="news-item-title" style="text-align:center;font-size:1.3em;padding:24px;margin-bottom:8px;">' + step.target_name + '</div>' +
       subDescHtml +
       '<div style="margin-top:28px;text-align:center;">' +
       '<button class="save-btn" onclick="drillStepNext(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Continue</button>' +
@@ -988,7 +988,7 @@ container.innerHTML = titleHtml + progressHtml +
       '</div>';
     return;
   }
-var questionHeaderHtml = '<div class="news-item-title" style="background-color:#ffffff;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);text-align:center;font-size:1.8em;font-weight:bold;padding:32px 24px;margin-bottom:28px;">' + step.target_name + '</div>';
+var questionHeaderHtml = '<div class="news-item-title" style="text-align:center;font-size:1.8em;font-weight:bold;padding:32px 24px;margin-bottom:28px;">' + step.target_name + '</div>';
   if (step.entry_type === 'manual') {
     var existingVal = state.answers[step.id] ? state.answers[step.id].points : '';
     var inputHtml = '<input type="number" step="any" id="drillstep-input-' + drillId + '" data-manual="true" value="' + existingVal + '" placeholder="Enter score" style="padding:16px;border:1px solid #ddd;border-radius:8px;width:100%;font-size:1.2em;text-align:center;" />';
@@ -1006,7 +1006,7 @@ var questionHeaderHtml = '<div class="news-item-title" style="background-color:#
   var optionsHtml = options.map(function(o) {
     var val = o.id + '|' + o.points;
     var isSelected = val === existingSelected;
-        return '<div class="news-item-title" style="cursor:pointer;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);' + (isSelected ? 'background-color:#eeeeee;' : 'background-color:#ffffff;') + '" onclick="selectDrillAnswer(' + drillId + ', \'' + o.id + '\', ' + o.points + ')">' +
+    return '<div class="news-item-title" style="cursor:pointer;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;padding:20px 24px;' + (isSelected ? 'background-color:#eeeeee;' : '') + '" onclick="selectDrillAnswer(' + drillId + ', \'' + o.id + '\', ' + o.points + ')">' +
       '<span>' + o.label + '</span>' +
       '<span style="color:#888888;font-size:0.85em;font-weight:normal;">' + o.points + ' pts' + (isSelected ? ' ✓' : '') + '</span>' +
       '</div>';
@@ -1089,10 +1089,33 @@ async function submitDrillAttempt(drillId) {
       points: entry.points
     };
   });
+  state.pendingAttemptId = attemptId;
+  state.pendingScoreRows = scoreRows;
+  state.pendingTotalScore = totalScore;
+  await saveDrillBreakdown(drillId);
+}
+async function saveDrillBreakdown(drillId) {
+  var state = drillStepState[drillId];
+  var container = document.getElementById('drillOverlayContent');
+  var scoreRows = state.pendingScoreRows || [];
+  var totalScore = state.pendingTotalScore;
+  var insertResult = { error: null };
   if (scoreRows.length) {
-    await sbClient.from('drill_attempt_scores').insert(scoreRows);
+    insertResult = await sbClient.from('drill_attempt_scores').insert(scoreRows);
+    if (insertResult.error) {
+      insertResult = await sbClient.from('drill_attempt_scores').insert(scoreRows);
+    }
   }
   submittingDrill = false;
+  if (insertResult.error) {
+    container.innerHTML = '<h2 style="margin-bottom:20px;color:var(--pd-text-light);">' + state.drillTitle + '</h2>' +
+      '<div style="text-align:center;padding:40px 20px;">' +
+      '<p style="color:#ff6b6b;font-size:1.1em;margin-bottom:8px;">Your total score was saved, but there was a problem saving the breakdown.</p>' +
+      '<p style="color:var(--pd-text-light-muted);font-size:0.9em;margin-bottom:24px;">' + insertResult.error.message + '</p>' +
+      '<button class="save-btn" onclick="saveDrillBreakdown(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Retry Saving Breakdown</button>' +
+      '</div>';
+    return;
+  }
 container.innerHTML = '<h2 style="margin-bottom:20px;color:var(--pd-text-light);">' + state.drillTitle + '</h2>' +
   '<div style="text-align:center;padding:40px 20px;">' +
   '<div class="trophy-icon">🏆</div>' +
