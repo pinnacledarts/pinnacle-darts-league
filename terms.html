@@ -9,57 +9,69 @@
     <script src="auth.js?t=999999"></script>
     <style>
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }      header img { height: 70px; }
-      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
-      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
-      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
-      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-.hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-nav.open { display: flex; }
-nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; }
-nav a:hover { background-color: #222222; }
-nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
-nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
-nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
-      main { padding: 40px; max-width: 900px; margin: 0 auto; }
-      .back-link { display: inline-block; margin-bottom: 20px; color: #111111; text-decoration: none; font-size: 0.9em; }
-      .back-link:hover { text-decoration: underline; }
-      .title-row { display: flex; align-items: center; gap: 10px; border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
-      .title-row h2 { margin: 0; border: none; padding: 0; }
-      .pencil-btn { background: none; border: none; cursor: pointer; font-size: 1em; color: #aaaaaa; padding: 2px 4px; }
-      .pencil-btn:hover { color: #111111; }
-      .content-box { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 30px; }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      nav.open { display: flex; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+      .hero-kicker { position: relative; font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
+      .hero-title { position: relative; font-size: 26px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0; max-width: 460px; }
+      main { padding: 8px 28px 40px; max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+      .back-link { display: inline-block; margin-bottom: 20px; color: var(--pd-text-light-muted); text-decoration: none; font-size: 0.9em; }
+      .back-link:hover { color: var(--pd-text-light); }
+      .viewing-select label { font-weight: bold; font-size: 0.85em; display: block; margin-bottom: 8px; color: var(--pd-text-light-muted); }
+      .viewing-select select { padding: 10px 14px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 1em; background-color: var(--pd-surface); color: var(--pd-text-dark); font-family: Arial, sans-serif; }
+      .title-row { display: flex; align-items: center; gap: 10px; margin: 20px 0 14px; }
+      .title-row h2 { margin: 0; font-size: 16px; font-weight: bold; color: var(--pd-text-light); }
+      .pencil-btn { background: none; border: none; cursor: pointer; font-size: 1em; color: var(--pd-text-light-muted); padding: 2px 4px; }
+      .pencil-btn:hover { color: var(--pd-text-light); }
+      .content-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 28px; color: var(--pd-text-dark); }
       .content-box p, .content-text { color: #333333; line-height: 1.7; white-space: pre-wrap; margin: 0; }
-      .edit-textarea { width: 100%; min-height: 400px; padding: 14px; border: 1px solid #dddddd; border-radius: 6px; font-size: 1em; font-family: Arial, sans-serif; line-height: 1.6; resize: vertical; }
-      .edit-textarea:focus { outline: none; border-color: #000000; }
+      .edit-textarea { width: 100%; min-height: 400px; padding: 14px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 1em; font-family: Arial, sans-serif; line-height: 1.6; resize: vertical; color: var(--pd-text-dark); }
+      .edit-textarea:focus { outline: none; border-color: var(--pd-text-dark); }
       .edit-actions { margin-top: 12px; display: flex; gap: 8px; }
-      .save-btn { background-color: #111111; color: #ffffff; border: none; border-radius: 4px; padding: 8px 20px; font-size: 0.9em; cursor: pointer; }
+      .save-btn { background-color: var(--pd-text-dark); color: #ffffff; border: none; border-radius: var(--pd-radius-btn); padding: 8px 20px; font-size: 0.9em; cursor: pointer; }
       .save-btn:hover { background-color: #333333; }
-      .cancel-btn { background: none; border: 1px solid #dddddd; border-radius: 4px; padding: 8px 20px; font-size: 0.9em; cursor: pointer; }
+      .cancel-btn { background: none; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); padding: 8px 20px; font-size: 0.9em; cursor: pointer; color: var(--pd-text-dark); }
       .cancel-btn:hover { background-color: #f5f5f5; }
-      .loading { text-align: center; padding: 40px; color: #888888; }
+      .loading { text-align: center; padding: 40px; color: var(--pd-text-muted); }
       @media (max-width: 700px) {
-        header { flex-wrap: wrap; padding: 16px 20px; }
-        header img { height: 50px; }
-        header h1 { font-size: 1.4em; }
-        header p { font-size: 0.85em; }
-.header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-.btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
-main { padding: 24px 20px; }
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-title { font-size: 22px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 8px 20px 32px; }
       }
     </style>
   </head>
   <body>
-
 <header>
-  <img src="logo.png" alt="Pinnacle Darts Logo">
-  <div>
-    <h1>Pinnacle Darts League</h1>
-    <p>Official League Website</p>
+  <div class="brand">
+    <img src="logo.png" alt="Pinnacle Darts Logo">
+    <div class="brand-name">Pinnacle Darts League</div>
   </div>
   <button class="hamburger" onclick="toggleMenu()">☰</button>
   <nav id="mainNav">
@@ -67,52 +79,48 @@ main { padding: 24px 20px; }
     <a href="leagues.html">Leagues</a>
     <a href="tournaments.html">Tournaments</a>
     <a href="players.html">Players</a>
-    <a href="academy.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Academy</a>
+    <a href="academy.html" class="btn-switch" style="border:none;text-align:left;">Switch to Academy</a>
     <div id="authButtons" style="padding:14px 24px;"></div>
   </nav>
 </header>
-
+<div class="hero">
+  <img src="logo-watermark.png" alt="" class="hero-watermark">
+  <div class="hero-kicker">Legal</div>
+  <div class="hero-title">Terms & Conditions</div>
+</div>
     <main>
       <a href="index.html" class="back-link">← Back to Home</a>
-
-      <div style="margin-bottom:20px;">
-        <label style="font-weight:bold;font-size:0.9em;display:block;margin-bottom:8px;">Viewing:</label>
-        <select id="termsSelect" onchange="loadTerms()" style="padding:10px 14px;border:1px solid #dddddd;border-radius:4px;font-size:1em;background-color:#f9f9f9;">
+      <div class="viewing-select">
+        <label>Viewing:</label>
+        <select id="termsSelect" onchange="loadTerms()">
           <option value="terms_online">Online Terms & Conditions</option>
           <option value="terms_academy">Academy Terms & Conditions</option>
         </select>
       </div>
-
       <div class="title-row">
         <h2 id="pageTitle">Terms & Conditions</h2>
         <button class="pencil-btn" id="editBtn" onclick="startEdit()" style="display:none;">✏️</button>
       </div>
       <div class="content-box" id="contentBox"><p class="loading">Loading...</p></div>
     </main>
-
     <script>
       let isCurrentUserAdmin = false;
       let currentContent = '';
-
       async function loadTerms() {
         const { data: { session } } = await sbClient.auth.getSession();
         if (session) {
           const { data: profile } = await sbClient.from('profiles').select('is_admin').eq('id', session.user.id).single();
           isCurrentUserAdmin = profile ? profile.is_admin : false;
         }
-
         const key = document.getElementById('termsSelect').value;
         const label = key === 'terms_academy' ? 'Academy Terms & Conditions' : 'Online Terms & Conditions';
         document.getElementById('pageTitle').textContent = label;
         document.title = label + ' | Pinnacle Darts League';
-
         const { data, error } = await sbClient.from('site_pages').select('*').eq('key', key).single();
         currentContent = data ? (data.content || '') : '';
-
         document.getElementById('contentBox').innerHTML = `<p class="content-text">${currentContent}</p>`;
         document.getElementById('editBtn').style.display = isCurrentUserAdmin ? 'inline' : 'none';
       }
-
       function startEdit() {
         document.getElementById('contentBox').innerHTML = `
           <textarea class="edit-textarea" id="editArea">${currentContent}</textarea>
@@ -122,7 +130,6 @@ main { padding: 24px 20px; }
           </div>
         `;
       }
-
       async function saveTerms() {
         const newContent = document.getElementById('editArea').value;
         const key = document.getElementById('termsSelect').value;
@@ -131,11 +138,9 @@ main { padding: 24px 20px; }
         currentContent = newContent;
         loadTerms();
       }
-
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
-
       window.addEventListener('load', () => {
         checkAuth();
         const params = new URLSearchParams(window.location.search);
@@ -145,6 +150,5 @@ main { padding: 24px 20px; }
         loadTerms();
       });
     </script>
-
   </body>
 </html>
