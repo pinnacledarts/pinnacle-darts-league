@@ -5,89 +5,109 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Leagues | Pinnacle Academy</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
     <style>
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-      header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }
-      header img { height: 70px; }
-      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
-      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
-      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
-      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-      .hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
-      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
       nav.open { display: flex; }
-      nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; }
-      nav a:hover { background-color: #222222; }
-      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
-      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
-      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
-      main { padding: 40px; max-width: 900px; margin: 0 auto; }
-      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; }
-      .league-card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 6px; padding: 20px; margin-bottom: 16px; }
-      .league-card h3 { margin: 0 0 8px; font-size: 1.2em; }
-      .league-card p { margin: 4px 0; color: #555555; font-size: 0.95em; }
-      .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; }
-      .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
-      .badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-      .badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
-      .card-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
-      .btn-view { background-color: #111111; color: #ffffff; border: none; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { position: relative; padding: 8px 28px 44px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+      .hero-kicker { position: relative; font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
+      .hero-title { position: relative; font-size: 26px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0 0 20px; max-width: 460px; }
+      main { padding: 8px 28px 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+      .back-link { position: relative; display: inline-block; margin-bottom: 16px; color: var(--pd-text-light-muted); text-decoration: none; font-size: 0.9em; }
+      .back-link:hover { color: var(--pd-text-light); }
+      h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-light); }
+      .league-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 28px; }
+      .league-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); padding: 18px 20px; box-shadow: var(--pd-shadow-card); }
+      .league-card .badges-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+      .league-card h3 { margin: 0 0 6px; font-size: 16px; font-weight: bold; color: var(--pd-text-dark); }
+      .league-card .meta-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--pd-text-muted); margin-bottom: 3px; }
+      .league-card .meta-row i { font-size: 14px; }
+      .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+      .badge-live { background-color: var(--pd-text-dark); color: var(--pd-text-light); }
+      .badge-upcoming { background-color: #eeeeee; color: #555555; }
+      .badge-completed { background-color: #f3f3f3; color: #888888; }
+      .badge-paid { background-color: #444444; color: #ffffff; }
+      .card-actions { display: flex; gap: 8px; margin-top: 16px; }
+      .btn-view, .btn-join { flex: 1; text-align: center; padding: 10px 0; border-radius: var(--pd-radius-btn); font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
+      .btn-view { background-color: var(--pd-text-dark); color: var(--pd-text-light); border: none; }
       .btn-view:hover { background-color: #333333; }
-      .btn-join { background-color: #ffffff; color: #111111; border: 1px solid #111111; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; cursor: pointer; font-family: Arial, sans-serif; }
+      .btn-join { background-color: var(--pd-surface); color: var(--pd-text-dark); border: 1px solid var(--pd-border-strong); }
       .btn-join:hover { background-color: #f5f5f5; }
-      .btn-join.joined { background-color: #f0fff0; color: #006600; border-color: #cceecc; cursor: default; }
-      .player-count { font-size: 0.85em; color: #888888; margin-top: 8px; }
-      .coming-soon { text-align: center; padding: 60px 20px; color: #aaaaaa; font-size: 1.1em; }
-      .loading { text-align: center; padding: 40px; color: #888888; }
+      .btn-join.joined { background-color: #f5f5f5; color: var(--pd-text-muted); cursor: default; }
+      .coming-soon { text-align: center; padding: 50px 20px; color: var(--pd-text-light-muted); font-size: 1em; }
+      .loading { text-align: center; padding: 40px; color: var(--pd-text-light-muted); }
       @media (max-width: 700px) {
-        header { flex-wrap: wrap; padding: 16px 20px; }
-        header img { height: 50px; }
-        header h1 { font-size: 1.4em; }
-        header p { font-size: 0.85em; }
-        .header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-        .btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
-        main { padding: 24px 20px; }
-        h2 { font-size: 1.3em; }
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 36px; }
+        .hero-title { font-size: 22px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 8px 20px 32px; }
+        .league-grid { grid-template-columns: 1fr; }
+        .league-card { text-align: center; }
+        .league-card .badges-row { justify-content: center; }
+        .league-card .meta-row { justify-content: center; }
       }
     </style>
   </head>
   <body>
-
 <header>
-  <img src="logo.png" alt="Pinnacle Darts Logo">
-  <div>
-    <h1>Pinnacle Academy</h1>
-    <p>Official Academy Website</p>
+  <div class="brand">
+    <img src="logo.png" alt="Pinnacle Darts Logo">
+    <div class="brand-name">Pinnacle Academy</div>
   </div>
   <button class="hamburger" onclick="toggleMenu()">☰</button>
   <nav id="mainNav">
     <a href="academy-tournaments.html">Tournaments</a>
     <a href="academy-leagues.html">Leagues</a>
-    <a href="index.html" class="btn-switch" style="border:none;min-width:unset;text-align:left;">Switch to Online</a>
+    <a href="index.html" class="btn-switch" style="border:none;text-align:left;">Switch to Online</a>
     <div id="authButtons" style="padding:14px 24px;"></div>
   </nav>
 </header>
-
+<div class="hero">
+  <img src="logo-watermark.png" alt="" class="hero-watermark">
+  <div class="hero-kicker">Academy leagues</div>
+  <div class="hero-title">Find your division.</div>
+</div>
 <main>
-  <a href="academy.html" style="display:inline-block;margin-bottom:20px;color:#111111;text-decoration:none;font-size:0.9em;">← Back to Academy</a>
+  <a href="academy.html" class="back-link">← Back to Academy</a>
   <div id="myLeaguesSection" style="display:none;">
-    <h2>My Leagues</h2>
-    <div id="myLeaguesList"></div>
+    <h2>My leagues</h2>
+    <div id="myLeaguesList" class="league-grid"></div>
   </div>
-
-  <h2>Leagues</h2>
-  <div id="leaguesList"><p class="loading">Loading leagues...</p></div>
+  <h2>All leagues</h2>
+  <div id="leaguesList" class="league-grid"><p class="loading">Loading leagues...</p></div>
 </main>
-
     <script>
       var currentUserId = null;
       var joinedLeagues = [];
-
 async function loadLeagues() {
   var session = await sbClient.auth.getSession();
   var playerPlatform = null;
@@ -100,15 +120,12 @@ async function loadLeagues() {
     playerPlatform = profileResult.data ? profileResult.data.platform : null;
     playerHasAverage = profileResult.data ? !!(profileResult.data.average || profileResult.data.starter_average) : false;
   }
-
         var result = await sbClient.from('leagues').select('*').or('section.eq.academy,section.eq.both').order('start_date', { ascending: true });
         var container = document.getElementById('leaguesList');
-
         if (!result.data || !result.data.length) {
-          container.innerHTML = '<p class="coming-soon">🎯 No leagues yet — check back soon!</p>';
+          container.innerHTML = '<p class="coming-soon">No leagues yet — check back soon!</p>';
           return;
         }
-
  var countResult = await sbClient.from('league_players').select('league_id');
         var playerCounts = {};
         if (countResult.data) {
@@ -116,7 +133,6 @@ async function loadLeagues() {
             playerCounts[parseInt(row.league_id)] = (playerCounts[parseInt(row.league_id)] || 0) + 1;
           });
         }
-
         var matchCountResult = await sbClient.from('league_matches').select('league_id, status').eq('stage', 'regular');
         var gamesPlayedCounts = {};
         var gamesTotalCounts = {};
@@ -127,21 +143,17 @@ async function loadLeagues() {
             if (row.status === 'completed') { gamesPlayedCounts[lid] = (gamesPlayedCounts[lid] || 0) + 1; }
           });
         }
-
         var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System' };
         var platformLabels = { dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both' };
-
 var cardsHtml = [];
 var myCardsHtml = [];
 for (var i = 0; i < result.data.length; i++) {
   var l = result.data[i];
   var status = await computeLeagueStatus(l);
   if (status === 'completed') { continue; }
-
   if (playerPlatform && playerPlatform !== 'both' && l.platform !== 'in_person' && l.platform !== 'both' && l.platform !== playerPlatform) {
     continue;
   }
-
   var startStr = l.start_date ? new Date(l.start_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
   var endStr = l.end_date ? new Date(l.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
 var playerCount = playerCounts[parseInt(l.id)] || 0;
@@ -149,48 +161,46 @@ var playerCount = playerCounts[parseInt(l.id)] || 0;
   var isFull = l.max_players && playerCount >= l.max_players;
   var totalGames = gamesTotalCounts[parseInt(l.id)] || 0;
   var playedGames = gamesPlayedCounts[parseInt(l.id)] || 0;
-  var gamesProgressStr = totalGames > 0 ? '<p><strong>Games Played:</strong> ' + playedGames + ' / ' + totalGames + '</p>' : '';
+  var gamesProgressRow = totalGames > 0 ? '<div class="meta-row"><i class="ti ti-chart-bar"></i><strong>Games:</strong> ' + playedGames + ' / ' + totalGames + '</div>' : '';
   var hasJoined = joinedLeagues.indexOf(l.id) > -1;
-
 var joinBtn = '';
 if (currentUserId) {
   if (hasJoined) {
-    joinBtn = '<button class="btn-join joined" disabled>✓ Joined</button>';
+    joinBtn = '<button class="btn-join joined" disabled>Joined</button>';
   } else if (isFull) {
-    joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">League Full</button>';
+    joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">Full</button>';
   } else if (l.average_split && !playerHasAverage) {
-    joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;" title="You need an average set before joining this league">Average Required</button>';
+    joinBtn = '<button class="btn-join" disabled style="opacity:0.5;cursor:default;" title="You need an average set before joining this league">Average required</button>';
   } else {
-    joinBtn = '<button class="btn-join" onclick="joinLeague(' + l.id + ', this)">Join League</button>';
+    joinBtn = '<button class="btn-join" onclick="joinLeague(' + l.id + ', this)">Join</button>';
   }
 } else {
-  joinBtn = '<a href="login.html" class="btn-join" style="display:inline-block;text-decoration:none;text-align:center;">Login to Join</a>';
+  joinBtn = '<a href="login.html" class="btn-join">Login to join</a>';
 }
-
-var paidBadge = l.is_paid ? '<span class="badge-paid">💷 £' + l.entry_fee + ' Entry</span>' : '';
+var statusBadge = status === 'live'
+  ? '<span class="badge badge-live"><i class="ti ti-bolt"></i>Live</span>'
+  : '<span class="badge badge-upcoming"><i class="ti ti-clock"></i>Upcoming</span>';
+var paidBadge = l.is_paid ? '<span class="badge badge-paid"><i class="ti ti-currency-pound"></i>£' + l.entry_fee + ' entry</span>' : '';
   var matchesPerWeekLabel = l.matches_per_week === 0 ? 'Unlimited' : (l.matches_per_week || 1) + ' per week';
   var cardHtml = '<div class="league-card">' +
-    getStatusBadgeHtml(status) + paidBadge +
+    '<div class="badges-row">' + statusBadge + paidBadge + '</div>' +
     '<h3>' + l.name + '</h3>' +
-    (l.season ? '<p><strong>Season:</strong> ' + l.season + '</p>' : '') +
-    '<p><strong>Format:</strong> ' + (formatLabels[l.format] || l.format || 'TBC') + (l.playoffs ? ' + Playoffs' : '') + '</p>' +
-    '<p><strong>Platform:</strong> ' + (platformLabels[l.platform] || l.platform || 'TBC') + '</p>' +
-    '<p><strong>Legs:</strong> First to ' + (l.bye_scoreline || 3) + ' — <strong>Matches:</strong> ' + matchesPerWeekLabel + '</p>' +
-    '<p><strong>Dates:</strong> ' + startStr + ' — ' + endStr + '</p>' +
-'<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
-    gamesProgressStr +
+    (l.season ? '<div class="meta-row"><i class="ti ti-calendar-event"></i><strong>Season:</strong> ' + l.season + '</div>' : '') +
+    '<div class="meta-row"><i class="ti ti-trophy"></i><strong>Format:</strong> ' + (formatLabels[l.format] || l.format || 'TBC') + (l.playoffs ? ' + Playoffs' : '') + '</div>' +
+    '<div class="meta-row"><i class="ti ti-device-gamepad-2"></i><strong>Platform:</strong> ' + (platformLabels[l.platform] || l.platform || 'TBC') + '</div>' +
+    '<div class="meta-row"><i class="ti ti-target-arrow"></i><strong>Legs:</strong> First to ' + (l.bye_scoreline || 3) + ' — <strong>Matches:</strong> ' + matchesPerWeekLabel + '</div>' +
+    '<div class="meta-row"><i class="ti ti-calendar"></i><strong>Dates:</strong> ' + startStr + ' — ' + endStr + '</div>' +
+    '<div class="meta-row"><i class="ti ti-users"></i><strong>Players:</strong> ' + maxStr + (isFull ? ' — Full' : '') + '</div>' +
+    gamesProgressRow +
     '<div class="card-actions">' +
-    '<a href="league.html?id=' + l.id + '" class="btn-view">View League</a>' +
+    '<a href="league.html?id=' + l.id + '" class="btn-view">View</a>' +
     joinBtn +
     '</div>' +
     '</div>';
-
   cardsHtml.push(cardHtml);
   if (hasJoined) { myCardsHtml.push(cardHtml); }
 }
-
-container.innerHTML = cardsHtml.length ? cardsHtml.join('') : '<p class="coming-soon">🎯 No upcoming or live leagues — check back soon!</p>';
-
+container.innerHTML = cardsHtml.length ? cardsHtml.join('') : '<p class="coming-soon">No upcoming or live leagues — check back soon!</p>';
 var myLeaguesSection = document.getElementById('myLeaguesSection');
 if (myCardsHtml.length) {
   myLeaguesSection.style.display = 'block';
@@ -199,7 +209,6 @@ if (myCardsHtml.length) {
   myLeaguesSection.style.display = 'none';
 }
       }
-
       async function joinLeague(leagueId, btn) {
         if (!currentUserId) { window.location.href = 'login.html'; return; }
         btn.disabled = true;
@@ -210,24 +219,21 @@ if (myCardsHtml.length) {
         }]);
         if (result.error) {
           btn.disabled = false;
-          btn.textContent = 'Join League';
+          btn.textContent = 'Join';
           alert('Error joining league. Please try again.');
           return;
         }
         btn.className = 'btn-join joined';
-        btn.textContent = '✓ Joined';
+        btn.textContent = 'Joined';
         joinedLeagues.push(leagueId);
       }
-
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
-
       window.addEventListener('load', function() {
         checkAuth();
         loadLeagues();
       });
     </script>
-
   </body>
 </html>
