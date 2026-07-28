@@ -35,7 +35,6 @@
       .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
       .badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
       .badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
-      .badge-paid { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; margin-left: 6px; background-color: #fff8e1; color: #b8860b; border: 1px solid #f0d78c; }
       .card-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
       .btn-view { background-color: #111111; color: #ffffff; border: none; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
       .btn-view:hover { background-color: #333333; }
@@ -146,13 +145,14 @@ if (currentUserId) {
 } else {
   joinBtn = '<a href="login.html" class="btn-join" style="display:inline-block;text-decoration:none;text-align:center;">Login to Join</a>';
 }
-var paidBadge = t.is_paid ? '<span class="badge-paid">💷 £' + t.entry_fee + ' Entry</span>' : '';
+  var paidBadge = t.is_paid ? '<p><strong>💷 Entry Fee:</strong> £' + t.entry_fee + '</p>' : '';
   var cardHtml = '<div class="tournament-card">' +
-    getStatusBadgeHtml(status) + paidBadge +
+    getStatusBadgeHtml(status) +
     '<h3>' + t.name + '</h3>' +
     '<p><strong>Date:</strong> ' + dateStr + timeStr + '</p>' +
     '<p><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</p>' +
-'<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
+    '<p><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</p>' +
+    paidBadge +
     (t.description ? '<p>' + t.description + '</p>' : '') +
     '<p class="player-count">👥 ' + maxStr + (isFull ? ' — <strong>Full</strong>' : '') + '</p>' +
     '<div class="card-actions">' +
