@@ -108,7 +108,7 @@
   <img src="logo-watermark.png" alt="" class="hero-watermark">
 </div>
 <main>
-  <a href="leagues.html" class="back-link">← Back to Leagues</a>
+<a href="leagues.html" class="back-link" id="backLink">← Back to Leagues</a>
   <div id="leagueContent"><p class="loading">Loading...</p></div>
 </main>
     <script>
@@ -463,7 +463,10 @@ function groupMatchesByWeek(matches) {
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
-      window.addEventListener('load', function() {
+window.addEventListener('load', function() {
+        if (document.referrer.includes('academy-leagues.html') || document.referrer.includes('academy.html')) {
+          document.getElementById('backLink').href = 'academy-leagues.html';
+        }
         checkAuth();
         loadLeague();
       });
