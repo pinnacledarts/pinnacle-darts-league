@@ -8,43 +8,54 @@
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
     <style>
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
       .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
-.badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-.badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
+.badge-status-live { background-color: #eafbea; color: #006600; }
+.badge-status-completed { background-color: #fdeaea; color: #cc0000; }
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }      header img { height: 70px; }
-      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
-      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
-      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
-      .btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-.hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; margin-left: auto; }
+nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 nav.open { display: flex; }
-nav a { color: #ffffff; text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #333333; }
-nav a:hover { background-color: #222222; }
-nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
-nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
-nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
-      main { padding: 40px; max-width: 900px; margin: 0 auto; }
-      .back-link { display: inline-block; margin-bottom: 20px; color: #111111; text-decoration: none; font-size: 0.9em; }
-      .back-link:hover { text-decoration: underline; }
-      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 24px; }
-      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
-      .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
-      .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
-      .tab:hover { color: #000000; }
+nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+.hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+.hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+main { padding: 0 28px 40px; max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+      .back-link { position: relative; display: inline-block; margin-bottom: 16px; color: var(--pd-text-light-muted); text-decoration: none; font-size: 0.9em; }
+      .back-link:hover { color: var(--pd-text-light); }
+      #pageTitle { position: relative; font-size: 22px; font-weight: bold; color: var(--pd-text-light); margin: 0 0 10px; }
+      .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; background-color: #1a1a1a; color: var(--pd-text-light-muted); position: relative; }
+      .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid #222222; flex-wrap: wrap; }
+      .tab { padding: 10px 16px; cursor: pointer; font-size: 0.9em; border: none; background: none; color: var(--pd-text-light-muted); font-family: Arial, sans-serif; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+      .tab.active { color: var(--pd-text-light); font-weight: bold; border-bottom: 2px solid var(--pd-text-light); }
+      .tab:hover { color: var(--pd-text-light); }
       .tab-content { display: none; }
       .tab-content.active { display: block; }
-      .card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 24px; margin-bottom: 20px; }
-      .card h3 { margin: 0 0 20px; font-size: 1.1em; padding-left: 12px; border-left: 4px solid #000000; }
+      .card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 22px; margin-bottom: 18px; color: var(--pd-text-dark); }
+      .card h3 { margin: 0 0 18px; font-size: 15px; font-weight: bold; }
       .form-group { margin-bottom: 16px; }
-      .form-group label { display: block; font-size: 0.9em; font-weight: bold; margin-bottom: 6px; color: #333333; }
-      .form-group input { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; font-family: Arial, sans-serif; }
-      .form-group input:focus { outline: none; border-color: #000000; background-color: #ffffff; }
-      .player-checklist { max-height: 250px; overflow-y: auto; border: 1px solid #dddddd; border-radius: 4px; background-color: #f9f9f9; margin-bottom: 12px; }
+      .form-group label { display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 6px; color: #333333; }
+      .form-group input { width: 100%; padding: 10px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 0.95em; background-color: #f9f9f9; font-family: Arial, sans-serif; color: var(--pd-text-dark); }
+      .form-group input:focus { outline: none; border-color: var(--pd-text-dark); background-color: #ffffff; }
+      .player-checklist { max-height: 250px; overflow-y: auto; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); background-color: #f9f9f9; margin-bottom: 12px; }
       .player-checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #eeeeee; cursor: pointer; }
       .player-checklist-item:last-child { border-bottom: none; }
       .player-checklist-item:hover { background-color: #f0f0f0; }
@@ -52,50 +63,46 @@ nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid
       .player-checklist-item label { cursor: pointer; font-size: 0.95em; flex: 1; }
       .player-checklist-empty { padding: 16px; text-align: center; color: #aaaaaa; font-size: 0.9em; }
       .selected-count { font-size: 0.85em; color: #555555; margin-bottom: 8px; }
-      .btn { padding: 10px 24px; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; font-family: Arial, sans-serif; margin-right: 8px; }
-      .btn-primary { background-color: #000000; color: #ffffff; }
+      .btn { padding: 10px 22px; border: none; border-radius: var(--pd-radius-btn); font-size: 0.95em; cursor: pointer; font-family: Arial, sans-serif; margin-right: 8px; }
+      .btn-primary { background-color: var(--pd-text-dark); color: #ffffff; }
       .btn-primary:hover { background-color: #333333; }
-      .btn-secondary { background-color: #ffffff; color: #111111; border: 1px solid #dddddd; }
+      .btn-secondary { background-color: #ffffff; color: var(--pd-text-dark); border: 1px solid var(--pd-border-strong); }
       .btn-secondary:hover { background-color: #f5f5f5; }
       .btn-danger { background-color: #ffffff; color: #cc0000; border: 1px solid #cc0000; }
       .btn-danger:hover { background-color: #fff0f0; }
-      table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.95em; }
-      th { background-color: #111111; color: #ffffff; padding: 10px 12px; text-align: left; }
-      td { padding: 10px 12px; border-bottom: 1px solid #eeeeee; }
+      table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.9em; }
+      th { background-color: var(--pd-text-dark); color: #ffffff; padding: 9px 11px; text-align: left; }
+      td { padding: 9px 11px; border-bottom: 1px solid #f0f0f0; }
       tr:last-child td { border-bottom: none; }
-      .btn-small { padding: 4px 12px; font-size: 0.85em; border-radius: 4px; cursor: pointer; border: 1px solid #dddddd; background: #ffffff; font-family: Arial, sans-serif; }
+      .btn-small { padding: 4px 12px; font-size: 0.82em; border-radius: 7px; cursor: pointer; border: 1px solid var(--pd-border-strong); background: #ffffff; font-family: Arial, sans-serif; color: var(--pd-text-dark); }
       .btn-small:hover { background-color: #f5f5f5; }
       .btn-small.danger { color: #cc0000; border-color: #cc0000; }
       .btn-small.danger:hover { background-color: #fff0f0; }
-      .score-input { width: 50px; padding: 4px 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; text-align: center; }
-      .admin-bar { background-color: #f9f9f9; border: 1px solid #dddddd; border-radius: 6px; padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+      .score-input { width: 50px; padding: 4px 8px; border: 1px solid var(--pd-border-strong); border-radius: 6px; font-size: 0.9em; text-align: center; }
+      .admin-bar { background-color: #f9f9f9; border-radius: var(--pd-radius-btn); padding: 16px; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
       .admin-bar label { font-size: 0.9em; font-weight: bold; }
-      .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #f9f9f9; border: 1px solid #eeeeee; border-radius: 4px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+      .fixture-item { display: flex; align-items: center; justify-content: space-between; padding: 10px; background-color: #f9f9f9; border-radius: var(--pd-radius-btn); margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
       .fixture-players { font-size: 0.9em; font-weight: bold; flex: 1; }
       .fixture-vs { color: #888888; margin: 0 8px; }
       .score-inputs { display: flex; align-items: center; gap: 6px; }
-      .btn-submit-score { background-color: #111111; color: #ffffff; border: none; padding: 4px 12px; border-radius: 4px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
+      .btn-submit-score { background-color: var(--pd-text-dark); color: #ffffff; border: none; padding: 4px 12px; border-radius: 6px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; }
       .btn-submit-score:hover { background-color: #333333; }
       .score-display { font-weight: bold; font-size: 0.95em; display: flex; align-items: center; gap: 8px; }
       .winner-text { font-weight: bold; color: #006600; }
       .round-tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
-      .round-tab { padding: 8px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
-      .round-tab.active { background: #111111; color: #ffffff; border-color: #111111; font-weight: bold; }
-      .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
-      .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
+      .round-tab { padding: 8px 16px; border: 1px solid var(--pd-border-strong); background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
+      .round-tab.active { background: var(--pd-text-dark); color: #ffffff; border-color: var(--pd-text-dark); font-weight: bold; }
+      .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: var(--pd-radius-btn); margin-bottom: 16px; display: none; font-size: 0.9em; }
+      .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: var(--pd-radius-btn); margin-bottom: 16px; display: none; font-size: 0.9em; }
       .empty-state { text-align: center; padding: 20px; color: #aaaaaa; font-size: 0.95em; }
-      .loading { text-align: center; padding: 40px; color: #888888; }
-      .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; margin-bottom: 10px; background-color: #f0f0f0; }
-      .key { font-size: 0.85em; color: #666666; margin-top: 12px; border-top: 1px solid #dddddd; padding-top: 12px; }
+      .loading { text-align: center; padding: 40px; color: var(--pd-text-light-muted); }
+      .key { font-size: 0.85em; color: #666666; margin-top: 12px; border-top: 1px solid #eeeeee; padding-top: 12px; }
       .key span { margin-right: 20px; display: inline-block; }
       @media (max-width: 700px) {
-        header { flex-wrap: wrap; padding: 16px 20px; }
-        header img { height: 50px; }
-        header h1 { font-size: 1.4em; }
-        header p { font-size: 0.85em; }
-.header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-.btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
-main { padding: 24px 20px; }
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+main { padding: 0 20px 32px; }
         table { font-size: 0.8em; }
         th, td { padding: 8px 6px; }
       }
@@ -103,10 +110,9 @@ main { padding: 24px 20px; }
   </head>
   <body>
   <header>
-  <img src="logo.png" alt="Pinnacle Darts Logo">
-  <div>
-    <h1>Pinnacle Darts League</h1>
-    <p>Official League Website</p>
+  <div class="brand">
+    <img src="logo.png" alt="Pinnacle Darts Logo">
+    <div class="brand-name">Pinnacle Darts League</div>
   </div>
   <button class="hamburger" onclick="toggleMenu()">☰</button>
   <nav id="mainNav">
@@ -114,10 +120,13 @@ main { padding: 24px 20px; }
     <a href="leagues.html">Leagues</a>
     <a href="tournaments.html">Tournaments</a>
     <a href="players.html">Players</a>
-    <a href="academy.html" class="btn-switch" id="switchBtn" style="border:none;min-width:unset;text-align:left;">Switch to Academy</a>
+    <a href="academy.html" class="btn-switch" id="switchBtn" style="border:none;text-align:left;">Switch to Academy</a>
     <div id="authButtons" style="padding:14px 24px;"></div>
   </nav>
 </header>
+<div class="hero">
+  <img src="logo-watermark.png" alt="" class="hero-watermark">
+</div>
     <main>
       <a href="admin.html" class="back-link">← Back to Admin</a>
       <div id="pageContent"><p class="loading">Loading...</p></div>
@@ -130,12 +139,10 @@ main { padding: 24px 20px; }
       var profileMapAdmin = {};
       var playoffRoundOrder = ['Semi Final', 'Final'];
       var BYE_PROFILE_IDS = ['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000006','00000000-0000-0000-0000-000000000007','00000000-0000-0000-0000-000000000008'];
-
       if (document.referrer.includes('academy.html')) {
         var sBtn = document.getElementById('switchBtn');
         if (sBtn) { sBtn.textContent = 'Switch to Online'; sBtn.href = 'index.html'; }
       }
-
       async function init() {
         var params = new URLSearchParams(window.location.search);
         leagueId = params.get('id');
@@ -153,7 +160,7 @@ main { padding: 24px 20px; }
         BYE_PROFILE_IDS.forEach(function(id) { profileMapAdmin[id] = 'BYE'; });
         var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'playoffs\', event)">Playoffs</button>' : '';
         document.getElementById('pageContent').innerHTML =
-          '<h2 id="pageTitle">⚙️ Managing: ' + leagueData.name + '</h2>' +
+          '<h2 id="pageTitle">Managing: ' + leagueData.name + '</h2>' +
           '<span class="badge">' + formatLabel(leagueData.format) + (leagueData.playoffs ? ' + Playoffs' : '') + ' + Avg Split</span>' +
           '<div class="tabs">' +
           '<button class="tab active" onclick="showTab(\'details\', event)">Details</button>' +
@@ -242,7 +249,6 @@ main { padding: 24px 20px; }
         if (leagueData.playoffs) { loadPlayoffs(); }
         restoreActiveTab();
       }
-
       async function saveLeagueDetails() {
         var update = {
           name: document.getElementById('detName').value.trim(),
@@ -263,10 +269,9 @@ main { padding: 24px 20px; }
         leagueData.format = update.format;
         leagueData.playoffs = update.playoffs;
         leagueData.players_per_division = update.players_per_division;
-        document.getElementById('pageTitle').textContent = '⚙️ Managing: ' + update.name;
+        document.getElementById('pageTitle').textContent = 'Managing: ' + update.name;
         showMsg('details-success', 'Details saved successfully! Refresh the page if you changed Format or Playoffs to update the tabs shown.');
       }
-
       function buildPlayerChecklist(filter) {
         var checklist = document.getElementById('playerChecklist');
         var available = allProfiles.filter(function(p) {
@@ -290,26 +295,21 @@ main { padding: 24px 20px; }
         }).join('');
         updateSelectedCount();
       }
-
       function filterPlayerChecklist() {
         var val = document.getElementById('playerSearch').value.toLowerCase().trim();
         buildPlayerChecklist(val);
       }
-
       function toggleCheck(playerId) {
         var chk = document.getElementById('chk_' + playerId);
         if (chk) { chk.checked = !chk.checked; updateSelectedCount(); }
       }
-
       function updateSelectedCount() {
         var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
         document.getElementById('selectedCount').textContent = checked.length + ' player' + (checked.length !== 1 ? 's' : '') + ' selected';
       }
-
       async function addSelectedPlayers() {
         var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
         if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
-
         var noAverage = [];
         for (var c = 0; c < checked.length; c++) {
           var p = allProfiles.find(function(pr) { return pr.id === checked[c].value; });
@@ -319,7 +319,6 @@ main { padding: 24px 20px; }
           showMsg('add-player-error', 'These players have no average set yet, so they can\'t be added: ' + noAverage.join(', ') + '. Set a Starter Average for them first.');
           return;
         }
-
         var added = 0;
         for (var i = 0; i < checked.length; i++) {
           var playerId = checked[i].value;
@@ -330,45 +329,36 @@ main { padding: 24px 20px; }
         await loadPlayers();
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
-
       function getEffectiveAvg(profile) {
         if (!profile) { return 0; }
         return parseFloat(profile.average || profile.starter_average || 0);
       }
-
       async function checkCanReopen() {
         var result = await sbClient.from('league_matches').select('id').eq('league_id', leagueId).eq('status', 'completed').limit(1);
         return !(result.data && result.data.length);
       }
-
       async function toggleLeagueCheckIn(rowId, currentStatus) {
         await sbClient.from('league_players').update({ checked_in: !currentStatus }).eq('id', rowId);
         loadPlayers();
       }
-
       async function loadPlayers() {
         var result = await sbClient.from('league_players').select('id, player_id, division, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
         var allEntries = result.data || [];
         existingPlayerIds = allEntries.filter(function(p) { return !(p.profiles && p.profiles.is_bye); }).map(function(p) { return p.player_id; });
-
         var container = document.getElementById('divisionsPreview');
         var actionsBar = document.getElementById('divisionActionsBar');
-
         if (!allEntries.length) {
           container.innerHTML = '<p class="empty-state">No players registered yet.</p>';
           actionsBar.innerHTML = '';
           return;
         }
-
         var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
         var divisionSize = parseInt(leagueData.players_per_division) || 8;
-
         function paymentLabelFor(p) {
           return p.amount_owed > 0
             ? (p.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Pending</span>')
             : '<span style="color:#888;">-</span>';
         }
-
         if (leagueData.divisions_locked) {
           var byDiv = {};
           allEntries.forEach(function(p) {
@@ -393,18 +383,15 @@ main { padding: 24px 20px; }
               }).join('') + '</tbody></table>';
           });
           container.innerHTML = html;
-
           var canReopen = await checkCanReopen();
           actionsBar.innerHTML = '<button class="btn btn-secondary" onclick="reopenDivisions()"' + (canReopen ? '' : ' disabled title="Cannot reopen once a result has been entered"') + '>Reopen Divisions</button>';
         } else {
           var realEntries = allEntries.filter(function(p) { return !(p.profiles && p.profiles.is_bye); });
           var sorted = realEntries.slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
-
           var groups = [];
           for (var i = 0; i < sorted.length; i += divisionSize) {
             groups.push(sorted.slice(i, i + divisionSize));
           }
-
           var html = '';
           groups.forEach(function(g, idx) {
             html += '<h4 style="margin:16px 0 8px;">Division ' + (idx + 1) + ' (Preview)</h4><table><thead><tr><th>Player</th><th>Average</th><th>Check-in</th><th>Payment</th></tr></thead><tbody>' +
@@ -419,25 +406,19 @@ main { padding: 24px 20px; }
               }).join('') + '</tbody></table>';
           });
           container.innerHTML = html || '<p class="empty-state">No players registered yet.</p>';
-
           actionsBar.innerHTML = '<button class="btn btn-primary" onclick="confirmAllDivisions()">Confirm All Divisions</button>';
         }
       }
-
       async function confirmAllDivisions() {
         var divisionSize = parseInt(leagueData.players_per_division) || 8;
         var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
-
         if (!confirm('Confirm all divisions now? ' + (checkinEnabled ? 'Anyone who has not checked in will be removed. ' : '') + 'This locks in the groupings and generates fixtures.')) { return; }
-
         var result = await sbClient.from('league_players').select('id, player_id, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
         var allEntries = (result.data || []).filter(function(p) { return !(p.profiles && p.profiles.is_bye); });
-
         var keep = allEntries;
         if (checkinEnabled) {
           var notCheckedIn = allEntries.filter(function(p) { return !p.checked_in; });
           keep = allEntries.filter(function(p) { return p.checked_in; });
-
           for (var i = 0; i < notCheckedIn.length; i++) {
             var entry = notCheckedIn[i];
             await sbClient.from('league_players').delete().eq('id', entry.id);
@@ -448,20 +429,16 @@ main { padding: 24px 20px; }
             }
           }
         }
-
         var sorted = keep.slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
-
         var groups = [];
         for (var i = 0; i < sorted.length; i += divisionSize) {
           groups.push(sorted.slice(i, i + divisionSize));
         }
-
         for (var g = 0; g < groups.length; g++) {
           for (var m = 0; m < groups[g].length; m++) {
             await sbClient.from('league_players').update({ division: g + 1 }).eq('id', groups[g][m].id);
           }
         }
-
         if (groups.length > 0) {
           var lastDivisionNum = groups.length;
           var lastDivisionCount = groups[groups.length - 1].length;
@@ -472,18 +449,14 @@ main { padding: 24px 20px; }
             }]);
           }
         }
-
         await sbClient.from('leagues').update({ divisions_locked: true }).eq('id', leagueId);
         leagueData.divisions_locked = true;
-
         await autoGenerateFixturesAfterConfirm();
-
         showMsg('divisions-success', 'Divisions confirmed and fixtures generated!');
         loadPlayers();
         loadFixtures();
         loadStandings();
       }
-
       async function autoGenerateFixturesAfterConfirm() {
         if (leagueData.format === 'swiss') { return; }
         await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'regular');
@@ -499,27 +472,21 @@ main { padding: 24px 20px; }
           await generateFixturesForGroup(divisions[divKey], parseInt(divKey));
         }
       }
-
       async function reopenDivisions() {
         var canReopen = await checkCanReopen();
         if (!canReopen) { showMsg('divisions-error', 'Cannot reopen — a result has already been entered.'); return; }
         if (!confirm('Reopen divisions? This will remove any BYE placeholders and clear any generated fixtures.')) { return; }
-
         for (var i = 0; i < BYE_PROFILE_IDS.length; i++) {
           await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', BYE_PROFILE_IDS[i]);
         }
-
         await sbClient.from('league_matches').delete().eq('league_id', leagueId);
-
         await sbClient.from('leagues').update({ divisions_locked: false }).eq('id', leagueId);
         leagueData.divisions_locked = false;
-
         showMsg('divisions-success', 'Divisions reopened — fixtures cleared.');
         loadPlayers();
         loadFixtures();
         loadStandings();
       }
-
       async function removePlayer(playerId) {
         if (!confirm('Remove this player from the league? Any existing fixtures involving them will also be deleted.')) { return; }
         await sbClient.from('league_players').delete().eq('league_id', leagueId).eq('player_id', playerId);
@@ -527,7 +494,6 @@ main { padding: 24px 20px; }
         await loadPlayers();
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
-
       function generateRoundRobinRounds(playerIds) {
         var players = playerIds.slice();
         if (players.length % 2 !== 0) { players.push(null); }
@@ -549,28 +515,23 @@ main { padding: 24px 20px; }
         }
         return rounds;
       }
-
 async function generateFixturesForGroup(players, division) {
         var byeScore = leagueData.bye_scoreline || 3;
         var matchesPerWeek = leagueData.matches_per_week != null ? parseInt(leagueData.matches_per_week) : 1;
         var isUnlimited = matchesPerWeek === 0;
         var rounds = generateRoundRobinRounds(players);
-
         if (leagueData.format === 'home_away') {
           var mirrored = rounds.map(function(round) {
             return round.map(function(pair) { return [pair[1], pair[0]]; });
           });
           rounds = rounds.concat(mirrored);
         }
-
         var groupSize = isUnlimited ? 1 : matchesPerWeek;
         var labelPrefix = isUnlimited ? 'Round ' : 'Week ';
-
         for (var w = 0; w < rounds.length; w += groupSize) {
           var groupNumber = Math.floor(w / groupSize) + 1;
           var groupRounds = rounds.slice(w, w + groupSize);
           var allPairsThisGroup = [].concat.apply([], groupRounds);
-
           for (var p = 0; p < allPairsThisGroup.length; p++) {
             var player1 = allPairsThisGroup[p][0];
             var player2 = allPairsThisGroup[p][1];
@@ -588,7 +549,6 @@ async function generateFixturesForGroup(players, division) {
           }
         }
       }
-
       async function generateNextSwissRound() {
         var maxGames = leagueData.swiss_games || 5;
         var existingRounds = await sbClient.from('league_matches').select('round').eq('league_id', leagueId).eq('stage', 'regular');
@@ -639,21 +599,18 @@ async function generateFixturesForGroup(players, division) {
         showMsg('fixtures-success', 'Round ' + nextRoundNum + ' generated!');
         loadFixtures();
       }
-
       async function clearFixtures() {
         if (!confirm('Delete all fixtures and results for this league?')) { return; }
         await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'regular');
         document.getElementById('fixturesContent').innerHTML = '<p class="empty-state">No fixtures generated yet.</p>';
         loadStandings();
       }
-
       function getWeekCommencingDate(weekNumber) {
         if (!leagueData.start_date) { return ''; }
         var start = new Date(leagueData.start_date);
         start.setDate(start.getDate() + (weekNumber - 1) * 7);
         return start.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
       }
-
 function groupMatchesByWeek(matches) {
         var matchesPerWeek = leagueData.matches_per_week != null ? parseInt(leagueData.matches_per_week) : 1;
         var isUnlimited = matchesPerWeek === 0;
@@ -677,7 +634,6 @@ function groupMatchesByWeek(matches) {
           return '<h4 style="margin:16px 0 8px;">' + heading + '</h4>' + byGroup[gn].map(renderFixtureItem).join('');
         }).join('');
       }
-
       async function loadFixtures() {
         var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular').order('id');
         var container = document.getElementById('fixturesContent');
@@ -693,7 +649,6 @@ function groupMatchesByWeek(matches) {
           return '<h3 style="margin:24px 0 8px;">Division ' + dk + '</h3>' + groupMatchesByWeek(byDivision[dk]);
         }).join('');
       }
-
       function renderFixtureItem(m) {
         var p1name = profileMapAdmin[m.player1_id] || 'Unknown';
         var p2name = profileMapAdmin[m.player2_id] || 'Unknown';
@@ -711,7 +666,6 @@ function groupMatchesByWeek(matches) {
           '<button class="btn-submit-score" onclick="updateFixtureScore(' + m.id + ', \'' + m.player1_id + '\', \'' + m.player2_id + '\')">' + (m.status === 'completed' ? 'Update' : 'Submit') + '</button>' +
           '</div></div>';
       }
-
       async function updateFixtureScore(matchId, p1Id, p2Id) {
         var s1 = parseInt(document.getElementById('fs1_' + matchId).value);
         var s2 = parseInt(document.getElementById('fs2_' + matchId).value);
@@ -729,7 +683,6 @@ function groupMatchesByWeek(matches) {
         loadStandings();
         if (leagueData.playoffs) { await checkAndGeneratePlayoffs(false); loadPlayoffs(); }
       }
-
       async function computeStandingsForPlayers(players, matches) {
         return players.map(function(p) {
           var profile = p.profiles || {};
@@ -763,7 +716,6 @@ function groupMatchesByWeek(matches) {
           return 0;
         });
       }
-
       async function computeStandings() {
         var playersResult = await sbClient.from('league_players').select('player_id, division, profiles(full_name, username)').eq('league_id', leagueId);
         var players = playersResult.data || [];
@@ -771,7 +723,6 @@ function groupMatchesByWeek(matches) {
         var matches = matchesResult.data || [];
         return await computeStandingsForPlayers(players, matches);
       }
-
       function renderStandingsTable(standings) {
         return '<table><thead><tr><th>Pos</th><th>Player</th><th>P</th><th>W</th><th>L</th><th>+/-</th><th>Pts</th></tr></thead><tbody>' +
           standings.map(function(s, i) {
@@ -784,7 +735,6 @@ function groupMatchesByWeek(matches) {
           '<span><strong>+/-</strong> = Leg Difference</span><span><strong>Pts</strong> = Points</span>' +
           '</div>';
       }
-
       async function loadStandings() {
         var container = document.getElementById('standingsContent');
         var playersResult = await sbClient.from('league_players').select('player_id, division, profiles(full_name, username)').eq('league_id', leagueId);
@@ -808,7 +758,6 @@ function groupMatchesByWeek(matches) {
         }
         container.innerHTML = html;
       }
-
       async function checkAndGeneratePlayoffs(manualTrigger) {
         var playersResult = await sbClient.from('league_players').select('player_id, division, profiles(full_name, username)').eq('league_id', leagueId);
         var players = playersResult.data || [];
@@ -824,7 +773,6 @@ function groupMatchesByWeek(matches) {
         }
         loadPlayoffs();
       }
-
       async function generatePlayoffsForDivision(division, divPlayers, manualTrigger) {
         var matchesResult = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular').eq('division', division);
         var divMatches = matchesResult.data || [];
@@ -849,13 +797,11 @@ function groupMatchesByWeek(matches) {
           stage: 'playoff', round: 'Final', status: 'pending', division: division
         }]);
       }
-
       async function clearPlayoffs() {
         if (!confirm('Delete the playoff bracket?')) { return; }
         await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'playoff');
         document.getElementById('playoffsContent').innerHTML = '<p class="empty-state">Playoffs will generate automatically once the regular season is complete.</p>';
       }
-
       async function loadPlayoffs() {
         var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'playoff');
         var container = document.getElementById('playoffsContent');
@@ -871,7 +817,6 @@ function groupMatchesByWeek(matches) {
           return '<h4 style="margin:20px 0 8px;">Division ' + dk + '</h4>' + renderPlayoffMatches(byDivision[dk]);
         }).join('');
       }
-
       function renderPlayoffMatches(matches) {
         var rounds = {};
         matches.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
@@ -900,7 +845,6 @@ function groupMatchesByWeek(matches) {
           return '<h4 style="margin:16px 0 8px;">' + r + '</h4>' + matchesHtml;
         }).join('');
       }
-
       async function savePlayoffScore(matchId, currentRound, p1Id, p2Id, division) {
         var s1 = parseInt(document.getElementById('ps1_' + matchId).value);
         var s2 = parseInt(document.getElementById('ps2_' + matchId).value);
@@ -935,7 +879,6 @@ function groupMatchesByWeek(matches) {
         }
         loadPlayoffs();
       }
-
       function formatLabel(val) {
         if (!val) { return '-'; }
         var labels = {
@@ -944,7 +887,6 @@ function groupMatchesByWeek(matches) {
         };
         return labels[val] || val;
       }
-
       function showMsg(id, msg) {
         var el = document.getElementById(id);
         if (!el) { return; }
@@ -952,7 +894,6 @@ function groupMatchesByWeek(matches) {
         el.style.display = 'block';
         setTimeout(function() { el.style.display = 'none'; }, 4000);
       }
-
 function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
@@ -960,11 +901,9 @@ function showTab(name, event) {
         document.getElementById('tab-' + name).classList.add('active');
         saveActiveTab(name);
       }
-
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
-
       window.addEventListener('load', function() {
         checkAuth();
         init();
