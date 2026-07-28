@@ -14,6 +14,21 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
   document.head.appendChild(link);
 })();
 document.addEventListener('DOMContentLoaded', function() {
+  var brand = document.querySelector('header .brand');
+  if (!brand) { return; }
+  var isAcademy;
+  if (window.location.pathname.includes('admin')) {
+    isAcademy = document.referrer.includes('academy.html');
+  } else {
+    isAcademy = window.location.pathname.includes('academy');
+  }
+  var target = isAcademy ? 'academy.html' : 'index.html';
+  brand.style.cursor = 'pointer';
+  brand.addEventListener('click', function() {
+    window.location.href = target;
+  });
+});
+document.addEventListener('DOMContentLoaded', function() {
   var nav = document.getElementById('mainNav');
   if (!nav) { return; }
   if (window.location.pathname.includes('admin')) { return; }
