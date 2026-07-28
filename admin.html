@@ -5,72 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin | Pinnacle Darts League</title>
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script src="auth.js?t=999999"></script>
     <style> 
       * { box-sizing: border-box; }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: #f5f5f5; color: #111111; }
-header { background-color: #000000; padding: 20px 40px; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; position: sticky; top: 0; z-index: 500; }      header img { height: 70px; }
-      header h1 { margin: 0; color: #ffffff; font-size: 2em; }
-      header p { margin: 4px 0 0; color: #cccccc; font-size: 1em; }
-      .header-buttons { margin-left: auto; display: flex; gap: 10px; align-items: center; }
-      .btn-switch, .btn-login, .btn-logout { color: #ffffff; text-decoration: none; border: 1px solid #ffffff; padding: 8px 18px; border-radius: 4px; font-size: 0.9em; white-space: nowrap; text-align: center; min-width: 160px; cursor: pointer; background: none; font-family: Arial, sans-serif; }
-      .btn-switch:hover, .btn-login:hover, .btn-logout:hover { background-color: #ffffff; color: #000000; }
-.btn-username { color: #ffffff; font-size: 0.9em; white-space: nowrap; }
-.hamburger { display: block; background: none; border: none; color: #ffffff; font-size: 1.8em; cursor: pointer; padding: 0 10px; margin-left: auto; }
-nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: #000000; z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; margin-left: auto; }
+nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 nav.open { display: flex; }
-nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #333333; border-radius: 0; min-width: unset; padding: 14px 24px; font-size: 1em; margin: 0; }
-nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #222222; color: #ffffff; }
-nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #333333; }
-main { padding: 40px; max-width: 900px; margin: 0 auto; }
-      h2 { border-bottom: 3px solid #111111; padding-bottom: 8px; margin-bottom: 30px; }
-      .tabs { display: flex; gap: 4px; margin-bottom: 30px; border-bottom: 2px solid #dddddd; flex-wrap: wrap; }
-      .tab { padding: 10px 20px; cursor: pointer; font-size: 0.95em; border: none; background: none; color: #555555; font-family: Arial, sans-serif; border-bottom: 3px solid transparent; margin-bottom: -2px; }
-      .tab.active { color: #000000; font-weight: bold; border-bottom: 3px solid #000000; }
-      .tab:hover { color: #000000; }
+nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+.hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+.hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+.hero-title { position: relative; font-size: 24px; font-weight: bold; color: var(--pd-text-light); margin: 0; }
+main { padding: 0 28px 40px; max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+      .tabs { display: flex; gap: 4px; margin-bottom: 24px; border-bottom: 1px solid #222222; flex-wrap: wrap; }
+      .tab { padding: 10px 16px; cursor: pointer; font-size: 0.9em; border: none; background: none; color: var(--pd-text-light-muted); font-family: Arial, sans-serif; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+      .tab.active { color: var(--pd-text-light); font-weight: bold; border-bottom: 2px solid var(--pd-text-light); }
+      .tab:hover { color: var(--pd-text-light); }
       .tab-content { display: none; }
       .tab-content.active { display: block; }
-      .card { background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; padding: 24px; margin-bottom: 20px; }
-      .card h3 { margin: 0 0 20px; font-size: 1.1em; padding-left: 12px; border-left: 4px solid #000000; }
+      .card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 22px; margin-bottom: 18px; color: var(--pd-text-dark); }
+      .card h3 { margin: 0 0 18px; font-size: 15px; font-weight: bold; }
       .form-group { margin-bottom: 16px; }
-      .form-group label { display: block; font-size: 0.9em; font-weight: bold; margin-bottom: 6px; color: #333333; }
-      .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; background-color: #f9f9f9; font-family: Arial, sans-serif; }
-      .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #000000; background-color: #ffffff; }
+      .form-group label { display: block; font-size: 0.85em; font-weight: bold; margin-bottom: 6px; color: #333333; }
+      .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 0.95em; background-color: #f9f9f9; font-family: Arial, sans-serif; color: var(--pd-text-dark); }
+      .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--pd-text-dark); background-color: #ffffff; }
       .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
       .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
-      .btn { padding: 10px 24px; border: none; border-radius: 4px; font-size: 1em; cursor: pointer; font-family: Arial, sans-serif; margin-right: 8px; }
-      .btn-primary { background-color: #000000; color: #ffffff; }
+      .btn { padding: 10px 22px; border: none; border-radius: var(--pd-radius-btn); font-size: 0.95em; cursor: pointer; font-family: Arial, sans-serif; margin-right: 8px; }
+      .btn-primary { background-color: var(--pd-text-dark); color: #ffffff; }
       .btn-primary:hover { background-color: #333333; }
-      .btn-secondary { background-color: #ffffff; color: #111111; border: 1px solid #dddddd; }
+      .btn-secondary { background-color: #ffffff; color: var(--pd-text-dark); border: 1px solid var(--pd-border-strong); }
       .btn-secondary:hover { background-color: #f5f5f5; }
       .btn-danger { background-color: #ffffff; color: #cc0000; border: 1px solid #cc0000; }
       .btn-danger:hover { background-color: #fff0f0; }
-      table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.95em; }
-      th { background-color: #111111; color: #ffffff; padding: 10px 12px; text-align: left; }
-      td { padding: 10px 12px; border-bottom: 1px solid #eeeeee; }
+      table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.9em; }
+      th { background-color: var(--pd-text-dark); color: #ffffff; padding: 9px 11px; text-align: left; }
+      td { padding: 9px 11px; border-bottom: 1px solid #f0f0f0; }
       tr:last-child td { border-bottom: none; }
-      .btn-small { padding: 4px 12px; font-size: 0.85em; border-radius: 4px; cursor: pointer; border: 1px solid #dddddd; background: #ffffff; font-family: Arial, sans-serif; }
+      .btn-small { padding: 4px 12px; font-size: 0.82em; border-radius: 7px; cursor: pointer; border: 1px solid var(--pd-border-strong); background: #ffffff; font-family: Arial, sans-serif; color: var(--pd-text-dark); }
       .btn-small:hover { background-color: #f5f5f5; }
       .btn-small.danger { color: #cc0000; border-color: #cc0000; }
       .btn-small.danger:hover { background-color: #fff0f0; }
-      .btn-small.view { background-color: #111111; color: #ffffff; border-color: #111111; }
+      .btn-small.view { background-color: var(--pd-text-dark); color: #ffffff; border-color: var(--pd-text-dark); }
       .btn-small.view:hover { background-color: #333333; }
-      .score-input { width: 60px; padding: 4px 8px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; text-align: center; }
-      .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
-      .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: 4px; margin-bottom: 16px; display: none; font-size: 0.9em; }
+      .score-input { width: 60px; padding: 4px 8px; border: 1px solid var(--pd-border-strong); border-radius: 4px; font-size: 0.9em; text-align: center; }
+      .success-msg { background-color: #f0fff0; border: 1px solid #cceecc; color: #006600; padding: 10px 16px; border-radius: var(--pd-radius-btn); margin-bottom: 16px; display: none; font-size: 0.9em; }
+      .error-msg { background-color: #fff0f0; border: 1px solid #ffcccc; color: #cc0000; padding: 10px 16px; border-radius: var(--pd-radius-btn); margin-bottom: 16px; display: none; font-size: 0.9em; }
       .badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 0.8em; font-weight: bold; }
       .badge-status-upcoming { background-color: #eeeeee; color: #666666; }
-      .badge-status-live { background-color: #f0fff0; color: #006600; border: 1px solid #cceecc; }
-      .badge-status-completed { background-color: #fff0f0; color: #cc0000; border: 1px solid #ffcccc; }
-      .empty-state { text-align: center; padding: 20px; color: #aaaaaa; font-size: 0.95em; }
+      .badge-status-live { background-color: #eafbea; color: #006600; }
+      .badge-status-completed { background-color: #fdeaea; color: #cc0000; }
+      .empty-state { text-align: center; padding: 20px; color: var(--pd-text-muted); font-size: 0.95em; }
       .hidden { display: none; }
-      .search-bar { width: 100%; padding: 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 1em; margin-bottom: 16px; font-family: Arial, sans-serif; }
-      .search-bar:focus { outline: none; border-color: #000000; }
-      .template-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; padding: 12px; background: #f9f9f9; border: 1px solid #dddddd; border-radius: 6px; flex-wrap: wrap; }
+      .search-bar { width: 100%; padding: 10px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 0.95em; margin-bottom: 16px; font-family: Arial, sans-serif; color: var(--pd-text-dark); background: #f9f9f9; }
+      .search-bar:focus { outline: none; border-color: var(--pd-text-dark); }
+      .template-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; padding: 12px; background: #f9f9f9; border-radius: var(--pd-radius-btn); flex-wrap: wrap; }
       .template-bar label { font-size: 0.9em; font-weight: bold; margin-right: 4px; }
-      .template-bar select { padding: 6px 10px; border: 1px solid #dddddd; border-radius: 4px; font-size: 0.9em; font-family: Arial, sans-serif; }
-      .player-checklist { max-height: 250px; overflow-y: auto; border: 1px solid #dddddd; border-radius: 4px; background-color: #f9f9f9; margin-bottom: 12px; }
+      .template-bar select { padding: 6px 10px; border: 1px solid var(--pd-border-strong); border-radius: 6px; font-size: 0.9em; font-family: Arial, sans-serif; }
+      .player-checklist { max-height: 250px; overflow-y: auto; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); background-color: #f9f9f9; margin-bottom: 12px; }
       .player-checklist-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid #eeeeee; cursor: pointer; }
       .player-checklist-item:last-child { border-bottom: none; }
       .player-checklist-item:hover { background-color: #f0f0f0; }
@@ -79,14 +92,10 @@ main { padding: 40px; max-width: 900px; margin: 0 auto; }
       .player-checklist-empty { padding: 16px; text-align: center; color: #aaaaaa; font-size: 0.9em; }
       .selected-count { font-size: 0.85em; color: #555555; margin-bottom: 8px; }
       @media (max-width: 700px) {
-        header { flex-wrap: wrap; padding: 16px 20px; }
-        header img { height: 50px; }
-        header h1 { font-size: 1.4em; }
-        header p { font-size: 0.85em; }
-.header-buttons { margin-left: 0; width: 100%; justify-content: flex-end; flex-wrap: wrap; }
-.btn-switch, .btn-login, .btn-logout { font-size: 0.8em; padding: 6px 12px; min-width: 140px; }
-main { padding: 24px 20px; }
-        h2 { font-size: 1.3em; }
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+main { padding: 0 20px 32px; }
         .form-row { grid-template-columns: 1fr; }
         .form-row-3 { grid-template-columns: 1fr; }
         table { font-size: 0.75em; }
@@ -96,21 +105,21 @@ main { padding: 24px 20px; }
   </head>
   <body>
  <header>
-  <img src="logo.png" alt="Pinnacle Darts Logo">
-  <div>
-    <h1>Pinnacle Darts League</h1>
-    <p>Official League Website</p>
+  <div class="brand">
+    <img src="logo.png" alt="Pinnacle Darts Logo">
+    <div class="brand-name">Pinnacle Darts League</div>
   </div>
   <button class="hamburger" onclick="toggleMenu()">☰</button>
   <nav id="mainNav">
-    <a href="academy.html" class="btn-switch" id="switchBtn" style="border:none;min-width:unset;text-align:left;">Return to Online</a>
+    <a href="academy.html" class="btn-switch" id="switchBtn" style="border:none;text-align:left;">Return to Online</a>
     <div id="authButtons" style="padding:14px 24px;"></div>
   </nav>
 </header>
-
+<div class="hero">
+  <img src="logo-watermark.png" alt="" class="hero-watermark">
+  <div class="hero-title">Admin dashboard</div>
+</div>
     <main>
-      <h2>Admin Dashboard</h2>
-
       <div class="tabs">
         <button class="tab active" onclick="showTab('tournaments', event)">Tournaments</button>
         <button class="tab" onclick="showTab('leagues', event)">Leagues</button>
@@ -122,7 +131,6 @@ main { padding: 24px 20px; }
 <button class="tab" onclick="showTab('credit', event)" id="creditTabBtn">Credit</button>
         <button class="tab" onclick="showTab('news', event)">News</button>
       </div>
-
 <!-- TOURNAMENTS TAB -->
       <div id="tab-tournaments" class="tab-content active">
         <div class="card">
@@ -232,14 +240,11 @@ main { padding: 24px 20px; }
           </div>
           <button class="btn btn-primary" onclick="createTournament()">Create Tournament</button>
         </div>
-
         <div class="card">
           <h3>Manage Tournaments</h3>
           <div id="tournamentsList"><p class="empty-state">Loading...</p></div>
         </div>
       </div>
-
-
 <!-- LEAGUES TAB -->
       <div id="tab-leagues" class="tab-content">
         <div class="card">
@@ -366,29 +371,26 @@ main { padding: 24px 20px; }
           </div>
           <button class="btn btn-primary" onclick="createLeague()">Create League</button>
         </div>
-
         <div class="card">
           <h3>Manage Leagues</h3>
           <div id="leaguesList"><p class="empty-state">Loading...</p></div>
         </div>
       </div>
-
 <!-- PLAYERS TAB -->
 <div id="tab-players" class="tab-content">
   <div class="card">
     <h3>Registration Overview</h3>
     <div class="key-stats" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
-      <div class="stat-box" style="border:1px solid #dddddd;border-radius:8px;padding:20px;text-align:center;">
+      <div class="stat-box" style="border:1px solid #eeeeee;border-radius:12px;padding:20px;text-align:center;">
         <div style="font-size:0.8em;color:#888888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Total Players</div>
         <div style="font-size:2em;font-weight:bold;" id="statTotalPlayers">-</div>
       </div>
-      <div class="stat-box" style="border:1px solid #dddddd;border-radius:8px;padding:20px;text-align:center;">
+      <div class="stat-box" style="border:1px solid #eeeeee;border-radius:12px;padding:20px;text-align:center;">
         <div style="font-size:0.8em;color:#888888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">New (Last 7 Days)</div>
         <div style="font-size:2em;font-weight:bold;" id="statNewPlayers">-</div>
       </div>
     </div>
   </div>
-
   <div class="card">
     <h3>Pending Academy Approvals</h3>
     <div id="pendingApprovalsList"><p class="empty-state">Loading...</p></div>
@@ -510,7 +512,6 @@ main { padding: 24px 20px; }
           </div>
           <button class="btn btn-primary" onclick="submitSession()">Submit Session</button>
         </div>
-
         <div class="card">
           <h3>Session Log</h3>
           <div class="form-row">
@@ -528,7 +529,6 @@ main { padding: 24px 20px; }
           <button class="btn btn-secondary" onclick="clearSessionFilters()" style="margin-bottom:16px;">Clear Filters</button>
 <div id="sessionLogList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
-
         <div class="card">
           <h3>Set Up New Drill</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a drill with targets and score options.</p>
@@ -549,12 +549,10 @@ main { padding: 24px 20px; }
   <button class="btn btn-primary" onclick="saveDrill()">Create Drill</button>
 </div>
         </div>
-
         <div class="card">
           <h3>Manage Drills</h3>
 <div id="drillsList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
-
         <div class="card">
           <h3>Drill Attempts Log</h3>
           <div class="form-row">
@@ -572,7 +570,6 @@ main { padding: 24px 20px; }
           <button class="btn btn-secondary" onclick="clearDrillAttemptFilters()" style="margin-bottom:16px;">Clear Filters</button>
 <div id="drillAttemptsList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
-
         <div class="card">
           <h3>Academy Leagues (Groups)</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a group (e.g. Tuesday Prodigy) and add players to it.</p>
@@ -585,7 +582,6 @@ main { padding: 24px 20px; }
             </div>
           </div>
           <button class="btn btn-primary" onclick="createAcademyLeague()">Create Group</button>
-
           <div style="margin-top:24px;">
             <div class="form-group">
               <label>Manage Group</label>
@@ -594,7 +590,6 @@ main { padding: 24px 20px; }
             <button class="btn btn-secondary" onclick="endAcademySeason()">End Season</button>
             <button class="btn btn-danger" onclick="deleteAcademyLeague()">Delete This Group</button>
           </div>
-
           <div style="margin-top:16px;">
             <div class="form-group">
               <label>Search Players to Add</label>
@@ -604,10 +599,8 @@ main { padding: 24px 20px; }
             <div class="player-checklist" id="academyLeaguePlayerChecklist"><p class="player-checklist-empty">Loading players...</p></div>
             <button class="btn btn-primary" onclick="addSelectedPlayersToAcademyLeague()" style="margin-top:8px;">Add Selected Players</button>
           </div>
-
           <div id="academyLeaguePlayersList" style="margin-top:16px;"></div>
         </div>
-
         <div class="card">
           <h3>Sponsor Logos</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Add sponsor logos for academy players.</p>
@@ -634,7 +627,6 @@ main { padding: 24px 20px; }
           <button class="btn btn-primary" onclick="addSponsor()">Add Sponsor</button>
           <div id="sponsorsListForPlayer" style="margin-top:16px;"></div>
         </div>
-
         <div class="card">
           <h3>Division Sponsor Logos</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Add sponsor logos for an academy division/group.</p>
@@ -661,41 +653,34 @@ main { padding: 24px 20px; }
           <button class="btn btn-primary" onclick="addDivisionSponsor()">Add Sponsor</button>
           <div id="divisionSponsorsList" style="margin-top:16px;"></div>
         </div>
-
         <div class="card">
           <h3>Archived Groups</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Completed seasons. Reactivate a group to make it manageable again.</p>
           <div id="archivedGroupsList"><p class="empty-state">Loading...</p></div>
         </div>
       </div>
-
 <!-- ENQUIRIES TAB -->
 <div id="tab-enquiries" class="tab-content">
   <div class="card">
     <h3>Merch Orders</h3>
     <div id="merchOrdersList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
   </div>
-
   <div class="card">
     <h3>Shirt Design Submissions</h3>
     <div id="shirtDesignsList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
   </div>
-
   <div class="card">
     <h3>Academy Join Enquiries</h3>
 <div id="academyJoinEnquiriesList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
-
         <div class="card">
           <h3>Academy Sponsorship Enquiries</h3>
 <div id="academySponsorEnquiriesList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
-
         <div class="card">
           <h3>Player Sponsor Enquiries</h3>
 <div id="sponsorEnquiriesList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
-
         <div class="card">
           <h3>Division Sponsor Enquiries</h3>
 <div id="divisionEnquiriesList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
@@ -724,7 +709,6 @@ main { padding: 24px 20px; }
     <button class="btn btn-primary" onclick="addMerchCategory()">Add Category</button>
     <div id="categoriesList" style="margin-top:16px;"></div>
   </div>
-
   <div class="card">
     <h3 id="merchFormTitle">Add Shop Item</h3>
     <div class="success-msg" id="merch-success"></div>
@@ -765,7 +749,6 @@ main { padding: 24px 20px; }
     <button class="btn btn-primary" id="merchSaveBtn" onclick="saveMerchItem()">Add Item</button>
     <button class="btn btn-secondary" id="merchCancelBtn" onclick="cancelMerchEdit()" style="display:none;">Cancel Edit</button>
   </div>
-
   <div class="card">
     <h3>Manage Merch</h3>
     <div id="merchList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
@@ -791,7 +774,6 @@ main { padding: 24px 20px; }
     </div>
     <button class="btn btn-primary" onclick="adjustPlayerCredit()">Apply Adjustment</button>
   </div>
-
   <div class="card">
     <h3>Top-Up Packages</h3>
     <p style="color:#666;font-size:0.9em;margin-top:-8px;">Fixed amounts players can top up with, each linked to its own Stripe Payment Link.</p>
@@ -810,13 +792,11 @@ main { padding: 24px 20px; }
     <button class="btn btn-primary" onclick="addTopupPackage()">Add Package</button>
     <div id="packagesList" style="margin-top:16px;"></div>
   </div>
-
   <div class="card">
     <h3>Top-Up Requests</h3>
     <div id="topupRequestsList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
   </div>
 </div>
-
 <!-- NEWS TAB -->
       <div id="tab-news" class="tab-content">
         <div class="card">
@@ -864,15 +844,12 @@ main { padding: 24px 20px; }
           </div>
           <button class="btn btn-primary" onclick="saveNews()">Publish Article</button>
         </div>
-
 <div class="card">
   <h3>Manage News</h3>
   <div id="newsList"><p class="empty-state">Loading...</p></div>
 </div>
       </div>
-
     </main>
-
     <script>
       var allPlayersData = [];
       var allSessionsData = [];
@@ -892,10 +869,8 @@ var editingMerchImages = [];
   var container = document.getElementById(containerId);
   var opening = container.style.display === 'none';
   if (!opening) { container.style.display = 'none'; return; }
-
   var result = await sbClient.from('templates').select('*').eq('type', type).order('name');
   var templates = result.data || [];
-
   if (!templates.length) {
     container.innerHTML = '<p class="empty-state">No saved templates yet.</p>';
   } else {
@@ -909,7 +884,6 @@ var editingMerchImages = [];
   }
   container.style.display = 'block';
 }
-
 async function renameTemplate(id, currentName, type) {
   var newName = prompt('Rename template:', currentName);
   if (!newName || newName === currentName) { return; }
@@ -918,7 +892,6 @@ async function renameTemplate(id, currentName, type) {
   toggleManageTemplates(type);
   toggleManageTemplates(type);
 }
-
 async function deleteTemplate(id, type) {
   if (!confirm('Delete this template?')) { return; }
   await sbClient.from('templates').delete().eq('id', id);
@@ -934,7 +907,6 @@ function toggleLeagueCheckinFields() {
     document.getElementById('leagueCheckinEnd').value = '';
   }
 }
-
 function toggleLeagueEntryFee() {
   var isPaid = document.getElementById('leagueIsPaid').checked;
   document.getElementById('leagueEntryFeeField').style.display = isPaid ? 'block' : 'none';
@@ -953,7 +925,6 @@ function addMerchOptionGroup(label, choices) {
     '<button type="button" class="btn-small danger" onclick="document.getElementById(\'merchOptGroup' + idx + '\').remove()">✕</button>';
   container.appendChild(row);
 }
-
 function collectMerchOptionGroups() {
   var rows = document.querySelectorAll('#merchOptionGroups > div');
   var groups = [];
@@ -970,20 +941,16 @@ function collectMerchOptionGroups() {
       async function addMerchCategory() {
   var name = document.getElementById('categoryName').value.trim();
   if (!name) { showMsg('category-error', 'Please enter a category name.'); return; }
-
   var result = await sbClient.from('merch_categories').insert([{ name: name }]);
   if (result.error) { showMsg('category-error', result.error.message); return; }
-
   showMsg('category-success', 'Category added!');
   document.getElementById('categoryName').value = '';
   loadMerchCategories();
 }
-
 async function loadMerchCategories() {
   var result = await sbClient.from('merch_categories').select('*').order('sort_order').order('name');
   window.allCategoriesData = result.data || [];
   var container = document.getElementById('categoriesList');
-
   if (!window.allCategoriesData.length) {
     container.innerHTML = '<p class="empty-state">No categories yet.</p>';
   } else {
@@ -992,14 +959,12 @@ async function loadMerchCategories() {
         return '<tr><td>' + c.name + '</td><td><button class="btn-small danger" onclick="deleteMerchCategory(' + c.id + ')">Delete</button></td></tr>';
       }).join('') + '</tbody></table>';
   }
-
   var select = document.getElementById('merchCategory');
   if (select) {
     select.innerHTML = '<option value="">-- No category --</option>' +
       window.allCategoriesData.map(function(c) { return '<option value="' + c.id + '">' + c.name + '</option>'; }).join('');
   }
 }
-
 async function deleteMerchCategory(id) {
   if (!confirm('Delete this category? Items in it will become uncategorised, not deleted.')) { return; }
   await sbClient.from('merch_categories').delete().eq('id', id);
@@ -1009,12 +974,9 @@ async function deleteMerchCategory(id) {
       async function convertGuestToFullAccount(oldId, fullName, username) {
   var email = document.getElementById('convertEmail-' + oldId).value.trim();
   var password = document.getElementById('convertPassword-' + oldId).value;
-
   if (!email || !password) { alert('Please enter an email and temporary password.'); return; }
   if (password.length < 6) { alert('Password must be at least 6 characters.'); return; }
-
   if (!confirm('Create a full account for ' + fullName + ' and transfer all their existing data across? This cannot be undone.')) { return; }
-
   var { data, error } = await sbClient.auth.signUp({
     email: email,
     password: password,
@@ -1028,22 +990,17 @@ async function deleteMerchCategory(id) {
       }
     }
   });
-
   if (error) {
     alert('Error creating account: ' + error.message);
     return;
   }
-
   var newId = data.user.id;
-
   var migrateResult = await sbClient.rpc('migrate_guest_profile', { old_id: oldId, new_id: newId });
   if (migrateResult.error) {
     alert('Account created, but migrating their data failed: ' + migrateResult.error.message + '. Please check manually — their new account email is ' + email + '.');
     return;
   }
-
   await sbClient.from('profiles').update({ username: username }).eq('id', newId);
-
   alert(fullName + ' now has a full account! Share these details with them: Email: ' + email + ' — Password: ' + password + '. They\'ll need to confirm their email before logging in.');
   loadPlayers();
 }
@@ -1054,12 +1011,10 @@ async function deleteMerchCategory(id) {
   var dob = document.getElementById('manualAddDob').value;
   var platform = document.getElementById('manualAddPlatform').value;
   var access = document.getElementById('manualAddAccess').value;
-
   if (!fullName || !username) {
     showMsg('manualAdd-error', 'Please fill in at least a name and username.');
     return;
   }
-
   var existingUsername = await sbClient.from('profiles').select('id').eq('username', username).maybeSingle();
   if (existingUsername.data) {
     showMsg('manualAdd-error', 'That username is already taken.');
@@ -1072,9 +1027,7 @@ async function deleteMerchCategory(id) {
       return;
     }
   }
-
   var guestId = crypto.randomUUID();
-
   var result = await sbClient.from('profiles').insert([{
     id: guestId,
     full_name: fullName,
@@ -1085,12 +1038,10 @@ async function deleteMerchCategory(id) {
     access: access,
     is_guest: true
   }]);
-
   if (result.error) {
     showMsg('manualAdd-error', result.error.message);
     return;
   }
-
   showMsg('manualAdd-success', fullName + ' has been added as a guest profile!');
   document.getElementById('manualAddFullName').value = '';
   document.getElementById('manualAddUsername').value = '';
@@ -1102,10 +1053,8 @@ async function deleteMerchCategory(id) {
   var val = document.getElementById('creditBalanceSearch').value.toLowerCase().trim();
   var container = document.getElementById('creditBalanceResults');
   if (!val) { container.innerHTML = ''; return; }
-
   var result = await sbClient.from('profiles').select('full_name, username, credit_balance').or('full_name.ilike.%' + val + '%,username.ilike.%' + val + '%').limit(10);
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No matching players.</p>'; return; }
-
   container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Balance</th></tr></thead><tbody>' +
     result.data.map(function(p) {
       return '<tr><td>' + (p.full_name || '-') + '</td><td>' + (p.username ? '@' + p.username : '-') + '</td><td><strong>£' + parseFloat(p.credit_balance || 0).toFixed(2) + '</strong></td></tr>';
@@ -1114,17 +1063,12 @@ async function deleteMerchCategory(id) {
 async function settlePlayerTournamentDebts(playerId) {
   var tournamentUnpaidResult = await sbClient.from('tournament_players').select('id, amount_owed, created_at').eq('player_id', playerId).eq('paid', false);
   var leagueUnpaidResult = await sbClient.from('league_players').select('id, amount_owed, created_at').eq('player_id', playerId).eq('paid', false);
-
   var unpaidEntries = (tournamentUnpaidResult.data || []).map(function(e) { return { id: e.id, amount_owed: e.amount_owed, created_at: e.created_at, table: 'tournament_players' }; })
     .concat((leagueUnpaidResult.data || []).map(function(e) { return { id: e.id, amount_owed: e.amount_owed, created_at: e.created_at, table: 'league_players' }; }));
-
   if (!unpaidEntries.length) { return; }
-
   unpaidEntries.sort(function(a, b) { return new Date(a.created_at) - new Date(b.created_at); });
-
   var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
   var balance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
-
   for (var i = 0; i < unpaidEntries.length; i++) {
     var entry = unpaidEntries[i];
     var owed = parseFloat(entry.amount_owed) || 0;
@@ -1135,7 +1079,6 @@ async function settlePlayerTournamentDebts(playerId) {
       break;
     }
   }
-
   await sbClient.from('profiles').update({ credit_balance: balance }).eq('id', playerId);
 }
 async function loadCreditAdjustPlayerSelect() {
@@ -1148,59 +1091,46 @@ async function loadCreditAdjustPlayerSelect() {
   });
   showSelectedPlayerBalance();
 }
-
 function showSelectedPlayerBalance() {
   var playerId = document.getElementById('creditAdjustPlayer').value;
   var player = (window.creditPlayerListData || []).find(function(p) { return p.id === playerId; });
   var balance = player ? parseFloat(player.credit_balance || 0).toFixed(2) : '-';
   document.getElementById('selectedPlayerBalance').textContent = '£' + balance;
 }
-
 async function adjustPlayerCredit() {
   var playerId = document.getElementById('creditAdjustPlayer').value;
   var amount = parseFloat(document.getElementById('creditAdjustAmount').value);
   if (!playerId) { showMsg('creditAdjust-error', 'Please select a player.'); return; }
   if (isNaN(amount)) { showMsg('creditAdjust-error', 'Please enter a valid amount.'); return; }
-
   var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
   var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
   var newBalance = Math.max(0, Math.min(50, currentBalance + amount));
-
   var result = await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', playerId);
   if (result.error) { showMsg('creditAdjust-error', result.error.message); return; }
-
   if (amount > 0) { await settlePlayerTournamentDebts(playerId); }
-
   var finalProfile = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
   var finalBalance = finalProfile.data ? parseFloat(finalProfile.data.credit_balance || 0) : newBalance;
-
 showMsg('creditAdjust-success', 'Balance updated! New balance: £' + finalBalance.toFixed(2));
   document.getElementById('creditAdjustAmount').value = '';
   await loadCreditAdjustPlayerSelect();
 }
-
 async function addTopupPackage() {
   var amount = parseFloat(document.getElementById('packageAmount').value);
   var stripeLink = document.getElementById('packageStripeLink').value.trim();
   if (isNaN(amount) || amount <= 0) { showMsg('package-error', 'Please enter a valid amount.'); return; }
   if (!stripeLink) { showMsg('package-error', 'Please enter a Stripe Payment Link.'); return; }
-
   var result = await sbClient.from('credit_topup_packages').insert([{ amount: amount, stripe_link: stripeLink, active: true }]);
   if (result.error) { showMsg('package-error', result.error.message); return; }
-
   showMsg('package-success', 'Package added!');
   document.getElementById('packageAmount').value = '';
   document.getElementById('packageStripeLink').value = '';
   loadTopupPackages();
 }
-
 async function loadTopupPackages() {
   var result = await sbClient.from('credit_topup_packages').select('*').order('amount');
   var container = document.getElementById('packagesList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No packages yet.</p>'; return; }
-
   window.allPackagesData = result.data;
-
   container.innerHTML = '<table><thead><tr><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody>' +
     result.data.map(function(p) {
       return '<tr><td>£' + p.amount + '</td><td>' + (p.active ? 'Active' : 'Hidden') + '</td>' +
@@ -1208,18 +1138,15 @@ async function loadTopupPackages() {
         '<button class="btn-small danger" onclick="deleteTopupPackage(' + p.id + ')">Delete</button></td></tr>';
     }).join('') + '</tbody></table>';
 }
-
 async function togglePackageActive(id, currentStatus) {
   await sbClient.from('credit_topup_packages').update({ active: !currentStatus }).eq('id', id);
   loadTopupPackages();
 }
-
 async function deleteTopupPackage(id) {
   if (!confirm('Delete this package?')) { return; }
   await sbClient.from('credit_topup_packages').delete().eq('id', id);
   loadTopupPackages();
 }
-
 async function loadCreditTopUps() {
   var result = await sbClient.from('credit_top_ups').select('*, profiles(full_name, username, phone), credit_topup_packages(amount)').order('created_at', { ascending: false });
   var container = document.getElementById('topupRequestsList');
@@ -1227,7 +1154,6 @@ async function loadCreditTopUps() {
   var creditBtn = document.getElementById('creditTabBtn');
   if (creditBtn) { creditBtn.textContent = pendingCount > 0 ? 'Credit (' + pendingCount + ')' : 'Credit'; }
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No top-up requests yet.</p>'; return; }
-
   container.innerHTML = result.data.map(function(t) {
     var buyer = t.profiles || {};
     var buyerName = buyer.full_name || buyer.username || 'Unknown';
@@ -1236,7 +1162,6 @@ async function loadCreditTopUps() {
     var waLink = buildAdminWhatsAppLink(buyer.phone);
     var waButtonHtml = waLink ? '<a href="' + waLink + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background-color:#25D366;color:#ffffff;padding:4px 10px;border-radius:20px;font-size:0.8em;text-decoration:none;font-weight:bold;">💬 WhatsApp</a>' : '<span style="color:#888;font-size:0.8em;">No phone on file</span>';
     var paidLabel = t.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Not confirmed paid</span>';
-
     return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
       '<div style="padding:14px 16px;">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">' +
@@ -1252,21 +1177,16 @@ async function loadCreditTopUps() {
       '</div></div></div>';
   }).join('');
 }
-
 async function toggleTopUpPaid(id, currentStatus, playerId, amount) {
   var newStatus = !currentStatus;
   await sbClient.from('credit_top_ups').update({ paid: newStatus }).eq('id', id);
-
   var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', playerId).single();
   var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
   var newBalance = newStatus ? Math.min(50, currentBalance + amount) : Math.max(0, currentBalance - amount);
   await sbClient.from('profiles').update({ credit_balance: newBalance }).eq('id', playerId);
-
   if (newStatus) { await settlePlayerTournamentDebts(playerId); }
-
   loadCreditTopUps();
 }
-
 async function deleteCreditTopUp(id) {
   if (!confirm('Delete this top-up request?')) { return; }
   await sbClient.from('credit_top_ups').delete().eq('id', id);
@@ -1276,7 +1196,6 @@ async function loadMerchOrders() {
   var result = await sbClient.from('merch_orders').select('*, merch_listings(title, price), profiles(full_name, username, phone)').order('created_at', { ascending: false });
   var container = document.getElementById('merchOrdersList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No merch orders yet.</p>'; return; }
-
   container.innerHTML = result.data.map(function(o) {
     var buyer = o.profiles || {};
     var buyerName = buyer.full_name || buyer.username || 'Unknown';
@@ -1285,7 +1204,6 @@ async function loadMerchOrders() {
     var waButtonHtml = waLink ? '<a href="' + waLink + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background-color:#25D366;color:#ffffff;padding:4px 10px;border-radius:20px;font-size:0.8em;text-decoration:none;font-weight:bold;">💬 WhatsApp</a>' : '<span style="color:#888;font-size:0.8em;">No phone on file</span>';
     var paidLabel = o.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Not confirmed paid</span>';
     var borderColor = o.paid ? '#cceecc' : '#ffcccc';
-
 var methodLabel = o.payment_method === 'site_credit' ? '<span style="color:#555;font-size:0.85em;">💳 Paid via Site Credit</span>' : '<span style="color:#555;font-size:0.85em;">🔗 Stripe</span>';
     return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;border-color:' + borderColor + ';">' +
       '<div style="padding:14px 16px;">' +
@@ -1304,12 +1222,10 @@ var methodLabel = o.payment_method === 'site_credit' ? '<span style="color:#555;
 }).join('');
   updateAcademyBadge();
 }
-
 async function toggleMerchOrderPaid(id, currentStatus) {
   await sbClient.from('merch_orders').update({ paid: !currentStatus }).eq('id', id);
   loadMerchOrders();
 }
-
 async function deleteMerchOrder(id) {
   if (!confirm('Delete this order record?')) { return; }
   await sbClient.from('merch_orders').delete().eq('id', id);
@@ -1319,9 +1235,7 @@ async function loadMerchItems() {
   var result = await sbClient.from('merch_listings').select('*').order('created_at', { ascending: false });
   var container = document.getElementById('merchList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No merch items yet.</p>'; return; }
-
   window.allMerchData = result.data;
-
   container.innerHTML = result.data.map(function(m) {
     var images = m.image_urls || [];
     var thumb = images.length ? '<img src="' + images[0] + '" style="width:50px;height:50px;object-fit:cover;border-radius:4px;margin-right:10px;" />' : '';
@@ -1338,7 +1252,6 @@ async function loadMerchItems() {
       '</div></div>';
   }).join('');
 }
-
 function renderMerchCurrentImages() {
   var container = document.getElementById('merchCurrentImages');
   if (!editingMerchImages.length) { container.innerHTML = '<p style="color:#888;font-size:0.85em;">No images yet.</p>'; return; }
@@ -1349,12 +1262,10 @@ function renderMerchCurrentImages() {
       '</div>';
   }).join('') + '</div>';
 }
-
 function removeMerchImage(index) {
   editingMerchImages.splice(index, 1);
   renderMerchCurrentImages();
 }
-
 function editMerchItem(id) {
   var item = window.allMerchData.find(function(m) { return m.id === id; });
   if (!item) { return; }
@@ -1374,7 +1285,6 @@ function editMerchItem(id) {
   renderMerchCurrentImages();
   document.getElementById('merchFormTitle').scrollIntoView({ behavior: 'smooth' });
 }
-
 function cancelMerchEdit() {
   editingMerchId = null;
   editingMerchImages = [];
@@ -1390,7 +1300,6 @@ function cancelMerchEdit() {
   document.getElementById('merchCancelBtn').style.display = 'none';
   renderMerchCurrentImages();
 }
-
 async function saveMerchItem() {
   var title = document.getElementById('merchTitle').value.trim();
   if (!title) { showMsg('merch-error', 'Please enter a title.'); return; }
@@ -1420,22 +1329,18 @@ var payload = {
   active: active,
   image_urls: imageUrls
 };
-
   var result;
   if (editingMerchId) {
     result = await sbClient.from('merch_listings').update(payload).eq('id', editingMerchId);
   } else {
     result = await sbClient.from('merch_listings').insert([payload]);
   }
-
   if (result.error) { showMsg('merch-error', result.error.message); return; }
-
   showMsg('merch-success', editingMerchId ? 'Item updated!' : 'Item added!');
   fileInput.value = '';
   cancelMerchEdit();
   loadMerchItems();
 }
-
 async function deleteMerchItem(id) {
   if (!confirm('Delete this merch item?')) { return; }
   await sbClient.from('merch_listings').delete().eq('id', id);
@@ -1445,12 +1350,9 @@ async function loadBugReports() {
   var result = await sbClient.from('bug_reports').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
   var container = document.getElementById('bugReportsList');
   var count = result.data ? result.data.filter(function(b) { return !b.is_read; }).length : 0;
-
   var btn = document.getElementById('bugsTabBtn');
   if (btn) { btn.textContent = count > 0 ? 'Bug Reports (' + count + ')' : 'Bug Reports'; }
-
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No bug reports yet.</p>'; return; }
-
   container.innerHTML = result.data.map(function(b) {
     var reporter = b.profiles ? (b.profiles.full_name || b.profiles.username) : (b.reporter_email || 'Anonymous');
     var unreadMark = !b.is_read ? ' 🔴' : '';
@@ -1474,7 +1376,6 @@ async function loadShirtDesigns() {
   var result = await sbClient.from('shirt_design_submissions').select('*, profiles(full_name, username, phone)').order('created_at', { ascending: false });
   var container = document.getElementById('shirtDesignsList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No shirt designs submitted yet.</p>'; return; }
-
   container.innerHTML = result.data.map(function(s) {
     var player = s.profiles || {};
     var name = player.full_name || player.username || 'Unknown';
@@ -1488,18 +1389,15 @@ async function loadShirtDesigns() {
       '<div id="shirt-detail-content-' + s.id + '" style="padding-top:12px;"></div>' +
       '</div></div>';
   }).join('');
-
 window.allShirtDesignsData = result.data;
 updateAcademyBadge();
 }
-
 function toggleShirtDesign(id) {
   var row = document.getElementById('shirt-detail-' + id);
   var opening = row.style.display === 'none';
   row.style.display = opening ? 'block' : 'none';
   if (opening) { renderShirtDesignDetail(id); }
 }
-
 function buildAdminWhatsAppLink(phone) {
   if (!phone) { return null; }
   var hasPlus = phone.trim().startsWith('+');
@@ -1510,17 +1408,13 @@ function buildAdminWhatsAppLink(phone) {
   }
   return 'https://wa.me/' + digits;
 }
-
 function renderShirtDesignDetail(id) {
   var s = window.allShirtDesignsData.find(function(x) { return x.id === id; });
   if (!s) { return; }
-
   var player = s.profiles || {};
   var waLink = buildAdminWhatsAppLink(player.phone);
   var waButtonHtml = waLink ? '<a href="' + waLink + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background-color:#25D366;color:#ffffff;padding:6px 14px;border-radius:20px;font-size:0.85em;text-decoration:none;font-weight:bold;margin-bottom:12px;">💬 WhatsApp Player</a>' : '<p style="color:#888;font-size:0.85em;">No phone number on file for this player.</p>';
-
   var originalImagesHtml = extractOriginalImagesHtml(s.front_design_data, 'Front') + extractOriginalImagesHtml(s.back_design_data, 'Back');
-
   document.getElementById('shirt-detail-content-' + id).innerHTML =
     waButtonHtml +
     '<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px;">' +
@@ -1539,7 +1433,6 @@ function renderShirtDesignDetail(id) {
     '<button class="btn-small danger" onclick="deleteShirtDesign(' + id + ')">Delete</button>' +
     '</div>';
 }
-
 function extractOriginalImagesHtml(designData, sideLabel) {
   if (!designData || !designData.objects) { return ''; }
   var images = designData.objects.filter(function(o) { return o.type === 'image'; });
@@ -1547,14 +1440,12 @@ function extractOriginalImagesHtml(designData, sideLabel) {
     return '<div><a href="' + img.src + '" download="' + sideLabel.toLowerCase() + '-logo-' + (i + 1) + '.png" target="_blank"><img src="' + img.src + '" style="width:80px;height:80px;object-fit:contain;border:1px solid #ddd;border-radius:4px;" /></a><div style="font-size:0.75em;color:#888;text-align:center;">' + sideLabel + ' logo</div></div>';
   }).join('');
 }
-
 async function updateShirtStatus(id) {
   var status = document.getElementById('shirt-status-' + id).value;
   var result = await sbClient.from('shirt_design_submissions').update({ status: status }).eq('id', id);
   if (result.error) { alert('Error updating status: ' + result.error.message); return; }
   loadShirtDesigns();
 }
-
 async function deleteShirtDesign(id) {
   if (!confirm('Delete this shirt design submission?')) { return; }
   await sbClient.from('shirt_design_submissions').delete().eq('id', id);
@@ -1569,14 +1460,12 @@ async function toggleBugReport(id) {
     updateBugReportBadge();
   }
 }
-
 async function updateBugReportBadge() {
   var result = await sbClient.from('bug_reports').select('id').eq('is_read', false);
   var count = result.data ? result.data.length : 0;
   var btn = document.getElementById('bugsTabBtn');
   if (btn) { btn.textContent = count > 0 ? 'Bug Reports (' + count + ')' : 'Bug Reports'; }
 }
-
 async function deleteBugReport(id) {
   if (!confirm('Delete this bug report?')) { return; }
   await sbClient.from('bug_reports').delete().eq('id', id);
@@ -1592,7 +1481,6 @@ async function deleteBugReport(id) {
         var sBtn2 = document.getElementById('switchBtn');
         if (sBtn2) { sBtn2.textContent = 'Return to Online'; sBtn2.href = 'index.html'; }
       }
-
 function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
@@ -1600,27 +1488,22 @@ function showTab(name, event) {
         document.getElementById('tab-' + name).classList.add('active');
         saveActiveTab(name);
       }
-
       function toggleSwissOptions() {
         var format = document.getElementById('leagueFormat').value;
         document.getElementById('swissOptions').classList.toggle('hidden', format !== 'swiss');
       }
-
       async function refreshTemplateSelects() {
         var result = await sbClient.from('templates').select('*').order('name');
         var data = result.data || [];
         var leagueTemps = data.filter(function(t) { return t.type === 'league'; });
         var tournamentTemps = data.filter(function(t) { return t.type === 'tournament'; });
-
         var lt = document.getElementById('leagueTemplateSelect');
         lt.innerHTML = '<option value="">-- Apply a template --</option>';
         leagueTemps.forEach(function(t) { lt.innerHTML += '<option value="' + t.id + '">' + t.name + '</option>'; });
-
         var tt = document.getElementById('tournamentTemplateSelect');
         tt.innerHTML = '<option value="">-- Apply a template --</option>';
         tournamentTemps.forEach(function(t) { tt.innerHTML += '<option value="' + t.id + '">' + t.name + '</option>'; });
       }
-
 async function saveLeagueTemplate() {
         var name = prompt('Enter a name for this template:');
         if (!name) { return; }
@@ -1663,22 +1546,6 @@ async function saveLeagueTemplate() {
         showMsg('tournament-success', 'Template saved!');
         refreshTemplateSelects();
       }
-
-      async function saveTournamentTemplate() {
-        var name = prompt('Enter a name for this template:');
-        if (!name) { return; }
-        var templateData = {
-          format: document.getElementById('tournamentFormat').value,
-          platform: document.getElementById('tournamentPlatform').value,
-          max: document.getElementById('tournamentMax').value,
-          description: document.getElementById('tournamentDesc').value
-        };
-        var result = await sbClient.from('templates').insert([{ name: name, type: 'tournament', data: JSON.stringify(templateData) }]);
-        if (result.error) { showMsg('tournament-error', result.error.message); return; }
-        showMsg('tournament-success', 'Template saved!');
-        refreshTemplateSelects();
-      }
-
 async function applyTemplate(type) {
         if (type === 'league') {
           var idx = document.getElementById('leagueTemplateSelect').value;
@@ -1734,7 +1601,6 @@ function toggleTournamentCheckinFields() {
     document.getElementById('tournamentCheckinEnd').value = '';
   }
 }
-
 async function createTournament() {
   var name = document.getElementById('tournamentName').value.trim();
   if (!name) { showMsg('tournament-error', 'Please enter a tournament name.'); return; }
@@ -1766,13 +1632,11 @@ description: document.getElementById('tournamentDesc').value.trim() || null
   document.getElementById('tournamentCheckinEnd').value = '';
   loadTournaments();
 }
-
       async function loadTournaments() {
         var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
         allTournamentsData = result.data || [];
         var container = document.getElementById('tournamentsList');
         if (!allTournamentsData.length) { container.innerHTML = '<p class="empty-state">No tournaments yet</p>'; return; }
-
         var cardsHtml = [];
         for (var i = 0; i < allTournamentsData.length; i++) {
           var t = allTournamentsData[i];
@@ -1794,18 +1658,14 @@ description: document.getElementById('tournamentDesc').value.trim() || null
         }
         container.innerHTML = cardsHtml.join('');
       }
-
       function toggleTournamentRow(id) {
         var row = document.getElementById('tournament-row-' + id);
         row.style.display = row.style.display === 'none' ? 'block' : 'none';
       }
-
 async function deleteTournament(id) {
   if (!confirm('Delete this tournament? Any paid entries will be refunded to players\' balances first.')) { return; }
-
   var entriesResult = await sbClient.from('tournament_players').select('player_id, paid, amount_owed').eq('tournament_id', id);
   var entries = entriesResult.data || [];
-
   for (var i = 0; i < entries.length; i++) {
     var entry = entries[i];
     if (entry.paid && entry.amount_owed > 0) {
@@ -1815,7 +1675,6 @@ async function deleteTournament(id) {
       await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', entry.player_id);
     }
   }
-
   await sbClient.from('tournaments').delete().eq('id', id);
   loadTournaments();
 }
@@ -1849,7 +1708,6 @@ average_split: true,
         document.getElementById('leagueName').value = '';
         loadLeagues();
       }
-
       async function loadLeagues() {
         var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
         allLeaguesData = result.data || [];
@@ -1877,30 +1735,22 @@ average_split: true,
           }
           container.innerHTML = cardsHtml.join('');
         }
-
       }
-
       function toggleLeagueRow(id) {
         var row = document.getElementById('league-row-' + id);
         row.style.display = row.style.display === 'none' ? 'block' : 'none';
       }
-
       async function deleteLeague(id) {
         if (!confirm('Delete this league?')) { return; }
         await sbClient.from('leagues').delete().eq('id', id);
         loadLeagues();
       }
-
-
-
       async function loadPendingApprovals() {
         var result = await sbClient.from('profiles').select('*').eq('access_status', 'pending');
         var container = document.getElementById('pendingApprovalsList');
         var count = result.data ? result.data.length : 0;
-
         var btn = document.getElementById('playersTabBtn');
         if (btn) { btn.textContent = count > 0 ? 'Players (' + count + ')' : 'Players'; }
-
         if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No pending requests.</p>'; return; }
         container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th><th>Requested</th><th>Action</th></tr></thead><tbody>' +
           result.data.map(function(p) {
@@ -1909,13 +1759,11 @@ average_split: true,
               '<td><button class="btn-small" onclick="approveAccess(\'' + p.id + '\', \'' + p.requested_access + '\')">Approve</button> <button class="btn-small danger" onclick="denyAccess(\'' + p.id + '\', \'' + p.requested_access + '\')">Deny</button></td></tr>';
           }).join('') + '</tbody></table>';
       }
-
       async function approveAccess(id, requestedAccess) {
         await sbClient.from('profiles').update({ access: requestedAccess, access_status: 'approved' }).eq('id', id);
         loadPendingApprovals();
         loadPlayers();
       }
-
       async function denyAccess(id, requestedAccess) {
         if (!confirm('Deny this request? ' + (requestedAccess === 'academy' ? 'This player will be blocked from logging in.' : 'They will remain Online-only.'))) { return; }
         if (requestedAccess === 'both') {
@@ -1926,14 +1774,12 @@ average_split: true,
         loadPendingApprovals();
         loadPlayers();
       }
-
 async function loadPlayers() {
   var result = await sbClient.from('profiles').select('*').order('created_at', { ascending: false });
   allPlayersData = result.data || [];
   renderPlayersList(allPlayersData);
   updateRegistrationStats();
 }
-
 function updateRegistrationStats() {
   var total = allPlayersData.length;
   var sevenDaysAgo = new Date();
@@ -1941,15 +1787,12 @@ function updateRegistrationStats() {
   var newCount = allPlayersData.filter(function(p) {
     return p.created_at && new Date(p.created_at) >= sevenDaysAgo;
   }).length;
-
   document.getElementById('statTotalPlayers').textContent = total;
   document.getElementById('statNewPlayers').textContent = newCount;
 }
-
       function renderPlayersList(data) {
         var container = document.getElementById('playersList');
         if (!data || !data.length) { container.innerHTML = '<p class="empty-state">No players found</p>'; return; }
-
         container.innerHTML = data.map(function(p) {
           var platformSelect = '<select onchange="updatePlatform(\'' + p.id + '\', this.value)" style="padding:6px 10px;border:1px solid #ddd;border-radius:4px;font-size:0.9em;width:100%;">' +
             '<option value=""' + (!p.platform ? ' selected' : '') + '>-</option>' +
@@ -1995,12 +1838,10 @@ function updateRegistrationStats() {
             '</div></div>';
         }).join('');
       }
-
       function togglePlayerRow(id) {
         var row = document.getElementById('player-row-' + id);
         row.style.display = row.style.display === 'none' ? 'block' : 'none';
       }
-
       function filterPlayersList() {
         var val = document.getElementById('playerSearch').value.toLowerCase().trim();
         if (!val) { renderPlayersList(allPlayersData); return; }
@@ -2009,35 +1850,29 @@ function updateRegistrationStats() {
         });
         renderPlayersList(filtered);
       }
-
       async function updateAccess(id, value) {
         await sbClient.from('profiles').update({ access: value }).eq('id', id);
       }
-
       async function updatePlatform(id, value) {
         await sbClient.from('profiles').update({ platform: value || null }).eq('id', id);
       }
-
       async function updatePhone(id) {
         var value = document.getElementById('phone-' + id).value.trim();
         var result = await sbClient.from('profiles').update({ phone: value || null }).eq('id', id);
         if (result.error) { alert('Error saving phone: ' + result.error.message); return; }
         alert('Phone number saved!');
       }
-
       async function updateStarterAvg(id) {
         var value = document.getElementById('stavg-' + id).value.trim();
         var result = await sbClient.from('profiles').update({ starter_average: value || null }).eq('id', id);
         if (result.error) { alert('Error saving starter average: ' + result.error.message); return; }
         alert('Starter average saved!');
       }
-
       async function toggleAdmin(id, currentStatus, username) {
         if (username === 'Macca23') { alert('This account is protected and cannot be changed.'); return; }
         await sbClient.from('profiles').update({ is_admin: !currentStatus }).eq('id', id);
         loadPlayers();
       }
-
 async function deletePlayer(id, username) {
   if (username === 'Macca23') { alert('This account is protected and cannot be deleted.'); return; }
   if (!confirm('Remove this player?')) { return; }
@@ -2045,7 +1880,6 @@ async function deletePlayer(id, username) {
   if (result.error) { alert('Error removing player: ' + result.error.message); console.error(result.error); return; }
   loadPlayers();
 }
-
       function addDrillTargetRow() {
   drillTargetCount++;
   var idx = drillTargetCount;
@@ -2075,7 +1909,6 @@ async function deletePlayer(id, username) {
   container.appendChild(row);
   addScoreOptionRow(idx);
 }
-
 function moveDrillRow(idx, direction) {
   var row = document.getElementById('drillTargetRow' + idx);
   if (!row) { return; }
@@ -2085,12 +1918,10 @@ function moveDrillRow(idx, direction) {
     row.parentNode.insertBefore(row.nextElementSibling, row);
   }
 }
-
       function toggleEntryType(idx) {
         var type = document.getElementById('targetEntryType' + idx).value;
         document.getElementById('dropdownSection' + idx).style.display = type === 'manual' ? 'none' : 'block';
       }
-
 function addDrillSubtitleRow() {
   drillTargetCount++;
   var idx = drillTargetCount;
@@ -2112,14 +1943,11 @@ function addDrillSubtitleRow() {
     '<div class="form-group"><label>Description (optional)</label><textarea id="subtitleDescription' + idx + '" rows="2" placeholder="Explain this section..."></textarea></div>';
   container.appendChild(row);
 }
-
       function removeDrillTargetRow(idx) {
         var row = document.getElementById('drillTargetRow' + idx);
         if (row) { row.remove(); }
       }
-
       var scoreOptionCounts2 = scoreOptionCounts;
-
       function addScoreOptionRow(targetIdx) {
         if (!scoreOptionCounts[targetIdx]) { scoreOptionCounts[targetIdx] = 0; }
         scoreOptionCounts[targetIdx]++;
@@ -2136,14 +1964,11 @@ function addDrillSubtitleRow() {
           '<button class="btn-small danger" onclick="document.getElementById(\'scoreOptRow' + targetIdx + '_' + optIdx + '\').remove()">✕</button>';
         container.appendChild(row);
       }
-
       async function saveDrill() {
         var title = document.getElementById('drillTitle').value.trim();
         if (!title) { showMsg('drill-error', 'Please enter a drill title.'); return; }
-
         var targetRows = document.querySelectorAll('#drillTargetsList > div');
 if (!targetRows.length) { showMsg('drill-error', 'Please add at least one target.'); return; }
-
 if (editingDrillId && editingOriginalTargetCount > 0 && targetRows.length < editingOriginalTargetCount) {
   var confirmMsg = 'Warning: this drill originally had ' + editingOriginalTargetCount + ' rows, but you\'re about to save only ' + targetRows.length + '. Anything not shown will be permanently deleted. Are you sure you want to continue?';
   if (!confirm(confirmMsg)) { return; }
@@ -2160,13 +1985,11 @@ if (editingDrillId) {
   if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
   drillId = drillResult.data[0].id;
 }
-
         var targetOrder = 0;
         for (var i = 0; i < targetRows.length; i++) {
           var row = targetRows[i];
           var rowType = row.getAttribute('data-type');
           var targetIdx = row.id.replace('drillTargetRow', '');
-
   if (rowType === 'subtitle') {
   var subtitleInput = document.getElementById('subtitleName' + targetIdx);
   if (!subtitleInput) { continue; }
@@ -2178,22 +2001,17 @@ if (editingDrillId) {
   await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: subtitleText, description: subtitleDesc || null, sort_order: targetOrder, is_subtitle: true }]);
   continue;
 }
-
           var targetNameInput = document.getElementById('targetName' + targetIdx);
           if (!targetNameInput) { continue; }
           var targetName = targetNameInput.value.trim();
           if (!targetName) { continue; }
-
           var entryTypeSelect = document.getElementById('targetEntryType' + targetIdx);
           var entryType = entryTypeSelect ? entryTypeSelect.value : 'dropdown';
-
           targetOrder++;
           var targetResult = await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: targetName, sort_order: targetOrder, entry_type: entryType, is_subtitle: false }]).select();
           if (targetResult.error || !targetResult.data) { continue; }
           var targetId = targetResult.data[0].id;
-
           if (entryType === 'manual') { continue; }
-
           var scoreRows = document.querySelectorAll('#scoreOptionsList' + targetIdx + ' > div');
           var scoreOrder = 0;
           for (var j = 0; j < scoreRows.length; j++) {
@@ -2206,12 +2024,10 @@ if (editingDrillId) {
             var label = labelInput.value.trim();
             var points = parseFloat(pointsInput.value);
             if (!label || isNaN(points)) { continue; }
-
             scoreOrder++;
             await sbClient.from('drill_score_options').insert([{ target_id: targetId, label: label, points: points, sort_order: scoreOrder }]);
           }
         }
-
 showMsg('drill-success', editingDrillId ? 'Drill updated successfully!' : 'Drill created successfully!');
 document.getElementById('drillTitle').value = '';
 document.getElementById('drillDescription').value = '';
@@ -2222,14 +2038,11 @@ document.getElementById('drillTargetsList').innerHTML = '';
         editingDrillId = null;
         loadDrills();
       }
-
       async function loadDrills() {
         var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
         var container = document.getElementById('drillsList');
         if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No drills created yet.</p>'; return; }
-
         window.allDrillsData = result.data;
-
         container.innerHTML = result.data.map(function(d) {
           return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
             '<div style="padding:14px 16px;cursor:pointer;font-weight:bold;" onclick="toggleManageDrill(' + d.id + ')">' + d.title + '</div>' +
@@ -2240,7 +2053,6 @@ document.getElementById('drillTargetsList').innerHTML = '';
             '</div></div>';
         }).join('');
       }
-
       function toggleManageDrill(id) {
         var body = document.getElementById('manage-drill-' + id);
         var isOpen = body.style.display !== 'none';
@@ -2259,14 +2071,11 @@ document.getElementById('drillTargetsList').innerHTML = '';
           document.getElementById('manage-drill-list-' + id).innerHTML = itemsHtml;
         }
       }
-
 var editingOriginalTargetCount = 0;
-
 async function editDrill(id) {
   var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').eq('id', id).single();
   if (result.error || !result.data) { alert('Error loading drill.'); return; }
   var drill = result.data;
-
   editingOriginalTargetCount = (drill.drill_targets || []).length;
   editingDrillId = id;
 document.getElementById('drillTitle').value = drill.title || '';
@@ -2274,7 +2083,6 @@ document.getElementById('drillDescription').value = drill.description || '';
 document.getElementById('drillTargetsList').innerHTML = '';
         drillTargetCount = 0;
         scoreOptionCounts = {};
-
         var targets = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
         targets.forEach(function(t) {
 if (t.is_subtitle) {
@@ -2284,16 +2092,13 @@ if (t.is_subtitle) {
   document.getElementById('subtitleDescription' + subIdx).value = t.description || '';
   return;
 }
-
           addDrillTargetRow();
           var idx = drillTargetCount;
           document.getElementById('targetName' + idx).value = t.target_name || '';
           document.getElementById('targetEntryType' + idx).value = t.entry_type || 'dropdown';
           toggleEntryType(idx);
-
           document.getElementById('scoreOptionsList' + idx).innerHTML = '';
           scoreOptionCounts[idx] = 0;
-
           var options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
           options.forEach(function(o) {
             addScoreOptionRow(idx);
@@ -2302,21 +2107,17 @@ if (t.is_subtitle) {
             document.getElementById('scorePoints' + idx + '_' + optIdx).value = o.points != null ? o.points : '';
           });
         });
-
         document.querySelector('button[onclick="saveDrill()"]').textContent = 'Update Drill';
         document.getElementById('drillTitle').scrollIntoView({ behavior: 'smooth' });
       }
-
       async function deleteDrill(id) {
         if (!confirm('Delete this drill? All player progress for it will be lost.')) { return; }
         await sbClient.from('drills').delete().eq('id', id);
         loadDrills();
       }
-
       async function loadDrillAttempts() {
         var result = await sbClient.from('drill_attempts').select('*, profiles(full_name, username), drills(title), drill_attempt_scores(id, target_id, points, drill_targets(target_name), drill_score_options(label))').order('attempt_date', { ascending: false });
         allDrillAttemptsData = result.data || [];
-
         var playerFilter = document.getElementById('drillAttemptPlayerFilter');
         var uniquePlayers = {};
         allDrillAttemptsData.forEach(function(a) {
@@ -2328,10 +2129,8 @@ if (t.is_subtitle) {
         Object.keys(uniquePlayers).forEach(function(pid) {
           playerFilter.innerHTML += '<option value="' + pid + '">' + uniquePlayers[pid] + '</option>';
         });
-
         renderDrillAttempts(allDrillAttemptsData);
       }
-
 function formatAdminDrillTime(totalSeconds) {
   if (totalSeconds == null) return '-';
   var mins = Math.floor(totalSeconds / 60);
@@ -2339,11 +2138,9 @@ function formatAdminDrillTime(totalSeconds) {
   if (mins === 0) { return secs + 's'; }
   return mins + 'm ' + secs + 's';
 }
-
 function renderDrillAttempts(data) {
   var container = document.getElementById('drillAttemptsList');
   if (!data.length) { container.innerHTML = '<p class="empty-state">No drill attempts logged yet.</p>'; return; }
-
   container.innerHTML = data.map(function(a) {
     var profile = a.profiles || {};
     var name = profile.full_name || profile.username || 'Unknown';
@@ -2362,7 +2159,6 @@ function renderDrillAttempts(data) {
       '</div></div>';
   }).join('');
 }
-
       function renderDrillAttemptDetailView(a) {
         var scores = a.drill_attempt_scores || [];
         var rowsHtml = scores.map(function(s) {
@@ -2373,17 +2169,14 @@ function renderDrillAttempts(data) {
         return (rowsHtml || 'No target breakdown available.') +
           '<button class="btn-small" onclick="editDrillAttempt(' + a.id + ')" style="margin-top:10px;">Edit Scores</button>';
       }
-
       function toggleDrillAttemptDetail(id) {
         var row = document.getElementById('attempt-detail-' + id);
         row.style.display = row.style.display === 'none' ? 'block' : 'none';
       }
-
       function editDrillAttempt(id) {
         var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
         if (!attempt) { return; }
         var scores = attempt.drill_attempt_scores || [];
-
         if (!scores.length) {
           document.getElementById('attempt-detail-content-' + id).innerHTML =
             '<div class="form-group" style="max-width:200px;"><label>Total Score</label><input type="number" step="any" class="score-input" id="edit-attempt-score-' + id + '" value="' + attempt.total_score + '" style="width:100px;" /></div>' +
@@ -2391,29 +2184,24 @@ function renderDrillAttempts(data) {
             '<button class="btn-small" onclick="cancelDrillAttemptEdit(' + id + ')">Cancel</button>';
           return;
         }
-
         var fieldsHtml = scores.map(function(s) {
           var targetName = s.drill_targets ? s.drill_targets.target_name : 'Unknown';
           return '<div class="form-group"><label>' + targetName + '</label><input type="number" step="any" class="score-input" id="edit-attempt-line-' + s.id + '" value="' + s.points + '" style="width:100px;" /></div>';
         }).join('');
-
         document.getElementById('attempt-detail-content-' + id).innerHTML =
           fieldsHtml +
           '<button class="btn-small" onclick="saveDrillAttemptLines(' + id + ')">Save</button> ' +
           '<button class="btn-small" onclick="cancelDrillAttemptEdit(' + id + ')">Cancel</button>';
       }
-
       function cancelDrillAttemptEdit(id) {
         var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
         if (!attempt) { return; }
         document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
       }
-
       async function saveDrillAttemptLines(id) {
         var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
         if (!attempt) { return; }
         var scores = attempt.drill_attempt_scores || [];
-
         var newTotal = 0;
         for (var i = 0; i < scores.length; i++) {
           var s = scores[i];
@@ -2421,63 +2209,50 @@ function renderDrillAttempts(data) {
           var newPoints = parseFloat(input.value);
           if (isNaN(newPoints)) { alert('Please enter a valid number for every target.'); return; }
           newTotal += newPoints;
-
           var lineResult = await sbClient.from('drill_attempt_scores').update({ points: newPoints }).eq('id', s.id);
           if (lineResult.error) { alert('Error saving: ' + lineResult.error.message); return; }
           s.points = newPoints;
         }
-
         var totalResult = await sbClient.from('drill_attempts').update({ total_score: newTotal }).eq('id', id);
         if (totalResult.error) { alert('Error saving total: ' + totalResult.error.message); return; }
-
         attempt.total_score = newTotal;
         document.getElementById('attempt-total-' + id).textContent = newTotal;
         document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
       }
-
       async function saveDrillAttemptEdit(id) {
         var newScore = parseFloat(document.getElementById('edit-attempt-score-' + id).value);
         if (isNaN(newScore)) { alert('Please enter a valid score.'); return; }
-
         var result = await sbClient.from('drill_attempts').update({ total_score: newScore }).eq('id', id);
         if (result.error) { alert('Error saving: ' + result.error.message); return; }
-
         var attempt = allDrillAttemptsData.find(function(a) { return a.id === id; });
         if (attempt) { attempt.total_score = newScore; }
         document.getElementById('attempt-total-' + id).textContent = newScore;
         document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
       }
-
       async function deleteDrillAttempt(id) {
         if (!confirm('Delete this drill attempt?')) { return; }
         await sbClient.from('drill_attempts').delete().eq('id', id);
         loadDrillAttempts();
       }
-
       function filterDrillAttempts() {
         var playerVal = document.getElementById('drillAttemptPlayerFilter').value;
         var dateVal = document.getElementById('drillAttemptDateFilter').value;
-
         var filtered = allDrillAttemptsData.filter(function(a) {
           var playerMatch = !playerVal || a.player_id === playerVal;
           var dateMatch = !dateVal || a.attempt_date === dateVal;
           return playerMatch && dateMatch;
         });
-
         renderDrillAttempts(filtered);
       }
-
       function clearDrillAttemptFilters() {
         document.getElementById('drillAttemptPlayerFilter').value = '';
         document.getElementById('drillAttemptDateFilter').value = '';
         renderDrillAttempts(allDrillAttemptsData);
       }
-
      async function loadAcademyJoinEnquiries() {
   var result = await sbClient.from('academy_enquiries').select('*').eq('type', 'join').order('created_at', { ascending: false });
   var container = document.getElementById('academyJoinEnquiriesList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
-
   container.innerHTML = result.data.map(function(e) {
     var unreadMark = !e.is_read ? ' 🔴' : '';
     return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
@@ -2493,15 +2268,12 @@ function renderDrillAttempts(data) {
       '<button class="btn-small danger" onclick="deleteAcademyEnquiry(' + e.id + ', \'join\')" style="margin-top:10px;">Delete</button>' +
       '</div></div>';
   }).join('');
-
   updateAcademyBadge();
 }
-
      async function loadAcademySponsorEnquiries() {
   var result = await sbClient.from('academy_enquiries').select('*').eq('type', 'sponsor').order('created_at', { ascending: false });
   var container = document.getElementById('academySponsorEnquiriesList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
-
   container.innerHTML = result.data.map(function(e) {
     var unreadMark = !e.is_read ? ' 🔴' : '';
     return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
@@ -2517,7 +2289,6 @@ function renderDrillAttempts(data) {
       '<button class="btn-small danger" onclick="deleteAcademyEnquiry(' + e.id + ', \'sponsor\')" style="margin-top:10px;">Delete</button>' +
       '</div></div>';
   }).join('');
-
   updateAcademyBadge();
 }
      async function toggleAcademyEnquiryDetail(id, type) {
@@ -2534,30 +2305,24 @@ function renderDrillAttempts(data) {
         await sbClient.from('academy_enquiries').delete().eq('id', id);
         if (type === 'join') { loadAcademyJoinEnquiries(); } else { loadAcademySponsorEnquiries(); }
       }
-
       async function loadAcademyLeagueSelects() {
         var result = await sbClient.from('academy_leagues').select('*').order('name');
         var allGroups = result.data || [];
         var activeGroups = allGroups.filter(function(g) { return g.status !== 'completed'; });
-
         var manageSelect = document.getElementById('academyLeagueSelect');
         manageSelect.innerHTML = '';
         activeGroups.forEach(function(g) { manageSelect.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>'; });
-
         var sessionSelect = document.getElementById('sessionAcademyLeague');
         sessionSelect.innerHTML = '';
         activeGroups.forEach(function(g) { sessionSelect.innerHTML += '<option value="' + g.id + '">' + g.name + '</option>'; });
-
         if (activeGroups.length) {
           loadAcademyLeaguePlayers();
           loadSessionPlayerSelect();
         } else {
           document.getElementById('academyLeaguePlayersList').innerHTML = '<p class="empty-state">No active groups.</p>';
         }
-
         loadArchivedGroups(allGroups.filter(function(g) { return g.status === 'completed'; }));
       }
-
       function loadArchivedGroups(archivedGroups) {
         var container = document.getElementById('archivedGroupsList');
         if (!archivedGroups.length) { container.innerHTML = '<p class="empty-state">No archived groups yet.</p>'; return; }
@@ -2566,19 +2331,16 @@ function renderDrillAttempts(data) {
             return '<tr><td>' + g.name + '</td><td><button class="btn-small" onclick="reactivateAcademyGroup(' + g.id + ')">Reactivate</button> <button class="btn-small danger" onclick="permanentlyDeleteAcademyGroup(' + g.id + ')">Delete Permanently</button></td></tr>';
           }).join('') + '</tbody></table>';
       }
-
       async function reactivateAcademyGroup(id) {
         if (!confirm('Reactivate this group?')) { return; }
         await sbClient.from('academy_leagues').update({ status: 'active' }).eq('id', id);
         loadAcademyLeagueSelects();
       }
-
       async function permanentlyDeleteAcademyGroup(id) {
         if (!confirm('Permanently delete this group and all its data? This cannot be undone.')) { return; }
         await sbClient.from('academy_leagues').delete().eq('id', id);
         loadAcademyLeagueSelects();
       }
-
       async function createAcademyLeague() {
         var name = document.getElementById('academyLeagueName').value.trim();
         if (!name) { showMsg('academyleague-error', 'Please enter a group name.'); return; }
@@ -2588,7 +2350,6 @@ function renderDrillAttempts(data) {
         document.getElementById('academyLeagueName').value = '';
         loadAcademyLeagueSelects();
       }
-
       async function endAcademySeason() {
         var id = document.getElementById('academyLeagueSelect').value;
         if (!id) { return; }
@@ -2597,7 +2358,6 @@ function renderDrillAttempts(data) {
         showMsg('academyleague-success', 'Season ended!');
         loadAcademyLeagueSelects();
       }
-
       async function deleteAcademyLeague() {
         var id = document.getElementById('academyLeagueSelect').value;
         if (!id) { return; }
@@ -2605,20 +2365,15 @@ function renderDrillAttempts(data) {
         await sbClient.from('academy_leagues').delete().eq('id', id);
         loadAcademyLeagueSelects();
       }
-
       async function loadAcademyLeaguePlayers() {
         var leagueId = document.getElementById('academyLeagueSelect').value;
         if (!leagueId) { return; }
-
         var allPlayersResult = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
         var allAcademyPlayers = allPlayersResult.data || [];
-
         var currentResult = await sbClient.from('academy_league_players').select('player_id').eq('academy_league_id', leagueId);
         var currentIds = (currentResult.data || []).map(function(p) { return p.player_id; });
-
         academyLeagueAvailablePlayers = allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) === -1; });
         buildAcademyLeagueChecklist('');
-
         var container = document.getElementById('academyLeaguePlayersList');
         var currentPlayers = allAcademyPlayers.filter(function(p) { return currentIds.indexOf(p.id) > -1; });
         if (!currentPlayers.length) { container.innerHTML = '<p class="empty-state">No players in this group yet.</p>'; return; }
@@ -2627,7 +2382,6 @@ function renderDrillAttempts(data) {
             return '<tr><td>' + (p.full_name || p.username) + '</td><td><button class="btn-small danger" onclick="removePlayerFromAcademyLeague(\'' + p.id + '\')">Remove</button></td></tr>';
           }).join('') + '</tbody></table>';
       }
-
       function buildAcademyLeagueChecklist(filter) {
         var checklist = document.getElementById('academyLeaguePlayerChecklist');
         var available = academyLeagueAvailablePlayers.filter(function(p) {
@@ -2649,68 +2403,55 @@ function renderDrillAttempts(data) {
         }).join('');
         updateAcademySelectedCount();
       }
-
       function filterAcademyLeagueChecklist() {
         var val = document.getElementById('academyLeaguePlayerSearch').value.toLowerCase().trim();
         buildAcademyLeagueChecklist(val);
       }
-
       function toggleAcademyLeagueCheck(playerId) {
         var chk = document.getElementById('alchk_' + playerId);
         if (chk) { chk.checked = !chk.checked; updateAcademySelectedCount(); }
       }
-
       function updateAcademySelectedCount() {
         var checked = document.querySelectorAll('#academyLeaguePlayerChecklist input[type="checkbox"]:checked');
         document.getElementById('academySelectedCount').textContent = checked.length + ' player' + (checked.length !== 1 ? 's' : '') + ' selected';
       }
-
       async function addSelectedPlayersToAcademyLeague() {
         var leagueId = document.getElementById('academyLeagueSelect').value;
         var checked = document.querySelectorAll('#academyLeaguePlayerChecklist input[type="checkbox"]:checked');
         if (!checked.length) { showMsg('academyleague-error', 'Please select at least one player.'); return; }
-
         for (var i = 0; i < checked.length; i++) {
           await sbClient.from('academy_league_players').insert([{ academy_league_id: leagueId, player_id: checked[i].value }]);
         }
-
         showMsg('academyleague-success', checked.length + ' player(s) added!');
         document.getElementById('academyLeaguePlayerSearch').value = '';
         loadAcademyLeaguePlayers();
       }
-
       async function removePlayerFromAcademyLeague(playerId) {
         var leagueId = document.getElementById('academyLeagueSelect').value;
         if (!confirm('Remove this player from the group?')) { return; }
         await sbClient.from('academy_league_players').delete().eq('academy_league_id', leagueId).eq('player_id', playerId);
         loadAcademyLeaguePlayers();
       }
-
       async function loadSessionPlayerSelect() {
         var leagueId = document.getElementById('sessionAcademyLeague').value;
         if (!leagueId) { return; }
-
         var linkResult = await sbClient.from('academy_league_players').select('player_id, profiles(full_name, username)').eq('academy_league_id', leagueId);
         var players = (linkResult.data || []).map(function(l) { return l.profiles ? { id: l.player_id, full_name: l.profiles.full_name, username: l.profiles.username } : null; }).filter(Boolean);
-
         var select = document.getElementById('sessionPlayer');
         select.innerHTML = '';
         players.forEach(function(p) {
           select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
         });
-
         var filterSelect = document.getElementById('sessionSearch');
         filterSelect.innerHTML = '<option value="">-- All Players --</option>';
         players.forEach(function(p) {
           filterSelect.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
         });
       }
-
       async function submitSession() {
         var playerId = document.getElementById('sessionPlayer').value;
         if (!playerId) { showMsg('session-error', 'Please select a player.'); return; }
         var leagueId = document.getElementById('sessionAcademyLeague').value;
-
         var result = await sbClient.from('academy_sessions').insert([{
           player_id: playerId,
           academy_league_id: leagueId || null,
@@ -2724,9 +2465,7 @@ function renderDrillAttempts(data) {
           score_171_plus: parseInt(document.getElementById('session171').value) || 0,
           bonus_points: parseInt(document.getElementById('sessionBonus').value) || 0
         }]);
-
         if (result.error) { showMsg('session-error', result.error.message); return; }
-
         showMsg('session-success', 'Session submitted successfully!');
         document.getElementById('sessionAttendance').value = 0;
         document.getElementById('sessionAttitude').value = 0;
@@ -2738,17 +2477,14 @@ function renderDrillAttempts(data) {
         document.getElementById('sessionBonus').value = 0;
         loadSessionLog();
       }
-
       async function loadSessionLog() {
         var result = await sbClient.from('academy_sessions').select('*, profiles(full_name, username)').order('session_date', { ascending: false });
         allSessionsData = result.data || [];
         renderSessionLog(allSessionsData);
       }
-
       function renderSessionLog(data) {
         var container = document.getElementById('sessionLogList');
         if (!data.length) { container.innerHTML = '<p class="empty-state">No sessions logged yet.</p>'; return; }
-
         container.innerHTML = data.map(function(s) {
           var player = s.profiles || {};
           var name = player.full_name || player.username || 'Unknown';
@@ -2768,7 +2504,6 @@ function renderDrillAttempts(data) {
             '</div></div></div>';
         }).join('');
       }
-
       function renderSessionDetailView(s) {
         return '<strong>Attendance:</strong> ' + (s.attendance || 0) + '<br>' +
           '<strong>Attitude:</strong> ' + (s.attitude || 0) + '<br>' +
@@ -2779,7 +2514,6 @@ function renderDrillAttempts(data) {
           '<strong>171+ Scored in a Match:</strong> ' + (s.score_171_plus || 0) + '<br>' +
           '<strong>Bonus Points:</strong> ' + (s.bonus_points || 0);
       }
-
       function renderSessionEditView(s) {
         return '<div class="form-row-3">' +
           '<div class="form-group"><label>Attendance</label><input class="score-input" type="number" id="edit-att-' + s.id + '" value="' + (s.attendance || 0) + '" /></div>' +
@@ -2798,20 +2532,17 @@ function renderDrillAttempts(data) {
           '<button class="btn btn-primary" onclick="saveSessionEdit(' + s.id + ')">Save Changes</button>' +
           '<button class="btn btn-secondary" onclick="cancelSessionEdit(' + s.id + ')">Cancel</button>';
       }
-
       function editSession(id) {
         var session = allSessionsData.find(function(s) { return s.id === id; });
         if (!session) { return; }
         document.getElementById('session-detail-' + id).style.display = 'block';
         document.getElementById('session-detail-content-' + id).innerHTML = renderSessionEditView(session);
       }
-
       function cancelSessionEdit(id) {
         var session = allSessionsData.find(function(s) { return s.id === id; });
         if (!session) { return; }
         document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
       }
-
       async function saveSessionEdit(id) {
         var updated = {
           attendance: parseInt(document.getElementById('edit-att-' + id).value) || 0,
@@ -2823,48 +2554,38 @@ function renderDrillAttempts(data) {
           score_171_plus: parseInt(document.getElementById('edit-171-' + id).value) || 0,
           bonus_points: parseInt(document.getElementById('edit-bonus-' + id).value) || 0
         };
-
         var result = await sbClient.from('academy_sessions').update(updated).eq('id', id);
         if (result.error) { alert('Error saving: ' + result.error.message); return; }
-
         var session = allSessionsData.find(function(s) { return s.id === id; });
         if (session) { Object.assign(session, updated); }
-
         var total = updated.attendance + updated.attitude + updated.match_win + updated.break_throw + updated.nine_dart_challenge + updated.over_100_checkout + updated.score_171_plus + updated.bonus_points;
         document.getElementById('session-total-' + id).textContent = total;
         document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
       }
-
       function toggleSessionDetail(id) {
         var row = document.getElementById('session-detail-' + id);
         row.style.display = row.style.display === 'none' ? 'block' : 'none';
       }
-
       function filterSessionLog() {
         var playerVal = document.getElementById('sessionSearch').value;
         var dateVal = document.getElementById('sessionDateFilter').value;
-
         var filtered = allSessionsData.filter(function(s) {
           var playerMatch = !playerVal || s.player_id === playerVal;
           var dateMatch = !dateVal || s.session_date === dateVal;
           return playerMatch && dateMatch;
         });
-
         renderSessionLog(filtered);
       }
-
       function clearSessionFilters() {
         document.getElementById('sessionSearch').value = '';
         document.getElementById('sessionDateFilter').value = '';
         renderSessionLog(allSessionsData);
       }
-
       async function deleteSession(id) {
         if (!confirm('Delete this session entry?')) { return; }
         await sbClient.from('academy_sessions').delete().eq('id', id);
         loadSessionLog();
       }
-
       async function loadSponsorPlayerSelect() {
         var result = await sbClient.from('profiles').select('*').or('access.eq.academy,access.eq.both').order('full_name');
         var select = document.getElementById('sponsorPlayerSelect');
@@ -2875,7 +2596,6 @@ function renderDrillAttempts(data) {
         if (result.data && result.data.length) { loadSponsorsForSelectedPlayer(); }
         select.onchange = loadSponsorsForSelectedPlayer;
       }
-
       async function loadSponsorsForSelectedPlayer() {
         var playerId = document.getElementById('sponsorPlayerSelect').value;
         if (!playerId) { return; }
@@ -2887,48 +2607,38 @@ function renderDrillAttempts(data) {
             return '<tr><td>' + (s.sponsor_name || '-') + '</td><td>' + (s.link || '-') + '</td><td><button class="btn-small danger" onclick="deleteSponsor(' + s.id + ')">Remove</button></td></tr>';
           }).join('') + '</tbody></table>';
       }
-
       async function addSponsor() {
         var playerId = document.getElementById('sponsorPlayerSelect').value;
         var name = document.getElementById('sponsorName').value.trim();
         var link = document.getElementById('sponsorLink').value.trim();
         var fileInput = document.getElementById('sponsorLogoFile');
         var file = fileInput.files[0];
-
         if (!playerId) { alert('Please select a player.'); return; }
         if (!file) { alert('Please select a logo file.'); return; }
-
         var fileExt = file.name.split('.').pop();
         var fileName = playerId + '_' + Date.now() + '.' + fileExt;
-
         var uploadResult = await sbClient.storage.from('sponsor-logos').upload(fileName, file);
         if (uploadResult.error) { alert('Error uploading logo: ' + uploadResult.error.message); return; }
-
         var urlData = sbClient.storage.from('sponsor-logos').getPublicUrl(fileName);
         var logoUrl = urlData.data.publicUrl;
-
         var result = await sbClient.from('player_sponsors').insert([{
           player_id: playerId,
           sponsor_name: name || null,
           link: link || null,
           logo_url: logoUrl
         }]);
-
         if (result.error) { alert('Error saving sponsor: ' + result.error.message); return; }
-
         alert('Sponsor added!');
         document.getElementById('sponsorName').value = '';
         document.getElementById('sponsorLink').value = '';
         fileInput.value = '';
         loadSponsorsForSelectedPlayer();
       }
-
       async function deleteSponsor(id) {
         if (!confirm('Remove this sponsor?')) { return; }
         await sbClient.from('player_sponsors').delete().eq('id', id);
         loadSponsorsForSelectedPlayer();
       }
-
       async function loadDivisionSponsorSelect() {
         var result = await sbClient.from('academy_leagues').select('*').eq('status', 'active').order('name');
         var select = document.getElementById('divisionSponsorLeagueSelect');
@@ -2939,7 +2649,6 @@ function renderDrillAttempts(data) {
         if (result.data && result.data.length) { loadDivisionSponsorsForSelected(); }
         select.onchange = loadDivisionSponsorsForSelected;
       }
-
       async function loadDivisionSponsorsForSelected() {
         var leagueId = document.getElementById('divisionSponsorLeagueSelect').value;
         if (!leagueId) { return; }
@@ -2951,53 +2660,42 @@ function renderDrillAttempts(data) {
             return '<tr><td>' + (s.sponsor_name || '-') + '</td><td>' + (s.link || '-') + '</td><td><button class="btn-small danger" onclick="deleteDivisionSponsor(' + s.id + ')">Remove</button></td></tr>';
           }).join('') + '</tbody></table>';
       }
-
       async function addDivisionSponsor() {
         var leagueId = document.getElementById('divisionSponsorLeagueSelect').value;
         var name = document.getElementById('divisionSponsorName').value.trim();
         var link = document.getElementById('divisionSponsorLink').value.trim();
         var fileInput = document.getElementById('divisionSponsorLogoFile');
         var file = fileInput.files[0];
-
         if (!leagueId) { alert('Please select a group.'); return; }
         if (!file) { alert('Please select a logo file.'); return; }
-
         var fileExt = file.name.split('.').pop();
         var fileName = 'division_' + leagueId + '_' + Date.now() + '.' + fileExt;
-
         var uploadResult = await sbClient.storage.from('sponsor-logos').upload(fileName, file);
         if (uploadResult.error) { alert('Error uploading logo: ' + uploadResult.error.message); return; }
-
         var urlData = sbClient.storage.from('sponsor-logos').getPublicUrl(fileName);
         var logoUrl = urlData.data.publicUrl;
-
         var result = await sbClient.from('academy_league_sponsors').insert([{
           academy_league_id: leagueId,
           sponsor_name: name || null,
           link: link || null,
           logo_url: logoUrl
         }]);
-
         if (result.error) { alert('Error saving sponsor: ' + result.error.message); return; }
-
         alert('Sponsor added!');
         document.getElementById('divisionSponsorName').value = '';
         document.getElementById('divisionSponsorLink').value = '';
         fileInput.value = '';
         loadDivisionSponsorsForSelected();
       }
-
       async function deleteDivisionSponsor(id) {
         if (!confirm('Remove this sponsor?')) { return; }
         await sbClient.from('academy_league_sponsors').delete().eq('id', id);
         loadDivisionSponsorsForSelected();
       }
-
     async function loadSponsorEnquiries() {
   var result = await sbClient.from('sponsor_enquiries').select('*, profiles(full_name, username)').order('created_at', { ascending: false });
   var container = document.getElementById('sponsorEnquiriesList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
-
   container.innerHTML = '<table><thead><tr><th>Player</th><th>From</th><th>Date</th><th>Action</th></tr></thead><tbody>' +
     result.data.map(function(e) {
       var player = e.profiles || {};
@@ -3014,10 +2712,8 @@ function renderDrillAttempts(data) {
         '<strong>Message:</strong><br>' + e.message +
         '</td></tr>';
     }).join('') + '</tbody></table>';
-
   updateAcademyBadge();
 }
-
     async function toggleEnquiryDetail(id) {
   var row = document.getElementById('enquiry-detail-' + id);
   var opening = row.style.display === 'none';
@@ -3027,18 +2723,15 @@ function renderDrillAttempts(data) {
     updateAcademyBadge();
   }
 }
-
       async function deleteEnquiry(id) {
         if (!confirm('Delete this enquiry?')) { return; }
         await sbClient.from('sponsor_enquiries').delete().eq('id', id);
         loadSponsorEnquiries();
       }
-
       async function loadDivisionEnquiries() {
   var result = await sbClient.from('division_sponsor_enquiries').select('*, academy_leagues(name)').order('created_at', { ascending: false });
   var container = document.getElementById('divisionEnquiriesList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No enquiries yet.</p>'; updateAcademyBadge(); return; }
-
   container.innerHTML = result.data.map(function(e) {
     var group = e.academy_leagues || {};
     var unreadMark = !e.is_read ? ' 🔴' : '';
@@ -3056,10 +2749,8 @@ function renderDrillAttempts(data) {
       '<button class="btn-small danger" onclick="deleteDivisionEnquiry(' + e.id + ')" style="margin-top:10px;">Delete</button>' +
       '</div></div>';
   }).join('');
-
   updateAcademyBadge();
 }
-
      async function toggleDivisionEnquiryDetail(id) {
   var row = document.getElementById('division-enquiry-detail-' + id);
   var opening = row.style.display === 'none';
@@ -3074,7 +2765,6 @@ function renderDrillAttempts(data) {
         await sbClient.from('division_sponsor_enquiries').delete().eq('id', id);
         loadDivisionEnquiries();
       }
-
 async function updateAcademyBadge() {
   var playerResult = await sbClient.from('sponsor_enquiries').select('id').eq('is_read', false);
   var divisionResult = await sbClient.from('division_sponsor_enquiries').select('id').eq('is_read', false);
@@ -3086,17 +2776,14 @@ var merchOrderResult = await sbClient.from('merch_orders').select('id').eq('paid
   var btn = document.getElementById('enquiriesTabBtn');
   if (btn) { btn.textContent = count > 0 ? 'Enquiries (' + count + ')' : 'Enquiries'; }
 }
-
       async function saveNews() {
         var title = document.getElementById('newsTitle').value.trim();
         var content = document.getElementById('newsContent').value.trim();
         var date = document.getElementById('newsDate').value;
         var fileInput = document.getElementById('newsImageFile');
         var file = fileInput.files[0];
-
         if (!title) { showMsg('news-error', 'Please enter a title.'); return; }
         if (!content && !file) { showMsg('news-error', 'Please add either content or an image.'); return; }
-
         var imageUrl = null;
         if (file) {
           var fileExt = file.name.split('.').pop();
@@ -3106,7 +2793,6 @@ var merchOrderResult = await sbClient.from('merch_orders').select('id').eq('paid
           var urlData = sbClient.storage.from('news-images').getPublicUrl(fileName);
           imageUrl = urlData.data.publicUrl;
         }
-
         var result = await sbClient.from('news').insert([{
           title: title,
           content: content,
@@ -3124,7 +2810,6 @@ var merchOrderResult = await sbClient.from('merch_orders').select('id').eq('paid
         fileInput.value = '';
         loadNews();
       }
-
     async function loadNews() {
   var result = await sbClient.from('news').select('*').order('created_at', { ascending: false });
   allNewsData = result.data || [];
@@ -3134,7 +2819,6 @@ var merchOrderResult = await sbClient.from('merch_orders').select('id').eq('paid
     return renderNewsRow(n);
   }).join('');
 }
-
 function renderNewsRow(n) {
   var sectionLabel = n.section === 'academy' ? 'Academy' : (n.section === 'both' ? 'Both' : 'Online');
   var dateLabel = new Date(n.article_date || n.created_at).toLocaleDateString('en-GB');
@@ -3148,12 +2832,10 @@ function renderNewsRow(n) {
     '<button class="btn-small" onclick="editNewsRow(' + n.id + ')">Edit</button> <button class="btn-small danger" onclick="deleteNews(\'' + n.id + '\')">Delete</button>' +
     '</div></div></div>';
 }
-
 function toggleNewsRow(id) {
   var row = document.getElementById('nrow-edit-' + id);
   row.style.display = row.style.display === 'none' ? 'block' : 'none';
 }
-
 function editNewsRow(id) {
   var n = allNewsData.find(function(x) { return x.id === id; });
   if (!n) { return; }
@@ -3178,12 +2860,10 @@ function editNewsRow(id) {
           '<button class="btn btn-primary" onclick="saveNewsEdit(' + id + ')">Save Changes</button> ' +
           '<button class="btn btn-secondary" onclick="cancelNewsEdit(' + id + ')">Cancel</button>';
       }
-
 function cancelNewsEdit(id) {
   document.getElementById('nrow-edit-content-' + id).innerHTML =
     '<button class="btn-small" onclick="editNewsRow(' + id + ')">Edit</button> <button class="btn-small danger" onclick="deleteNews(\'' + id + '\')">Delete</button>';
 }
-
       async function saveNewsEdit(id) {
         var update = {
           title: document.getElementById('en-title-' + id).value.trim(),
@@ -3197,13 +2877,11 @@ function cancelNewsEdit(id) {
         if (result.error) { alert('Error saving: ' + result.error.message); return; }
         loadNews();
       }
-
       async function deleteNews(id) {
         if (!confirm('Delete this article?')) { return; }
         await sbClient.from('news').delete().eq('id', id);
         loadNews();
       }
-
       function formatLabel(val) {
         if (!val) { return '-'; }
         var labels = {
@@ -3214,14 +2892,12 @@ function cancelNewsEdit(id) {
         };
         return labels[val] || val;
       }
-
       function showMsg(id, msg) {
         var el = document.getElementById(id);
         el.textContent = msg;
         el.style.display = 'block';
         setTimeout(function() { el.style.display = 'none'; }, 4000);
       }
-
       window.addEventListener('load', function() {
         document.getElementById('newsDate').value = new Date().toISOString().split('T')[0];
         checkAuth();
@@ -3252,6 +2928,5 @@ loadCreditTopUps();
         loadNews();
       });
     </script>
-
   </body>
 </html>
