@@ -24,7 +24,7 @@
         --pd-radius-btn: 9px;
         --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
       }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-page); color: var(--pd-text-dark); }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
       header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
       header .brand { display: flex; align-items: center; gap: 10px; }
       header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
@@ -37,14 +37,14 @@
       nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
       nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
       nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
-      .hero { background-color: var(--pd-bg-dark); padding: 8px 28px 44px; }
-      .hero-kicker { font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
+.hero { position: relative; padding: 8px 28px 44px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }      .hero-kicker { font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
       .hero-title { font-size: 26px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0 0 20px; max-width: 460px; }
       .hero-stats { display: flex; gap: 28px; flex-wrap: wrap; }
       .hero-stat-value { font-size: 22px; font-weight: bold; color: var(--pd-text-light); }
       .hero-stat-label { font-size: 12px; color: var(--pd-text-light-muted); margin-top: 2px; }
-      main { padding: 24px 28px 40px; max-width: 1100px; margin: -20px auto 0; background: var(--pd-bg-page); border-radius: 20px 20px 0 0; position: relative; }
-      h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-dark); }
+main { padding: 8px 28px 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+      h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-light); }
       .tournament-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 28px; }
      .tournament-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); padding: 18px 20px; box-shadow: var(--pd-shadow-card); }
       .tournament-card .badges-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -64,15 +64,16 @@
       .btn-join { background-color: var(--pd-surface); color: var(--pd-text-dark); border: 1px solid var(--pd-border-strong); }
       .btn-join:hover { background-color: #f5f5f5; }
       .btn-join.joined { background-color: #f5f5f5; color: var(--pd-text-muted); cursor: default; }
-      .coming-soon { text-align: center; padding: 50px 20px; color: #aaaaaa; font-size: 1em; }
-      .loading { text-align: center; padding: 40px; color: #888888; }
+.coming-soon { text-align: center; padding: 50px 20px; color: var(--pd-text-light-muted); font-size: 1em; }
+      .loading { text-align: center; padding: 40px; color: var(--pd-text-light-muted); }
       .archive-link { text-align: center; margin-top: 8px; }
-      .archive-link a { color: #555; font-size: 0.9em; text-decoration: none; }
+      .archive-link a { color: var(--pd-text-light-muted); font-size: 0.9em; text-decoration: none; }
 @media (max-width: 700px) {
         header { padding: 14px 20px; }
         .hero { padding: 8px 20px 36px; }
         .hero-title { font-size: 22px; }
-        main { padding: 20px 20px 32px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 8px 20px 32px; }
         .tournament-grid { grid-template-columns: 1fr; }
         .tournament-card { text-align: center; }
         .tournament-card .badges-row { justify-content: center; }
@@ -96,7 +97,8 @@
       <div id="authButtons" style="padding:14px 24px;"></div>
     </nav>
   </header>
-  <div class="hero">
+<div class="hero">
+    <img src="logo-watermark.png" alt="" class="hero-watermark">
     <div class="hero-kicker">Tournaments</div>
     <div class="hero-title">Find your next event.</div>
     <div class="hero-stats">
