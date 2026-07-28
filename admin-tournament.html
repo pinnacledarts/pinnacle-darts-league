@@ -33,6 +33,8 @@ header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex;
       .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; margin-left: auto; }
 nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
 nav.open { display: flex; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; display: block; }
+nav a:hover { background-color: #1a1a1a; }
 nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
 nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
 nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
