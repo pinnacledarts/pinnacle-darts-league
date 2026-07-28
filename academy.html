@@ -970,13 +970,13 @@ if (currentSubtitle) {
   '<div style="text-align:center;padding:40px 20px;">' +
   '<p style="font-size:1.1em;color:var(--pd-text-light-muted);margin-bottom:24px;">You\'re all done! Ready to submit your attempt?</p>' +
   '<button class="save-btn" id="drillSubmitBtn-' + drillId + '" onclick="submitDrillAttempt(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Submit Attempt</button>' +
-      (idx > 0 ? '<div style="margin-top:16px;"><button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button></div>' : '') +
+      (idx > 0 ? '<div style="margin-top:16px;"><button class="cancel-btn" style="color:var(--pd-text-light);" onclick="drillStepBack(' + drillId + ')">Back</button></div>' : '') +
       '</div>';
     return;
   }
   var step = steps[idx];
   var progressHtml = '<div style="font-size:0.85em;color:var(--pd-text-light-muted);margin-bottom:16px;">Step ' + (idx + 1) + ' of ' + steps.length + '</div>';
-  var backBtn = idx > 0 ? '<button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button>' : '';
+  var backBtn = idx > 0 ? '<button class="cancel-btn" style="color:var(--pd-text-light);" onclick="drillStepBack(' + drillId + ')">Back</button>' : '';
   if (step.is_subtitle) {
     var subDescHtml = step.description ? '<p style="color:#555555;line-height:1.6;font-size:1.05em;margin-top:12px;">' + step.description + '</p>' : '';
     container.innerHTML = titleHtml + progressHtml +
@@ -1122,8 +1122,7 @@ container.innerHTML = '<h2 style="margin-bottom:20px;color:var(--pd-text-light);
   '<p class="well-done-text" style="font-size:1.4em;color:#4dd88a;font-weight:bold;margin:12px 0 8px;">Well done!</p>' +
   '<p class="well-done-text" style="font-size:1.1em;color:var(--pd-text-light-muted);margin-bottom:28px;">Total score: ' + totalScore + '</p>' +
     '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Start Another Drill</button>' +
-    '<div style="margin-top:12px;"><button class="cancel-btn" onclick="closeDrillOverlay(); loadDrillsAccordion();">Close</button></div>' +
-    '</div>';
+'<div style="margin-top:16px;"><button class="cancel-btn" style="color:var(--pd-text-light);" onclick="drillStepBack(' + drillId + ')">Back</button></div>' : '') +    '</div>';
 }
    function resetDrillForm(drillId) {
   toggleDrillItem(drillId);
