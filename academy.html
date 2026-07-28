@@ -979,8 +979,8 @@ if (currentSubtitle) {
   var backBtn = idx > 0 ? '<button class="cancel-btn" onclick="drillStepBack(' + drillId + ')">Back</button>' : '';
   if (step.is_subtitle) {
     var subDescHtml = step.description ? '<p style="color:#555555;line-height:1.6;font-size:1.05em;margin-top:12px;">' + step.description + '</p>' : '';
-    container.innerHTML = titleHtml + progressHtml +
-      '<div class="news-item-title" style="text-align:center;font-size:1.3em;padding:24px;margin-bottom:8px;">' + step.target_name + '</div>' +
+container.innerHTML = titleHtml + progressHtml +
+      '<div class="news-item-title" style="background-color:#ffffff;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);text-align:center;font-size:1.3em;padding:24px;margin-bottom:8px;">' + step.target_name + '</div>' +
       subDescHtml +
       '<div style="margin-top:28px;text-align:center;">' +
       '<button class="save-btn" onclick="drillStepNext(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Continue</button>' +
@@ -1006,7 +1006,7 @@ var questionHeaderHtml = '<div class="news-item-title" style="background-color:#
   var optionsHtml = options.map(function(o) {
     var val = o.id + '|' + o.points;
     var isSelected = val === existingSelected;
-    return '<div class="news-item-title" style="cursor:pointer;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;padding:20px 24px;' + (isSelected ? 'background-color:#eeeeee;' : '') + '" onclick="selectDrillAnswer(' + drillId + ', \'' + o.id + '\', ' + o.points + ')">' +
+        return '<div class="news-item-title" style="cursor:pointer;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);' + (isSelected ? 'background-color:#eeeeee;' : 'background-color:#ffffff;') + '" onclick="selectDrillAnswer(' + drillId + ', \'' + o.id + '\', ' + o.points + ')">' +
       '<span>' + o.label + '</span>' +
       '<span style="color:#888888;font-size:0.85em;font-weight:normal;">' + o.points + ' pts' + (isSelected ? ' ✓' : '') + '</span>' +
       '</div>';
