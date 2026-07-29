@@ -573,7 +573,11 @@ main { padding: 0 20px 32px; }
               <input type="date" id="drillAttemptDateFilter" onchange="filterDrillAttempts()" />
             </div>
           </div>
-          <button class="btn btn-secondary" onclick="clearDrillAttemptFilters()" style="margin-bottom:16px;">Clear Filters</button>
+<button class="btn btn-secondary" onclick="clearDrillAttemptFilters()" style="margin-bottom:16px;">Clear Filters</button>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span class="selected-count" id="attemptSelectedCount" style="margin:0;">0 selected</span>
+            <button class="btn-small danger" onclick="deleteSelectedDrillAttempts()">Delete Selected</button>
+          </div>
 <div id="drillAttemptsList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
         <div class="card">
@@ -2208,15 +2212,16 @@ function formatAdminDrillTime(totalSeconds) {
 }
 function renderDrillAttempts(data) {
   var container = document.getElementById('drillAttemptsList');
-  if (!data.length) { container.innerHTML = '<p class="empty-state">No drill attempts logged yet.</p>'; return; }
+  if (!data.length) { container.innerHTML = '<p class="empty-state">No drill attempts logged yet.</p>'; updateAttemptSelectedCount(); return; }
   container.innerHTML = data.map(function(a) {
     var profile = a.profiles || {};
     var name = profile.full_name || profile.username || 'Unknown';
     var drillTitle = a.drills ? a.drills.title : 'Unknown Drill';
     var timeLabel = formatAdminDrillTime(a.time_taken_seconds);
     return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
-      '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleDrillAttemptDetail(' + a.id + ')">' +
-      '<div><strong>' + name + '</strong><div style="color:#888;font-size:0.85em;">' + drillTitle + ' — ' + (a.attempt_date || '-') + ' — Score: <strong id="attempt-total-' + a.id + '">' + a.total_score + '</strong> — Time: ' + timeLabel + '</div></div>' +
+      '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;" onclick="toggleDrillAttemptDetail(' + a.id + ')">' +
+      '<input type="checkbox" class="attempt-checkbox" value="' + a.id + '" onclick="event.stopPropagation(); updateAttemptSelectedCount();" style="width:16px;height:16px;flex-shrink:0;" />' +
+      '<div style="flex:1;"><strong>' + name + '</strong><div style="color:#888;font-size:0.85em;">' + drillTitle + ' — ' + (a.attempt_date || '-') + ' — Score: <strong id="attempt-total-' + a.id + '">' + a.total_score + '</strong> — Time: ' + timeLabel + '</div></div>' +
       '<span style="color:#aaa;">▾</span>' +
       '</div>' +
       '<div id="attempt-detail-' + a.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
@@ -2226,6 +2231,12 @@ function renderDrillAttempts(data) {
       '<button class="btn-small danger" onclick="deleteDrillAttempt(' + a.id + ')" style="margin-top:10px;">Delete Attempt</button>' +
       '</div></div>';
   }).join('');
+  updateAttemptSelectedCount();
+}
+function updateAttemptSelectedCount() {
+  var checked = document.querySelectorAll('.attempt-checkbox:checked');
+  var el = document.getElementById('attemptSelectedCount');
+  if (el) { el.textContent = checked.length + ' selected'; }
 }
       function renderDrillAttemptDetailView(a) {
         var scores = a.drill_attempt_scores || [];
@@ -2297,10 +2308,22 @@ function renderDrillAttempts(data) {
         document.getElementById('attempt-total-' + id).textContent = newScore;
         document.getElementById('attempt-detail-content-' + id).innerHTML = renderDrillAttemptDetailView(attempt);
       }
-      async function deleteDrillAttempt(id) {
+async function deleteDrillAttempt(id) {
         if (!confirm('Delete this drill attempt?')) { return; }
-        await sbClient.from('drill_attempts').delete().eq('id', id);
-        loadDrillAttempts();
+        var result = await sbClient.from('drill_attempts').delete().eq('id', id);
+        if (result.error) { alert('Error deleting: ' + result.error.message); return; }
+        allDrillAttemptsData = allDrillAttemptsData.filter(function(a) { return a.id !== id; });
+        filterDrillAttempts();
+      }
+      async function deleteSelectedDrillAttempts() {
+        var checked = document.querySelectorAll('.attempt-checkbox:checked');
+        if (!checked.length) { alert('Please select at least one attempt to delete.'); return; }
+        if (!confirm('Delete ' + checked.length + ' selected attempt(s)? This cannot be undone.')) { return; }
+        var ids = Array.from(checked).map(function(c) { return parseInt(c.value); });
+        var result = await sbClient.from('drill_attempts').delete().in('id', ids);
+        if (result.error) { alert('Error deleting: ' + result.error.message); return; }
+        allDrillAttemptsData = allDrillAttemptsData.filter(function(a) { return ids.indexOf(a.id) === -1; });
+        filterDrillAttempts();
       }
       function filterDrillAttempts() {
         var playerVal = document.getElementById('drillAttemptPlayerFilter').value;
