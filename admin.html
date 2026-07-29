@@ -545,6 +545,12 @@ main { padding: 0 20px 32px; }
 <div id="drillTargetsList"></div>
 <button class="btn btn-secondary" onclick="addDrillTargetRow()">+ Add Target</button>
 <button class="btn btn-secondary" onclick="addDrillSubtitleRow()" style="margin-bottom:16px;">+ Add Subtitle</button>
+<div class="form-group" style="margin-top:16px;">
+  <label>Grading (optional)</label>
+  <p style="color:#666;font-size:0.85em;margin:0 0 8px;">Define score thresholds. Players see their grade at the end, based on the highest threshold their total score reaches.</p>
+  <div id="drillGradeBandsList"></div>
+  <button type="button" class="btn-small" onclick="addGradeBandRow()">+ Add Grade Band</button>
+</div>
 <div style="position:sticky;bottom:0;background-color:#ffffff;padding:12px 0;border-top:1px solid #eeeeee;margin-top:8px;z-index:10;">
   <button class="btn btn-primary" onclick="saveDrill()">Create Drill</button>
 </div>
@@ -1936,6 +1942,35 @@ function moveDrillRow(idx, direction) {
         var type = document.getElementById('targetEntryType' + idx).value;
         document.getElementById('dropdownSection' + idx).style.display = type === 'manual' ? 'none' : 'block';
       }
+      var gradeBandCount = 0;
+function addGradeBandRow(label, minScore) {
+  gradeBandCount++;
+  var idx = gradeBandCount;
+  var container = document.getElementById('drillGradeBandsList');
+  var row = document.createElement('div');
+  row.id = 'gradeBandRow' + idx;
+  row.style.cssText = 'display:flex;gap:8px;margin-bottom:8px;';
+  row.innerHTML =
+    '<input type="text" id="gradeBandLabel' + idx + '" placeholder="e.g. Gold" value="' + (label ? label.replace(/"/g, '&quot;') : '') + '" style="flex:2;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
+    '<input type="number" step="any" id="gradeBandMin' + idx + '" placeholder="Min score" value="' + (minScore != null ? minScore : '') + '" style="flex:1;padding:8px;border:1px solid #ddd;border-radius:4px;" />' +
+    '<button type="button" class="btn-small danger" onclick="document.getElementById(\'gradeBandRow' + idx + '\').remove()">✕</button>';
+  container.appendChild(row);
+}
+function collectGradeBands() {
+  var rows = document.querySelectorAll('#drillGradeBandsList > div');
+  var bands = [];
+  rows.forEach(function(row) {
+    var idx = row.id.replace('gradeBandRow', '');
+    var label = document.getElementById('gradeBandLabel' + idx).value.trim();
+    var minRaw = document.getElementById('gradeBandMin' + idx).value.trim();
+    if (!label || minRaw === '') { return; }
+    var min = parseFloat(minRaw);
+    if (isNaN(min)) { return; }
+    bands.push({ label: label, min: min });
+  });
+  bands.sort(function(a, b) { return a.min - b.min; });
+  return bands;
+}
 function addDrillSubtitleRow(insertAfterIdx) {
   drillTargetCount++;
   var idx = drillTargetCount;
@@ -1998,14 +2033,15 @@ var savingBtnOriginalText = saveBtn ? saveBtn.textContent : '';
 if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
 try {
 var description = document.getElementById('drillDescription').value.trim();
+var gradeBands = collectGradeBands();
 var drillId;
 if (editingDrillId) {
-  var updateResult = await sbClient.from('drills').update({ title: title, description: description || null }).eq('id', editingDrillId);
+  var updateResult = await sbClient.from('drills').update({ title: title, description: description || null, grade_bands: gradeBands.length ? gradeBands : null }).eq('id', editingDrillId);
   if (updateResult.error) { showMsg('drill-error', 'Error updating drill: ' + updateResult.error.message); return; }
   drillId = editingDrillId;
   await sbClient.from('drill_targets').delete().eq('drill_id', drillId);
 } else {
-  var drillResult = await sbClient.from('drills').insert([{ title: title, description: description || null }]).select();
+  var drillResult = await sbClient.from('drills').insert([{ title: title, description: description || null, grade_bands: gradeBands.length ? gradeBands : null }]).select();
   if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
   drillId = drillResult.data[0].id;
 }
@@ -2056,7 +2092,9 @@ showMsg('drill-success', editingDrillId ? 'Drill updated successfully!' : 'Drill
 document.getElementById('drillTitle').value = '';
 document.getElementById('drillDescription').value = '';
 document.getElementById('drillTargetsList').innerHTML = '';
+document.getElementById('drillGradeBandsList').innerHTML = '';
         drillTargetCount = 0;
+        gradeBandCount = 0;
         scoreOptionCounts = {};
         editingDrillId = null;
         loadDrills();
@@ -2108,7 +2146,10 @@ async function editDrill(id) {
 document.getElementById('drillTitle').value = drill.title || '';
 document.getElementById('drillDescription').value = drill.description || '';
 document.getElementById('drillTargetsList').innerHTML = '';
+document.getElementById('drillGradeBandsList').innerHTML = '';
         drillTargetCount = 0;
+        gradeBandCount = 0;
+        (drill.grade_bands || []).forEach(function(gb) { addGradeBandRow(gb.label, gb.min); });
         scoreOptionCounts = {};
         var targets = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
         targets.forEach(function(t) {
