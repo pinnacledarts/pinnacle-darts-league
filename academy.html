@@ -978,7 +978,7 @@ if (currentSubtitle) {
   var progressHtml = '<div style="font-size:0.85em;color:var(--pd-text-light-muted);margin-bottom:16px;">Step ' + (idx + 1) + ' of ' + steps.length + '</div>';
   var backBtn = idx > 0 ? '<button class="cancel-btn" style="color:var(--pd-text-light);" onclick="drillStepBack(' + drillId + ')">Back</button>' : '';
   if (step.is_subtitle) {
-    var subDescHtml = step.description ? '<p style="color:#555555;line-height:1.6;font-size:1.05em;margin-top:12px;">' + step.description + '</p>' : '';
+    var subDescHtml = step.description ? '<p style="background-color:#ffffff;color:#555555;line-height:1.6;font-size:1.05em;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);padding:16px 20px;margin-top:0;">' + step.description + '</p>' : '';
 container.innerHTML = titleHtml + progressHtml +
       '<div class="news-item-title" style="background-color:#ffffff;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);text-align:center;font-size:1.3em;padding:24px;margin-bottom:8px;">' + step.target_name + '</div>' +
       subDescHtml +
