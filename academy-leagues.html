@@ -147,9 +147,10 @@ async function loadLeagues() {
         var platformLabels = { dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both' };
 var cardsHtml = [];
 var myCardsHtml = [];
+var allStatuses = await Promise.all(result.data.map(function(l) { return computeLeagueStatus(l); }));
 for (var i = 0; i < result.data.length; i++) {
   var l = result.data[i];
-  var status = await computeLeagueStatus(l);
+  var status = allStatuses[i];
   if (status === 'completed') { continue; }
   if (playerPlatform && playerPlatform !== 'both' && l.platform !== 'in_person' && l.platform !== 'both' && l.platform !== playerPlatform) {
     continue;
