@@ -1648,9 +1648,10 @@ description: document.getElementById('tournamentDesc').value.trim() || null
         var container = document.getElementById('tournamentsList');
         if (!allTournamentsData.length) { container.innerHTML = '<p class="empty-state">No tournaments yet</p>'; return; }
         var cardsHtml = [];
+var allStatuses = await Promise.all(allTournamentsData.map(function(t) { return computeTournamentStatus(t); }));
         for (var i = 0; i < allTournamentsData.length; i++) {
           var t = allTournamentsData[i];
-          var status = await computeTournamentStatus(t);
+          var status = allStatuses[i];
           cardsHtml.push('<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
             '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleTournamentRow(\'' + t.id + '\')">' +
             '<div><strong>' + t.name + '</strong><div style="margin-top:4px;">' + getStatusBadgeHtml(status) + '</div></div>' +
@@ -1726,9 +1727,10 @@ average_split: true,
           container.innerHTML = '<p class="empty-state">No leagues yet</p>';
         } else {
           var cardsHtml = [];
+var allStatuses = await Promise.all(allLeaguesData.map(function(l) { return computeLeagueStatus(l); }));
           for (var i = 0; i < allLeaguesData.length; i++) {
             var l = allLeaguesData[i];
-            var status = await computeLeagueStatus(l);
+            var status = allStatuses[i];
             cardsHtml.push('<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
               '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleLeagueRow(\'' + l.id + '\')">' +
               '<div><strong>' + l.name + '</strong><div style="margin-top:4px;">' + getStatusBadgeHtml(status) + '</div></div>' +
