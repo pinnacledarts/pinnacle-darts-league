@@ -105,9 +105,10 @@
         var formatLabels = { round_robin: 'Round Robin', home_away: 'Home & Away', swiss: 'Swiss System' };
         var platformLabels = { dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both' };
         var cardsHtml = [];
+var allStatuses = await Promise.all(result.data.map(function(l) { return computeLeagueStatus(l); }));
         for (var i = 0; i < result.data.length; i++) {
           var l = result.data[i];
-          var status = await computeLeagueStatus(l);
+          var status = allStatuses[i];
           if (status !== 'completed') { continue; }
           var endStr = l.end_date ? new Date(l.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
           cardsHtml.push('<div class="league-card">' +
