@@ -34,12 +34,11 @@ document.addEventListener('DOMContentLoaded', function() {
   if (window.location.pathname.includes('admin')) { return; }
   var playersLink = nav.querySelector('a[href="players.html"]');
   if (playersLink) {
-    if (!nav.querySelector('a[href="shirt-builder.html"]')) {
+if (!nav.querySelector('a[href="shirt-builder.html"]')) {
       var shirtLink = document.createElement('a');
       shirtLink.href = 'shirt-builder.html';
       shirtLink.textContent = 'Shirt Builder';
-      var swapLinkRef = nav.querySelector('a[href="swap-sell.html"]');
-      swapLinkRef.insertAdjacentElement('afterend', shirtLink);
+      playersLink.insertAdjacentElement('afterend', shirtLink);
     }
 
     if (!nav.querySelector('a[href="merch.html"]')) {
