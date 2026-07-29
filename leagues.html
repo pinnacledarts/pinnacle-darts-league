@@ -164,9 +164,10 @@ var myCardsHtml = [];
 var liveCount = 0;
 var upcomingCount = 0;
 var totalPlayersEntered = 0;
+var allStatuses = await Promise.all(result.data.map(function(l) { return computeLeagueStatus(l); }));
 for (var i = 0; i < result.data.length; i++) {
   var l = result.data[i];
-  var status = await computeLeagueStatus(l);
+  var status = allStatuses[i];
   if (status === 'completed') { continue; }
   if (playerPlatform && playerPlatform !== 'both' && l.platform !== 'in_person' && l.platform !== 'both' && l.platform !== playerPlatform) {
     continue;
