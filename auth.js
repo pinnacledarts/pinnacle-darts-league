@@ -34,14 +34,13 @@ document.addEventListener('DOMContentLoaded', function() {
   if (window.location.pathname.includes('admin')) { return; }
   var playersLink = nav.querySelector('a[href="players.html"]');
   if (playersLink) {
-if (!nav.querySelector('a[href="shirt-builder.html"]')) {
+    if (!nav.querySelector('a[href="shirt-builder.html"]')) {
       var shirtLink = document.createElement('a');
       shirtLink.href = 'shirt-builder.html';
       shirtLink.textContent = 'Shirt Builder';
       playersLink.insertAdjacentElement('afterend', shirtLink);
     }
-
-  if (!nav.querySelector('a[href="merch.html"]')) {
+    if (!nav.querySelector('a[href="merch.html"]')) {
       var merchLink = document.createElement('a');
       merchLink.href = 'merch.html';
       merchLink.textContent = 'Shop';
@@ -55,12 +54,8 @@ if (!nav.querySelector('a[href="shirt-builder.html"]')) {
       var merchLinkRef = nav.querySelector('a[href="merch.html"]');
       merchLinkRef.insertAdjacentElement('afterend', leaderboardsLink);
     }
-} else {
+  } else {
     if (!nav.querySelector('a[href="merch.html"]')) {
-      var merchLinkAcademy = document.createElement('a');
-      merchLinkAcademy.href = 'merch.html';
-      merchLinkAcademy.textContent = 'Shop';
-if (!nav.querySelector('a[href="merch.html"]')) {
       var merchLinkAcademy = document.createElement('a');
       merchLinkAcademy.href = 'merch.html';
       merchLinkAcademy.textContent = 'Shop';
