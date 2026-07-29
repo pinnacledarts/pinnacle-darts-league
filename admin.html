@@ -398,6 +398,10 @@ main { padding: 0 20px 32px; }
 <div class="card">
           <h3>Registered Players</h3>
           <input type="text" class="search-bar" id="playerSearch" placeholder="Search by name or username..." oninput="filterPlayersList()" />
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span class="selected-count" id="playerSelectedCount" style="margin:0;">0 selected</span>
+            <button class="btn-small danger" onclick="resetSelectedPlayerStats()">Reset Stats for Selected</button>
+          </div>
           <div id="playersList"><p class="empty-state">Loading...</p></div>
         </div>
         <div class="card">
@@ -1834,21 +1838,31 @@ function updateRegistrationStats() {
             '<button class="btn-small" onclick="convertGuestToFullAccount(\'' + p.id + '\', \'' + (p.full_name || p.username || '').replace(/'/g, "\\'") + '\', \'' + (p.username || '') + '\')">Convert to Full Account</button>' +
             '</div>'
           ) : '';
+var statsLine = '<div class="form-group"><label>Stats</label><div>Wins: ' + (p.wins || 0) + ' — Matches: ' + (p.matches || 0) + ' — Average: ' + (p.average || '-') + '</div></div>';
+          var resetStatsBtn = '<button class="btn-small danger" onclick="resetPlayerStats(\'' + p.id + '\', \'' + (p.full_name || p.username || '').replace(/'/g, "\\'") + '\')">Reset Stats</button>';
           return '<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
-            '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="togglePlayerRow(\'' + p.id + '\')">' +
-            '<div><strong>' + (p.full_name || '-') + '</strong>' + guestBadge + '<div style="color:#888;font-size:0.85em;">' + (p.username ? '@' + p.username : '-') + '</div></div>' +
+            '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:10px;" onclick="togglePlayerRow(\'' + p.id + '\')">' +
+            '<input type="checkbox" class="player-checkbox" value="' + p.id + '" onclick="event.stopPropagation(); updatePlayerSelectedCount();" style="width:16px;height:16px;flex-shrink:0;" />' +
+            '<div style="flex:1;"><strong>' + (p.full_name || '-') + '</strong>' + guestBadge + '<div style="color:#888;font-size:0.85em;">' + (p.username ? '@' + p.username : '-') + '</div></div>' +
             '<span style="color:#aaa;">▾</span>' +
             '</div>' +
             '<div id="player-row-' + p.id + '" style="display:none;padding:0 16px 16px;border-top:1px solid #eee;">' +
             '<div class="form-group" style="margin-top:12px;"><label>Phone</label>' + phoneField + '</div>' +
             '<div class="form-group"><label>Starter Average</label>' + starterAvgField + '</div>' +
+            statsLine +
             '<div class="form-group"><label>Platform</label>' + platformSelect + '</div>' +
             '<div class="form-group"><label>Access</label>' + accessSelect + '</div>' +
             '<div class="form-group"><label>Admin</label><div>' + (p.is_admin ? 'Yes' : 'No') + '</div></div>' +
-            '<div style="display:flex;gap:8px;margin-top:10px;">' + adminBtn + ' ' + removeBtn + '</div>' +
+            '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">' + adminBtn + ' ' + removeBtn + ' ' + resetStatsBtn + '</div>' +
             convertSection +
             '</div></div>';
         }).join('');
+        updatePlayerSelectedCount();
+      }
+      function updatePlayerSelectedCount() {
+        var checked = document.querySelectorAll('.player-checkbox:checked');
+        var el = document.getElementById('playerSelectedCount');
+        if (el) { el.textContent = checked.length + ' selected'; }
       }
       function togglePlayerRow(id) {
         var row = document.getElementById('player-row-' + id);
@@ -1861,6 +1875,26 @@ function updateRegistrationStats() {
           return (p.full_name && p.full_name.toLowerCase().includes(val)) || (p.username && p.username.toLowerCase().includes(val));
         });
         renderPlayersList(filtered);
+      }
+async function resetPlayerStats(id, name) {
+        if (!confirm('Reset match wins, matches played, and average for ' + name + '? This cannot be undone.')) { return; }
+        var result = await sbClient.from('profiles').update({ wins: 0, matches: 0, average: null }).eq('id', id);
+        if (result.error) { alert('Error resetting stats: ' + result.error.message); return; }
+        var player = allPlayersData.find(function(p) { return p.id === id; });
+        if (player) { player.wins = 0; player.matches = 0; player.average = null; }
+        filterPlayersList();
+      }
+      async function resetSelectedPlayerStats() {
+        var checked = document.querySelectorAll('.player-checkbox:checked');
+        if (!checked.length) { alert('Please select at least one player.'); return; }
+        if (!confirm('Reset match wins, matches played, and average for ' + checked.length + ' selected player(s)? This cannot be undone.')) { return; }
+        var ids = Array.from(checked).map(function(c) { return c.value; });
+        for (var i = 0; i < ids.length; i++) {
+          await sbClient.from('profiles').update({ wins: 0, matches: 0, average: null }).eq('id', ids[i]);
+          var player = allPlayersData.find(function(p) { return p.id === ids[i]; });
+          if (player) { player.wins = 0; player.matches = 0; player.average = null; }
+        }
+        filterPlayersList();
       }
       async function updateAccess(id, value) {
         await sbClient.from('profiles').update({ access: value }).eq('id', id);
