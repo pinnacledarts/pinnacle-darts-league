@@ -102,7 +102,8 @@
             <option value="matches">Most Matches Played</option>
             <option value="tournament_wins">Tournament Wins</option>
             <option value="league_wins">League Wins</option>
-            <option value="nine_dart">9 Dart Challenge (Total)</option>
+<option value="nine_dart">9 Dart Challenge (Total)</option>
+            <option value="most_171">Most 171+</option>
             <option value="drill">Best Drill Score</option>
           </select>
           <select id="drillSelect" onchange="loadLeaderboard()" style="display:none;">
@@ -167,13 +168,26 @@
           .slice(0, 50);
         renderTable(rows, 'Wins');
       }
-      async function loadNineDartBoard() {
+async function loadNineDartBoard() {
         var playerMap = await getSectionPlayerIds();
         var result = await sbClient.from('academy_sessions').select('player_id, nine_dart_challenge');
         var tally = {};
         (result.data || []).forEach(function(s) {
           if (!playerMap[s.player_id] || !s.nine_dart_challenge) { return; }
           tally[s.player_id] = (tally[s.player_id] || 0) + s.nine_dart_challenge;
+        });
+        var rows = Object.keys(tally).map(function(pid) { return { name: playerMap[pid], value: tally[pid] }; })
+          .sort(function(a, b) { return b.value - a.value; })
+          .slice(0, 50);
+        renderTable(rows, 'Total');
+      }
+      async function loadMost171Board() {
+        var playerMap = await getSectionPlayerIds();
+        var result = await sbClient.from('academy_sessions').select('player_id, score_171_plus');
+        var tally = {};
+        (result.data || []).forEach(function(s) {
+          if (!playerMap[s.player_id] || !s.score_171_plus) { return; }
+          tally[s.player_id] = (tally[s.player_id] || 0) + s.score_171_plus;
         });
         var rows = Object.keys(tally).map(function(pid) { return { name: playerMap[pid], value: tally[pid] }; })
           .sort(function(a, b) { return b.value - a.value; })
@@ -211,7 +225,8 @@
         else if (type === 'matches') { await loadProfileFieldBoard('matches', 'Played'); }
         else if (type === 'tournament_wins') { await loadFinalWinsBoard('tournament_matches', 'knockout'); }
         else if (type === 'league_wins') { await loadFinalWinsBoard('league_matches', 'playoff'); }
-        else if (type === 'nine_dart') { await loadNineDartBoard(); }
+else if (type === 'nine_dart') { await loadNineDartBoard(); }
+        else if (type === 'most_171') { await loadMost171Board(); }
         else if (type === 'drill') { await loadDrillBoard(); }
       }
       function toggleMenu() {
