@@ -408,11 +408,16 @@ container.innerHTML = toggleHtml + '<div id="bracketSectionContent"></div>';
             var winnerB = finalB.player1_score > finalB.player2_score ? finalB.player1_id : finalB.player2_id;
             cardsHtml += buildWinnerCardHtml(winnerB, tournamentData.name + ' B');
           }
-        } else {
+} else {
           var finalMain = (cachedBracketsByType['A'] || []).find(function(m) { return m.round === 'Final'; });
           if (finalMain && finalMain.status === 'completed') {
             var winnerMain = finalMain.player1_score > finalMain.player2_score ? finalMain.player1_id : finalMain.player2_id;
             cardsHtml += buildWinnerCardHtml(winnerMain, null);
+          }
+          var finalPlate = (cachedBracketsByType['B'] || []).find(function(m) { return m.round === 'Final'; });
+          if (finalPlate && finalPlate.status === 'completed') {
+            var winnerPlate = finalPlate.player1_score > finalPlate.player2_score ? finalPlate.player1_id : finalPlate.player2_id;
+            cardsHtml += buildWinnerCardHtml(winnerPlate, 'Plate');
           }
         }
         if (!cardsHtml) { return; }
