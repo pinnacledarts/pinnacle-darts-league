@@ -32,17 +32,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var nav = document.getElementById('mainNav');
   if (!nav) { return; }
   if (window.location.pathname.includes('admin')) { return; }
-
   var playersLink = nav.querySelector('a[href="players.html"]');
-
   if (playersLink) {
-    if (!nav.querySelector('a[href="swap-sell.html"]')) {
-      var swapLink = document.createElement('a');
-      swapLink.href = 'swap-sell.html';
-      swapLink.textContent = 'Swap / Sell';
-      playersLink.insertAdjacentElement('afterend', swapLink);
-    }
-
     if (!nav.querySelector('a[href="shirt-builder.html"]')) {
       var shirtLink = document.createElement('a');
       shirtLink.href = 'shirt-builder.html';
