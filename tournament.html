@@ -12,7 +12,13 @@
       * { box-sizing: border-box; }
       .winner-overlay { display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
       .winner-overlay.open { display: flex; }
-      .winner-modal { background-color: var(--pd-surface); border-radius: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05); padding: 32px 28px; max-width: 420px; width: 100%; text-align: center; color: #111111; position: relative; }
+      .winner-modal { background-color: var(--pd-surface); border-radius: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05); padding: 32px 28px; max-width: 420px; width: 100%; text-align: center; color: #111111; position: relative; overflow: hidden; }
+      .confetti-container { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+      .confetti-piece { position: absolute; top: -20px; width: 8px; height: 14px; opacity: 0.9; animation: confettiFall linear forwards; }
+      @keyframes confettiFall {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(420px) rotate(540deg); opacity: 0; }
+      }
       .winner-modal .trophy-icon { font-size: 3.5em; margin-bottom: 8px; display: inline-block; }
       .winner-modal h3 { margin: 0 0 20px; font-size: 20px; }
       .winner-cards { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
@@ -420,12 +426,23 @@ container.innerHTML = toggleHtml + '<div id="bracketSectionContent"></div>';
             cardsHtml += buildWinnerCardHtml(winnerPlate, 'Plate');
           }
         }
-        if (!cardsHtml) { return; }
+if (!cardsHtml) { return; }
         document.getElementById('winnerCardsContainer').innerHTML = cardsHtml;
-        var seenKey = 'winnerSeen_' + tournamentId;
-        if (!localStorage.getItem(seenKey)) {
-          document.getElementById('winnerOverlay').classList.add('open');
-          localStorage.setItem(seenKey, '1');
+        document.getElementById('winnerOverlay').classList.add('open');
+        spawnConfetti();
+      }
+      function spawnConfetti() {
+        var container = document.getElementById('confettiContainer');
+        container.innerHTML = '';
+        var colors = ['#f5c518', '#ff6b6b', '#4dd88a', '#5b9bff', '#c084fc', '#ffffff'];
+        for (var i = 0; i < 60; i++) {
+          var piece = document.createElement('div');
+          piece.className = 'confetti-piece';
+          piece.style.left = Math.random() * 100 + '%';
+          piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+          piece.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+          piece.style.animationDelay = (Math.random() * 0.5) + 's';
+          container.appendChild(piece);
         }
       }
       function closeWinnerPopup() {
@@ -556,7 +573,8 @@ window.addEventListener('load', function() {
       });
     </script>
 <div class="winner-overlay" id="winnerOverlay">
-  <div class="winner-modal">
+<div class="winner-modal">
+    <div class="confetti-container" id="confettiContainer"></div>
     <button class="winner-close-btn" onclick="closeWinnerPopup()">✕</button>
     <div class="trophy-icon">🏆</div>
     <h3 id="winnerModalTitle">We have a winner!</h3>
