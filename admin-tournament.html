@@ -842,7 +842,7 @@ if (m.status === 'completed') {
           '<input class="score-input" type="number" step="0.01" id="ka2_' + m.id + '" placeholder="Avg 2" style="width:70px;" />' +
           '<button class="btn-submit-score" onclick="saveKnockoutScore(' + m.id + ',\'' + r + '\',' + m.match_order + ',\'' + (m.bracket_type || 'A') + '\', \'' + m.player1_id + '\', \'' + m.player2_id + '\')">Submit</button></div>';
       } else {
-        scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
+        scoreHtml = '<div class="score-display" style="color:var(--pd-text-muted);">Awaiting players</div>';
       }
       return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span></div>' + scoreHtml + '</div>';
     }).join('');
