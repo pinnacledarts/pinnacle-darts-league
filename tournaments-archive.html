@@ -115,9 +115,10 @@
         var platformLabels = { dartcounter: 'Dartcounter', scolia: 'Scolia', in_person: 'In Person', both: 'Both' };
 
         var cardsHtml = [];
+var allStatuses = await Promise.all(result.data.map(function(t) { return computeTournamentStatus(t); }));
         for (var i = 0; i < result.data.length; i++) {
           var t = result.data[i];
-          var status = await computeTournamentStatus(t);
+          var status = allStatuses[i];
           if (status !== 'completed') { continue; }
 
           var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
