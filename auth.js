@@ -41,15 +41,26 @@ if (!nav.querySelector('a[href="shirt-builder.html"]')) {
       playersLink.insertAdjacentElement('afterend', shirtLink);
     }
 
-    if (!nav.querySelector('a[href="merch.html"]')) {
+  if (!nav.querySelector('a[href="merch.html"]')) {
       var merchLink = document.createElement('a');
       merchLink.href = 'merch.html';
       merchLink.textContent = 'Shop';
       var shirtLinkRef = nav.querySelector('a[href="shirt-builder.html"]');
       shirtLinkRef.insertAdjacentElement('afterend', merchLink);
     }
+    if (!nav.querySelector('a[href="leaderboards.html"]')) {
+      var leaderboardsLink = document.createElement('a');
+      leaderboardsLink.href = 'leaderboards.html';
+      leaderboardsLink.textContent = 'Leaderboards';
+      var merchLinkRef = nav.querySelector('a[href="merch.html"]');
+      merchLinkRef.insertAdjacentElement('afterend', leaderboardsLink);
+    }
 } else {
     if (!nav.querySelector('a[href="merch.html"]')) {
+      var merchLinkAcademy = document.createElement('a');
+      merchLinkAcademy.href = 'merch.html';
+      merchLinkAcademy.textContent = 'Shop';
+if (!nav.querySelector('a[href="merch.html"]')) {
       var merchLinkAcademy = document.createElement('a');
       merchLinkAcademy.href = 'merch.html';
       merchLinkAcademy.textContent = 'Shop';
@@ -58,6 +69,17 @@ if (!nav.querySelector('a[href="shirt-builder.html"]')) {
         leaguesLinkRef.insertAdjacentElement('afterend', merchLinkAcademy);
       } else {
         nav.appendChild(merchLinkAcademy);
+      }
+    }
+    if (!nav.querySelector('a[href="academy-leaderboards.html"]')) {
+      var leaderboardsLinkAcademy = document.createElement('a');
+      leaderboardsLinkAcademy.href = 'academy-leaderboards.html';
+      leaderboardsLinkAcademy.textContent = 'Leaderboards';
+      var merchLinkAcademyRef = nav.querySelector('a[href="merch.html"]');
+      if (merchLinkAcademyRef) {
+        merchLinkAcademyRef.insertAdjacentElement('afterend', leaderboardsLinkAcademy);
+      } else {
+        nav.appendChild(leaderboardsLinkAcademy);
       }
     }
   }
