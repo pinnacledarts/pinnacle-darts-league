@@ -941,7 +941,7 @@ function toggleDrillItem(id) {
   var drill = allDrillsRawData.find(function(d) { return d.id === id; });
   if (!drill) { return; }
   var steps = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-  drillStepState[id] = { stepIndex: 0, answers: {}, steps: steps, drillTitle: drill.title, drillDescription: drill.description, startTime: Date.now() };
+  drillStepState[id] = { stepIndex: 0, answers: {}, steps: steps, drillTitle: drill.title, drillDescription: drill.description, gradeBands: drill.grade_bands || [], startTime: Date.now() };
   document.getElementById('drillFullscreenOverlay').style.display = 'block';
   renderDrillStep(id);
 }
@@ -1063,10 +1063,12 @@ async function submitDrillAttempt(drillId) {
     if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Attempt'; }
     return;
   }
-  var state = drillStepState[drillId];
+var state = drillStepState[drillId];
   var scoreEntries = Object.values(state.answers);
   var totalScore = scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
   var timeTakenSeconds = Math.round((Date.now() - state.startTime) / 1000);
+  var prevBestResult = await sbClient.from('drill_attempts').select('total_score').eq('drill_id', drillId).eq('player_id', currentUserId).order('total_score', { ascending: false }).limit(1);
+  state.previousBest = (prevBestResult.data && prevBestResult.data.length) ? prevBestResult.data[0].total_score : null;
   var attemptResult = await sbClient.from('drill_attempts').insert([{
     drill_id: drillId,
     player_id: currentUserId,
@@ -1116,11 +1118,16 @@ async function saveDrillBreakdown(drillId) {
       '</div>';
     return;
   }
+var achievedGrade = null;
+(state.gradeBands || []).forEach(function(gb) { if (totalScore >= gb.min) { achievedGrade = gb.label; } });
+var gradeHtml = achievedGrade ? '<p class="well-done-text" style="font-size:1.2em;color:var(--pd-text-light);font-weight:bold;margin:0 0 8px;">Grade: ' + achievedGrade + '</p>' : '';
+var highScoreHtml = (state.previousBest != null && totalScore > state.previousBest) ? '<p class="well-done-text" style="font-size:1.05em;color:#f5c518;font-weight:bold;margin:0 0 8px;">🎉 New High Score!</p>' : '';
 container.innerHTML = '<h2 style="margin-bottom:20px;color:var(--pd-text-light);">' + state.drillTitle + '</h2>' +
   '<div style="text-align:center;padding:40px 20px;">' +
   '<div class="trophy-icon">🏆</div>' +
   '<p class="well-done-text" style="font-size:1.4em;color:#4dd88a;font-weight:bold;margin:12px 0 8px;">Well done!</p>' +
-  '<p class="well-done-text" style="font-size:1.1em;color:var(--pd-text-light-muted);margin-bottom:28px;">Total score: ' + totalScore + '</p>' +
+  '<p class="well-done-text" style="font-size:1.1em;color:var(--pd-text-light-muted);margin-bottom:8px;">Total score: ' + totalScore + '</p>' +
+  gradeHtml + highScoreHtml +
 '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Start Another Drill</button>' +
     '<div style="margin-top:12px;"><button class="cancel-btn" style="color:var(--pd-text-light);" onclick="closeDrillOverlay(); loadDrillsAccordion();">Close</button></div>' +
     '</div>';
