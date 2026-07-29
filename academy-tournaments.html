@@ -158,9 +158,10 @@ var myCardsHtml = [];
 var liveCount = 0;
 var upcomingCount = 0;
 var totalPlayersEntered = 0;
+var allStatuses = await Promise.all(result.data.map(function(t) { return computeTournamentStatus(t); }));
 for (var i = 0; i < result.data.length; i++) {
   var t = result.data[i];
-  var status = await computeTournamentStatus(t);
+  var status = allStatuses[i];
   if (status === 'completed') { continue; }
   if (playerPlatform && playerPlatform !== 'both' && t.platform !== 'in_person' && t.platform !== 'both' && t.platform !== playerPlatform) {
     continue;
