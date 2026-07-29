@@ -10,6 +10,18 @@
     <script src="auth.js?t=999999"></script>
     <style>
       * { box-sizing: border-box; }
+      .winner-overlay { display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+      .winner-overlay.open { display: flex; }
+      .winner-modal { background-color: var(--pd-surface); border-radius: 14px; box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05); padding: 32px 28px; max-width: 420px; width: 100%; text-align: center; color: #111111; position: relative; }
+      .winner-modal .trophy-icon { font-size: 3.5em; margin-bottom: 8px; display: inline-block; }
+      .winner-modal h3 { margin: 0 0 20px; font-size: 20px; }
+      .winner-cards { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+      .winner-card { flex: 1; min-width: 140px; }
+      .winner-card .winner-avatar { width: 72px; height: 72px; border-radius: 50%; background-color: #111111; color: #ffffff; font-size: 1.8em; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; overflow: hidden; background-size: cover; background-position: center; }
+      .winner-card .winner-label { font-size: 11px; color: #767676; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+      .winner-card .winner-name { font-weight: bold; font-size: 1em; }
+      .winner-card .winner-username { color: #767676; font-size: 0.85em; }
+      .winner-close-btn { position: absolute; top: 12px; right: 14px; background: none; border: none; font-size: 1.3em; color: #767676; cursor: pointer; }
       :root {
         --pd-bg-dark: #0a0a0a;
         --pd-surface: #ffffff;
@@ -158,12 +170,12 @@ function buildWhatsAppLink(phone) {
           var profile = await sbClient.from('profiles').select('is_admin').eq('id', currentUserId).single();
           if (profile.data) { isAdmin = profile.data.is_admin; }
         }
-        var profilesResult = await sbClient.from('profiles').select('id, full_name, username, phone');
-        if (profilesResult.data) {
-          profilesResult.data.forEach(function(p) {
-            profileMap[p.id] = { name: p.full_name || p.username || 'Unknown', phone: p.phone || null };
-          });
-        }
+var profilesResult = await sbClient.from('profiles').select('id, full_name, username, phone, avatar_url');
+if (profilesResult.data) {
+  profilesResult.data.forEach(function(p) {
+    profileMap[p.id] = { name: p.full_name || p.username || 'Unknown', phone: p.phone || null, username: p.username || null, avatar_url: p.avatar_url || null };
+  });
+}
         var result = await sbClient.from('tournaments').select('*').eq('id', tournamentId).single();
         if (result.error || !result.data) { window.location.href = 'tournaments.html'; return; }
         tournamentData = result.data;
@@ -366,8 +378,53 @@ async function submitGroupAverageOnly(matchId, isP1) {
             return '<button class="bracket-toggle-btn' + (i === 0 ? ' active' : '') + '" onclick="switchBracketView(\'' + t + '\', this)">' + labels[t] + '</button>';
           }).join('') + '</div>';
         }
-        container.innerHTML = toggleHtml + '<div id="bracketSectionContent"></div>';
+container.innerHTML = toggleHtml + '<div id="bracketSectionContent"></div>';
         renderBracketSection(cachedBracketsByType[presentTypes[0]] || []);
+        checkAndShowWinnerPopup();
+      }
+      function buildWinnerCardHtml(playerId, label) {
+        var p = profileMap[playerId];
+        var name = p ? p.name : 'Unknown';
+        var username = p && p.username ? '@' + p.username : '';
+        var avatarInner = p && p.avatar_url ? '' : (name[0] || '?').toUpperCase();
+        var avatarStyle = p && p.avatar_url ? ' style="background-image:url(' + p.avatar_url + ');"' : '';
+        return '<div class="winner-card">' +
+          (label ? '<div class="winner-label">' + label + '</div>' : '') +
+          '<div class="winner-avatar"' + avatarStyle + '>' + avatarInner + '</div>' +
+          '<div class="winner-name">' + name + '</div>' +
+          (username ? '<div class="winner-username">' + username + '</div>' : '') +
+          '</div>';
+      }
+      function checkAndShowWinnerPopup() {
+        var cardsHtml = '';
+        if (tournamentData.average_split) {
+          var finalA = (cachedBracketsByType['CUPA'] || []).find(function(m) { return m.round === 'Final'; });
+          var finalB = (cachedBracketsByType['CUPB'] || []).find(function(m) { return m.round === 'Final'; });
+          if (finalA && finalA.status === 'completed') {
+            var winnerA = finalA.player1_score > finalA.player2_score ? finalA.player1_id : finalA.player2_id;
+            cardsHtml += buildWinnerCardHtml(winnerA, tournamentData.name + ' A');
+          }
+          if (finalB && finalB.status === 'completed') {
+            var winnerB = finalB.player1_score > finalB.player2_score ? finalB.player1_id : finalB.player2_id;
+            cardsHtml += buildWinnerCardHtml(winnerB, tournamentData.name + ' B');
+          }
+        } else {
+          var finalMain = (cachedBracketsByType['A'] || []).find(function(m) { return m.round === 'Final'; });
+          if (finalMain && finalMain.status === 'completed') {
+            var winnerMain = finalMain.player1_score > finalMain.player2_score ? finalMain.player1_id : finalMain.player2_id;
+            cardsHtml += buildWinnerCardHtml(winnerMain, null);
+          }
+        }
+        if (!cardsHtml) { return; }
+        document.getElementById('winnerCardsContainer').innerHTML = cardsHtml;
+        var seenKey = 'winnerSeen_' + tournamentId;
+        if (!localStorage.getItem(seenKey)) {
+          document.getElementById('winnerOverlay').classList.add('open');
+          localStorage.setItem(seenKey, '1');
+        }
+      }
+      function closeWinnerPopup() {
+        document.getElementById('winnerOverlay').classList.remove('open');
       }
       function switchBracketView(type, btn) {
         document.querySelectorAll('.bracket-toggle-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -493,5 +550,13 @@ window.addEventListener('load', function() {
         loadTournament();
       });
     </script>
+<div class="winner-overlay" id="winnerOverlay">
+  <div class="winner-modal">
+    <button class="winner-close-btn" onclick="closeWinnerPopup()">✕</button>
+    <div class="trophy-icon">🏆</div>
+    <h3 id="winnerModalTitle">We have a winner!</h3>
+    <div class="winner-cards" id="winnerCardsContainer"></div>
+  </div>
+</div>
   </body>
 </html>
