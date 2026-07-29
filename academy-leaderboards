@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboards | Pinnacle Academy</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="auth.js?t=999999"></script>
+    <style>
+      * { box-sizing: border-box; }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      nav.open { display: flex; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; display: block; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+      .hero-kicker { position: relative; font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
+      .hero-title { position: relative; font-size: 26px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0; max-width: 460px; }
+      main { padding: 8px 28px 40px; max-width: 700px; margin: 0 auto; position: relative; z-index: 1; }
+      .back-link { position: relative; display: inline-block; margin-bottom: 16px; color: var(--pd-text-light-muted); text-decoration: none; font-size: 0.9em; }
+      .back-link:hover { color: var(--pd-text-light); }
+      .search-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; margin-bottom: 20px; }
+      .search-box label { font-weight: bold; display: block; margin-bottom: 10px; color: var(--pd-text-dark); font-size: 13px; }
+      .search-controls { display: flex; gap: 12px; flex-wrap: wrap; }
+      .search-controls select { flex: 1; min-width: 160px; padding: 10px 14px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 1em; background-color: #f9f9f9; color: var(--pd-text-dark); font-family: Arial, sans-serif; }
+      .search-controls select:focus { outline: none; border-color: var(--pd-text-dark); }
+      .board-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; color: var(--pd-text-dark); }
+      table { width: 100%; border-collapse: collapse; }
+      th { background-color: var(--pd-text-dark); color: #ffffff; padding: 10px 12px; text-align: left; font-size: 0.85em; }
+      td { padding: 10px 12px; border-bottom: 1px solid #f0f0f0; font-size: 0.9em; }
+      tr:last-child td { border-bottom: none; }
+      .pos-cell { font-weight: bold; color: var(--pd-text-muted); width: 40px; }
+      .value-cell { font-weight: bold; text-align: right; }
+      .top-1 { color: #b8860b; }
+      .top-2 { color: #888888; }
+      .top-3 { color: #a0522d; }
+      .loading { text-align: center; padding: 40px; color: var(--pd-text-muted); }
+      .coming-soon { text-align: center; padding: 40px 20px; color: var(--pd-text-muted); font-size: 1em; }
+      @media (max-width: 700px) {
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-title { font-size: 22px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 8px 20px 32px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <img src="logo.png" alt="Pinnacle Darts Logo">
+        <div class="brand-name">Pinnacle Academy</div>
+      </div>
+      <button class="hamburger" onclick="toggleMenu()">☰</button>
+      <nav id="mainNav">
+        <a href="academy.html">Home</a>
+        <a href="academy-tournaments.html">Tournaments</a>
+        <a href="academy-leagues.html">Leagues</a>
+        <a href="academy-leaderboards.html">Leaderboards</a>
+        <a href="index.html" class="btn-switch" style="border:none;text-align:left;">Switch to Online</a>
+        <div id="authButtons" style="padding:14px 24px;"></div>
+      </nav>
+    </header>
+    <div class="hero">
+      <img src="logo-watermark.png" alt="" class="hero-watermark">
+      <div class="hero-kicker">Rankings</div>
+      <div class="hero-title">Leaderboards</div>
+    </div>
+    <main>
+      <a href="academy.html" class="back-link">← Back to Academy</a>
+      <div class="search-box">
+        <label>View Leaderboard</label>
+        <div class="search-controls">
+          <select id="boardSelect" onchange="onBoardChange()">
+            <option value="average">Highest Academy Average</option>
+            <option value="checkout">Highest Checkout</option>
+            <option value="wins">Most Match Wins</option>
+            <option value="matches">Most Matches Played</option>
+            <option value="tournament_wins">Tournament Wins</option>
+            <option value="league_wins">League Wins</option>
+            <option value="nine_dart">9 Dart Challenge (Total)</option>
+            <option value="drill">Best Drill Score</option>
+          </select>
+          <select id="drillSelect" onchange="loadLeaderboard()" style="display:none;">
+            <option value="">-- Select a drill --</option>
+          </select>
+        </div>
+      </div>
+      <div class="board-card">
+        <div id="boardContent"><p class="loading">Loading...</p></div>
+      </div>
+    </main>
+    <script>
+      var SECTION_FILTER = 'access.eq.academy,access.eq.both';
+      function onBoardChange() {
+        var type = document.getElementById('boardSelect').value;
+        document.getElementById('drillSelect').style.display = type === 'drill' ? '' : 'none';
+        loadLeaderboard();
+      }
+      function medalClass(i) {
+        if (i === 0) return 'top-1';
+        if (i === 1) return 'top-2';
+        if (i === 2) return 'top-3';
+        return '';
+      }
+      function renderTable(rows, valueLabel) {
+        var container = document.getElementById('boardContent');
+        if (!rows.length) { container.innerHTML = '<p class="coming-soon">No data yet for this leaderboard.</p>'; return; }
+        container.innerHTML = '<table><thead><tr><th>Pos</th><th>Player</th><th style="text-align:right;">' + valueLabel + '</th></tr></thead><tbody>' +
+          rows.map(function(r, i) {
+            return '<tr><td class="pos-cell ' + medalClass(i) + '">' + (i + 1) + '</td><td>' + r.name + '</td><td class="value-cell ' + medalClass(i) + '">' + r.value + '</td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+      async function getSectionPlayerIds() {
+        var result = await sbClient.from('profiles').select('id, full_name, username').or(SECTION_FILTER);
+        var map = {};
+        (result.data || []).forEach(function(p) { map[p.id] = p.full_name || p.username || 'Unknown'; });
+        return map;
+      }
+      async function loadProfileFieldBoard(field, valueLabel, formatFn) {
+        var playerMap = await getSectionPlayerIds();
+        var result = await sbClient.from('profiles').select('id, full_name, username, ' + field).or(SECTION_FILTER).not(field, 'is', null);
+        var rows = (result.data || [])
+          .filter(function(p) { return playerMap[p.id] && parseFloat(p[field]) > 0; })
+          .map(function(p) { return { name: playerMap[p.id], raw: parseFloat(p[field]) }; })
+          .sort(function(a, b) { return b.raw - a.raw; })
+          .slice(0, 50)
+          .map(function(r) { return { name: r.name, value: formatFn ? formatFn(r.raw) : r.raw }; });
+        renderTable(rows, valueLabel);
+      }
+      async function loadFinalWinsBoard(table, stage) {
+        var playerMap = await getSectionPlayerIds();
+        var result = await sbClient.from(table).select('player1_id, player2_id, player1_score, player2_score').eq('stage', stage).eq('round', 'Final').eq('status', 'completed');
+        var tally = {};
+        (result.data || []).forEach(function(m) {
+          if (m.player1_score == null || m.player2_score == null || m.player1_score === m.player2_score) { return; }
+          var winnerId = m.player1_score > m.player2_score ? m.player1_id : m.player2_id;
+          if (!playerMap[winnerId]) { return; }
+          tally[winnerId] = (tally[winnerId] || 0) + 1;
+        });
+        var rows = Object.keys(tally).map(function(pid) { return { name: playerMap[pid], value: tally[pid] }; })
+          .sort(function(a, b) { return b.value - a.value; })
+          .slice(0, 50);
+        renderTable(rows, 'Wins');
+      }
+      async function loadNineDartBoard() {
+        var playerMap = await getSectionPlayerIds();
+        var result = await sbClient.from('academy_sessions').select('player_id, nine_dart_challenge');
+        var tally = {};
+        (result.data || []).forEach(function(s) {
+          if (!playerMap[s.player_id] || !s.nine_dart_challenge) { return; }
+          tally[s.player_id] = (tally[s.player_id] || 0) + s.nine_dart_challenge;
+        });
+        var rows = Object.keys(tally).map(function(pid) { return { name: playerMap[pid], value: tally[pid] }; })
+          .sort(function(a, b) { return b.value - a.value; })
+          .slice(0, 50);
+        renderTable(rows, 'Total');
+      }
+      async function loadDrillOptions() {
+        var result = await sbClient.from('drills').select('id, title').order('title');
+        var select = document.getElementById('drillSelect');
+        var optsHtml = '<option value="">-- Select a drill --</option>';
+        (result.data || []).forEach(function(d) { optsHtml += '<option value="' + d.id + '">' + d.title + '</option>'; });
+        select.innerHTML = optsHtml;
+      }
+      async function loadDrillBoard() {
+        var drillId = document.getElementById('drillSelect').value;
+        if (!drillId) { document.getElementById('boardContent').innerHTML = '<p class="coming-soon">Select a drill to view its leaderboard.</p>'; return; }
+        var playerMap = await getSectionPlayerIds();
+        var result = await sbClient.from('drill_attempts').select('player_id, total_score').eq('drill_id', drillId);
+        var best = {};
+        (result.data || []).forEach(function(a) {
+          if (!playerMap[a.player_id]) { return; }
+          if (best[a.player_id] == null || a.total_score > best[a.player_id]) { best[a.player_id] = a.total_score; }
+        });
+        var rows = Object.keys(best).map(function(pid) { return { name: playerMap[pid], value: best[pid] }; })
+          .sort(function(a, b) { return b.value - a.value; })
+          .slice(0, 50);
+        renderTable(rows, 'Best Score');
+      }
+      async function loadLeaderboard() {
+        document.getElementById('boardContent').innerHTML = '<p class="loading">Loading...</p>';
+        var type = document.getElementById('boardSelect').value;
+        if (type === 'average') { await loadProfileFieldBoard('academy_highest_average', 'Average'); }
+        else if (type === 'checkout') { await loadProfileFieldBoard('highest_checkout', 'Checkout'); }
+        else if (type === 'wins') { await loadProfileFieldBoard('wins', 'Wins'); }
+        else if (type === 'matches') { await loadProfileFieldBoard('matches', 'Played'); }
+        else if (type === 'tournament_wins') { await loadFinalWinsBoard('tournament_matches', 'knockout'); }
+        else if (type === 'league_wins') { await loadFinalWinsBoard('league_matches', 'playoff'); }
+        else if (type === 'nine_dart') { await loadNineDartBoard(); }
+        else if (type === 'drill') { await loadDrillBoard(); }
+      }
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+      }
+      window.addEventListener('load', function() {
+        checkAuth();
+        loadDrillOptions();
+        loadLeaderboard();
+      });
+    </script>
+  </body>
+</html>
