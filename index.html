@@ -15,7 +15,6 @@
       * { box-sizing: border-box; }
       :root {
         --pd-bg-dark: #0a0a0a;
-        --pd-bg-page: #f5f5f5;
         --pd-surface: #ffffff;
         --pd-text-dark: #111111;
         --pd-text-muted: #767676;
@@ -27,7 +26,7 @@
         --pd-radius-btn: 9px;
         --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
       }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-page); color: var(--pd-text-dark); }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
       header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
       header .brand { display: flex; align-items: center; gap: 10px; }
       header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
@@ -40,19 +39,17 @@
       nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
       nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
       nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
-
-      /* ---- Logged-in home (news feed) ---- */
-      .hero { position: relative; background-color: var(--pd-bg-dark); padding: 40px 28px 64px; overflow: hidden; text-align: center; }
-      .hero-watermark { position: absolute; bottom: -70px; right: -50px; height: 340px; width: 340px; object-fit: contain; opacity: 0.05; pointer-events: none; }
+      .hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
       .hero-kicker { position: relative; font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
-      .hero-title { position: relative; font-size: 28px; font-weight: bold; color: var(--pd-text-light); line-height: 1.3; margin: 0 auto 16px; max-width: 560px; }
-      .hero-sub { position: relative; font-size: 14px; color: var(--pd-text-light-muted); line-height: 1.6; margin: 0 auto 24px; max-width: 520px; }
+      .hero-title { position: relative; font-size: 26px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0 0 14px; max-width: 560px; }
+      .hero-sub { position: relative; font-size: 14px; color: var(--pd-text-light-muted); line-height: 1.6; margin: 0 0 20px; max-width: 520px; }
       .hero-cta { position: relative; display: inline-flex; align-items: center; gap: 8px; background-color: #25D366; color: #ffffff; padding: 12px 24px; border-radius: var(--pd-radius-btn); text-decoration: none; font-weight: 500; font-size: 14px; }
-      main { padding: 24px 28px 40px; max-width: 1100px; margin: -20px auto 0; background: var(--pd-bg-page); border-radius: 20px 20px 0 0; position: relative; }
-      h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-dark); }
+      main { padding: 0 28px 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+      h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-light); }
       section + h2 { margin-top: 8px; }
       .news-item { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); margin-bottom: 12px; overflow: hidden; }
-      .news-item-title { padding: 16px 20px; font-weight: 600; font-size: 14px; cursor: pointer; }
+      .news-item-title { padding: 16px 20px; font-weight: 600; font-size: 14px; cursor: pointer; color: var(--pd-text-dark); }
       .news-item-title:hover { background-color: #fafafa; }
       .news-item-body { display: none; padding: 0 20px 20px; }
       .news-item-body.open { display: block; }
@@ -62,54 +59,47 @@
       .like-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
       .like-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: 1px solid var(--pd-border-strong); border-radius: 20px; padding: 6px 14px; cursor: pointer; font-size: 13px; color: var(--pd-text-dark); font-family: Arial, sans-serif; }
       .like-btn.liked { background-color: #f5f5f5; border-color: var(--pd-text-dark); }
-      .coming-soon { text-align: center; padding: 30px 20px; color: #aaaaaa; font-size: 0.95em; }
-      .loading { text-align: center; padding: 30px; color: #888888; }
+      .coming-soon { text-align: center; padding: 30px 20px; color: var(--pd-text-light-muted); font-size: 0.95em; }
+      .loading { text-align: center; padding: 30px; color: var(--pd-text-light-muted); }
       .see-more { text-align: center; margin-top: 4px; margin-bottom: 24px; }
-      .see-more a { color: var(--pd-text-dark); font-weight: 600; font-size: 14px; text-decoration: none; }
-      .see-more a:hover { color: #555555; }
+      .see-more a { color: var(--pd-text-light-muted); font-weight: 600; font-size: 14px; text-decoration: none; }
+      .see-more a:hover { color: var(--pd-text-light); }
       .terms-link { text-align: center; margin-top: 20px; }
-      .terms-link a { color: #555; font-size: 0.9em; text-decoration: none; }
+      .terms-link a { color: var(--pd-text-light-muted); font-size: 0.9em; text-decoration: none; }
 
-      /* ---- Logged-out landing page ---- */
-      .landing-hero { position: relative; background-color: var(--pd-bg-dark); padding: 56px 28px 70px; overflow: hidden; text-align: center; }
-      .landing-hero-watermark { position: absolute; bottom: -90px; right: -60px; height: 420px; width: 420px; object-fit: contain; opacity: 0.06; pointer-events: none; }
-      .landing-title { position: relative; font-size: 34px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0 auto 16px; max-width: 620px; }
-      .landing-sub { position: relative; font-size: 15px; color: var(--pd-text-light-muted); line-height: 1.6; margin: 0 auto 28px; max-width: 540px; }
-      .landing-cta-row { position: relative; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+      /* ---- Logged-out landing sections (share the same hero/main as above) ---- */
+      .landing-cta-row { position: relative; display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
       .btn-landing-primary { display: inline-block; background-color: #ffffff; color: #111111; padding: 13px 28px; border-radius: var(--pd-radius-btn); text-decoration: none; font-weight: bold; font-size: 15px; }
       .btn-landing-secondary { display: inline-block; background: none; color: #ffffff; padding: 13px 28px; border-radius: var(--pd-radius-btn); text-decoration: none; font-weight: bold; font-size: 15px; border: 1px solid rgba(255,255,255,0.4); }
-      .landing-main { padding: 40px 28px 20px; max-width: 1000px; margin: 0 auto; }
-      .landing-section-title { text-align: center; font-size: 22px; font-weight: bold; color: var(--pd-text-dark); margin: 0 0 8px; }
-      .landing-section-sub { text-align: center; font-size: 14px; color: var(--pd-text-muted); margin: 0 0 30px; max-width: 480px; margin-left: auto; margin-right: auto; }
-      .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 50px; }
+      .landing-section-title { font-size: 18px; font-weight: bold; color: var(--pd-text-light); margin: 0 0 6px; }
+      .landing-section-sub { font-size: 13px; color: var(--pd-text-light-muted); margin: 0 0 20px; }
+      .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 40px; }
       .feature-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 24px 20px; text-align: center; text-decoration: none; color: inherit; display: block; }
       .feature-card i { font-size: 30px; color: var(--pd-text-dark); margin-bottom: 12px; display: block; }
       .feature-card h3 { font-size: 15px; margin: 0 0 6px; color: var(--pd-text-dark); }
       .feature-card p { font-size: 13px; color: var(--pd-text-muted); margin: 0; line-height: 1.5; }
-      .how-it-works { margin-bottom: 50px; }
+      .how-it-works { margin-bottom: 40px; }
       .step-row { display: flex; gap: 16px; align-items: flex-start; background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 18px 20px; margin-bottom: 12px; }
       .step-num { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background-color: var(--pd-text-dark); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; }
       .step-text h4 { margin: 0 0 4px; font-size: 15px; color: var(--pd-text-dark); }
       .step-text p { margin: 0; font-size: 13px; color: var(--pd-text-muted); line-height: 1.5; }
-      .activity-section { margin-bottom: 50px; }
-      .activity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+      .activity-section { margin-bottom: 40px; }
+      .activity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
       .activity-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; text-decoration: none; color: inherit; display: block; }
       .activity-card .kicker { font-size: 11px; font-weight: bold; letter-spacing: 0.5px; text-transform: uppercase; color: var(--pd-text-muted); margin-bottom: 8px; }
       .activity-card h4 { margin: 0 0 6px; font-size: 15px; color: var(--pd-text-dark); }
       .activity-card p { margin: 0; font-size: 13px; color: var(--pd-text-muted); }
-      .closing-cta { background-color: var(--pd-bg-dark); border-radius: var(--pd-radius-card); padding: 40px 28px; text-align: center; margin-bottom: 30px; }
-      .closing-cta h2 { color: var(--pd-text-light); font-size: 22px; margin: 0 0 10px; }
-      .closing-cta p { color: var(--pd-text-light-muted); font-size: 14px; margin: 0 0 22px; }
+      .closing-cta { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 36px 28px; text-align: center; margin-bottom: 10px; }
+      .closing-cta h2 { color: var(--pd-text-dark); font-size: 20px; margin: 0 0 10px; }
+      .closing-cta p { color: var(--pd-text-muted); font-size: 14px; margin: 0 0 20px; }
+      .closing-cta .btn-landing-primary { background-color: var(--pd-text-dark); color: #ffffff; }
 
       @media (max-width: 700px) {
         header { padding: 14px 20px; }
-        .hero { padding: 32px 20px 48px; }
+        .hero { padding: 8px 20px 24px; }
         .hero-title { font-size: 22px; }
-        .hero-watermark { height: 260px; width: 260px; bottom: -50px; right: -40px; }
-        main { padding: 20px 20px 32px; }
-        .landing-hero { padding: 44px 20px 56px; }
-        .landing-title { font-size: 26px; }
-        .landing-main { padding: 32px 20px 16px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 0 20px 32px; }
       }
     </style>
   </head>
@@ -132,17 +122,18 @@
 </header>
 
 <div id="loggedOutLandingView" style="display:none;">
-  <div class="landing-hero">
-    <img src="logo.png" alt="" class="landing-hero-watermark">
-    <div class="landing-title">Compete, improve, and be part of a thriving darts community.</div>
-    <p class="landing-sub">Pinnacle Darts League runs competitive leagues, nightly cups, tournaments, and a dedicated Academy for junior players — all online, wherever you play from.</p>
+  <div class="hero">
+    <img src="logo-watermark.png" alt="" class="hero-watermark">
+    <div class="hero-kicker">Pinnacle Darts League</div>
+    <div class="hero-title">Compete, improve, and be part of a thriving darts community.</div>
+    <p class="hero-sub">Pinnacle Darts League runs competitive leagues, nightly cups, tournaments, and a dedicated Academy for junior players — all online, wherever you play from.</p>
     <div class="landing-cta-row">
       <a href="register.html" class="btn-landing-primary">Create Account</a>
       <a href="login.html" class="btn-landing-secondary">Login</a>
     </div>
   </div>
 
-  <div class="landing-main">
+  <main>
     <div class="landing-section-title">What's On Offer</div>
     <p class="landing-section-sub">Everything you need to compete, track your progress, and climb the rankings.</p>
     <div class="features-grid">
@@ -173,12 +164,12 @@
       <p>Create your account and you could be playing your first match this week.</p>
       <a href="register.html" class="btn-landing-primary">Create Account</a>
     </div>
-  </div>
+  </main>
 </div>
 
 <div id="loggedInHomeView" style="display:none;">
   <div class="hero">
-    <img src="logo.png" alt="" class="hero-watermark">
+    <img src="logo-watermark.png" alt="" class="hero-watermark">
     <div class="hero-kicker">Pinnacle Darts Online</div>
     <div class="hero-title">Compete, improve, and be part of a thriving darts community.</div>
     <p class="hero-sub">Whether you're stepping up to the oche for your very first match or you're a seasoned player chasing titles, Pinnacle Darts Online has something for everyone — competitive leagues, nightly cups, special events, and prize draws.</p>
