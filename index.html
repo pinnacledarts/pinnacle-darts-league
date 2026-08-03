@@ -27,7 +27,7 @@
         --pd-radius-btn: 9px;
         --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
       }
-      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-page); color: var(--pd-text-dark); }
       header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
       header .brand { display: flex; align-items: center; gap: 10px; }
       header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
@@ -40,17 +40,20 @@
       nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
       nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
       nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
-.hero { position: relative; padding: 40px 28px 64px; overflow: hidden; text-align: center; }
-      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+
+      /* ---- Logged-in home (news feed) ---- */
+      .hero { position: relative; background-color: var(--pd-bg-dark); padding: 40px 28px 64px; overflow: hidden; text-align: center; }
+      .hero-watermark { position: absolute; bottom: -70px; right: -50px; height: 340px; width: 340px; object-fit: contain; opacity: 0.05; pointer-events: none; }
       .hero-kicker { position: relative; font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
       .hero-title { position: relative; font-size: 28px; font-weight: bold; color: var(--pd-text-light); line-height: 1.3; margin: 0 auto 16px; max-width: 560px; }
       .hero-sub { position: relative; font-size: 14px; color: var(--pd-text-light-muted); line-height: 1.6; margin: 0 auto 24px; max-width: 520px; }
       .hero-cta { position: relative; display: inline-flex; align-items: center; gap: 8px; background-color: #25D366; color: #ffffff; padding: 12px 24px; border-radius: var(--pd-radius-btn); text-decoration: none; font-weight: 500; font-size: 14px; }
-main { padding: 0 28px 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
-      h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-light); }
+      main { padding: 24px 28px 40px; max-width: 1100px; margin: -20px auto 0; background: var(--pd-bg-page); border-radius: 20px 20px 0 0; position: relative; }
+      h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-dark); }
       section + h2 { margin-top: 8px; }
-.news-item { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); margin-bottom: 12px; overflow: hidden; }
-.news-item-title { padding: 16px 20px; font-weight: 600; font-size: 14px; cursor: pointer; background-color: var(--pd-surface); color: var(--pd-text-dark); text-align: center; }      .news-item-title:hover { background-color: #fafafa; }
+      .news-item { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); margin-bottom: 12px; overflow: hidden; }
+      .news-item-title { padding: 16px 20px; font-weight: 600; font-size: 14px; cursor: pointer; }
+      .news-item-title:hover { background-color: #fafafa; }
       .news-item-body { display: none; padding: 0 20px 20px; }
       .news-item-body.open { display: block; }
       .news-item-body img { width: 100%; border-radius: 10px; margin-bottom: 14px; display: block; }
@@ -59,18 +62,54 @@ main { padding: 0 28px 40px; max-width: 1100px; margin: 0 auto; position: relati
       .like-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
       .like-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: 1px solid var(--pd-border-strong); border-radius: 20px; padding: 6px 14px; cursor: pointer; font-size: 13px; color: var(--pd-text-dark); font-family: Arial, sans-serif; }
       .like-btn.liked { background-color: #f5f5f5; border-color: var(--pd-text-dark); }
-.coming-soon { text-align: center; padding: 30px 20px; color: var(--pd-text-light-muted); font-size: 0.95em; }
-      .loading { text-align: center; padding: 30px; color: var(--pd-text-light-muted); }
+      .coming-soon { text-align: center; padding: 30px 20px; color: #aaaaaa; font-size: 0.95em; }
+      .loading { text-align: center; padding: 30px; color: #888888; }
       .see-more { text-align: center; margin-top: 4px; margin-bottom: 24px; }
-      .see-more a { color: var(--pd-text-light); font-weight: 600; font-size: 14px; text-decoration: none; }
-      .see-more a:hover { color: var(--pd-text-light-muted); }
+      .see-more a { color: var(--pd-text-dark); font-weight: 600; font-size: 14px; text-decoration: none; }
+      .see-more a:hover { color: #555555; }
       .terms-link { text-align: center; margin-top: 20px; }
-      .terms-link a { color: var(--pd-text-light-muted); font-size: 0.9em; text-decoration: none; }
+      .terms-link a { color: #555; font-size: 0.9em; text-decoration: none; }
+
+      /* ---- Logged-out landing page ---- */
+      .landing-hero { position: relative; background-color: var(--pd-bg-dark); padding: 56px 28px 70px; overflow: hidden; text-align: center; }
+      .landing-hero-watermark { position: absolute; bottom: -90px; right: -60px; height: 420px; width: 420px; object-fit: contain; opacity: 0.06; pointer-events: none; }
+      .landing-title { position: relative; font-size: 34px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0 auto 16px; max-width: 620px; }
+      .landing-sub { position: relative; font-size: 15px; color: var(--pd-text-light-muted); line-height: 1.6; margin: 0 auto 28px; max-width: 540px; }
+      .landing-cta-row { position: relative; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+      .btn-landing-primary { display: inline-block; background-color: #ffffff; color: #111111; padding: 13px 28px; border-radius: var(--pd-radius-btn); text-decoration: none; font-weight: bold; font-size: 15px; }
+      .btn-landing-secondary { display: inline-block; background: none; color: #ffffff; padding: 13px 28px; border-radius: var(--pd-radius-btn); text-decoration: none; font-weight: bold; font-size: 15px; border: 1px solid rgba(255,255,255,0.4); }
+      .landing-main { padding: 40px 28px 20px; max-width: 1000px; margin: 0 auto; }
+      .landing-section-title { text-align: center; font-size: 22px; font-weight: bold; color: var(--pd-text-dark); margin: 0 0 8px; }
+      .landing-section-sub { text-align: center; font-size: 14px; color: var(--pd-text-muted); margin: 0 0 30px; max-width: 480px; margin-left: auto; margin-right: auto; }
+      .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 50px; }
+      .feature-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 24px 20px; text-align: center; text-decoration: none; color: inherit; display: block; }
+      .feature-card i { font-size: 30px; color: var(--pd-text-dark); margin-bottom: 12px; display: block; }
+      .feature-card h3 { font-size: 15px; margin: 0 0 6px; color: var(--pd-text-dark); }
+      .feature-card p { font-size: 13px; color: var(--pd-text-muted); margin: 0; line-height: 1.5; }
+      .how-it-works { margin-bottom: 50px; }
+      .step-row { display: flex; gap: 16px; align-items: flex-start; background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 18px 20px; margin-bottom: 12px; }
+      .step-num { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background-color: var(--pd-text-dark); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 15px; }
+      .step-text h4 { margin: 0 0 4px; font-size: 15px; color: var(--pd-text-dark); }
+      .step-text p { margin: 0; font-size: 13px; color: var(--pd-text-muted); line-height: 1.5; }
+      .activity-section { margin-bottom: 50px; }
+      .activity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+      .activity-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; text-decoration: none; color: inherit; display: block; }
+      .activity-card .kicker { font-size: 11px; font-weight: bold; letter-spacing: 0.5px; text-transform: uppercase; color: var(--pd-text-muted); margin-bottom: 8px; }
+      .activity-card h4 { margin: 0 0 6px; font-size: 15px; color: var(--pd-text-dark); }
+      .activity-card p { margin: 0; font-size: 13px; color: var(--pd-text-muted); }
+      .closing-cta { background-color: var(--pd-bg-dark); border-radius: var(--pd-radius-card); padding: 40px 28px; text-align: center; margin-bottom: 30px; }
+      .closing-cta h2 { color: var(--pd-text-light); font-size: 22px; margin: 0 0 10px; }
+      .closing-cta p { color: var(--pd-text-light-muted); font-size: 14px; margin: 0 0 22px; }
+
       @media (max-width: 700px) {
         header { padding: 14px 20px; }
         .hero { padding: 32px 20px 48px; }
         .hero-title { font-size: 22px; }
-.hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }        main { padding: 20px 20px 32px; }
+        .hero-watermark { height: 260px; width: 260px; bottom: -50px; right: -40px; }
+        main { padding: 20px 20px 32px; }
+        .landing-hero { padding: 44px 20px 56px; }
+        .landing-title { font-size: 26px; }
+        .landing-main { padding: 32px 20px 16px; }
       }
     </style>
   </head>
@@ -92,27 +131,74 @@ main { padding: 0 28px 40px; max-width: 1100px; margin: 0 auto; position: relati
   </nav>
 </header>
 
-<div class="hero">
-  <img src="logo-watermark.png" alt="" class="hero-watermark">
-  <div class="hero-kicker">Pinnacle Darts Online</div>
-  <div class="hero-title">Compete, improve, and be part of a thriving darts community.</div>
-  <p class="hero-sub">Whether you're stepping up to the oche for your very first match or you're a seasoned player chasing titles, Pinnacle Darts Online has something for everyone — competitive leagues, nightly cups, special events, and prize draws.</p>
-  <a href="https://chat.whatsapp.com/DKi58HCEyLOGsEqbFM34LX" target="_blank" rel="noopener" class="hero-cta"><i class="ti ti-brand-whatsapp"></i>Join the WhatsApp Group</a>
+<div id="loggedOutLandingView" style="display:none;">
+  <div class="landing-hero">
+    <img src="logo.png" alt="" class="landing-hero-watermark">
+    <div class="landing-title">Compete, improve, and be part of a thriving darts community.</div>
+    <p class="landing-sub">Pinnacle Darts League runs competitive leagues, nightly cups, tournaments, and a dedicated Academy for junior players — all online, wherever you play from.</p>
+    <div class="landing-cta-row">
+      <a href="register.html" class="btn-landing-primary">Create Account</a>
+      <a href="login.html" class="btn-landing-secondary">Login</a>
+    </div>
+  </div>
+
+  <div class="landing-main">
+    <div class="landing-section-title">What's On Offer</div>
+    <p class="landing-section-sub">Everything you need to compete, track your progress, and climb the rankings.</p>
+    <div class="features-grid">
+      <a href="tournaments.html" class="feature-card"><i class="ti ti-trophy"></i><h3>Tournaments</h3><p>Regular knockout tournaments with prizes, open to all skill levels.</p></a>
+      <a href="leagues.html" class="feature-card"><i class="ti ti-list-numbers"></i><h3>Leagues</h3><p>Ongoing seasonal leagues split into divisions so you're always matched fairly.</p></a>
+      <a href="academy.html" class="feature-card"><i class="ti ti-target-arrow"></i><h3>Academy</h3><p>A dedicated space for junior players to train, compete, and improve.</p></a>
+      <a href="login.html" class="feature-card"><i class="ti ti-chart-bar"></i><h3>Leaderboards</h3><p>Track your average, checkouts, wins, and more against the rest of the league.</p></a>
+    </div>
+
+    <div class="how-it-works">
+      <div class="landing-section-title">How It Works</div>
+      <p class="landing-section-sub">Getting started only takes a few minutes.</p>
+      <div class="step-row"><div class="step-num">1</div><div class="step-text"><h4>Create an Account</h4><p>Register with your name, phone number, and darts platform — takes under a minute.</p></div></div>
+      <div class="step-row"><div class="step-num">2</div><div class="step-text"><h4>Choose Your Platform</h4><p>Let us know whether you play on Dartcounter, Scolia, or in person, so you're placed correctly.</p></div></div>
+      <div class="step-row"><div class="step-num">3</div><div class="step-text"><h4>Join a League or Tournament</h4><p>Browse what's currently open and hit Join — no approval needed for Online events.</p></div></div>
+      <div class="step-row"><div class="step-num">4</div><div class="step-text"><h4>Arrange Your Matches</h4><p>Once fixtures are set, message your opponent via WhatsApp to agree a time to play.</p></div></div>
+      <div class="step-row"><div class="step-num">5</div><div class="step-text"><h4>Play & Report Your Result</h4><p>Play your match, then let us know the result so it can be added to the standings.</p></div></div>
+    </div>
+
+    <div class="activity-section" id="activitySection" style="display:none;">
+      <div class="landing-section-title">Happening Right Now</div>
+      <p class="landing-section-sub">A look at what's currently going on in the league.</p>
+      <div class="activity-grid" id="activityGrid"></div>
+    </div>
+
+    <div class="closing-cta">
+      <h2>Ready to join the league?</h2>
+      <p>Create your account and you could be playing your first match this week.</p>
+      <a href="register.html" class="btn-landing-primary">Create Account</a>
+    </div>
+  </div>
 </div>
 
-    <main>
-      <h2>Latest news</h2>
-      <div id="newsPreviewList"><p class="loading">Loading news...</p></div>
+<div id="loggedInHomeView" style="display:none;">
+  <div class="hero">
+    <img src="logo.png" alt="" class="hero-watermark">
+    <div class="hero-kicker">Pinnacle Darts Online</div>
+    <div class="hero-title">Compete, improve, and be part of a thriving darts community.</div>
+    <p class="hero-sub">Whether you're stepping up to the oche for your very first match or you're a seasoned player chasing titles, Pinnacle Darts Online has something for everyone — competitive leagues, nightly cups, special events, and prize draws.</p>
+    <a href="https://chat.whatsapp.com/DKi58HCEyLOGsEqbFM34LX" target="_blank" rel="noopener" class="hero-cta"><i class="ti ti-brand-whatsapp"></i>Join the WhatsApp Group</a>
+  </div>
 
-      <h2>Latest announcements</h2>
-      <div id="announcementsPreviewList"><p class="loading">Loading announcements...</p></div>
+  <main>
+    <h2>Latest news</h2>
+    <div id="newsPreviewList"><p class="loading">Loading news...</p></div>
 
-      <div class="see-more">
-        <a href="news.html">See all news →</a>
-      </div>
-      <p class="terms-link"><a href="terms.html">View Terms & Conditions →</a></p>
+    <h2>Latest announcements</h2>
+    <div id="announcementsPreviewList"><p class="loading">Loading announcements...</p></div>
 
-    </main>
+    <div class="see-more">
+      <a href="news.html">See all news →</a>
+    </div>
+    <p class="terms-link"><a href="terms.html">View Terms & Conditions →</a></p>
+
+  </main>
+</div>
 
     <script>
       let currentUserId = null;
@@ -209,13 +295,60 @@ main { padding: 0 28px 40px; max-width: 1100px; margin: 0 auto; position: relati
         btn.innerHTML = '<i class="ti ' + (nowLiked ? 'ti-heart-filled' : 'ti-heart') + '"></i>' + (nowLiked ? 'Liked' : 'Like') + ' (<span id="like-count-' + newsId + '">' + allNewsLikes[newsId].length + '</span>)';
       }
 
+      async function loadLandingActivity() {
+        var grid = document.getElementById('activityGrid');
+        var cardsHtml = '';
+
+        var tResult = await sbClient.from('tournaments').select('*').or('section.eq.online,section.eq.both').order('date', { ascending: true });
+        var tournaments = tResult.data || [];
+        var tStatuses = await Promise.all(tournaments.map(function(t) { return computeTournamentStatus(t); }));
+        for (var i = 0; i < tournaments.length; i++) {
+          if (tStatuses[i] === 'live' || tStatuses[i] === 'upcoming') {
+            var t = tournaments[i];
+            var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }) : 'TBC';
+            cardsHtml += '<a href="tournament.html?id=' + t.id + '" class="activity-card"><div class="kicker">' + (tStatuses[i] === 'live' ? 'Live Now' : 'Upcoming Tournament') + '</div><h4>' + t.name + '</h4><p>' + dateStr + '</p></a>';
+            break;
+          }
+        }
+
+        var lResult = await sbClient.from('leagues').select('*').or('section.eq.online,section.eq.both').order('start_date', { ascending: true });
+        var leagues = lResult.data || [];
+        var lStatuses = await Promise.all(leagues.map(function(l) { return computeLeagueStatus(l); }));
+        for (var j = 0; j < leagues.length; j++) {
+          if (lStatuses[j] === 'live' || lStatuses[j] === 'upcoming') {
+            var l = leagues[j];
+            cardsHtml += '<a href="league.html?id=' + l.id + '" class="activity-card"><div class="kicker">' + (lStatuses[j] === 'live' ? 'League In Progress' : 'Upcoming League') + '</div><h4>' + l.name + '</h4><p>' + (l.season || 'Join now') + '</p></a>';
+            break;
+          }
+        }
+
+        var nResult = await sbClient.from('news').select('*').or('section.eq.online,section.eq.both').order('article_date', { ascending: false }).limit(1);
+        if (nResult.data && nResult.data.length) {
+          var n = nResult.data[0];
+          var nDateStr = new Date(n.article_date || n.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+          cardsHtml += '<a href="news.html" class="activity-card"><div class="kicker">Latest News</div><h4>' + n.title + '</h4><p>' + nDateStr + '</p></a>';
+        }
+
+        if (cardsHtml) {
+          grid.innerHTML = cardsHtml;
+          document.getElementById('activitySection').style.display = 'block';
+        }
+      }
+
       function toggleMenu() {
         document.getElementById('mainNav').classList.toggle('open');
       }
 
-      window.addEventListener('load', () => {
+      window.addEventListener('load', async () => {
         checkAuth();
-        loadNewsPreview();
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (session) {
+          document.getElementById('loggedInHomeView').style.display = 'block';
+          loadNewsPreview();
+        } else {
+          document.getElementById('loggedOutLandingView').style.display = 'block';
+          loadLandingActivity();
+        }
       });
     </script>
 
