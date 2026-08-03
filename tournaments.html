@@ -46,8 +46,8 @@
 main { padding: 8px 28px 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
       h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-light); }
       .tournament-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 28px; }
-     .tournament-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); padding: 18px 20px; box-shadow: var(--pd-shadow-card); }
-      .tournament-card .badges-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.tournament-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); padding: 18px 20px; box-shadow: var(--pd-shadow-card); }
+.tournament-card.is-paid { border-left: 4px solid #d4af37; }      .tournament-card .badges-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
       .tournament-card h3 { margin: 0 0 6px; font-size: 16px; font-weight: bold; color: var(--pd-text-dark); }
       .tournament-card .meta-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--pd-text-muted); margin-bottom: 3px; }
       .tournament-card .meta-row i { font-size: 14px; }
@@ -195,8 +195,8 @@ var statusBadge = status === 'live'
   : '<span class="badge badge-upcoming"><i class="ti ti-clock"></i>Upcoming</span>';
 var paidBadge = t.is_paid ? '<span class="badge badge-paid"><i class="ti ti-currency-pound"></i>£' + t.entry_fee + ' entry</span>' : '';
   var checkinRow = (t.checkin_start && t.checkin_end) ? '<div class="meta-row"><i class="ti ti-clock-check"></i><strong>Check-in:</strong> ' + new Date(t.checkin_start).toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' }) + ' – ' + new Date(t.checkin_end).toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' }) + '</div>' : '';
-  var cardHtml = '<div class="tournament-card">' +
-    '<div class="badges-row">' + statusBadge + paidBadge + '</div>' +
+var cardHtml = '<div class="tournament-card' + (t.is_paid ? ' is-paid' : '') + '">' +
+  '<div class="badges-row">' + statusBadge + paidBadge + '</div>' +
     '<h3>' + t.name + '</h3>' +
     '<div class="meta-row"><i class="ti ti-trophy"></i><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</div>' +
     '<div class="meta-row"><i class="ti ti-calendar"></i><strong>Date:</strong> ' + dateStr + timeStr + '</div>' +
