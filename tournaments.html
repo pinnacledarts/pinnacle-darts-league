@@ -194,11 +194,13 @@ var statusBadge = status === 'live'
   ? '<span class="badge badge-live"><i class="ti ti-bolt"></i>Live</span>'
   : '<span class="badge badge-upcoming"><i class="ti ti-clock"></i>Upcoming</span>';
 var paidBadge = t.is_paid ? '<span class="badge badge-paid"><i class="ti ti-currency-pound"></i>£' + t.entry_fee + ' entry</span>' : '';
+  var checkinRow = (t.checkin_start && t.checkin_end) ? '<div class="meta-row"><i class="ti ti-clock-check"></i><strong>Check-in:</strong> ' + new Date(t.checkin_start).toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' }) + ' – ' + new Date(t.checkin_end).toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' }) + '</div>' : '';
   var cardHtml = '<div class="tournament-card">' +
     '<div class="badges-row">' + statusBadge + paidBadge + '</div>' +
     '<h3>' + t.name + '</h3>' +
-  '<div class="meta-row"><i class="ti ti-trophy"></i><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</div>' +
+    '<div class="meta-row"><i class="ti ti-trophy"></i><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</div>' +
     '<div class="meta-row"><i class="ti ti-calendar"></i><strong>Date:</strong> ' + dateStr + timeStr + '</div>' +
+    checkinRow +
     '<div class="meta-row"><i class="ti ti-device-gamepad-2"></i><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</div>' +
     (t.description ? '<p class="desc">' + t.description + '</p>' : '') +
     '<div class="meta-row"><i class="ti ti-users"></i><strong>Players:</strong> ' + maxStr + (isFull ? ' — Full' : '') + '</div>' +
