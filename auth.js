@@ -24,6 +24,7 @@ const sbClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 document.addEventListener('DOMContentLoaded', function() {
   var nav = document.getElementById('mainNav');
   if (!nav) { return; }
+  document.body.appendChild(nav);
   var backdrop = document.createElement('div');
   backdrop.id = 'navBackdrop';
   document.body.appendChild(backdrop);
