@@ -86,12 +86,19 @@ document.addEventListener('DOMContentLoaded', function() {
       var shirtLinkRef = nav.querySelector('a[href="shirt-builder.html"]');
       shirtLinkRef.insertAdjacentElement('afterend', merchLink);
     }
-    if (!nav.querySelector('a[href="leaderboards.html"]')) {
+if (!nav.querySelector('a[href="leaderboards.html"]')) {
       var leaderboardsLink = document.createElement('a');
       leaderboardsLink.href = 'leaderboards.html';
       leaderboardsLink.textContent = 'Leaderboards';
       var merchLinkRef = nav.querySelector('a[href="merch.html"]');
       merchLinkRef.insertAdjacentElement('afterend', leaderboardsLink);
+    }
+    if (!nav.querySelector('a[href="drills.html"]')) {
+      var drillsLink = document.createElement('a');
+      drillsLink.href = 'drills.html';
+      drillsLink.textContent = 'Drills';
+      var leaderboardsLinkRef = nav.querySelector('a[href="leaderboards.html"]');
+      leaderboardsLinkRef.insertAdjacentElement('afterend', drillsLink);
     }
   } else {
     if (!nav.querySelector('a[href="merch.html"]')) {
