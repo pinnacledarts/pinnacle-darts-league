@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drills | Pinnacle Darts League</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.47.0/iconfont/tabler-icons.min.css">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="auth.js?t=999999"></script>
+    <style>
+      * { box-sizing: border-box; }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      nav.open { display: flex; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; display: block; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+      main { padding: 0 28px 40px; max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+      h2 { font-size: 22px; font-weight: bold; margin: 0 0 16px; color: var(--pd-text-light); }
+      .tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid #222222; flex-wrap: wrap; }
+      .tab { padding: 10px 16px; cursor: pointer; font-size: 0.9em; border: none; background: none; color: var(--pd-text-light-muted); font-family: Arial, sans-serif; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+      .tab.active { color: var(--pd-text-light); font-weight: bold; border-bottom: 2px solid var(--pd-text-light); }
+      .tab:hover { color: var(--pd-text-light); }
+      .tab-content { display: none; }
+      .tab-content.active { display: block; }
+      .news-item { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); margin-bottom: 12px; overflow: hidden; }
+      .news-item-title { padding: 16px 20px; font-weight: 600; font-size: 14px; cursor: pointer; color: var(--pd-text-dark); }
+      .news-item-title:hover { background-color: #fafafa; }
+      .news-item-body { display: none; padding: 0 20px 20px; }
+      .news-item-body.open { display: block; }
+      .search-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; margin-bottom: 20px; }
+      .search-box label { font-weight: bold; display: block; margin-bottom: 10px; color: var(--pd-text-dark); font-size: 13px; }
+      .save-btn { background-color: var(--pd-text-dark); color: var(--pd-text-light); border: none; border-radius: 4px; padding: 4px 10px; font-size: 0.85em; cursor: pointer; }
+      .save-btn:hover { background-color: #333333; }
+      .cancel-btn { background: none; border: 1px solid var(--pd-border-strong); border-radius: 4px; padding: 4px 10px; font-size: 0.85em; cursor: pointer; }
+      .cancel-btn:hover { background-color: #f5f5f5; }
+      .round-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
+      .round-tab { padding: 8px 16px; border: 1px solid var(--pd-border-strong); background: var(--pd-surface); border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
+      .round-tab.active { background: var(--pd-text-dark); color: var(--pd-text-light); border-color: var(--pd-text-dark); font-weight: bold; }
+      @keyframes trophyPop {
+  0% { transform: scale(0) rotate(-15deg); opacity: 0; }
+  60% { transform: scale(1.2) rotate(8deg); opacity: 1; }
+  80% { transform: scale(0.95) rotate(-4deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+@keyframes fadeUpIn {
+  0% { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+.trophy-icon { font-size: 4.5em; display: inline-block; animation: trophyPop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.well-done-text { animation: fadeUpIn 0.5s ease 0.4s both; }
+      .loading { text-align: center; padding: 40px; color: var(--pd-text-light-muted); }
+      .coming-soon { text-align: center; padding: 50px 20px; color: var(--pd-text-light-muted); font-size: 1em; }
+      .gate-icon { font-size: 3em; margin-bottom: 16px; }
+      .gate-text { color: var(--pd-text-light-muted); max-width: 400px; margin: 0 auto; }
+      @media (max-width: 700px) {
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 0 20px 32px; }
+      }
+    </style>
+  </head>
+  <body>
+<header>
+  <div class="brand">
+    <img src="logo.png" alt="Pinnacle Darts Logo">
+    <div class="brand-name">Pinnacle Darts League</div>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()">☰</button>
+  <nav id="mainNav">
+    <a href="index.html">Home</a>
+    <a href="leagues.html">Leagues</a>
+    <a href="tournaments.html">Tournaments</a>
+    <a href="players.html">Players</a>
+    <a href="academy.html" class="btn-switch" style="border:none;text-align:left;">Switch to Academy</a>
+    <div id="authButtons" style="padding:14px 24px;"></div>
+  </nav>
+</header>
+<div class="hero">
+  <img src="logo-watermark.png" alt="" class="hero-watermark">
+</div>
+<main>
+  <div id="loggedOutView" style="display:none;text-align:center;padding:60px 20px;">
+    <div class="gate-icon">🎯</div>
+    <h2 style="text-align:center;">Drills</h2>
+    <p class="gate-text">Please <a href="login.html" style="color:var(--pd-text-light);">log in</a> to practise drills and track your scores.</p>
+  </div>
+  <div id="drillsContentView" style="display:none;">
+    <h2>Drills</h2>
+    <div class="tabs">
+      <button class="tab active" onclick="showDrillSubTab('newdrill', event)">New Drill</button>
+      <button class="tab" onclick="showDrillSubTab('progress', event)">Progress</button>
+    </div>
+    <div id="subtab-newdrill" class="tab-content active">
+      <div id="drillsAccordionList"><p class="loading">Loading drills...</p></div>
+    </div>
+    <div id="drillFullscreenOverlay" style="display:none;position:fixed;inset:0;background-color:#0a0a0a;z-index:1000;overflow-y:auto;">
+      <div style="max-width:600px;margin:0 auto;padding:24px 20px;min-height:100%;box-sizing:border-box;">
+        <button onclick="closeDrillOverlay()" style="background:none;border:none;font-size:1.5em;color:var(--pd-text-light-muted);cursor:pointer;margin-bottom:16px;">✕</button>
+        <div id="drillOverlayContent"></div>
+      </div>
+    </div>
+    <div id="subtab-progress" class="tab-content">
+      <div class="search-box">
+        <label>Select Drill</label>
+        <select id="progressDrillSelect" onchange="loadDrillProgress()" style="width:100%;padding:10px 14px;border:1px solid var(--pd-border-strong);border-radius:var(--pd-radius-btn);font-size:1em;background-color:#f9f9f9;color:var(--pd-text-dark);"></select>
+      </div>
+      <div class="round-tabs" id="progressFilterTabs">
+        <button class="round-tab active" onclick="setProgressFilter('recent15', this)">Last 15</button>
+        <button class="round-tab" onclick="setProgressFilter('today', this)">Today</button>
+        <button class="round-tab" onclick="setProgressFilter('7days', this)">7 Days</button>
+        <button class="round-tab" onclick="setProgressFilter('30days', this)">30 Days</button>
+      </div>
+      <div id="progressChartContainer" style="background-color:var(--pd-surface);border-radius:var(--pd-radius-card);box-shadow:var(--pd-shadow-card);padding:20px;color:var(--pd-text-dark);">
+        <p class="loading" style="color:var(--pd-text-muted);">Select a drill to view your progress.</p>
+      </div>
+    </div>
+  </div>
+</main>
+    <script>
+      var currentUserId = null;
+      function showDrillSubTab(name, event) {
+        document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
+        event.target.classList.add('active');
+        document.getElementById('subtab-' + name).classList.add('active');
+        if (name === 'progress') { loadProgressDrillOptions(); }
+      }
+      var allDrillsRawData = [];
+      var drillStepState = {};
+      async function loadDrillsAccordion() {
+        const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
+        const data = result.data;
+        const error = result.error;
+        const container = document.getElementById('drillsAccordionList');
+        if (error || !data || !data.length) { container.innerHTML = '<p class="coming-soon">No drills available yet.</p>'; return; }
+        allDrillsRawData = data;
+        var htmlPieces = data.map(function(d) {
+          var descriptionHtml = d.description ? '<p style="color:#555555;line-height:1.5;margin:0 0 16px;">' + d.description + '</p>' : '';
+          return '<div class="news-item">' +
+            '<div class="news-item-title" onclick="toggleDrillItem(' + d.id + ')">' + d.title + '</div>' +
+            '<div class="news-item-body" id="drill-body-' + d.id + '">' +
+            descriptionHtml +
+            '<div id="drill-form-' + d.id + '"></div>' +
+            '<div id="drill-msg-' + d.id + '" style="margin-top:10px;font-size:0.9em;"></div>' +
+            '</div></div>';
+        });
+        container.innerHTML = htmlPieces.join('');
+      }
+      function toggleDrillItem(id) {
+        var drill = allDrillsRawData.find(function(d) { return d.id === id; });
+        if (!drill) { return; }
+        var steps = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+        drillStepState[id] = { stepIndex: 0, answers: {}, steps: steps, drillTitle: drill.title, drillDescription: drill.description, gradeBands: drill.grade_bands || [], startTime: Date.now() };
+        document.getElementById('drillFullscreenOverlay').style.display = 'block';
+        renderDrillStep(id);
+      }
+      function closeDrillOverlay() {
+        document.getElementById('drillFullscreenOverlay').style.display = 'none';
+      }
+      function renderDrillStep(drillId) {
+        var state = drillStepState[drillId];
+        var container = document.getElementById('drillOverlayContent');
+        var steps = state.steps;
+        var idx = state.stepIndex;
+        var currentSubtitle = null;
+        for (var i = Math.min(idx, steps.length - 1); i >= 0; i--) {
+          if (steps[i].is_subtitle) { currentSubtitle = steps[i]; break; }
+        }
+        var subtitleBannerHtml = '';
+        if (currentSubtitle) {
+          var bannerDescHtml = currentSubtitle.description ? '<div style="font-weight:normal;color:#555555;font-size:0.95em;margin-top:6px;">' + currentSubtitle.description + '</div>' : '';
+          subtitleBannerHtml = '<div style="background:#ffffff;border-radius:12px;padding:14px 18px;margin-bottom:20px;font-weight:bold;color:#111111;">' + currentSubtitle.target_name + bannerDescHtml + '</div>';
+        } else if (state.drillDescription) {
+          subtitleBannerHtml = '<div style="background:#ffffff;border-radius:12px;padding:14px 18px;margin-bottom:20px;color:#555555;">' + state.drillDescription + '</div>';
+        }
+        var titleHtml = '<h2 style="margin-bottom:20px;color:var(--pd-text-light);">' + state.drillTitle + '</h2>';
+        if (idx >= steps.length) {
+          container.innerHTML = titleHtml + subtitleBannerHtml +
+            '<div style="text-align:center;padding:40px 20px;">' +
+            '<p style="font-size:1.1em;color:var(--pd-text-light-muted);margin-bottom:24px;">You\'re all done! Ready to submit your attempt?</p>' +
+            '<button class="save-btn" id="drillSubmitBtn-' + drillId + '" onclick="submitDrillAttempt(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Submit Attempt</button>' +
+            (idx > 0 ? '<div style="margin-top:16px;"><button class="cancel-btn" style="color:var(--pd-text-light);" onclick="drillStepBack(' + drillId + ')">Back</button></div>' : '') +
+            '</div>';
+          return;
+        }
+        var step = steps[idx];
+        var progressHtml = '<div style="font-size:0.85em;color:var(--pd-text-light-muted);margin-bottom:16px;">Step ' + (idx + 1) + ' of ' + steps.length + '</div>';
+        var backBtn = idx > 0 ? '<button class="cancel-btn" style="color:var(--pd-text-light);" onclick="drillStepBack(' + drillId + ')">Back</button>' : '<button class="cancel-btn" style="color:var(--pd-text-light);" onclick="closeDrillOverlay(); loadDrillsAccordion();">Back</button>';
+        if (step.is_subtitle) {
+          var subDescHtml = step.description ? '<p style="background-color:#ffffff;color:#555555;line-height:1.6;font-size:1.05em;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);padding:16px 20px;margin-top:0;">' + step.description + '</p>' : '';
+          container.innerHTML = titleHtml + progressHtml +
+            '<div class="news-item-title" style="background-color:#ffffff;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);text-align:center;font-size:1.3em;padding:24px;margin-bottom:8px;">' + step.target_name + '</div>' +
+            subDescHtml +
+            '<div style="margin-top:28px;text-align:center;">' +
+            '<button class="save-btn" onclick="drillStepNext(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Continue</button>' +
+            (backBtn ? '<div style="margin-top:12px;">' + backBtn + '</div>' : '') +
+            '</div>';
+          return;
+        }
+        var questionHeaderHtml = '<div class="news-item-title" style="background-color:#ffffff;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);text-align:center;font-size:1.8em;font-weight:bold;padding:32px 24px;margin-bottom:28px;">' + step.target_name + '</div>';
+        if (step.entry_type === 'manual') {
+          var existingVal = state.answers[step.id] ? state.answers[step.id].points : '';
+          var inputHtml = '<input type="number" step="any" id="drillstep-input-' + drillId + '" data-manual="true" value="' + existingVal + '" placeholder="Enter score" style="padding:16px;border:1px solid #ddd;border-radius:8px;width:100%;font-size:1.2em;text-align:center;" />';
+          container.innerHTML = titleHtml + subtitleBannerHtml + progressHtml +
+            questionHeaderHtml +
+            inputHtml +
+            '<div style="margin-top:28px;text-align:center;">' +
+            '<button class="save-btn" onclick="drillStepNext(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Continue</button>' +
+            (backBtn ? '<div style="margin-top:12px;">' + backBtn + '</div>' : '') +
+            '</div>';
+          return;
+        }
+        var options = (step.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+        var existingSelected = state.answers[step.id] ? (state.answers[step.id].score_option_id + '|' + state.answers[step.id].points) : '';
+        var optionsHtml = options.map(function(o) {
+          var val = o.id + '|' + o.points;
+          var isSelected = val === existingSelected;
+          return '<div class="news-item-title" style="cursor:pointer;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);' + (isSelected ? 'background-color:#eeeeee;' : 'background-color:#ffffff;') + '" onclick="selectDrillAnswer(' + drillId + ', \'' + o.id + '\', ' + o.points + ')">' +
+            '<span>' + o.label + '</span>' +
+            '<span style="color:#888888;font-size:0.85em;font-weight:normal;">' + o.points + ' pts' + (isSelected ? ' ✓' : '') + '</span>' +
+            '</div>';
+        }).join('');
+        container.innerHTML = titleHtml + subtitleBannerHtml + progressHtml +
+          questionHeaderHtml +
+          optionsHtml +
+          (backBtn ? '<div style="margin-top:12px;text-align:center;">' + backBtn + '</div>' : '');
+      }
+      function selectDrillAnswer(drillId, scoreOptionId, points) {
+        var state = drillStepState[drillId];
+        var step = state.steps[state.stepIndex];
+        state.answers[step.id] = { target_id: step.id, score_option_id: scoreOptionId, points: points };
+        state.stepIndex++;
+        renderDrillStep(drillId);
+      }
+      function drillStepNext(drillId) {
+        var state = drillStepState[drillId];
+        var step = state.steps[state.stepIndex];
+        if (!step.is_subtitle) {
+          var input = document.getElementById('drillstep-input-' + drillId);
+          var isManual = input.getAttribute('data-manual') === 'true';
+          if (isManual) {
+            if (input.value === '') { alert('Please enter a score before continuing.'); return; }
+            var points = parseFloat(input.value);
+            if (isNaN(points)) { alert('Please enter a valid number.'); return; }
+            state.answers[step.id] = { target_id: step.id, score_option_id: null, points: points };
+          } else {
+            if (!input.value) { alert('Please select a score before continuing.'); return; }
+            var parts = input.value.split('|');
+            state.answers[step.id] = { target_id: step.id, score_option_id: parts[0], points: parseFloat(parts[1]) };
+          }
+        }
+        state.stepIndex++;
+        renderDrillStep(drillId);
+      }
+      function drillStepBack(drillId) {
+        var state = drillStepState[drillId];
+        state.stepIndex--;
+        renderDrillStep(drillId);
+      }
+      var submittingDrill = false;
+      async function submitDrillAttempt(drillId) {
+        if (!currentUserId) { window.location.href = 'login.html'; return; }
+        if (submittingDrill) { return; }
+        submittingDrill = true;
+        var container = document.getElementById('drillOverlayContent');
+        var submitBtn = document.getElementById('drillSubmitBtn-' + drillId);
+        if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Submitting...'; }
+        const { data: { session }, error: sessionError } = await sbClient.auth.getSession();
+        if (sessionError || !session) {
+          container.innerHTML += '<p style="color:#ff6b6b;text-align:center;margin-top:16px;">Your session needs refreshing. Please log in again (in this tab), then click Submit again — your answers are still here.</p>';
+          submittingDrill = false;
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Attempt'; }
+          return;
+        }
+        var state = drillStepState[drillId];
+        var scoreEntries = Object.values(state.answers);
+        var totalScore = scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
+        var timeTakenSeconds = Math.round((Date.now() - state.startTime) / 1000);
+        var prevBestResult = await sbClient.from('drill_attempts').select('total_score').eq('drill_id', drillId).eq('player_id', currentUserId).order('total_score', { ascending: false }).limit(1);
+        state.previousBest = (prevBestResult.data && prevBestResult.data.length) ? prevBestResult.data[0].total_score : null;
+        var attemptResult = await sbClient.from('drill_attempts').insert([{
+          drill_id: drillId,
+          player_id: currentUserId,
+          total_score: totalScore,
+          time_taken_seconds: timeTakenSeconds,
+          attempt_date: new Date().toISOString().split('T')[0]
+        }]).select();
+        if (attemptResult.error || !attemptResult.data) {
+          container.innerHTML += '<p style="color:#ff6b6b;text-align:center;margin-top:16px;">Error submitting attempt. Please try again.</p>';
+          submittingDrill = false;
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Attempt'; }
+          return;
+        }
+        var attemptId = attemptResult.data[0].id;
+        var scoreRows = scoreEntries.map(function(entry) {
+          return {
+            attempt_id: attemptId,
+            target_id: entry.target_id,
+            score_option_id: entry.score_option_id,
+            points: entry.points
+          };
+        });
+        state.pendingAttemptId = attemptId;
+        state.pendingScoreRows = scoreRows;
+        state.pendingTotalScore = totalScore;
+        await saveDrillBreakdown(drillId);
+      }
+      async function saveDrillBreakdown(drillId) {
+        var state = drillStepState[drillId];
+        var container = document.getElementById('drillOverlayContent');
+        var scoreRows = state.pendingScoreRows || [];
+        var totalScore = state.pendingTotalScore;
+        var insertResult = { error: null };
+        if (scoreRows.length) {
+          insertResult = await sbClient.from('drill_attempt_scores').insert(scoreRows);
+          if (insertResult.error) {
+            insertResult = await sbClient.from('drill_attempt_scores').insert(scoreRows);
+          }
+        }
+        submittingDrill = false;
+        if (insertResult.error) {
+          container.innerHTML = '<h2 style="margin-bottom:20px;color:var(--pd-text-light);">' + state.drillTitle + '</h2>' +
+            '<div style="text-align:center;padding:40px 20px;">' +
+            '<p style="color:#ff6b6b;font-size:1.1em;margin-bottom:8px;">Your total score was saved, but there was a problem saving the breakdown.</p>' +
+            '<p style="color:var(--pd-text-light-muted);font-size:0.9em;margin-bottom:24px;">' + insertResult.error.message + '</p>' +
+            '<button class="save-btn" onclick="saveDrillBreakdown(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Retry Saving Breakdown</button>' +
+            '</div>';
+          return;
+        }
+        var achievedGrade = null;
+        (state.gradeBands || []).forEach(function(gb) { if (totalScore >= gb.min) { achievedGrade = gb.label; } });
+        var gradeHtml = achievedGrade ? '<p class="well-done-text" style="font-size:1.2em;color:var(--pd-text-light);font-weight:bold;margin:0 0 8px;">Grade: ' + achievedGrade + '</p>' : '';
+        var highScoreHtml = (state.previousBest != null && totalScore > state.previousBest) ? '<p class="well-done-text" style="font-size:1.05em;color:#f5c518;font-weight:bold;margin:0 0 8px;">🎉 New High Score!</p>' : '';
+        container.innerHTML = '<h2 style="margin-bottom:20px;color:var(--pd-text-light);">' + state.drillTitle + '</h2>' +
+          '<div style="text-align:center;padding:40px 20px;">' +
+          '<div class="trophy-icon">🏆</div>' +
+          '<p class="well-done-text" style="font-size:1.4em;color:#4dd88a;font-weight:bold;margin:12px 0 8px;">Well done!</p>' +
+          '<p class="well-done-text" style="font-size:1.1em;color:var(--pd-text-light-muted);margin-bottom:8px;">Total score: ' + totalScore + '</p>' +
+          gradeHtml + highScoreHtml +
+          '<button class="save-btn" onclick="resetDrillForm(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;">Start Another Drill</button>' +
+          '<div style="margin-top:12px;"><button class="cancel-btn" style="color:var(--pd-text-light);" onclick="closeDrillOverlay(); loadDrillsAccordion();">Close</button></div>' +
+          '</div>';
+      }
+      function resetDrillForm(drillId) {
+        toggleDrillItem(drillId);
+      }
+      async function loadProgressDrillOptions() {
+        var result = await sbClient.from('drills').select('id, title').order('title');
+        var data = result.data || [];
+        var select = document.getElementById('progressDrillSelect');
+        var optsHtml = '<option value="">-- Select a drill --</option>';
+        for (var i = 0; i < data.length; i++) {
+          optsHtml += '<option value="' + data[i].id + '">' + data[i].title + '</option>';
+        }
+        select.innerHTML = optsHtml;
+      }
+      var currentProgressFilter = 'recent15';
+      function setProgressFilter(filter, btn) {
+        currentProgressFilter = filter;
+        document.querySelectorAll('#progressFilterTabs .round-tab').forEach(function(t) { t.classList.remove('active'); });
+        btn.classList.add('active');
+        loadDrillProgress();
+      }
+      async function loadDrillProgress() {
+        var drillId = document.getElementById('progressDrillSelect').value;
+        var container = document.getElementById('progressChartContainer');
+        if (!drillId || !currentUserId) { container.innerHTML = '<p class="loading" style="color:var(--pd-text-muted);">Select a drill to view your progress.</p>'; return; }
+        var result = await sbClient.from('drill_attempts').select('*').eq('drill_id', drillId).eq('player_id', currentUserId).order('attempt_date', { ascending: true });
+        var allData = result.data || [];
+        var data = allData;
+        var today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (currentProgressFilter === 'today') {
+          var todayStr = today.toISOString().split('T')[0];
+          data = allData.filter(function(a) { return a.attempt_date === todayStr; });
+        } else if (currentProgressFilter === '7days') {
+          var cutoff7 = new Date(today);
+          cutoff7.setDate(cutoff7.getDate() - 7);
+          data = allData.filter(function(a) { return new Date(a.attempt_date) >= cutoff7; });
+        } else if (currentProgressFilter === '30days') {
+          var cutoff30 = new Date(today);
+          cutoff30.setDate(cutoff30.getDate() - 30);
+          data = allData.filter(function(a) { return new Date(a.attempt_date) >= cutoff30; });
+        } else {
+          data = allData.slice(-15);
+        }
+        if (!data || !data.length) { container.innerHTML = '<p class="coming-soon" style="color:var(--pd-text-muted);">No attempts in this range.</p>'; return; }
+        var maxScore = 0;
+        for (var i = 0; i < data.length; i++) { if (data[i].total_score > maxScore) { maxScore = data[i].total_score; } }
+        var chartMax = maxScore > 0 ? maxScore : 1;
+        var leftPad = 14;
+        var rightPad = 4;
+        var topPad = 8;
+        var bottomPad = 16;
+        var chartWidth = 100 - leftPad - rightPad;
+        var chartHeight = 100 - topPad - bottomPad;
+        var points = [];
+        for (var i = 0; i < data.length; i++) {
+          var d = data[i];
+          var x = leftPad + (data.length > 1 ? (i / (data.length - 1)) * chartWidth : chartWidth / 2);
+          var y = topPad + chartHeight - (d.total_score / chartMax) * chartHeight;
+          var dateObj = new Date(d.attempt_date);
+          var dateLabel = dateObj.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+          points.push({ x: x, y: y, score: d.total_score, dateLabel: dateLabel, fullDate: d.attempt_date });
+        }
+        var pathD = '';
+        for (var i = 0; i < points.length; i++) {
+          pathD += (i === 0 ? 'M' : 'L') + points[i].x + ',' + points[i].y + ' ';
+        }
+        var yAxisLabels = '';
+        var yAxisGrid = '';
+        var steps = 4;
+        for (var s = 0; s <= steps; s++) {
+          var val = Math.round((chartMax / steps) * s);
+          var yPos = topPad + chartHeight - (val / chartMax) * chartHeight;
+          yAxisLabels += '<text x="' + (leftPad - 3) + '" y="' + (yPos + 1) + '" font-size="3" text-anchor="end" fill="#888888">' + val + '</text>';
+          yAxisGrid += '<line x1="' + leftPad + '" y1="' + yPos + '" x2="' + (100 - rightPad) + '" y2="' + yPos + '" stroke="#eeeeee" stroke-width="0.3" />';
+        }
+        var dotsHtml = '';
+        var scoreLabelsHtml = '';
+        var dateLabelsHtml = '';
+        for (var i = 0; i < points.length; i++) {
+          var p = points[i];
+          dotsHtml += '<circle cx="' + p.x + '" cy="' + p.y + '" r="1.5" fill="#111111"><title>' + p.fullDate + ': ' + p.score + '</title></circle>';
+          scoreLabelsHtml += '<text x="' + p.x + '" y="' + (p.y - 3) + '" font-size="3" text-anchor="middle" fill="#555555">' + p.score + '</text>';
+          dateLabelsHtml += '<text x="' + p.x + '" y="' + (100 - bottomPad + 6) + '" font-size="3" text-anchor="middle" fill="#888888">' + p.dateLabel + '</text>';
+        }
+        container.innerHTML = '<svg viewBox="0 0 100 100" style="width:100%;height:320px;">' +
+          yAxisGrid +
+          '<line x1="' + leftPad + '" y1="' + topPad + '" x2="' + leftPad + '" y2="' + (100 - bottomPad) + '" stroke="#dddddd" stroke-width="0.5" />' +
+          '<line x1="' + leftPad + '" y1="' + (100 - bottomPad) + '" x2="' + (100 - rightPad) + '" y2="' + (100 - bottomPad) + '" stroke="#dddddd" stroke-width="0.5" />' +
+          yAxisLabels +
+          '<path d="' + pathD + '" fill="none" stroke="#111111" stroke-width="1" />' +
+          dotsHtml + scoreLabelsHtml + dateLabelsHtml +
+          '</svg>' +
+          '<div style="text-align:center;font-size:0.85em;color:var(--pd-text-muted);margin-top:8px;">' + data.length + ' attempt(s) — earliest to most recent, left to right</div>';
+      }
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+      }
+      window.addEventListener('load', async () => {
+        checkAuth();
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (session) {
+          currentUserId = session.user.id;
+          document.getElementById('drillsContentView').style.display = 'block';
+          loadDrillsAccordion();
+        } else {
+          document.getElementById('loggedOutView').style.display = 'block';
+        }
+      });
+    </script>
+  </body>
+</html>
