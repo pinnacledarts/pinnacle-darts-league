@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
         nav.appendChild(merchLinkAcademy);
       }
     }
-    if (!nav.querySelector('a[href="academy-leaderboards.html"]')) {
+if (!nav.querySelector('a[href="academy-leaderboards.html"]')) {
       var leaderboardsLinkAcademy = document.createElement('a');
       leaderboardsLinkAcademy.href = 'academy-leaderboards.html';
       leaderboardsLinkAcademy.textContent = 'Leaderboards';
@@ -115,6 +115,18 @@ document.addEventListener('DOMContentLoaded', function() {
       } else {
         nav.appendChild(leaderboardsLinkAcademy);
       }
+    }
+    if (!nav.querySelector('a[href="shirt-builder.html"]')) {
+      var shirtLinkAcademy = document.createElement('a');
+      shirtLinkAcademy.href = 'shirt-builder.html';
+      shirtLinkAcademy.textContent = 'Shirt Builder';
+      nav.appendChild(shirtLinkAcademy);
+    }
+    if (!nav.querySelector('a[href="top-up.html"]')) {
+      var topUpLinkAcademy = document.createElement('a');
+      topUpLinkAcademy.href = 'top-up.html';
+      topUpLinkAcademy.textContent = 'Site Credit';
+      nav.appendChild(topUpLinkAcademy);
     }
   }
 });
