@@ -919,7 +919,7 @@ function formatDrillTime(totalSeconds) {
 var allDrillsRawData = [];
 var drillStepState = {};
 async function loadDrillsAccordion() {
-  const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').order('created_at', { ascending: false });
+  const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, description, drill_score_options(id, label, points, sort_order))').or('section.eq.academy,section.eq.both').order('created_at', { ascending: false });
   const data = result.data;
   const error = result.error;
   const container = document.getElementById('drillsAccordionList');
