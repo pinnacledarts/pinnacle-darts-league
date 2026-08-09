@@ -2081,15 +2081,16 @@ var savingBtnOriginalText = saveBtn ? saveBtn.textContent : '';
 if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
 try {
 var description = document.getElementById('drillDescription').value.trim();
+var section = document.getElementById('drillSection').value;
 var gradeBands = collectGradeBands();
 var drillId;
 if (editingDrillId) {
-  var updateResult = await sbClient.from('drills').update({ title: title, description: description || null, grade_bands: gradeBands.length ? gradeBands : null }).eq('id', editingDrillId);
+  var updateResult = await sbClient.from('drills').update({ title: title, description: description || null, section: section, grade_bands: gradeBands.length ? gradeBands : null }).eq('id', editingDrillId);
   if (updateResult.error) { showMsg('drill-error', 'Error updating drill: ' + updateResult.error.message); return; }
   drillId = editingDrillId;
   await sbClient.from('drill_targets').delete().eq('drill_id', drillId);
 } else {
-  var drillResult = await sbClient.from('drills').insert([{ title: title, description: description || null, grade_bands: gradeBands.length ? gradeBands : null }]).select();
+  var drillResult = await sbClient.from('drills').insert([{ title: title, description: description || null, section: section, grade_bands: gradeBands.length ? gradeBands : null }]).select();
   if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
   drillId = drillResult.data[0].id;
 }
@@ -2139,6 +2140,7 @@ if (editingDrillId) {
 showMsg('drill-success', editingDrillId ? 'Drill updated successfully!' : 'Drill created successfully!');
 document.getElementById('drillTitle').value = '';
 document.getElementById('drillDescription').value = '';
+document.getElementById('drillSection').value = 'both';
 document.getElementById('drillTargetsList').innerHTML = '';
 document.getElementById('drillGradeBandsList').innerHTML = '';
         drillTargetCount = 0;
@@ -2193,6 +2195,7 @@ async function editDrill(id) {
   editingDrillId = id;
 document.getElementById('drillTitle').value = drill.title || '';
 document.getElementById('drillDescription').value = drill.description || '';
+document.getElementById('drillSection').value = drill.section || 'both';
 document.getElementById('drillTargetsList').innerHTML = '';
 document.getElementById('drillGradeBandsList').innerHTML = '';
         drillTargetCount = 0;
