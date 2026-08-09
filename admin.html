@@ -543,8 +543,16 @@ main { padding: 0 20px 32px; }
   <input type="text" id="drillTitle" placeholder="e.g. Around the Clock" />
 </div>
 <div class="form-group">
-  <label>Description (optional)</label>
+<label>Description (optional)</label>
   <textarea id="drillDescription" rows="3" placeholder="Explain how to complete this drill..."></textarea>
+</div>
+<div class="form-group">
+  <label>Visible To</label>
+  <select id="drillSection" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+    <option value="both">Both Online & Academy</option>
+    <option value="online">Online Only</option>
+    <option value="academy">Academy Only</option>
+  </select>
 </div>
 <div id="drillTargetsList"></div>
 <button class="btn btn-secondary" onclick="addDrillTargetRow()">+ Add Target</button>
