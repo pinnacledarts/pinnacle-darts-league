@@ -554,6 +554,14 @@ main { padding: 0 20px 32px; }
     <option value="academy">Academy Only</option>
   </select>
 </div>
+<div class="form-group">
+  <label>Starting Score</label>
+  <input type="number" step="any" id="drillStartingScore" value="0" placeholder="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" />
+</div>
+<div class="form-group" style="display:flex;align-items:center;gap:8px;">
+  <input type="checkbox" id="drillStayUntilHit" style="width:18px;height:18px;" />
+  <label style="margin:0;">Stay on each target until the player taps "Got it" (rather than auto-advance)</label>
+</div>
 <div id="drillTargetsList"></div>
 <button class="btn btn-secondary" onclick="addDrillTargetRow()">+ Add Target</button>
 <button class="btn btn-secondary" onclick="addDrillSubtitleRow()" style="margin-bottom:16px;">+ Add Subtitle</button>
@@ -2082,15 +2090,17 @@ if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
 try {
 var description = document.getElementById('drillDescription').value.trim();
 var section = document.getElementById('drillSection').value;
+var startingScore = parseFloat(document.getElementById('drillStartingScore').value) || 0;
+var stayUntilHit = document.getElementById('drillStayUntilHit').checked;
 var gradeBands = collectGradeBands();
 var drillId;
 if (editingDrillId) {
-  var updateResult = await sbClient.from('drills').update({ title: title, description: description || null, section: section, grade_bands: gradeBands.length ? gradeBands : null }).eq('id', editingDrillId);
+  var updateResult = await sbClient.from('drills').update({ title: title, description: description || null, section: section, starting_score: startingScore, stay_until_hit: stayUntilHit, grade_bands: gradeBands.length ? gradeBands : null }).eq('id', editingDrillId);
   if (updateResult.error) { showMsg('drill-error', 'Error updating drill: ' + updateResult.error.message); return; }
   drillId = editingDrillId;
   await sbClient.from('drill_targets').delete().eq('drill_id', drillId);
 } else {
-  var drillResult = await sbClient.from('drills').insert([{ title: title, description: description || null, section: section, grade_bands: gradeBands.length ? gradeBands : null }]).select();
+  var drillResult = await sbClient.from('drills').insert([{ title: title, description: description || null, section: section, starting_score: startingScore, stay_until_hit: stayUntilHit, grade_bands: gradeBands.length ? gradeBands : null }]).select();
   if (drillResult.error || !drillResult.data) { showMsg('drill-error', 'Error creating drill: ' + (drillResult.error ? drillResult.error.message : 'unknown')); return; }
   drillId = drillResult.data[0].id;
 }
@@ -2141,6 +2151,8 @@ showMsg('drill-success', editingDrillId ? 'Drill updated successfully!' : 'Drill
 document.getElementById('drillTitle').value = '';
 document.getElementById('drillDescription').value = '';
 document.getElementById('drillSection').value = 'both';
+document.getElementById('drillStartingScore').value = '0';
+document.getElementById('drillStayUntilHit').checked = false;
 document.getElementById('drillTargetsList').innerHTML = '';
 document.getElementById('drillGradeBandsList').innerHTML = '';
         drillTargetCount = 0;
@@ -2196,6 +2208,8 @@ async function editDrill(id) {
 document.getElementById('drillTitle').value = drill.title || '';
 document.getElementById('drillDescription').value = drill.description || '';
 document.getElementById('drillSection').value = drill.section || 'both';
+document.getElementById('drillStartingScore').value = drill.starting_score != null ? drill.starting_score : '0';
+document.getElementById('drillStayUntilHit').checked = !!drill.stay_until_hit;
 document.getElementById('drillTargetsList').innerHTML = '';
 document.getElementById('drillGradeBandsList').innerHTML = '';
         drillTargetCount = 0;
