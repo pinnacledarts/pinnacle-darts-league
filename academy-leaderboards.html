@@ -136,15 +136,15 @@
             return '<tr><td class="pos-cell ' + medalClass(i) + '">' + (i + 1) + '</td><td>' + r.name + '</td><td class="value-cell ' + medalClass(i) + '">' + r.value + '</td></tr>';
           }).join('') + '</tbody></table>';
       }
-      async function getSectionPlayerIds() {
-        var result = await sbClient.from('profiles').select('id, full_name, username').or(SECTION_FILTER);
+async function getSectionPlayerIds() {
+        var result = await sbClient.from('public_profiles').select('id, full_name, username').or(SECTION_FILTER);
         var map = {};
         (result.data || []).forEach(function(p) { map[p.id] = p.full_name || p.username || 'Unknown'; });
         return map;
       }
       async function loadProfileFieldBoard(field, valueLabel, formatFn) {
         var playerMap = await getSectionPlayerIds();
-        var result = await sbClient.from('profiles').select('id, full_name, username, ' + field).or(SECTION_FILTER).not(field, 'is', null);
+        var result = await sbClient.from('public_profiles').select('id, full_name, username, ' + field).or(SECTION_FILTER).not(field, 'is', null);
         var rows = (result.data || [])
           .filter(function(p) { return playerMap[p.id] && parseFloat(p[field]) > 0; })
           .map(function(p) { return { name: playerMap[p.id], raw: parseFloat(p[field]) }; })
