@@ -366,7 +366,8 @@ function renderDrillStep(drillId) {
           if (Array.isArray(v)) { scoreEntries = scoreEntries.concat(v); }
           else { scoreEntries.push(v); }
         });
-        var totalScore = (state.startingScore || 0) + scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
+var totalScore = (state.startingScore || 0) + scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
+        var timeTakenSeconds = Math.round((Date.now() - state.startTime) / 1000);
         var prevBestResult = await sbClient.from('drill_attempts').select('total_score').eq('drill_id', drillId).eq('player_id', currentUserId).order('total_score', { ascending: false }).limit(1);
         state.previousBest = (prevBestResult.data && prevBestResult.data.length) ? prevBestResult.data[0].total_score : null;
         var attemptResult = await sbClient.from('drill_attempts').insert([{
