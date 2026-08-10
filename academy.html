@@ -950,8 +950,12 @@ var VALID_CHECKOUTS = [];
           if (impossible.indexOf(n) === -1) { VALID_CHECKOUTS.push(n); }
         }
       })();
-      function getRandomCheckout() {
-        return VALID_CHECKOUTS[Math.floor(Math.random() * VALID_CHECKOUTS.length)];
+function getRandomCheckout(min, max) {
+        var lo = min != null ? min : 2;
+        var hi = max != null ? max : 170;
+        var pool = VALID_CHECKOUTS.filter(function(n) { return n >= lo && n <= hi; });
+        if (!pool.length) { pool = VALID_CHECKOUTS; }
+        return pool[Math.floor(Math.random() * pool.length)];
       }
       function expandDrillSteps(rawTargets) {
         var sorted = (rawTargets || []).slice().sort(function(a, b) { return a.sort_order - b.sort_order; });
@@ -960,7 +964,7 @@ var VALID_CHECKOUTS = [];
           if (t.entry_type === 'random_checkout') {
             var rounds = t.repeat_count || 1;
             for (var i = 0; i < rounds; i++) {
-              expanded.push(Object.assign({}, t, { target_name: 'Checkout: ' + getRandomCheckout() }));
+              expanded.push(Object.assign({}, t, { target_name: 'Checkout: ' + getRandomCheckout(t.checkout_min, t.checkout_max) }));
             }
           } else {
             expanded.push(t);
@@ -969,7 +973,7 @@ var VALID_CHECKOUTS = [];
         return expanded;
       }
 async function loadDrillsAccordion() {
-  const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, repeat_count, description, drill_score_options(id, label, points, sort_order))').or('section.eq.academy,section.eq.both').order('created_at', { ascending: false });
+  const result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, repeat_count, checkout_min, checkout_max, description, drill_score_options(id, label, points, sort_order))').or('section.eq.academy,section.eq.both').order('created_at', { ascending: false });
   const data = result.data;
   const error = result.error;
   const container = document.getElementById('drillsAccordionList');
