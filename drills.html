@@ -205,6 +205,7 @@ function toggleDrillItem(id) {
   if (!drill) { return; }
   var steps = expandDrillSteps(drill.drill_targets);
   drillStepState[id] = { stepIndex: 0, answers: {}, steps: steps, drillTitle: drill.title, drillDescription: drill.description, gradeBands: drill.grade_bands || [], startingScore: drill.starting_score || 0, stayUntilHit: !!drill.stay_until_hit, startTime: Date.now() };
+  document.getElementById('drillFullscreenOverlay').style.display = 'block';
   renderDrillStep(id);
 }
       function closeDrillOverlay() {
