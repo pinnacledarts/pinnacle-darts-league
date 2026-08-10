@@ -1976,8 +1976,13 @@ async function deletePlayer(id, username) {
     '<option value="random_checkout">Random Checkout Round(s)</option>' +
     '</select></div>' +
     '</div>' +
-    '<div class="form-group" id="roundsSection' + idx + '" style="display:none;"><label>Number of Rounds</label><input type="number" id="targetRounds' + idx + '" value="10" min="1" /></div>' +
-    '<div id="dropdownSection' + idx + '">' +
+'<div class="form-group" id="roundsSection' + idx + '" style="display:none;">' +
+    '<label>Number of Rounds</label><input type="number" id="targetRounds' + idx + '" value="10" min="1" />' +
+    '<div style="display:flex;gap:10px;margin-top:10px;">' +
+    '<div style="flex:1;"><label>Min Checkout</label><input type="number" id="targetCheckoutMin' + idx + '" value="2" min="2" max="170" /></div>' +
+    '<div style="flex:1;"><label>Max Checkout</label><input type="number" id="targetCheckoutMax' + idx + '" value="170" min="2" max="170" /></div>' +
+    '</div>' +
+    '</div>' +    '<div id="dropdownSection' + idx + '">' +
     '<div id="scoreOptionsList' + idx + '"></div>' +
     '<button class="btn-small" onclick="addScoreOptionRow(' + idx + ')">+ Add Score Option</button>' +
     '</div>' +
@@ -2138,8 +2143,12 @@ var entryTypeSelect = document.getElementById('targetEntryType' + targetIdx);
           var entryType = entryTypeSelect ? entryTypeSelect.value : 'dropdown';
           var repeatCountInput = document.getElementById('targetRounds' + targetIdx);
           var repeatCount = (entryType === 'random_checkout' && repeatCountInput) ? (parseInt(repeatCountInput.value) || 1) : 1;
+          var checkoutMinInput = document.getElementById('targetCheckoutMin' + targetIdx);
+          var checkoutMaxInput = document.getElementById('targetCheckoutMax' + targetIdx);
+          var checkoutMin = (entryType === 'random_checkout' && checkoutMinInput) ? (parseInt(checkoutMinInput.value) || 2) : 2;
+          var checkoutMax = (entryType === 'random_checkout' && checkoutMaxInput) ? (parseInt(checkoutMaxInput.value) || 170) : 170;
           targetOrder++;
-          var targetResult = await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: targetName, sort_order: targetOrder, entry_type: entryType, repeat_count: repeatCount, is_subtitle: false }]).select();
+          var targetResult = await sbClient.from('drill_targets').insert([{ drill_id: drillId, target_name: targetName, sort_order: targetOrder, entry_type: entryType, repeat_count: repeatCount, checkout_min: checkoutMin, checkout_max: checkoutMax, is_subtitle: false }]).select();
           if (targetResult.error || !targetResult.data) { continue; }
           var targetId = targetResult.data[0].id;
           if (entryType === 'manual') { continue; }
@@ -2212,7 +2221,7 @@ document.getElementById('drillGradeBandsList').innerHTML = '';
       }
 var editingOriginalTargetCount = 0;
 async function editDrill(id) {
-  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, repeat_count, description, drill_score_options(id, label, points, sort_order))').eq('id', id).single();
+  var result = await sbClient.from('drills').select('*, drill_targets(id, target_name, sort_order, is_subtitle, entry_type, repeat_count, checkout_min, checkout_max, description, drill_score_options(id, label, points, sort_order))').eq('id', id).single();
   if (result.error || !result.data) { alert('Error loading drill.'); return; }
   var drill = result.data;
   editingOriginalTargetCount = (drill.drill_targets || []).length;
@@ -2242,8 +2251,11 @@ addDrillTargetRow();
           document.getElementById('targetName' + idx).value = t.target_name || '';
           document.getElementById('targetEntryType' + idx).value = t.entry_type || 'dropdown';
           toggleEntryType(idx);
-          if (t.entry_type === 'random_checkout' && document.getElementById('targetRounds' + idx)) { document.getElementById('targetRounds' + idx).value = t.repeat_count || 10; }
-          document.getElementById('scoreOptionsList' + idx).innerHTML = '';
+if (t.entry_type === 'random_checkout' && document.getElementById('targetRounds' + idx)) {
+            document.getElementById('targetRounds' + idx).value = t.repeat_count || 10;
+            document.getElementById('targetCheckoutMin' + idx).value = t.checkout_min != null ? t.checkout_min : 2;
+            document.getElementById('targetCheckoutMax' + idx).value = t.checkout_max != null ? t.checkout_max : 170;
+          }          document.getElementById('scoreOptionsList' + idx).innerHTML = '';
           scoreOptionCounts[idx] = 0;
           var options = (t.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
           options.forEach(function(o) {
