@@ -222,7 +222,7 @@
           isCurrentUserAdmin = profile ? profile.is_admin : false;
         }
 const { data, error } = await sbClient
-          .from('profiles')
+          .from('public_profiles')
           .select('*')
           .or('is_bye.is.null,is_bye.eq.false')
           .order('full_name', { ascending: true });
