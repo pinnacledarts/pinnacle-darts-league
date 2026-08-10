@@ -3056,7 +3056,11 @@ function cancelNewsEdit(id) {
         el.style.display = 'block';
         setTimeout(function() { el.style.display = 'none'; }, 4000);
       }
-      window.addEventListener('load', function() {
+window.addEventListener('load', async function() {
+        const { data: { session } } = await sbClient.auth.getSession();
+        if (!session) { window.location.href = 'login.html'; return; }
+        const { data: profile } = await sbClient.from('profiles').select('is_admin').eq('id', session.user.id).single();
+        if (!profile || !profile.is_admin) { window.location.href = 'index.html'; return; }
         document.getElementById('newsDate').value = new Date().toISOString().split('T')[0];
         checkAuth();
         refreshTemplateSelects();
