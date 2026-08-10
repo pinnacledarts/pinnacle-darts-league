@@ -1791,18 +1791,23 @@ var allStatuses = await Promise.all(allLeaguesData.map(function(l) { return comp
               '<td><button class="btn-small" onclick="approveAccess(\'' + p.id + '\', \'' + p.requested_access + '\')">Approve</button> <button class="btn-small danger" onclick="denyAccess(\'' + p.id + '\', \'' + p.requested_access + '\')">Deny</button></td></tr>';
           }).join('') + '</tbody></table>';
       }
-      async function approveAccess(id, requestedAccess) {
-        await sbClient.from('profiles').update({ access: requestedAccess, access_status: 'approved' }).eq('id', id);
+async function approveAccess(id, requestedAccess) {
+        var result = await sbClient.from('profiles').update({ access: requestedAccess, access_status: 'approved' }).eq('id', id).select();
+        if (result.error) { alert('Error approving: ' + result.error.message); return; }
+        if (!result.data || !result.data.length) { alert('The update did not apply — this usually means a permissions (RLS) rule on the profiles table is blocking admin updates. Check Supabase → Authentication → Policies for the profiles table.'); return; }
         loadPendingApprovals();
         loadPlayers();
       }
-      async function denyAccess(id, requestedAccess) {
+    async function denyAccess(id, requestedAccess) {
         if (!confirm('Deny this request? ' + (requestedAccess === 'academy' ? 'This player will be blocked from logging in.' : 'They will remain Online-only.'))) { return; }
+        var result;
         if (requestedAccess === 'both') {
-          await sbClient.from('profiles').update({ access: 'online', access_status: 'denied' }).eq('id', id);
+          result = await sbClient.from('profiles').update({ access: 'online', access_status: 'denied' }).eq('id', id).select();
         } else {
-          await sbClient.from('profiles').update({ access_status: 'denied' }).eq('id', id);
+          result = await sbClient.from('profiles').update({ access_status: 'denied' }).eq('id', id).select();
         }
+        if (result.error) { alert('Error denying: ' + result.error.message); return; }
+        if (!result.data || !result.data.length) { alert('The update did not apply — this usually means a permissions (RLS) rule on the profiles table is blocking admin updates. Check Supabase → Authentication → Policies for the profiles table.'); return; }
         loadPendingApprovals();
         loadPlayers();
       }
@@ -1938,8 +1943,9 @@ async function resetPlayerStats(id, name) {
 async function deletePlayer(id, username) {
   if (username === 'Macca23') { alert('This account is protected and cannot be deleted.'); return; }
   if (!confirm('Remove this player?')) { return; }
-  var result = await sbClient.from('profiles').delete().eq('id', id);
+  var result = await sbClient.from('profiles').delete().eq('id', id).select();
   if (result.error) { alert('Error removing player: ' + result.error.message); console.error(result.error); return; }
+  if (!result.data || !result.data.length) { alert('The delete did not apply — this usually means a permissions (RLS) rule on the profiles table is blocking admin deletes, or the player has related records (e.g. league/tournament entries) that need removing first due to a foreign key constraint.'); return; }
   loadPlayers();
 }
       function insertDrillRow(row, insertAfterIdx) {
