@@ -171,18 +171,18 @@
         });
         container.innerHTML = htmlPieces.join('');
       }
-      function toggleDrillItem(id) {
-        var drill = allDrillsRawData.find(function(d) { return d.id === id; });
-        if (!drill) { return; }
-        var steps = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
-        drillStepState[id] = { stepIndex: 0, answers: {}, steps: steps, drillTitle: drill.title, drillDescription: drill.description, gradeBands: drill.grade_bands || [], startTime: Date.now() };
-        document.getElementById('drillFullscreenOverlay').style.display = 'block';
-        renderDrillStep(id);
-      }
+function toggleDrillItem(id) {
+  var drill = allDrillsRawData.find(function(d) { return d.id === id; });
+  if (!drill) { return; }
+  var steps = (drill.drill_targets || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+  drillStepState[id] = { stepIndex: 0, answers: {}, steps: steps, drillTitle: drill.title, drillDescription: drill.description, gradeBands: drill.grade_bands || [], startingScore: drill.starting_score || 0, stayUntilHit: !!drill.stay_until_hit, startTime: Date.now() };
+  document.getElementById('drillFullscreenOverlay').style.display = 'block';
+  renderDrillStep(id);
+}
       function closeDrillOverlay() {
         document.getElementById('drillFullscreenOverlay').style.display = 'none';
       }
-      function renderDrillStep(drillId) {
+function renderDrillStep(drillId) {
         var state = drillStepState[drillId];
         var container = document.getElementById('drillOverlayContent');
         var steps = state.steps;
@@ -224,6 +224,24 @@
         }
         var questionHeaderHtml = '<div class="news-item-title" style="background-color:#ffffff;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);text-align:center;font-size:1.8em;font-weight:bold;padding:32px 24px;margin-bottom:28px;">' + step.target_name + '</div>';
         if (step.entry_type === 'manual') {
+          if (state.stayUntilHit) {
+            var loggedManual = state.answers[step.id] || [];
+            var attemptsHtmlM = loggedManual.length ? '<div style="background-color:#ffffff;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);padding:14px 18px;margin-bottom:16px;">' +
+              '<div style="font-size:0.85em;color:#888;font-weight:bold;margin-bottom:8px;">Logged attempts (' + loggedManual.length + ')</div>' +
+              loggedManual.map(function(a, i) { return '<div style="font-size:0.9em;color:#333;padding:4px 0;">' + (i + 1) + '. ' + a.points + ' pts</div>'; }).join('') +
+              '</div>' : '';
+            var inputHtmlM = '<input type="number" step="any" id="drillstep-input-' + drillId + '" data-manual="true" placeholder="Enter score" style="padding:16px;border:1px solid #ddd;border-radius:8px;width:100%;font-size:1.2em;text-align:center;" />';
+            container.innerHTML = titleHtml + subtitleBannerHtml + progressHtml +
+              questionHeaderHtml +
+              attemptsHtmlM +
+              inputHtmlM +
+              '<div style="margin-top:16px;text-align:center;">' +
+              '<button class="save-btn" onclick="logManualDrillAttempt(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;margin-bottom:12px;display:block;width:100%;">Log Attempt</button>' +
+              (loggedManual.length ? '<button class="save-btn" onclick="advanceAfterHit(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;margin-bottom:12px;display:block;width:100%;background-color:#4dd88a;">Got It — Next Target</button>' : '') +
+              (backBtn ? backBtn : '') +
+              '</div>';
+            return;
+          }
           var existingVal = state.answers[step.id] ? state.answers[step.id].points : '';
           var inputHtml = '<input type="number" step="any" id="drillstep-input-' + drillId + '" data-manual="true" value="' + existingVal + '" placeholder="Enter score" style="padding:16px;border:1px solid #ddd;border-radius:8px;width:100%;font-size:1.2em;text-align:center;" />';
           container.innerHTML = titleHtml + subtitleBannerHtml + progressHtml +
@@ -236,6 +254,28 @@
           return;
         }
         var options = (step.drill_score_options || []).sort(function(a, b) { return a.sort_order - b.sort_order; });
+        if (state.stayUntilHit) {
+          var loggedAttempts = state.answers[step.id] || [];
+          var attemptsHtml = loggedAttempts.length ? '<div style="background-color:#ffffff;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);padding:14px 18px;margin-bottom:16px;">' +
+            '<div style="font-size:0.85em;color:#888;font-weight:bold;margin-bottom:8px;">Logged attempts (' + loggedAttempts.length + ')</div>' +
+            loggedAttempts.map(function(a, i) { return '<div style="font-size:0.9em;color:#333;padding:4px 0;">' + (i + 1) + '. ' + a.label + ' — ' + a.points + ' pts</div>'; }).join('') +
+            '</div>' : '';
+          var optionsHtmlStay = options.map(function(o) {
+            return '<div class="news-item-title" style="cursor:pointer;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-radius:14px;box-shadow:0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);background-color:#ffffff;" onclick="logDrillAttempt(' + drillId + ', \'' + o.id + '\', ' + o.points + ', \'' + (o.label || '').replace(/'/g, "\\'") + '\')">' +
+              '<span>' + o.label + '</span>' +
+              '<span style="color:#888888;font-size:0.85em;font-weight:normal;">' + o.points + ' pts</span>' +
+              '</div>';
+          }).join('');
+          container.innerHTML = titleHtml + subtitleBannerHtml + progressHtml +
+            questionHeaderHtml +
+            attemptsHtml +
+            optionsHtmlStay +
+            '<div style="margin-top:12px;text-align:center;">' +
+            (loggedAttempts.length ? '<button class="save-btn" onclick="advanceAfterHit(' + drillId + ')" style="padding:14px 32px;font-size:1.05em;margin-bottom:12px;display:block;width:100%;background-color:#4dd88a;">Got It — Next Target</button>' : '') +
+            (backBtn ? backBtn : '') +
+            '</div>';
+          return;
+        }
         var existingSelected = state.answers[step.id] ? (state.answers[step.id].score_option_id + '|' + state.answers[step.id].points) : '';
         var optionsHtml = options.map(function(o) {
           var val = o.id + '|' + o.points;
@@ -249,6 +289,29 @@
           questionHeaderHtml +
           optionsHtml +
           (backBtn ? '<div style="margin-top:12px;text-align:center;">' + backBtn + '</div>' : '');
+      }
+      function logDrillAttempt(drillId, scoreOptionId, points, label) {
+        var state = drillStepState[drillId];
+        var step = state.steps[state.stepIndex];
+        if (!Array.isArray(state.answers[step.id])) { state.answers[step.id] = []; }
+        state.answers[step.id].push({ target_id: step.id, score_option_id: scoreOptionId, points: points, label: label });
+        renderDrillStep(drillId);
+      }
+      function logManualDrillAttempt(drillId) {
+        var state = drillStepState[drillId];
+        var step = state.steps[state.stepIndex];
+        var input = document.getElementById('drillstep-input-' + drillId);
+        if (!input.value) { alert('Please enter a score before logging.'); return; }
+        var points = parseFloat(input.value);
+        if (isNaN(points)) { alert('Please enter a valid number.'); return; }
+        if (!Array.isArray(state.answers[step.id])) { state.answers[step.id] = []; }
+        state.answers[step.id].push({ target_id: step.id, score_option_id: null, points: points });
+        renderDrillStep(drillId);
+      }
+      function advanceAfterHit(drillId) {
+        var state = drillStepState[drillId];
+        state.stepIndex++;
+        renderDrillStep(drillId);
       }
       function selectDrillAnswer(drillId, scoreOptionId, points) {
         var state = drillStepState[drillId];
@@ -297,10 +360,13 @@
           if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Submit Attempt'; }
           return;
         }
-        var state = drillStepState[drillId];
-        var scoreEntries = Object.values(state.answers);
-        var totalScore = scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
-        var timeTakenSeconds = Math.round((Date.now() - state.startTime) / 1000);
+       var state = drillStepState[drillId];
+        var scoreEntries = [];
+        Object.values(state.answers).forEach(function(v) {
+          if (Array.isArray(v)) { scoreEntries = scoreEntries.concat(v); }
+          else { scoreEntries.push(v); }
+        });
+        var totalScore = (state.startingScore || 0) + scoreEntries.reduce(function(sum, e) { return sum + e.points; }, 0);
         var prevBestResult = await sbClient.from('drill_attempts').select('total_score').eq('drill_id', drillId).eq('player_id', currentUserId).order('total_score', { ascending: false }).limit(1);
         state.previousBest = (prevBestResult.data && prevBestResult.data.length) ? prevBestResult.data[0].total_score : null;
         var attemptResult = await sbClient.from('drill_attempts').insert([{
