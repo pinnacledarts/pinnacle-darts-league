@@ -121,10 +121,12 @@ main { padding: 0 20px 32px; }
 </div>
     <main>
       <div class="tabs">
+<div class="tabs">
         <button class="tab active" onclick="showTab('tournaments', event)">Tournaments</button>
         <button class="tab" onclick="showTab('leagues', event)">Leagues</button>
         <button class="tab" onclick="showTab('players', event)" id="playersTabBtn">Players</button>
         <button class="tab" onclick="showTab('academy', event)">Academy</button>
+<button class="tab" onclick="showTab('drills', event)">Drills</button>
 <button class="tab" onclick="showTab('enquiries', event)" id="enquiriesTabBtn">Enquiries</button>
 <button class="tab" onclick="showTab('bugs', event)" id="bugsTabBtn">Bug Reports</button>
 <button class="tab" onclick="showTab('merch', event)">Merch</button>
@@ -533,74 +535,7 @@ main { padding: 0 20px 32px; }
           <button class="btn btn-secondary" onclick="clearSessionFilters()" style="margin-bottom:16px;">Clear Filters</button>
 <div id="sessionLogList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
-        <div class="card">
-          <h3>Set Up New Drill</h3>
-          <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a drill with targets and score options.</p>
-          <div class="success-msg" id="drill-success"></div>
-          <div class="error-msg" id="drill-error"></div>
-          <div class="form-group">
-  <label>Drill Title</label>
-  <input type="text" id="drillTitle" placeholder="e.g. Around the Clock" />
-</div>
-<div class="form-group">
-<label>Description (optional)</label>
-  <textarea id="drillDescription" rows="3" placeholder="Explain how to complete this drill..."></textarea>
-</div>
-<div class="form-group">
-  <label>Visible To</label>
-  <select id="drillSection" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
-    <option value="both">Both Online & Academy</option>
-    <option value="online">Online Only</option>
-    <option value="academy">Academy Only</option>
-  </select>
-</div>
-<div class="form-group">
-  <label>Starting Score</label>
-  <input type="number" step="any" id="drillStartingScore" value="0" placeholder="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" />
-</div>
-<div class="form-group" style="display:flex;align-items:center;gap:8px;">
-  <input type="checkbox" id="drillStayUntilHit" style="width:18px;height:18px;" />
-  <label style="margin:0;">Stay on each target until the player taps "Got it" (rather than auto-advance)</label>
-</div>
-<div id="drillTargetsList"></div>
-<button class="btn btn-secondary" onclick="addDrillTargetRow()">+ Add Target</button>
-<button class="btn btn-secondary" onclick="addDrillSubtitleRow()" style="margin-bottom:16px;">+ Add Subtitle</button>
-<div class="form-group" style="margin-top:16px;">
-  <label>Grading (optional)</label>
-  <p style="color:#666;font-size:0.85em;margin:0 0 8px;">Define score thresholds. Players see their grade at the end, based on the highest threshold their total score reaches.</p>
-  <div id="drillGradeBandsList"></div>
-  <button type="button" class="btn-small" onclick="addGradeBandRow()">+ Add Grade Band</button>
-</div>
-<div style="position:sticky;bottom:0;background-color:#ffffff;padding:12px 0;border-top:1px solid #eeeeee;margin-top:8px;z-index:10;">
-  <button class="btn btn-primary" onclick="saveDrill()">Create Drill</button>
-</div>
-        </div>
-        <div class="card">
-          <h3>Manage Drills</h3>
-<div id="drillsList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
-        </div>
-        <div class="card">
-          <h3>Drill Attempts Log</h3>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Filter by Player</label>
-              <select id="drillAttemptPlayerFilter" onchange="filterDrillAttempts()">
-                <option value="">-- All Players --</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Filter by Date</label>
-              <input type="date" id="drillAttemptDateFilter" onchange="filterDrillAttempts()" />
-            </div>
-          </div>
-<button class="btn btn-secondary" onclick="clearDrillAttemptFilters()" style="margin-bottom:16px;">Clear Filters</button>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-            <span class="selected-count" id="attemptSelectedCount" style="margin:0;">0 selected</span>
-            <button class="btn-small danger" onclick="deleteSelectedDrillAttempts()">Delete Selected</button>
-          </div>
-<div id="drillAttemptsList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
-        </div>
-        <div class="card">
+      <div class="card">
           <h3>Academy Leagues (Groups)</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a group (e.g. Tuesday Prodigy) and add players to it.</p>
           <div class="success-msg" id="academyleague-success"></div>
@@ -687,6 +622,76 @@ main { padding: 0 20px 32px; }
           <h3>Archived Groups</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">Completed seasons. Reactivate a group to make it manageable again.</p>
           <div id="archivedGroupsList"><p class="empty-state">Loading...</p></div>
+        </div>
+      </div>
+<!-- DRILLS TAB -->
+<div id="tab-drills" class="tab-content">
+        <div class="card">
+          <h3>Set Up New Drill</h3>
+          <p style="color:#666;font-size:0.9em;margin-top:-8px;">Create a drill with targets and score options.</p>
+          <div class="success-msg" id="drill-success"></div>
+          <div class="error-msg" id="drill-error"></div>
+          <div class="form-group">
+  <label>Drill Title</label>
+  <input type="text" id="drillTitle" placeholder="e.g. Around the Clock" />
+</div>
+<div class="form-group">
+<label>Description (optional)</label>
+  <textarea id="drillDescription" rows="3" placeholder="Explain how to complete this drill..."></textarea>
+</div>
+<div class="form-group">
+  <label>Visible To</label>
+  <select id="drillSection" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;">
+    <option value="both">Both Online & Academy</option>
+    <option value="online">Online Only</option>
+    <option value="academy">Academy Only</option>
+  </select>
+</div>
+<div class="form-group">
+  <label>Starting Score</label>
+  <input type="number" step="any" id="drillStartingScore" value="0" placeholder="0" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;" />
+</div>
+<div class="form-group" style="display:flex;align-items:center;gap:8px;">
+  <input type="checkbox" id="drillStayUntilHit" style="width:18px;height:18px;" />
+  <label style="margin:0;">Stay on each target until the player taps "Got it" (rather than auto-advance)</label>
+</div>
+<div id="drillTargetsList"></div>
+<button class="btn btn-secondary" onclick="addDrillTargetRow()">+ Add Target</button>
+<button class="btn btn-secondary" onclick="addDrillSubtitleRow()" style="margin-bottom:16px;">+ Add Subtitle</button>
+<div class="form-group" style="margin-top:16px;">
+  <label>Grading (optional)</label>
+  <p style="color:#666;font-size:0.85em;margin:0 0 8px;">Define score thresholds. Players see their grade at the end, based on the highest threshold their total score reaches.</p>
+  <div id="drillGradeBandsList"></div>
+  <button type="button" class="btn-small" onclick="addGradeBandRow()">+ Add Grade Band</button>
+</div>
+<div style="position:sticky;bottom:0;background-color:#ffffff;padding:12px 0;border-top:1px solid #eeeeee;margin-top:8px;z-index:10;">
+  <button class="btn btn-primary" onclick="saveDrill()">Create Drill</button>
+</div>
+        </div>
+        <div class="card">
+          <h3>Manage Drills</h3>
+<div id="drillsList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
+        </div>
+        <div class="card">
+          <h3>Drill Attempts Log</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Filter by Player</label>
+              <select id="drillAttemptPlayerFilter" onchange="filterDrillAttempts()">
+                <option value="">-- All Players --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Filter by Date</label>
+              <input type="date" id="drillAttemptDateFilter" onchange="filterDrillAttempts()" />
+            </div>
+          </div>
+<button class="btn btn-secondary" onclick="clearDrillAttemptFilters()" style="margin-bottom:16px;">Clear Filters</button>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <span class="selected-count" id="attemptSelectedCount" style="margin:0;">0 selected</span>
+            <button class="btn-small danger" onclick="deleteSelectedDrillAttempts()">Delete Selected</button>
+          </div>
+<div id="drillAttemptsList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
       </div>
 <!-- ENQUIRIES TAB -->
