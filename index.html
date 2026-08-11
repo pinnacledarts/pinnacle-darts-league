@@ -82,7 +82,28 @@
         transition: transform 0.2s ease, box-shadow 0.2s ease;
       }
       .hero-landing .btn-landing-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,255,255,0.25); }
-      .hero-landing .btn-landing-secondary:hover { transform: translateY(-2px); background-color: rgba(255,255,255,0.08); }
+.hero-landing .btn-landing-secondary:hover { transform: translateY(-2px); background-color: rgba(255,255,255,0.08); }
+      .hero-landing { padding-top: 40px; }
+      .hero-landing-inner { position: relative; display: flex; align-items: center; justify-content: center; gap: 32px; max-width: 900px; margin: 0 auto; }
+      .hero-side-logo {
+        width: 130px; height: 130px; border-radius: 24px; background: #ffffff; padding: 10px;
+        flex-shrink: 0; margin-left: -60px;
+        animation: slideInLogo 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+      }
+      @keyframes slideInLogo {
+        from { opacity: 0; transform: translateX(-60px) rotate(-8deg); }
+        to { opacity: 1; transform: translateX(0) rotate(0deg); }
+      }
+      .hero-landing-content { text-align: left; }
+      .hero-landing-content .hero-kicker, .hero-landing-content .hero-title { text-align: left; margin-left: 0; }
+      .hero-landing-content .landing-cta-row { justify-content: flex-start; }
+      @media (max-width: 700px) {
+        .hero-landing-inner { flex-direction: column; gap: 16px; text-align: center; }
+        .hero-side-logo { margin-left: 0; width: 90px; height: 90px; }
+        .hero-landing-content, .hero-landing-content .hero-kicker, .hero-landing-content .hero-title { text-align: center; }
+        .hero-landing-content .landing-cta-row { justify-content: center; }
+      }
       main { padding: 0 28px 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
       h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-light); }
       section + h2 { margin-top: 8px; }
@@ -143,7 +164,7 @@
   </head>
   <body>
 
-<header>
+<header id="siteHeader">
   <div class="brand">
     <img src="logo.png" alt="Pinnacle Darts Logo">
     <div class="brand-name">Pinnacle Darts League</div>
@@ -158,18 +179,21 @@
     <div id="authButtons" style="padding:14px 24px;"></div>
   </nav>
 </header>
-
 <div id="loggedOutLandingView" style="display:none;">
   <div class="hero hero-landing">
     <img src="logo-watermark.png" alt="" class="hero-watermark">
-    <div class="hero-kicker">Pinnacle Darts League</div>
-    <div class="hero-title">Compete, improve, and be part of a thriving darts community.</div>
-    <div class="landing-cta-row">
-      <a href="register.html" class="btn-landing-primary">Create Account</a>
-      <a href="login.html" class="btn-landing-secondary">Login</a>
+    <div class="hero-landing-inner">
+      <img src="logo.png" alt="Pinnacle Darts Logo" class="hero-side-logo">
+      <div class="hero-landing-content">
+        <div class="hero-kicker">Pinnacle Darts League</div>
+        <div class="hero-title">Compete, improve, and be part of a thriving darts community.</div>
+        <div class="landing-cta-row">
+          <a href="register.html" class="btn-landing-primary">Create Account</a>
+          <a href="login.html" class="btn-landing-secondary">Login</a>
+        </div>
+      </div>
     </div>
   </div>
-
   <main>
     <div class="landing-section-title">There's something for everyone</div>
     <p class="landing-section-sub">Everything you need to compete, track your progress, and climb the rankings.</p>
@@ -386,13 +410,14 @@
         document.getElementById('mainNav').classList.toggle('open');
       }
 
-      window.addEventListener('load', async () => {
+window.addEventListener('load', async () => {
         checkAuth();
         const { data: { session } } = await sbClient.auth.getSession();
         if (session) {
           document.getElementById('loggedInHomeView').style.display = 'block';
           loadNewsPreview();
         } else {
+          document.getElementById('siteHeader').style.display = 'none';
           document.getElementById('loggedOutLandingView').style.display = 'block';
           loadLandingActivity();
         }
