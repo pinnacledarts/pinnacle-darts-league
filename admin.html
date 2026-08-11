@@ -402,7 +402,7 @@ main { padding: 0 20px 32px; }
             <span class="selected-count" id="playerSelectedCount" style="margin:0;">0 selected</span>
             <button class="btn-small danger" onclick="resetSelectedPlayerStats()">Reset Stats for Selected</button>
           </div>
-          <div id="playersList"><p class="empty-state">Loading...</p></div>
+          <div id="playersList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
         <div class="card">
           <h3>Manually Add a Player (Guest Profile)</h3>
@@ -1812,7 +1812,7 @@ async function approveAccess(id, requestedAccess) {
         loadPlayers();
       }
 async function loadPlayers() {
-  var result = await sbClient.from('profiles').select('*').order('created_at', { ascending: false });
+  var result = await sbClient.from('profiles').select('*').or('is_bye.is.null,is_bye.eq.false').order('full_name', { ascending: true });
   allPlayersData = result.data || [];
   renderPlayersList(allPlayersData);
   updateRegistrationStats();
