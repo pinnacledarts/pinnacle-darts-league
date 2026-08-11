@@ -44,7 +44,45 @@
       .hero-kicker { position: relative; font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; text-align: center; }
 .hero-title { position: relative; font-size: 26px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0 auto 14px; max-width: 560px; text-align: center; }
       .hero-sub { position: relative; font-size: 14px; color: var(--pd-text-light-muted); line-height: 1.6; margin: 0 auto 20px; max-width: 520px; text-align: center; }
-      .hero-cta { position: relative; display: inline-flex; align-items: center; gap: 8px; background-color: #25D366; color: #ffffff; padding: 12px 24px; border-radius: var(--pd-radius-btn); text-decoration: none; font-weight: 500; font-size: 14px; margin: 0 auto; }
+.hero-cta { position: relative; display: inline-flex; align-items: center; gap: 8px; background-color: #25D366; color: #ffffff; padding: 12px 24px; border-radius: var(--pd-radius-btn); text-decoration: none; font-weight: 500; font-size: 14px; margin: 0 auto; }
+      .hero-landing::before {
+        content: '';
+        position: absolute;
+        top: 45%; left: 50%;
+        width: 640px; height: 640px;
+        background: radial-gradient(circle, rgba(245,197,24,0.18) 0%, rgba(245,197,24,0) 70%);
+        transform: translate(-50%, -50%);
+        animation: pulseGlow 4.5s ease-in-out infinite;
+        pointer-events: none;
+        z-index: 0;
+      }
+      @keyframes pulseGlow {
+        0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+        50% { transform: translate(-50%, -50%) scale(1.18); opacity: 1; }
+      }
+      @keyframes fadeSlideUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes shimmerText {
+        0% { background-position: 0% center; }
+        100% { background-position: 200% center; }
+      }
+      .hero-landing .hero-kicker { animation: fadeSlideUp 0.6s ease both; }
+      .hero-landing .hero-title {
+        background: linear-gradient(90deg, #ffffff, #f5c518, #ffffff);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: fadeSlideUp 0.6s ease 0.15s both, shimmerText 4s linear infinite;
+      }
+      .hero-landing .landing-cta-row { animation: fadeSlideUp 0.6s ease 0.3s both; }
+      .hero-landing .btn-landing-primary, .hero-landing .btn-landing-secondary {
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .hero-landing .btn-landing-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,255,255,0.25); }
+      .hero-landing .btn-landing-secondary:hover { transform: translateY(-2px); background-color: rgba(255,255,255,0.08); }
       main { padding: 0 28px 40px; max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
       h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-light); }
       section + h2 { margin-top: 8px; }
@@ -122,7 +160,7 @@
 </header>
 
 <div id="loggedOutLandingView" style="display:none;">
-  <div class="hero">
+  <div class="hero hero-landing">
     <img src="logo-watermark.png" alt="" class="hero-watermark">
     <div class="hero-kicker">Pinnacle Darts League</div>
     <div class="hero-title">Compete, improve, and be part of a thriving darts community.</div>
