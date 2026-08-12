@@ -146,8 +146,10 @@
         </div>
       </div>
     </main>
-    <script>
+  <script>
+      var registering = false;
       async function handleRegister() {
+        if (registering) { return; }
         const fullName = document.getElementById('fullName').value.trim();
         const username = document.getElementById('username').value.trim();
         const email = document.getElementById('email').value.trim();
@@ -171,6 +173,11 @@ if (!document.getElementById('agreeTerms').checked) {
   errorMsg.style.display = 'block';
   return;
 }
+registering = true;
+var submitBtn = document.querySelector('button[onclick="handleRegister()"]');
+var submitBtnOriginalText = submitBtn ? submitBtn.textContent : '';
+if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Creating Account...'; }
+try {
 const existingEmail = await sbClient.from('profiles').select('id').eq('email', email).maybeSingle();
 if (existingEmail.data) {
   errorMsg.textContent = 'An account with this email already exists. Please log in instead.';
@@ -230,6 +237,9 @@ const { data, error } = await sbClient.auth.signUp({
           errorMsg.textContent = 'Something went wrong. Please try again.';
           errorMsg.style.display = 'block';
           console.error(err);
+        } finally {
+          registering = false;
+          if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtnOriginalText || 'Create Account'; }
         }
       }
       function toggleMenu() {
