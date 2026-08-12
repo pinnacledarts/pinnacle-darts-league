@@ -1071,7 +1071,7 @@ function renderDrillStep(drillId) {
             '</div>';
           return;
         }
-                  var loggedAtvar existingSelected = state.answers[step.stepKey] ? (state.answers[step.stepKey].score_option_id + '|' + state.answers[step.stepKey].points) : '';tempts = state.answers[step.stepKey] || [];
+                  var existingSelected = state.answers[step.stepKey] ? (state.answers[step.stepKey].score_option_id + '|' + state.answers[step.stepKey].points) : '';
         var optionsHtml = options.map(function(o) {
           var val = o.id + '|' + o.points;
           var isSelected = val === existingSelected;
