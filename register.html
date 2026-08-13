@@ -84,9 +84,17 @@
   <div class="hero-title">Create an account</div>
 </div>
     <main>
-      <div class="form-box">
+<div class="form-box">
         <div class="error-msg" id="errorMsg"></div>
-        <div class="success-msg" id="successMsg">Account created successfully! Check your email to confirm your account, then login. If you don't see it within a few minutes, please check your junk/spam folder.</div>
+        <div id="successPanel" style="display:none;text-align:center;padding:20px 0;">
+          <div style="font-size:48px;margin-bottom:12px;">📧</div>
+          <h2 style="margin:0 0 12px;font-size:1.3em;">Almost there!</h2>
+          <p style="font-size:1.05em;line-height:1.6;color:#333;margin:0 0 8px;">We've sent a confirmation link to your email. <strong>You must click it before you can log in.</strong></p>
+          <p style="font-size:0.9em;color:#888;margin:0 0 20px;">Can't find it? Check your junk/spam folder — it can take a few minutes to arrive.</p>
+          <button class="btn-submit" onclick="resendConfirmation()" id="resendBtn" style="width:auto;padding:10px 24px;">Resend Confirmation Email</button>
+          <p id="resendMsg" style="font-size:0.85em;color:#006600;margin-top:10px;display:none;">Confirmation email resent!</p>
+        </div>
+        <div id="registerFormFields">
         <div class="form-group">
           <label>Full Name</label>
           <input type="text" id="fullName" placeholder="Enter your full name" />
@@ -141,13 +149,25 @@
   <label style="margin:0;font-weight:normal;">I agree to the <a href="terms.html" target="_blank" style="color:#111111;font-weight:bold;">Terms & Conditions</a></label>
 </div>
 <button class="btn-submit" onclick="handleRegister()">Create Account</button>
+        </div>
         <div class="login-link">
           Already have an account? <a href="login.html">Login here</a>
         </div>
       </div>
     </main>
-  <script>
+<script>
       var registering = false;
+      var lastRegisteredEmail = '';
+      async function resendConfirmation() {
+        if (!lastRegisteredEmail) { return; }
+        var btn = document.getElementById('resendBtn');
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+        await sbClient.auth.resend({ type: 'signup', email: lastRegisteredEmail });
+        btn.disabled = false;
+        btn.textContent = 'Resend Confirmation Email';
+        document.getElementById('resendMsg').style.display = 'block';
+      }
       async function handleRegister() {
         if (registering) { return; }
         const fullName = document.getElementById('fullName').value.trim();
@@ -232,7 +252,10 @@ const { data, error } = await sbClient.auth.signUp({
             return;
           }
 // Profile row is now created automatically via a database trigger — no manual insert needed here.
-          successMsg.style.display = 'block';
+          lastRegisteredEmail = email;
+          document.getElementById('registerFormFields').style.display = 'none';
+          document.getElementById('successPanel').style.display = 'block';
+          document.getElementById('successPanel').scrollIntoView({ behavior: 'smooth' });
         } catch (err) {
           errorMsg.textContent = 'Something went wrong. Please try again.';
           errorMsg.style.display = 'block';
