@@ -229,7 +229,6 @@ if (accessRequest === 'both') {
   initialAccess = 'academy';
   accessStatus = 'pending';
 }
-try {
 const { data, error } = await sbClient.auth.signUp({
   email,
   password,
