@@ -1703,7 +1703,7 @@ async function deleteTournament(id) {
   var status = tournament ? await computeTournamentStatus(tournament) : null;
   var isCompleted = status === 'completed';
   var confirmMsg = isCompleted
-    ? 'Delete this tournament? Since it has already been completed, paid entries will NOT be refunded.'
+    ? 'Delete this tournament? Since it has already been completed, paid entries will NOT be refunded. Match results already played will remain counted in players\' stats.'
     : 'Delete this tournament? Any paid entries will be refunded to players\' balances first.';
   if (!confirm(confirmMsg)) { return; }
   if (!isCompleted) {
@@ -1718,6 +1718,8 @@ async function deleteTournament(id) {
         await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', entry.player_id);
       }
     }
+    await sbClient.from('tournament_matches').delete().eq('tournament_id', id);
+    await sbClient.from('tournament_players').delete().eq('tournament_id', id);
   }
   await sbClient.from('tournaments').delete().eq('id', id);
   loadTournaments();
@@ -1785,8 +1787,30 @@ var allStatuses = await Promise.all(allLeaguesData.map(function(l) { return comp
         var row = document.getElementById('league-row-' + id);
         row.style.display = row.style.display === 'none' ? 'block' : 'none';
       }
-      async function deleteLeague(id) {
-        if (!confirm('Delete this league?')) { return; }
+async function deleteLeague(id) {
+        var leagueResult = await sbClient.from('leagues').select('*').eq('id', id).single();
+        var league = leagueResult.data;
+        var status = league ? await computeLeagueStatus(league) : null;
+        var isCompleted = status === 'completed';
+        var confirmMsg = isCompleted
+          ? 'Delete this league? Since it has already been completed, paid entries will NOT be refunded. Match results already played will remain counted in players\' stats.'
+          : 'Delete this league? Any paid entries will be refunded to players\' balances first.';
+        if (!confirm(confirmMsg)) { return; }
+        if (!isCompleted) {
+          var entriesResult = await sbClient.from('league_players').select('player_id, paid, amount_owed').eq('league_id', id);
+          var entries = entriesResult.data || [];
+          for (var i = 0; i < entries.length; i++) {
+            var entry = entries[i];
+            if (entry.paid && entry.amount_owed > 0) {
+              var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', entry.player_id).single();
+              var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+              var refundedBalance = currentBalance + parseFloat(entry.amount_owed);
+              await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', entry.player_id);
+            }
+          }
+          await sbClient.from('league_matches').delete().eq('league_id', id);
+          await sbClient.from('league_players').delete().eq('league_id', id);
+        }
         await sbClient.from('leagues').delete().eq('id', id);
         loadLeagues();
       }
