@@ -1698,16 +1698,25 @@ var allStatuses = await Promise.all(allTournamentsData.map(function(t) { return 
         row.style.display = row.style.display === 'none' ? 'block' : 'none';
       }
 async function deleteTournament(id) {
-  if (!confirm('Delete this tournament? Any paid entries will be refunded to players\' balances first.')) { return; }
-  var entriesResult = await sbClient.from('tournament_players').select('player_id, paid, amount_owed').eq('tournament_id', id);
-  var entries = entriesResult.data || [];
-  for (var i = 0; i < entries.length; i++) {
-    var entry = entries[i];
-    if (entry.paid && entry.amount_owed > 0) {
-      var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', entry.player_id).single();
-      var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
-      var refundedBalance = currentBalance + parseFloat(entry.amount_owed);
-      await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', entry.player_id);
+  var tournamentResult = await sbClient.from('tournaments').select('*').eq('id', id).single();
+  var tournament = tournamentResult.data;
+  var status = tournament ? await computeTournamentStatus(tournament) : null;
+  var isCompleted = status === 'completed';
+  var confirmMsg = isCompleted
+    ? 'Delete this tournament? Since it has already been completed, paid entries will NOT be refunded.'
+    : 'Delete this tournament? Any paid entries will be refunded to players\' balances first.';
+  if (!confirm(confirmMsg)) { return; }
+  if (!isCompleted) {
+    var entriesResult = await sbClient.from('tournament_players').select('player_id, paid, amount_owed').eq('tournament_id', id);
+    var entries = entriesResult.data || [];
+    for (var i = 0; i < entries.length; i++) {
+      var entry = entries[i];
+      if (entry.paid && entry.amount_owed > 0) {
+        var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', entry.player_id).single();
+        var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+        var refundedBalance = currentBalance + parseFloat(entry.amount_owed);
+        await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', entry.player_id);
+      }
     }
   }
   await sbClient.from('tournaments').delete().eq('id', id);
