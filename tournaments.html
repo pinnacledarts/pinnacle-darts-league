@@ -47,7 +47,11 @@ main { padding: 8px 28px 40px; max-width: 1100px; margin: 0 auto; position: rela
       h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-light); }
       .tournament-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 28px; }
 .tournament-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); padding: 18px 20px; box-shadow: var(--pd-shadow-card); }
-.tournament-card.is-paid { border-left: 4px solid #d4af37; }      .tournament-card .badges-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.tournament-card.is-paid { border-left: 4px solid #d4af37; }
+.tournament-card.is-na { border-left: 4px solid #1565c0; }
+.tournament-card.is-na.is-paid { border-left: 4px solid #d4af37; border-image: linear-gradient(#d4af37, #1565c0) 1; border-left-width: 4px; border-left-style: solid; }
+.badge-na { background-color: #1565c0; color: #ffffff; }
+.tournament-card .badges-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
       .tournament-card h3 { margin: 0 0 6px; font-size: 16px; font-weight: bold; color: var(--pd-text-dark); }
       .tournament-card .meta-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--pd-text-muted); margin-bottom: 3px; }
       .tournament-card .meta-row i { font-size: 14px; }
@@ -112,7 +116,14 @@ main { padding: 8px 28px 40px; max-width: 1100px; margin: 0 auto; position: rela
       <h2>My tournaments</h2>
       <div id="myTournamentsList" class="tournament-grid"></div>
     </div>
-    <h2>All tournaments</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+      <h2 style="margin:0;">All tournaments</h2>
+      <select id="regionFilter" onchange="loadTournaments()" style="padding:8px 12px;border:1px solid var(--pd-border-strong);border-radius:var(--pd-radius-btn);font-size:13px;font-family:Arial, sans-serif;background-color:#ffffff;color:var(--pd-text-dark);">
+        <option value="all">All Regions</option>
+        <option value="online">UK & Europe</option>
+        <option value="north_america">North America</option>
+      </select>
+    </div>
     <div id="tournamentsList" class="tournament-grid"><p class="loading">Loading tournaments...</p></div>
     <p class="archive-link"><a href="tournaments-archive.html">View Tournament Archive →</a></p>
   </main>
@@ -131,8 +142,9 @@ async function loadTournaments() {
     playerPlatform = profileResult.data ? profileResult.data.platform : null;
     playerHasAverage = profileResult.data ? !!(profileResult.data.average || profileResult.data.starter_average) : false;
   }
-        var result = await sbClient.from('tournaments').select('*').or('section.eq.online,section.eq.both').order('date', { ascending: true });
-        var container = document.getElementById('tournamentsList');
+        var regionFilterEl = document.getElementById('regionFilter');
+        var regionFilter = regionFilterEl ? regionFilterEl.value : 'all';
+        var result = await sbClient.from('tournaments').select('*').or('section.eq.online,section.eq.north_america,section.eq.both').order('date', { ascending: true });        var container = document.getElementById('tournamentsList');
         if (!result.data || !result.data.length) {
           container.innerHTML = '<p class="coming-soon">No tournaments yet — check back soon!</p>';
           document.getElementById('statLive').textContent = '0';
@@ -165,6 +177,8 @@ for (var i = 0; i < result.data.length; i++) {
   var t = result.data[i];
   var status = allStatuses[i];
   if (status === 'completed') { continue; }
+  if (regionFilter === 'online' && t.section === 'north_america') { continue; }
+  if (regionFilter === 'north_america' && t.section !== 'north_america') { continue; }
   if (playerPlatform && playerPlatform !== 'both' && t.platform !== 'in_person' && t.platform !== 'both' && t.platform !== playerPlatform) {
     continue;
   }
@@ -194,9 +208,10 @@ var statusBadge = status === 'live'
   ? '<span class="badge badge-live"><i class="ti ti-bolt"></i>Live</span>'
   : '<span class="badge badge-upcoming"><i class="ti ti-clock"></i>Upcoming</span>';
 var paidBadge = t.is_paid ? '<span class="badge badge-paid"><i class="ti ti-currency-pound"></i>£' + t.entry_fee + ' entry</span>' : '';
+var naBadge = t.section === 'north_america' ? '<span class="badge badge-na"><i class="ti ti-flag"></i>North America</span>' : '';
   var checkinRow = (t.checkin_start && t.checkin_end) ? '<div class="meta-row"><i class="ti ti-clock-check"></i><strong>Check-in:</strong> ' + new Date(t.checkin_start).toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' }) + ' – ' + new Date(t.checkin_end).toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit' }) + '</div>' : '';
-var cardHtml = '<div class="tournament-card' + (t.is_paid ? ' is-paid' : '') + '">' +
-  '<div class="badges-row">' + paidBadge + statusBadge + '</div>' +
+var cardHtml = '<div class="tournament-card' + (t.is_paid ? ' is-paid' : '') + (t.section === 'north_america' ? ' is-na' : '') + '">' +
+  '<div class="badges-row">' + naBadge + paidBadge + statusBadge + '</div>' +
     '<h3>' + t.name + '</h3>' +
     '<div class="meta-row"><i class="ti ti-trophy"></i><strong>Format:</strong> ' + (formatLabels[t.format] || t.format || 'TBC') + '</div>' +
     '<div class="meta-row"><i class="ti ti-calendar"></i><strong>Date:</strong> ' + dateStr + timeStr + '</div>' +
