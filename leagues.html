@@ -48,6 +48,7 @@
       h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-light); }
       .league-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-bottom: 28px; }
       .league-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); padding: 18px 20px; box-shadow: var(--pd-shadow-card); }
+      .league-card.is-na { border-left: 4px solid #1565c0; }
       .league-card .badges-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
       .league-card h3 { margin: 0 0 6px; font-size: 16px; font-weight: bold; color: var(--pd-text-dark); }
       .league-card .meta-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--pd-text-muted); margin-bottom: 3px; }
@@ -57,6 +58,7 @@
       .badge-upcoming { background-color: #eeeeee; color: #555555; }
       .badge-completed { background-color: #f3f3f3; color: #888888; }
       .badge-paid { background-color: #444444; color: #ffffff; }
+      .badge-na { background-color: #1565c0; color: #ffffff; }
       .card-actions { display: flex; gap: 8px; margin-top: 16px; }
       .btn-view, .btn-join { flex: 1; text-align: center; padding: 10px 0; border-radius: var(--pd-radius-btn); font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
       .btn-view { background-color: var(--pd-text-dark); color: var(--pd-text-light); border: none; }
@@ -112,7 +114,14 @@
       <h2>My leagues</h2>
       <div id="myLeaguesList" class="league-grid"></div>
     </div>
-    <h2>All leagues</h2>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+      <h2 style="margin:0;">All leagues</h2>
+      <select id="regionFilter" onchange="loadLeagues()" style="padding:8px 12px;border:1px solid var(--pd-border-strong);border-radius:var(--pd-radius-btn);font-size:13px;font-family:Arial, sans-serif;background-color:#ffffff;color:var(--pd-text-dark);">
+        <option value="all">All Regions</option>
+        <option value="online">UK & Europe</option>
+        <option value="north_america">North America</option>
+      </select>
+    </div>
     <div id="leaguesList" class="league-grid"><p class="loading">Loading leagues...</p></div>
     <p class="archive-link"><a href="leagues-archive.html">View League Archive →</a></p>
   </main>
@@ -131,7 +140,9 @@ async function loadLeagues() {
     playerPlatform = profileResult.data ? profileResult.data.platform : null;
     playerHasAverage = profileResult.data ? !!(profileResult.data.average || profileResult.data.starter_average) : false;
   }
-        var result = await sbClient.from('leagues').select('*').or('section.eq.online,section.eq.both').order('start_date', { ascending: true });
+        var regionFilterEl = document.getElementById('regionFilter');
+        var regionFilter = regionFilterEl ? regionFilterEl.value : 'all';
+        var result = await sbClient.from('leagues').select('*').or('section.eq.online,section.eq.north_america,section.eq.both').order('start_date', { ascending: true });
         var container = document.getElementById('leaguesList');
         if (!result.data || !result.data.length) {
           container.innerHTML = '<p class="coming-soon">No leagues yet — check back soon!</p>';
@@ -169,6 +180,8 @@ for (var i = 0; i < result.data.length; i++) {
   var l = result.data[i];
   var status = allStatuses[i];
   if (status === 'completed') { continue; }
+  if (regionFilter === 'online' && l.section === 'north_america') { continue; }
+  if (regionFilter === 'north_america' && l.section !== 'north_america') { continue; }
   if (playerPlatform && playerPlatform !== 'both' && l.platform !== 'in_person' && l.platform !== 'both' && l.platform !== playerPlatform) {
     continue;
   }
@@ -211,9 +224,10 @@ var statusBadge = status === 'live'
   ? '<span class="badge badge-live"><i class="ti ti-bolt"></i>Live</span>'
   : '<span class="badge badge-upcoming"><i class="ti ti-clock"></i>Upcoming</span>';
 var paidBadge = l.is_paid ? '<span class="badge badge-paid"><i class="ti ti-currency-pound"></i>£' + l.entry_fee + ' entry</span>' : '';
+var naBadge = l.section === 'north_america' ? '<span class="badge badge-na"><i class="ti ti-flag"></i>North America</span>' : '';
   var matchesPerWeekLabel = l.matches_per_week === 0 ? 'Unlimited' : (l.matches_per_week || 1) + ' per week';
-  var cardHtml = '<div class="league-card">' +
-    '<div class="badges-row">' + statusBadge + paidBadge + '</div>' +
+  var cardHtml = '<div class="league-card' + (l.section === 'north_america' ? ' is-na' : '') + '">' +
+    '<div class="badges-row">' + naBadge + statusBadge + paidBadge + '</div>' +
     '<h3>' + l.name + '</h3>' +
     (l.season ? '<div class="meta-row"><i class="ti ti-calendar-event"></i><strong>Season:</strong> ' + l.season + '</div>' : '') +
     '<div class="meta-row"><i class="ti ti-trophy"></i><strong>Format:</strong> ' + (formatLabels[l.format] || l.format || 'TBC') + (l.playoffs ? ' + Playoffs' : '') + '</div>' +
