@@ -407,6 +407,32 @@ main { padding: 0 20px 32px; }
           </div>
           <div id="playersList" style="max-height:500px;overflow-y:auto;"><p class="empty-state">Loading...</p></div>
         </div>
+<div class="card">
+          <h3>Blocked Registrations</h3>
+          <p style="color:#666;font-size:0.9em;margin-top:-8px;">Prevent specific emails, phone numbers, or names from registering an account.</p>
+          <div class="success-msg" id="blocklist-success"></div>
+          <div class="error-msg" id="blocklist-error"></div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Block Type</label>
+              <select id="blocklistType">
+                <option value="email">Email</option>
+                <option value="phone">Phone Number</option>
+                <option value="name">Full Name</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Value</label>
+              <input type="text" id="blocklistValue" placeholder="e.g. someone@example.com" />
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Reason (optional, admin-only note)</label>
+            <input type="text" id="blocklistReason" placeholder="e.g. Repeated abusive behaviour" />
+          </div>
+          <button class="btn btn-primary" onclick="addBlockedRegistration()">Add to Blocklist</button>
+          <div id="blocklistItems" style="margin-top:16px;"></div>
+        </div>
         <div class="card">
           <h3>Manually Add a Player (Guest Profile)</h3>
           <p style="color:#666;font-size:0.9em;margin-top:-8px;">For players who aren't comfortable registering themselves. Creates a profile you can add to tournaments and track stats for — no login required. They can be upgraded to a full account with login access later if they want one.</p>
@@ -1040,8 +1066,35 @@ async function deleteMerchCategory(id) {
   alert(fullName + ' now has a full account! Share these details with them: Email: ' + email + ' — Password: ' + password + '. They\'ll need to confirm their email before logging in.');
   loadPlayers();
 }
-      async function manuallyAddPlayer() {
-  var fullName = document.getElementById('manualAddFullName').value.trim();
+      async function addBlockedRegistration() {
+        var type = document.getElementById('blocklistType').value;
+        var value = document.getElementById('blocklistValue').value.trim();
+        var reason = document.getElementById('blocklistReason').value.trim();
+        if (!value) { showMsg('blocklist-error', 'Please enter a value to block.'); return; }
+        var result = await sbClient.from('blocked_registrations').insert([{ type: type, value: value.toLowerCase(), reason: reason || null }]);
+        if (result.error) { showMsg('blocklist-error', result.error.message); return; }
+        showMsg('blocklist-success', 'Added to blocklist!');
+        document.getElementById('blocklistValue').value = '';
+        document.getElementById('blocklistReason').value = '';
+        loadBlockedRegistrations();
+      }
+      async function loadBlockedRegistrations() {
+        var result = await sbClient.from('blocked_registrations').select('*').order('created_at', { ascending: false });
+        var container = document.getElementById('blocklistItems');
+        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No blocked entries yet.</p>'; return; }
+        var typeLabels = { email: 'Email', phone: 'Phone', name: 'Name' };
+        container.innerHTML = '<table><thead><tr><th>Type</th><th>Value</th><th>Reason</th><th>Action</th></tr></thead><tbody>' +
+          result.data.map(function(b) {
+            return '<tr><td>' + (typeLabels[b.type] || b.type) + '</td><td>' + b.value + '</td><td>' + (b.reason || '-') + '</td>' +
+              '<td><button class="btn-small danger" onclick="deleteBlockedRegistration(' + b.id + ')">Remove</button></td></tr>';
+          }).join('') + '</tbody></table>';
+      }
+      async function deleteBlockedRegistration(id) {
+        if (!confirm('Remove this entry from the blocklist?')) { return; }
+        await sbClient.from('blocked_registrations').delete().eq('id', id);
+        loadBlockedRegistrations();
+      }
+      async function manuallyAddPlayer() {  var fullName = document.getElementById('manualAddFullName').value.trim();
   var username = document.getElementById('manualAddUsername').value.trim();
   var phone = document.getElementById('manualAddPhone').value.trim();
   var dob = document.getElementById('manualAddDob').value;
@@ -3129,6 +3182,7 @@ window.addEventListener('load', async function() {
         loadPlayers();
         loadShirtDesigns();
         loadPendingApprovals();
+        loadBlockedRegistrations();
         loadCreditAdjustPlayerSelect();
 loadTopupPackages();
 loadCreditTopUps();
