@@ -110,8 +110,7 @@
 <div class="form-group">
   <label>Mobile Number</label>
   <input type="tel" id="phone" placeholder="e.g. +44 7123 456789" />
-  <div class="hint">Please include your country code (e.g. +44 for UK). Used so opponents can message you via WhatsApp about matches.</div>
-</div>
+  <div class="hint">You must include your country code (e.g. +44 for UK, +1 for USA/Canada) or opponents won't be able to message you via WhatsApp about matches.</div></div>
        <div class="form-group">
           <label>What darts app do you use?</label>
           <select id="platform">
@@ -183,6 +182,11 @@ const errorMsg = document.getElementById('errorMsg');
         errorMsg.style.display = 'none';
        if (!fullName || !username || !email || !phone || !dob || !platform || !password) {
   errorMsg.textContent = 'Please fill in all fields.';
+  errorMsg.style.display = 'block';
+  return;
+}
+if (!phone.trim().startsWith('+')) {
+  errorMsg.textContent = 'Please include your country code in your phone number, starting with + (e.g. +1 555 123 4567).';
   errorMsg.style.display = 'block';
   return;
 }
