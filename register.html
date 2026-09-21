@@ -196,8 +196,15 @@ var submitBtn = document.querySelector('button[onclick="handleRegister()"]');
 var submitBtnOriginalText = submitBtn ? submitBtn.textContent : '';
 if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Creating Account...'; }
 try {
-const existingEmail = await sbClient.from('profiles').select('id').eq('email', email).maybeSingle();
-if (existingEmail.data) {
+const blocklistResult = await sbClient.from('blocked_registrations').select('type, value').or('value.eq.' + email.toLowerCase() + ',value.eq.' + phone.toLowerCase() + ',value.eq.' + fullName.toLowerCase());
+if (blocklistResult.data && blocklistResult.data.length) {
+  errorMsg.textContent = 'We\'re unable to complete this registration. Please contact us if you believe this is a mistake.';
+  errorMsg.style.display = 'block';
+  registering = false;
+  if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtnOriginalText || 'Create Account'; }
+  return;
+}
+const existingEmail = await sbClient.from('profiles').select('id').eq('email', email).maybeSingle();if (existingEmail.data) {
   errorMsg.textContent = 'An account with this email already exists. Please log in instead.';
   errorMsg.style.display = 'block';
   return;
