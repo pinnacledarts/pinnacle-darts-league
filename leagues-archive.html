@@ -46,11 +46,13 @@
       h2 { font-size: 16px; font-weight: bold; margin: 0 0 14px; color: var(--pd-text-light); }
       .league-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
       .league-card { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); padding: 18px 20px; box-shadow: var(--pd-shadow-card); }
+      .league-card.is-na { border-left: 4px solid #1565c0; }
       .league-card h3 { margin: 0 0 6px; font-size: 16px; font-weight: bold; color: var(--pd-text-dark); }
       .league-card .meta-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--pd-text-muted); margin-bottom: 3px; }
       .league-card .meta-row i { font-size: 14px; }
-      .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-bottom: 12px; }
+      .badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; margin-bottom: 12px; margin-right: 6px; }
       .badge-completed { background-color: #f3f3f3; color: #888888; }
+      .badge-na { background-color: #1565c0; color: #ffffff; }
       .card-actions { display: flex; gap: 8px; margin-top: 16px; }
       .btn-view { flex: 1; text-align: center; background-color: var(--pd-text-dark); color: var(--pd-text-light); border: none; padding: 10px 0; border-radius: var(--pd-radius-btn); font-size: 13px; font-weight: 500; cursor: pointer; text-decoration: none; font-family: Arial, sans-serif; }
       .btn-view:hover { background-color: #333333; }
@@ -91,11 +93,20 @@
 </div>
     <main>
       <a href="leagues.html" class="back-link">← Back to Leagues</a>
-      <h2>Completed leagues</h2>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:14px;">
+        <h2 style="margin:0;">Completed leagues</h2>
+        <select id="regionFilter" onchange="loadArchive()" style="padding:8px 12px;border:1px solid var(--pd-border-strong);border-radius:var(--pd-radius-btn);font-size:13px;font-family:Arial, sans-serif;background-color:#ffffff;color:var(--pd-text-dark);">
+          <option value="all">All Regions</option>
+          <option value="online">UK & Europe</option>
+          <option value="north_america">North America</option>
+        </select>
+      </div>
       <div id="archiveList" class="league-grid"><p class="loading">Loading completed leagues...</p></div>
     </main>
     <script>
       async function loadArchive() {
+        var regionFilterEl = document.getElementById('regionFilter');
+        var regionFilter = regionFilterEl ? regionFilterEl.value : 'all';
         var result = await sbClient.from('leagues').select('*').order('end_date', { ascending: false });
         var container = document.getElementById('archiveList');
         if (!result.data || !result.data.length) {
@@ -110,8 +121,12 @@ var allStatuses = await Promise.all(result.data.map(function(l) { return compute
           var l = result.data[i];
           var status = allStatuses[i];
           if (status !== 'completed') { continue; }
+          if (regionFilter === 'online' && l.section === 'north_america') { continue; }
+          if (regionFilter === 'north_america' && l.section !== 'north_america') { continue; }
           var endStr = l.end_date ? new Date(l.end_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
-          cardsHtml.push('<div class="league-card">' +
+          var naBadge = l.section === 'north_america' ? '<span class="badge badge-na"><i class="ti ti-flag"></i>North America</span>' : '';
+          cardsHtml.push('<div class="league-card' + (l.section === 'north_america' ? ' is-na' : '') + '">' +
+            naBadge +
             '<span class="badge badge-completed"><i class="ti ti-flag"></i>Completed</span>' +
             '<h3>' + l.name + '</h3>' +
             (l.season ? '<div class="meta-row"><i class="ti ti-calendar-event"></i><strong>Season:</strong> ' + l.season + '</div>' : '') +
