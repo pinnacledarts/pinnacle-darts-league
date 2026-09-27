@@ -104,8 +104,9 @@
       .round-tab { padding: 8px 16px; border: 1px solid #dddddd; background: #ffffff; border-radius: 20px; font-size: 0.85em; cursor: pointer; font-family: Arial, sans-serif; color: #555555; }
       .round-tab.active { background: var(--pd-text-dark); color: var(--pd-text-light); border-color: var(--pd-text-dark); font-weight: bold; }
       .bracket-toggle { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
-      .bracket-toggle-btn { padding: 10px 20px; border: 2px solid var(--pd-text-light); background: none; border-radius: var(--pd-radius-btn); font-size: 0.9em; font-weight: bold; cursor: pointer; font-family: Arial, sans-serif; color: var(--pd-text-light); }
-      .bracket-toggle-btn.active { background: var(--pd-text-light); color: var(--pd-text-dark); }
+      .bracket-toggle-btn { padding: 10px 20px; border: 2px solid #333333; background: #1a1a1a; border-radius: var(--pd-radius-btn); font-size: 0.9em; font-weight: 500; cursor: pointer; font-family: Arial, sans-serif; color: var(--pd-text-light-muted); }
+      .bracket-toggle-btn:hover { border-color: #555555; color: var(--pd-text-light); }
+      .bracket-toggle-btn.active { background: var(--pd-text-light); color: var(--pd-text-dark); border-color: var(--pd-text-light); font-weight: bold; }
       .coming-soon { text-align: center; padding: 40px; color: var(--pd-text-light-muted); font-size: 1em; }
       .loading { text-align: center; padding: 40px; color: var(--pd-text-light-muted); }
       @media (max-width: 700px) {
@@ -385,7 +386,7 @@ async function submitGroupAverageOnly(matchId, isP1) {
           }).join('') + '</div>';
         }
 container.innerHTML = toggleHtml + '<div id="bracketSectionContent"></div>';
-        renderBracketSection(cachedBracketsByType[presentTypes[0]] || []);
+        renderBracketSection(cachedBracketsByType[presentTypes[0]] || [], labels[presentTypes[0]]);
         checkAndShowWinnerPopup();
       }
       function buildWinnerCardHtml(playerId, label) {
@@ -451,12 +452,13 @@ if (!cardsHtml) { return; }
       function switchBracketView(type, btn) {
         document.querySelectorAll('.bracket-toggle-btn').forEach(function(b) { b.classList.remove('active'); });
         btn.classList.add('active');
-        renderBracketSection(cachedBracketsByType[type] || []);
+        renderBracketSection(cachedBracketsByType[type] || [], btn.textContent);
       }
-      function renderBracketSection(matches) {
+      function renderBracketSection(matches, sectionLabel) {
   var rounds = {};
   matches.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
   var roundsPresent = roundOrderFull.filter(function(r) { return rounds[r]; });
+  var headerHtml = sectionLabel ? '<h3 style="color:var(--pd-text-light);font-size:1.1em;margin:0 0 12px;">' + sectionLabel + '</h3>' : '';
   var tabsHtml = '<div class="round-tabs">' + roundsPresent.map(function(r, i) {
     return '<button class="round-tab' + (i === 0 ? ' active' : '') + '" data-round="' + r + '" onclick="showKnockoutRound(\'' + r + '\', this)">' + r + '</button>';
   }).join('') + '</div>';
@@ -497,10 +499,9 @@ if (!cardsHtml) { return; }
         scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
       }
       return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span>' + whatsAppHtml + '</div>' + scoreHtml + '</div>';
-    }).join('');
     return '<div class="round-content" data-round="' + r + '" style="' + (i === 0 ? '' : 'display:none;') + '">' + matchesHtml + '</div>';
   }).join('');
-  document.getElementById('bracketSectionContent').innerHTML = tabsHtml + contentHtml;
+  document.getElementById('bracketSectionContent').innerHTML = headerHtml + tabsHtml + contentHtml;
 }
       function showKnockoutRound(round, btn) {
         document.querySelectorAll('.round-tab').forEach(function(t) { t.classList.remove('active'); });
