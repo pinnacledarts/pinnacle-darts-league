@@ -240,9 +240,10 @@ async function submitManualBracket(slotCount) {
         var result = await sbClient.from('tournaments').select('*').eq('id', tournamentId).single();
         if (result.error || !result.data) { window.location.href = 'admin.html'; return; }
         tournamentData = result.data;
-var profilesQuery = sbClient.from('profiles').select('id, full_name, username, starter_average, average, access').or('is_bye.is.null,is_bye.eq.false').order('full_name');if (tournamentData.section === 'academy') {
+var profilesQuery = sbClient.from('profiles').select('id, full_name, username, starter_average, average, access').or('is_bye.is.null,is_bye.eq.false').order('full_name');
+if (tournamentData.section === 'academy') {
   profilesQuery = profilesQuery.or('access.eq.academy,access.eq.both');
-} else if (tournamentData.section === 'online') {
+} else {
   profilesQuery = profilesQuery.or('access.eq.online,access.eq.both');
 }
 var profilesResult = await profilesQuery;
