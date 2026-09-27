@@ -499,6 +499,7 @@ if (!cardsHtml) { return; }
         scoreHtml = '<div class="score-display" style="color:#aaa">Awaiting players</div>';
       }
       return '<div class="fixture-item"><div class="fixture-players"><span class="' + (p1winner ? 'winner-text' : '') + '">' + p1name + '</span> <span class="fixture-vs">vs</span> <span class="' + (p2winner ? 'winner-text' : '') + '">' + p2name + '</span>' + whatsAppHtml + '</div>' + scoreHtml + '</div>';
+    }).join('');
     return '<div class="round-content" data-round="' + r + '" style="' + (i === 0 ? '' : 'display:none;') + '">' + matchesHtml + '</div>';
   }).join('');
   document.getElementById('bracketSectionContent').innerHTML = headerHtml + tabsHtml + contentHtml;
