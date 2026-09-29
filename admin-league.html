@@ -412,10 +412,16 @@ main { padding: 0 20px 32px; }
           actionsBar.innerHTML = '<button class="btn btn-primary" onclick="confirmAllDivisions()">Confirm All Divisions</button>';
         }
       }
+      var confirmingDivisions = false;
       async function confirmAllDivisions() {
+        if (confirmingDivisions) { return; }
         var divisionSize = parseInt(leagueData.players_per_division) || 8;
         var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
         if (!confirm('Confirm all divisions now? ' + (checkinEnabled ? 'Anyone who has not checked in will be removed. ' : '') + 'This locks in the groupings and generates fixtures.')) { return; }
+        confirmingDivisions = true;
+        var confirmBtn = document.querySelector('button[onclick="confirmAllDivisions()"]');
+        var confirmBtnOriginalText = confirmBtn ? confirmBtn.textContent : '';
+        if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Confirming...'; }
         var result = await sbClient.from('league_players').select('id, player_id, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
         var allEntries = (result.data || []).filter(function(p) { return !(p.profiles && p.profiles.is_bye); });
         var keep = allEntries;
