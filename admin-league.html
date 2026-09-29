@@ -462,6 +462,8 @@ main { padding: 0 20px 32px; }
         leagueData.divisions_locked = true;
         await autoGenerateFixturesAfterConfirm();
         showMsg('divisions-success', 'Divisions confirmed and fixtures generated!');
+        confirmingDivisions = false;
+        if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = confirmBtnOriginalText || 'Confirm All Divisions'; }
         loadPlayers();
         loadFixtures();
         loadStandings();
@@ -558,7 +560,13 @@ async function generateFixturesForGroup(players, division) {
           }
         }
       }
+      var generatingSwissRound = false;
       async function generateNextSwissRound() {
+        if (generatingSwissRound) { return; }
+        generatingSwissRound = true;
+        var swissBtn = document.querySelector('button[onclick="generateNextSwissRound()"]');
+        var swissBtnOriginalText = swissBtn ? swissBtn.textContent : '';
+        if (swissBtn) { swissBtn.disabled = true; swissBtn.textContent = 'Generating...'; }
         var maxGames = leagueData.swiss_games || 5;
         var existingRounds = await sbClient.from('league_matches').select('round').eq('league_id', leagueId).eq('stage', 'regular');
         var roundNumbers = (existingRounds.data || []).map(function(m) {
@@ -566,9 +574,9 @@ async function generateFixturesForGroup(players, division) {
           return match ? parseInt(match[0]) : 0;
         });
         var nextRoundNum = roundNumbers.length ? Math.max.apply(null, roundNumbers) + 1 : 1;
-        if (nextRoundNum > maxGames) { showMsg('fixtures-error', 'All ' + maxGames + ' rounds have been generated.'); return; }
+        if (nextRoundNum > maxGames) { showMsg('fixtures-error', 'All ' + maxGames + ' rounds have been generated.'); generatingSwissRound = false; if (swissBtn) { swissBtn.disabled = false; swissBtn.textContent = swissBtnOriginalText || 'Generate Next Round'; } return; }
         var playersResult = await sbClient.from('league_players').select('player_id').eq('league_id', leagueId);
-        if (!playersResult.data || playersResult.data.length < 2) { showMsg('fixtures-error', 'Need at least 2 players.'); return; }
+        if (!playersResult.data || playersResult.data.length < 2) { showMsg('fixtures-error', 'Need at least 2 players.'); generatingSwissRound = false; if (swissBtn) { swissBtn.disabled = false; swissBtn.textContent = swissBtnOriginalText || 'Generate Next Round'; } return; }
         var playerIds = playersResult.data.map(function(p) { return p.player_id; });
         var allMatches = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular');
         var matches = allMatches.data || [];
@@ -606,6 +614,8 @@ async function generateFixturesForGroup(players, division) {
           }]);
         }
         showMsg('fixtures-success', 'Round ' + nextRoundNum + ' generated!');
+        generatingSwissRound = false;
+        if (swissBtn) { swissBtn.disabled = false; swissBtn.textContent = swissBtnOriginalText || 'Generate Next Round'; }
         loadFixtures();
       }
       async function clearFixtures() {
