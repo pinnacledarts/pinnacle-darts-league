@@ -232,6 +232,7 @@ main { padding: 0 20px 32px; }
           (leagueData.format === 'swiss' ?
             '<div class="admin-bar"><button class="btn btn-primary" onclick="generateNextSwissRound()">Generate Next Round</button><button class="btn btn-danger" onclick="clearFixtures()">Clear All Fixtures</button></div>' :
             '<div class="admin-bar"><p style="margin:0;color:#666;font-size:0.9em;">Fixtures are generated automatically when you confirm divisions in View Registrations.</p><button class="btn btn-danger" onclick="clearFixtures()">Clear Fixtures</button></div>') +
+          '<div class="admin-bar"><label>Filter by Player:</label><select id="fixturePlayerFilter" onchange="loadFixtures()" style="padding:8px 12px;border:1px solid var(--pd-border-strong);border-radius:6px;font-size:0.9em;flex:1;min-width:180px;"><option value="">-- All Players --</option></select></div>' +
           '<div id="fixturesContent"><p class="empty-state">No fixtures generated yet.</p></div>' +
           '</div>' +
           '<div id="tab-standings" class="tab-content">' +
@@ -639,9 +640,26 @@ function groupMatchesByWeek(matches) {
       async function loadFixtures() {
         var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular').order('id');
         var container = document.getElementById('fixturesContent');
-        if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No fixtures generated yet.</p>'; return; }
+        var allMatches = result.data || [];
+        if (!allMatches.length) { container.innerHTML = '<p class="empty-state">No fixtures generated yet.</p>'; return; }
+        var filterEl = document.getElementById('fixturePlayerFilter');
+        if (filterEl && !filterEl.dataset.populated) {
+          var playersInFixtures = {};
+          allMatches.forEach(function(m) {
+            if (m.player1_id && !playersInFixtures[m.player1_id]) { playersInFixtures[m.player1_id] = profileMapAdmin[m.player1_id] || 'Unknown'; }
+            if (m.player2_id && !playersInFixtures[m.player2_id]) { playersInFixtures[m.player2_id] = profileMapAdmin[m.player2_id] || 'Unknown'; }
+          });
+          var sortedIds = Object.keys(playersInFixtures).sort(function(a, b) { return playersInFixtures[a].localeCompare(playersInFixtures[b]); });
+          sortedIds.forEach(function(pid) {
+            filterEl.innerHTML += '<option value="' + pid + '">' + playersInFixtures[pid] + '</option>';
+          });
+          filterEl.dataset.populated = 'true';
+        }
+        var filterValue = filterEl ? filterEl.value : '';
+        var filteredMatches = filterValue ? allMatches.filter(function(m) { return m.player1_id === filterValue || m.player2_id === filterValue; }) : allMatches;
+        if (!filteredMatches.length) { container.innerHTML = '<p class="empty-state">No fixtures found for this player.</p>'; return; }
         var byDivision = {};
-        result.data.forEach(function(m) {
+        filteredMatches.forEach(function(m) {
           var div = m.division || 1;
           if (!byDivision[div]) { byDivision[div] = []; }
           byDivision[div].push(m);
