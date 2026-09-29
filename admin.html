@@ -2034,10 +2034,18 @@ async function resetPlayerStats(id, name) {
       }
 async function deletePlayer(id, username) {
   if (username === 'Macca23') { alert('This account is protected and cannot be deleted.'); return; }
-  if (!confirm('Remove this player?')) { return; }
-  var result = await sbClient.from('profiles').delete().eq('id', id).select();
-  if (result.error) { alert('Error removing player: ' + result.error.message); console.error(result.error); return; }
-  if (!result.data || !result.data.length) { alert('The delete did not apply — this usually means a permissions (RLS) rule on the profiles table is blocking admin deletes, or the player has related records (e.g. league/tournament entries) that need removing first due to a foreign key constraint.'); return; }
+  if (!confirm('Remove this player? This will delete their profile and login access permanently.')) { return; }
+  var session = await sbClient.auth.getSession();
+  var token = session.data.session ? session.data.session.access_token : null;
+  if (!token) { alert('Your session has expired. Please log in again.'); return; }
+  var response = await fetch('https://xcygwejfphziercarakq.supabase.co/functions/v1/delete-player', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+    body: JSON.stringify({ player_id: id })
+  });
+  var resultJson = await response.json();
+  if (resultJson.error) { alert('Error removing player: ' + resultJson.error); return; }
+  if (resultJson.warning) { alert(resultJson.warning); }
   loadPlayers();
 }
       function insertDrillRow(row, insertAfterIdx) {
