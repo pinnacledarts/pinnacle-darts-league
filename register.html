@@ -136,6 +136,11 @@
           <div class="hint">Used only to identify players under 18 for safeguarding purposes and is never shown publicly.</div>
         </div>
         <div class="form-group">
+          <label>Starting Average (optional)</label>
+          <input type="number" step="0.01" id="starterAverage" placeholder="e.g. 45.5" />
+          <div class="hint">If you know your average from another league or platform, enter it here — it helps us place you fairly in average-split tournaments and leagues until you've played some matches with us.</div>
+        </div>
+        <div class="form-group">
           <label>Password</label>
           <input type="password" id="password" placeholder="Choose a password" />
         </div>
@@ -234,10 +239,11 @@ let accessStatus = 'approved';
 if (accessRequest === 'both') {
   initialAccess = 'online';
   accessStatus = 'pending';
-} else if (accessRequest === 'academy') {
+if (accessRequest === 'academy') {
   initialAccess = 'academy';
   accessStatus = 'pending';
 }
+var starterAvgVal = document.getElementById('starterAverage').value.trim();
 const { data, error } = await sbClient.auth.signUp({
   email,
   password,
@@ -250,7 +256,8 @@ const { data, error } = await sbClient.auth.signUp({
       platform: platform,
       access: initialAccess,
       requested_access: accessRequest,
-      access_status: accessStatus
+      access_status: accessStatus,
+      starter_average: starterAvgVal ? parseFloat(starterAvgVal) : null
     }
   }
 });
