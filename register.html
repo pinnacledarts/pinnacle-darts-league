@@ -213,7 +213,8 @@ if (blocklistResult.data && blocklistResult.data.length) {
   if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = submitBtnOriginalText || 'Create Account'; }
   return;
 }
-const existingEmail = await sbClient.from('profiles').select('id').eq('email', email).maybeSingle();if (existingEmail.data) {
+const existingEmail = await sbClient.from('profiles').select('id').eq('email', email).maybeSingle();
+if (existingEmail.data) {
   errorMsg.textContent = 'An account with this email already exists. Please log in instead.';
   errorMsg.style.display = 'block';
   return;
@@ -239,7 +240,7 @@ let accessStatus = 'approved';
 if (accessRequest === 'both') {
   initialAccess = 'online';
   accessStatus = 'pending';
-if (accessRequest === 'academy') {
+} else if (accessRequest === 'academy') {
   initialAccess = 'academy';
   accessStatus = 'pending';
 }
