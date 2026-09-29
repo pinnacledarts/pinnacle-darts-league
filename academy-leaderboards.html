@@ -137,9 +137,9 @@
           }).join('') + '</tbody></table>';
       }
 async function getSectionPlayerIds() {
-        var result = await sbClient.from('public_profiles').select('id, full_name, username').or(SECTION_FILTER);
+        var result = await sbClient.from('public_profiles').select('id, full_name, username, is_bye').or(SECTION_FILTER);
         var map = {};
-        (result.data || []).forEach(function(p) { map[p.id] = p.full_name || p.username || 'Unknown'; });
+        (result.data || []).forEach(function(p) { if (!p.is_bye) { map[p.id] = p.full_name || p.username || 'Unknown'; } });
         return map;
       }
       async function loadProfileFieldBoard(field, valueLabel, formatFn) {
