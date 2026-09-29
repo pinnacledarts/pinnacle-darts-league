@@ -207,7 +207,9 @@ var playerCount = playerCounts[parseInt(l.id)] || 0;
   var gamesProgressRow = totalGames > 0 ? '<div class="meta-row"><i class="ti ti-chart-bar"></i><strong>Games:</strong> ' + playedGames + ' / ' + totalGames + '</div>' : '';
   var hasJoined = joinedLeagues.indexOf(l.id) > -1;
 var joinBtn = '';
-if (currentUserId) {
+if (status === 'live') {
+  joinBtn = hasJoined ? '<button class="btn-join joined" disabled>League in progress</button>' : '<button class="btn-join" disabled style="opacity:0.5;cursor:default;">Already started</button>';
+} else if (currentUserId) {
   if (hasJoined) {
     joinBtn = '<button class="btn-join" onclick="leaveLeague(' + l.id + ', this)">Leave</button>';
   } else if (isFull) {
