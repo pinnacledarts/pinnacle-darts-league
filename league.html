@@ -118,6 +118,13 @@
       var profileMap = {};
       var currentDivision = null;
       var allDivisions = [];
+      var fixtureScope = 'all';
+      function setFixtureScope(scope, btn) {
+        fixtureScope = scope;
+        document.querySelectorAll('#fixtureScopeToggle .round-tab').forEach(function(t) { t.classList.remove('active'); });
+        btn.classList.add('active');
+        loadFixtures();
+      }
 function buildWhatsAppLink(phone) {
   if (!phone) { return null; }
   var hasPlus = phone.trim().startsWith('+');
@@ -169,7 +176,12 @@ function buildWhatsAppLink(phone) {
           '</div>' +
           divisionSelectorHtml +
           '<div id="tab-standings" class="tab-content active"><div id="standingsContent"><p class="loading">Loading...</p></div></div>' +
-          '<div id="tab-fixtures" class="tab-content"><div id="fixturesContent"><p class="loading">Loading...</p></div></div>' +
+          '<div id="tab-fixtures" class="tab-content">' +
+          '<div class="round-tabs" id="fixtureScopeToggle">' +
+          '<button class="round-tab active" onclick="setFixtureScope(\'all\', this)">All Fixtures</button>' +
+          '<button class="round-tab" onclick="setFixtureScope(\'mine\', this)">My Fixtures</button>' +
+          '</div>' +
+          '<div id="fixturesContent"><p class="loading">Loading...</p></div></div>' +
           (leagueData.playoffs ? '<div id="tab-playoffs" class="tab-content"><div id="playoffsContent"><p class="loading">Loading...</p></div></div>' : '');
         if (leagueData.average_split) {
           await setupDivisionSelector();
@@ -291,7 +303,13 @@ function groupMatchesByWeek(matches) {
         var result = await query;
         var container = document.getElementById('fixturesContent');
         if (!result.data || !result.data.length) { container.innerHTML = '<p class="coming-soon">Fixtures have not been generated yet.</p>'; return; }
-        container.innerHTML = groupMatchesByWeek(result.data);
+        var toggleEl = document.getElementById('fixtureScopeToggle');
+        if (toggleEl) { toggleEl.style.display = currentUserId ? 'flex' : 'none'; }
+        var matches = (fixtureScope === 'mine' && currentUserId)
+          ? result.data.filter(function(m) { return m.player1_id === currentUserId || m.player2_id === currentUserId; })
+          : result.data;
+        if (!matches.length) { container.innerHTML = '<p class="coming-soon">You have no fixtures in this league.</p>'; return; }
+        container.innerHTML = groupMatchesByWeek(matches);
       }
       function renderFixtureItem(m) {
         var p1obj = profileMap[m.player1_id];
