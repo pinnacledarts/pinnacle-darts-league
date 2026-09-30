@@ -141,6 +141,23 @@ main { padding: 0 20px 32px; }
       var profileMapAdmin = {};
       var playoffRoundOrder = ['Semi Final', 'Final'];
       var BYE_PROFILE_IDS = ['00000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-000000000002','00000000-0000-0000-0000-000000000003','00000000-0000-0000-0000-000000000004','00000000-0000-0000-0000-000000000005','00000000-0000-0000-0000-000000000006','00000000-0000-0000-0000-000000000007','00000000-0000-0000-0000-000000000008'];
+      function isUsernameMode() {
+        if (!leagueData) { return false; }
+        if (leagueData.section === 'academy') { return false; }
+        if (leagueData.section === 'north_america') { return true; }
+        return leagueData.platform !== 'in_person';
+      }
+      function formatDisplayName(fullName, username) {
+        if (!leagueData) { return fullName || username || 'Unknown'; }
+        if (leagueData.section === 'academy') {
+          if (!fullName) { return username || 'Unknown'; }
+          var parts = fullName.trim().split(/\s+/);
+          if (parts.length < 2) { return parts[0]; }
+          return parts[0] + ' ' + parts[parts.length - 1][0].toUpperCase() + '.';
+        }
+        if (isUsernameMode()) { return username || fullName || 'Unknown'; }
+        return fullName || username || 'Unknown';
+      }
       if (document.referrer.includes('academy.html')) {
         var sBtn = document.getElementById('switchBtn');
         if (sBtn) { sBtn.textContent = 'Switch to Online'; sBtn.href = 'index.html'; }
@@ -158,7 +175,7 @@ main { padding: 0 20px 32px; }
         leagueData = result.data;
         var profilesResult = await sbClient.from('profiles').select('id, full_name, username, starter_average, average').or('is_bye.is.null,is_bye.eq.false').order('full_name');
         allProfiles = profilesResult.data || [];
-        allProfiles.forEach(function(p) { profileMapAdmin[p.id] = p.full_name || p.username || 'Unknown'; });
+        allProfiles.forEach(function(p) { profileMapAdmin[p.id] = formatDisplayName(p.full_name, p.username); });
         BYE_PROFILE_IDS.forEach(function(id) { profileMapAdmin[id] = 'BYE'; });
         var playoffsTab = leagueData.playoffs ? '<button class="tab" onclick="showTab(\'playoffs\', event)">Playoffs</button>' : '';
         document.getElementById('pageContent').innerHTML =
@@ -290,7 +307,8 @@ main { padding: 0 20px 32px; }
           return;
         }
         checklist.innerHTML = available.map(function(p) {
-          var label = (p.full_name || p.username || 'Unknown') + (p.username ? ' (@' + p.username + ')' : '');
+          var displayName = formatDisplayName(p.full_name, p.username);
+          var label = displayName + ((p.username && !isUsernameMode()) ? ' (@' + p.username + ')' : '');
           return '<div class="player-checklist-item" onclick="toggleCheck(\'' + p.id + '\')">' +
             '<input type="checkbox" id="chk_' + p.id + '" value="' + p.id + '" onclick="event.stopPropagation(); updateSelectedCount();" />' +
             '<label for="chk_' + p.id + '">' + label + '</label>' +
@@ -316,7 +334,7 @@ main { padding: 0 20px 32px; }
         var noAverage = [];
         for (var c = 0; c < checked.length; c++) {
           var p = allProfiles.find(function(pr) { return pr.id === checked[c].value; });
-          if (p && !p.average && !p.starter_average) { noAverage.push(p.full_name || p.username || 'Unknown'); }
+          if (p && !p.average && !p.starter_average) { noAverage.push(formatDisplayName(p.full_name, p.username)); }
         }
         if (noAverage.length) {
           showMsg('add-player-error', 'These players have no average set yet, so they can\'t be added: ' + noAverage.join(', ') + '. Set a Starter Average for them first.');
@@ -376,9 +394,9 @@ main { padding: 0 20px 32px; }
             html += '<h4 style="margin:16px 0 8px;">Division ' + dk + '</h4><table><thead><tr><th>Player</th><th>Average</th><th>Check-in</th><th>Payment</th></tr></thead><tbody>' +
               members.map(function(m) {
                 var profile = m.profiles || {};
-                var name = profile.full_name || profile.username || 'Unknown';
+                var isBye = !!profile.is_bye;
+                var name = isBye ? 'BYE' : formatDisplayName(profile.full_name, profile.username);
                 var avg = getEffectiveAvg(profile);
-                var isBye = name === 'BYE';
                 var checkinCell = isBye ? '-' : (checkinEnabled
                   ? '<button class="btn-small" onclick="toggleLeagueCheckIn(' + m.id + ', ' + m.checked_in + ')">' + (m.checked_in ? '✓ Checked In' : 'Check In') + '</button>'
                   : '-');
@@ -400,7 +418,7 @@ main { padding: 0 20px 32px; }
             html += '<h4 style="margin:16px 0 8px;">Division ' + (idx + 1) + ' (Preview)</h4><table><thead><tr><th>Player</th><th>Average</th><th>Check-in</th><th>Payment</th></tr></thead><tbody>' +
               g.map(function(p) {
                 var profile = p.profiles || {};
-                var name = profile.full_name || profile.username || 'Unknown';
+                var name = formatDisplayName(profile.full_name, profile.username);
                 var avg = getEffectiveAvg(profile);
                 var checkinCell = checkinEnabled
                   ? '<button class="btn-small" onclick="toggleLeagueCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? '✓ Checked In' : 'Check In') + '</button>'
@@ -722,7 +740,7 @@ function groupMatchesByWeek(matches) {
       async function computeStandingsForPlayers(players, matches) {
         return players.map(function(p) {
           var profile = p.profiles || {};
-          var name = profile.full_name || profile.username || 'Unknown';
+          var name = formatDisplayName(profile.full_name, profile.username);
           var played = 0, won = 0, lost = 0, pts = 0, legsFor = 0, legsAgainst = 0;
           matches.forEach(function(m) {
             if (m.status !== 'completed') { return; }
