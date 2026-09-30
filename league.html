@@ -142,6 +142,28 @@ function buildWhatsAppLink(phone) {
         if (!link) { return ''; }
         return '<a href="' + link + '" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:4px;background-color:#25D366;color:#ffffff;padding:4px 10px;border-radius:20px;font-size:0.8em;text-decoration:none;font-weight:bold;">💬 WhatsApp</a>';
       }
+      function isUsernameMode() {
+        if (!leagueData) { return false; }
+        if (leagueData.section === 'academy') { return false; }
+        if (leagueData.section === 'north_america') { return true; }
+        return leagueData.platform !== 'in_person';
+      }
+      function formatDisplayName(fullName, username) {
+        if (!leagueData) { return fullName || username || 'Unknown'; }
+        if (leagueData.section === 'academy') {
+          if (!fullName) { return username || 'Unknown'; }
+          var parts = fullName.trim().split(/\s+/);
+          if (parts.length < 2) { return parts[0]; }
+          return parts[0] + ' ' + parts[parts.length - 1][0].toUpperCase() + '.';
+        }
+        if (isUsernameMode()) { return username || fullName || 'Unknown'; }
+        return fullName || username || 'Unknown';
+      }
+      function getDisplayName(playerId) {
+        var p = profileMap[playerId];
+        if (!p) { return 'Unknown'; }
+        return formatDisplayName(p.full_name, p.username);
+      }
       async function loadLeague() {
         var params = new URLSearchParams(window.location.search);
         leagueId = params.get('id');
@@ -151,7 +173,7 @@ function buildWhatsAppLink(phone) {
         var profilesResult = await sbClient.from('profiles').select('id, full_name, username, phone');
         if (profilesResult.data) {
           profilesResult.data.forEach(function(p) {
-            profileMap[p.id] = { name: p.full_name || p.username || 'Unknown', phone: p.phone || null };
+            profileMap[p.id] = { full_name: p.full_name || null, username: p.username || null, phone: p.phone || null };
           });
         }
         var result = await sbClient.from('leagues').select('*').eq('id', leagueId).single();
@@ -227,7 +249,7 @@ function buildWhatsAppLink(phone) {
         if (!players.length) { container.innerHTML = '<p class="coming-soon">No players registered yet.</p>'; return; }
         var standings = players.map(function(p) {
           var profile = p.profiles || {};
-          var name = profile.full_name || profile.username || 'Unknown';
+          var name = formatDisplayName(profile.full_name, profile.username);
           var played = 0, won = 0, lost = 0, pts = 0, legsFor = 0, legsAgainst = 0;
           matches.forEach(function(m) {
             if (m.status !== 'completed') { return; }
@@ -312,10 +334,8 @@ function groupMatchesByWeek(matches) {
         container.innerHTML = groupMatchesByWeek(matches);
       }
       function renderFixtureItem(m) {
-        var p1obj = profileMap[m.player1_id];
-        var p2obj = profileMap[m.player2_id];
-        var p1name = p1obj ? p1obj.name : 'Unknown';
-        var p2name = p2obj ? p2obj.name : 'Unknown';
+        var p1name = m.player1_id ? getDisplayName(m.player1_id) : 'Unknown';
+        var p2name = m.player2_id ? getDisplayName(m.player2_id) : 'Unknown';
         var whatsAppHtml = '';
         if (currentUserId === m.player1_id) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
         else if (currentUserId === m.player2_id) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
@@ -392,8 +412,8 @@ function groupMatchesByWeek(matches) {
         var roundOrder = ['Semi Final', 'Final'];
         container.innerHTML = roundOrder.filter(function(r) { return rounds[r]; }).map(function(r) {
           var matchesHtml = rounds[r].map(function(m) {
-            var p1name = m.player1_id ? (profileMap[m.player1_id] ? profileMap[m.player1_id].name : 'Unknown') : 'TBD';
-            var p2name = m.player2_id ? (profileMap[m.player2_id] ? profileMap[m.player2_id].name : 'Unknown') : 'TBD';
+            var p1name = m.player1_id ? getDisplayName(m.player1_id) : 'TBD';
+            var p2name = m.player2_id ? getDisplayName(m.player2_id) : 'TBD';
             var playoffWhatsAppHtml = '';
             if (m.player1_id && m.player2_id) {
               if (currentUserId === m.player1_id) { playoffWhatsAppHtml = whatsAppButtonHtml(m.player2_id); }
