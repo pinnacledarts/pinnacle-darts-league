@@ -449,7 +449,12 @@
       let allAcademyLeagues = [];
       let isCurrentUserAdmin = false;
       let academyNewsLikes = {};
-      
+      function formatDisplayName(fullName, username) {
+        if (!fullName) { return username || 'Unknown'; }
+        var parts = fullName.trim().split(/\s+/);
+        if (parts.length < 2) { return parts[0]; }
+        return parts[0] + ' ' + parts[parts.length - 1][0].toUpperCase() + '.';
+      }
 function formatDrillTime(totalSeconds) {
   if (totalSeconds == null) return '-';
   var mins = Math.floor(totalSeconds / 60);
@@ -807,7 +812,7 @@ function formatDrillTime(totalSeconds) {
         const sessions = sessionsResult.data || [];
         const standings = groupPlayers.map(gp => {
           const profile = gp.profiles || {};
-          const name = profile.full_name || profile.username || 'Unknown';
+          const name = formatDisplayName(profile.full_name, profile.username);
           const playerSessions = sessions.filter(s => s.player_id === gp.player_id);
           const totals = {
             attendance: 0, attitude: 0, matchWin: 0, breakThrow: 0,
