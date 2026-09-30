@@ -62,10 +62,11 @@
       th abbr { text-decoration: none; cursor: help; border-bottom: 1px dotted #ffffff; }
       td { padding: 10px 8px; border-bottom: 1px solid #f0f0f0; font-size: 0.9em; color: var(--pd-text-dark); }
       tr:nth-child(4n+1), tr:nth-child(4n+2) { background-color: #f7f7f7; }
-      th:last-child, td:last-child { position: sticky; right: 0; background-color: #ffffff; box-shadow: -2px 0 4px rgba(0,0,0,0.1); }
-      th:last-child { background-color: var(--pd-text-dark); }
-      th:nth-child(2), td:nth-child(2) { position: sticky; left: 0; background-color: #ffffff; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
-      th:nth-child(2) { background-color: var(--pd-text-dark); }
+      th:nth-child(1), td:nth-child(1) { position: sticky; left: 0; z-index: 2; background-color: #ffffff; width: 42px; }
+      th:nth-child(2), td:nth-child(2) { position: sticky; left: 42px; z-index: 2; background-color: #ffffff; box-shadow: 2px 0 4px rgba(0,0,0,0.1); }
+      th:nth-child(1), th:nth-child(2) { background-color: var(--pd-text-dark); z-index: 3; }
+      tr:nth-child(4n+1) td:nth-child(1), tr:nth-child(4n+1) td:nth-child(2),
+      tr:nth-child(4n+2) td:nth-child(1), tr:nth-child(4n+2) td:nth-child(2) { background-color: #f7f7f7; }
       .key { font-size: 0.8em; color: var(--pd-text-muted); margin-top: 12px; border-top: 1px solid var(--pd-border); padding-top: 12px; }
       .key span { margin-right: 16px; display: inline-block; }
       .search-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; margin-bottom: 20px; }
@@ -234,6 +235,7 @@
             <tr>
               <th>Pos</th>
               <th>Player</th>
+              <th><abbr title="Total Points">Total</abbr></th>
               <th><abbr title="Attendance">Att</abbr></th>
               <th><abbr title="Attitude">Atd</abbr></th>
               <th><abbr title="Match Win">MW</abbr></th>
@@ -242,10 +244,9 @@
               <th><abbr title="Over 100 Checkout Within Session">100+</abbr></th>
               <th><abbr title="171+ Scored in a Match">171+</abbr></th>
               <th><abbr title="Bonus Points">Bonus</abbr></th>
-              <th><abbr title="Total Points">Total</abbr></th>
             </tr>
           </thead>
-          <tbody id="academyStandingsBody"><tr><td colspan="10" class="loading">Loading...</td></tr></tbody>
+          <tbody id="academyStandingsBody"><tr><td colspan="11" class="loading">Loading...</td></tr></tbody>
         </table>
         <div class="key">
           <span><strong>Att</strong> = Attendance</span>
@@ -803,7 +804,7 @@ function formatDrillTime(totalSeconds) {
         const tbody = document.getElementById('academyStandingsBody');
         loadDivisionSponsors(leagueId);
         if (!leagueId) {
-          tbody.innerHTML = '<tr><td colspan="10" class="loading">No academy groups yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="11" class="loading">No academy groups yet.</td></tr>';
           return;
         }
         const linkResult = await sbClient.from('academy_league_players').select('player_id, profiles(full_name, username)').eq('academy_league_id', leagueId);
@@ -832,11 +833,11 @@ function formatDrillTime(totalSeconds) {
           return { name, ...totals, total };
         }).sort((a, b) => b.total - a.total);
         if (!standings.length) {
-          tbody.innerHTML = '<tr><td colspan="10" class="loading">No players in this group yet.</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="11" class="loading">No players in this group yet.</td></tr>';
           return;
         }
         tbody.innerHTML = standings.map((p, i) => {
-          return `<tr><td>${i + 1}</td><td>${p.name}</td><td>${p.attendance}</td><td>${p.attitude}</td><td>${p.matchWin}</td><td>${p.breakThrow}</td><td>${p.nineDart}</td><td>${p.over100}</td><td>${p.score171}</td><td>${p.bonus}</td><td><strong>${p.total}</strong></td></tr>`;
+          return `<tr><td>${i + 1}</td><td>${p.name}</td><td><strong>${p.total}</strong></td><td>${p.attendance}</td><td>${p.attitude}</td><td>${p.matchWin}</td><td>${p.breakThrow}</td><td>${p.nineDart}</td><td>${p.over100}</td><td>${p.score171}</td><td>${p.bonus}</td></tr>`;
         }).join('');
       }
       async function loadAcademyNews() {
