@@ -141,6 +141,23 @@ main { padding: 0 20px 32px; }
       var existingPlayerIds = [];
       var profileMapAdmin = {};
       var roundOrderFull = ['Round of 64', 'Round of 32', 'Round of 16', 'Quarter Final', 'Semi Final', 'Final'];
+      function isUsernameMode() {
+        if (!tournamentData) { return false; }
+        if (tournamentData.section === 'academy') { return false; }
+        if (tournamentData.section === 'north_america') { return true; }
+        return tournamentData.platform !== 'in_person';
+      }
+      function formatDisplayName(fullName, username) {
+        if (!tournamentData) { return fullName || username || 'Unknown'; }
+        if (tournamentData.section === 'academy') {
+          if (!fullName) { return username || 'Unknown'; }
+          var parts = fullName.trim().split(/\s+/);
+          if (parts.length < 2) { return parts[0]; }
+          return parts[0] + ' ' + parts[parts.length - 1][0].toUpperCase() + '.';
+        }
+        if (isUsernameMode()) { return username || fullName || 'Unknown'; }
+        return fullName || username || 'Unknown';
+      }
       var cachedBracketsByType = {};
 async function processCheckIns() {
   if (!tournamentData.checkin_start || !tournamentData.checkin_end) {
@@ -248,7 +265,7 @@ if (tournamentData.section === 'academy') {
 }
 var profilesResult = await profilesQuery;
 allProfiles = profilesResult.data || [];
-        allProfiles.forEach(function(p) { profileMapAdmin[p.id] = p.full_name || p.username || 'Unknown'; });
+        allProfiles.forEach(function(p) { profileMapAdmin[p.id] = formatDisplayName(p.full_name, p.username); });
         var isGroupKnockout = tournamentData.format === 'group_knockout';
         var isSingleElim = tournamentData.format === 'single_elimination' || tournamentData.format === 'single_elimination_b';
         var groupsTab = isGroupKnockout ? '<button class="tab" onclick="showTab(\'groups\', event)">Groups & Scores</button>' : '';
@@ -409,7 +426,8 @@ showMsg('details-success', 'Details saved successfully! Refresh the page if you 
           return;
         }
         checklist.innerHTML = available.map(function(p) {
-          var label = (p.full_name || p.username || 'Unknown') + (p.username ? ' (@' + p.username + ')' : '');
+          var displayName = formatDisplayName(p.full_name, p.username);
+          var label = displayName + ((p.username && !isUsernameMode()) ? ' (@' + p.username + ')' : '');
           return '<div class="player-checklist-item" onclick="toggleCheck(\'' + p.id + '\')">' +
             '<input type="checkbox" id="chk_' + p.id + '" value="' + p.id + '" onclick="event.stopPropagation(); updateSelectedCount();" />' +
             '<label for="chk_' + p.id + '">' + label + '</label>' +
@@ -474,8 +492,8 @@ async function loadPlayers() {
   container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th>' + statusHeader + '<th>Payment</th><th>Actions</th></tr></thead><tbody>' +
     result.data.map(function(p) {
       var profile = p.profiles || {};
-      var name = profile.full_name || profile.username || 'Unknown';
-      var username = profile.username ? '@' + profile.username : '-';
+      var name = formatDisplayName(profile.full_name, profile.username);
+      var username = (profile.username && !isUsernameMode()) ? '@' + profile.username : '-';
      var reserveLabel = p.is_reserve ? '<span style="color:#888;">Reserve</span> ' : '';
 var checkedInLabel = p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Checked In</span>' : '<span style="color:#cc0000;">Not Checked In</span>';
 var statusLabel = reserveLabel + checkedInLabel;
@@ -550,7 +568,7 @@ async function toggleCheckIn(rowId, currentStatus) {
         container.innerHTML = groupsResult.data.map(function(group) {
           var groupPlayers = group.tournament_group_players || [];
           var playerMap = {};
-          groupPlayers.forEach(function(gp) { var profile = gp.profiles || {}; playerMap[gp.player_id] = profile.full_name || profile.username || 'Unknown'; });
+          groupPlayers.forEach(function(gp) { var profile = gp.profiles || {}; playerMap[gp.player_id] = formatDisplayName(profile.full_name, profile.username); });
           var standings = groupPlayers.map(function(gp) {
             var played = 0, won = 0, lost = 0, pts = 0;
             matches.forEach(function(m) {
