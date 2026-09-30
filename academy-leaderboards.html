@@ -117,6 +117,12 @@
     </main>
     <script>
       var SECTION_FILTER = 'access.eq.academy,access.eq.both';
+      function formatDisplayName(fullName, username) {
+        if (!fullName) { return username || 'Unknown'; }
+        var parts = fullName.trim().split(/\s+/);
+        if (parts.length < 2) { return parts[0]; }
+        return parts[0] + ' ' + parts[parts.length - 1][0].toUpperCase() + '.';
+      }
       function onBoardChange() {
         var type = document.getElementById('boardSelect').value;
         document.getElementById('drillSelect').style.display = type === 'drill' ? '' : 'none';
@@ -139,7 +145,7 @@
 async function getSectionPlayerIds() {
         var result = await sbClient.from('public_profiles').select('id, full_name, username, is_bye').or(SECTION_FILTER);
         var map = {};
-        (result.data || []).forEach(function(p) { if (!p.is_bye) { map[p.id] = p.full_name || p.username || 'Unknown'; } });
+        (result.data || []).forEach(function(p) { if (!p.is_bye) { map[p.id] = formatDisplayName(p.full_name, p.username); } });
         return map;
       }
       async function loadProfileFieldBoard(field, valueLabel, formatFn) {
