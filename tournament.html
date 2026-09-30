@@ -160,8 +160,30 @@ function buildWhatsAppLink(phone) {
   }
   return 'https://wa.me/' + digits;
 }
-      function whatsAppButtonHtml(opponentId) {
-        var opponent = profileMap[opponentId];
+function isUsernameMode() {
+  if (!tournamentData) { return false; }
+  if (tournamentData.section === 'academy') { return false; }
+  if (tournamentData.section === 'north_america') { return true; }
+  return tournamentData.platform !== 'in_person';
+}
+function formatDisplayName(fullName, username) {
+  if (!tournamentData) { return fullName || username || 'Unknown'; }
+  if (tournamentData.section === 'academy') {
+    if (!fullName) { return username || 'Unknown'; }
+    var parts = fullName.trim().split(/\s+/);
+    if (parts.length < 2) { return parts[0]; }
+    return parts[0] + ' ' + parts[parts.length - 1][0].toUpperCase() + '.';
+  }
+  if (isUsernameMode()) { return username || fullName || 'Unknown'; }
+  return fullName || username || 'Unknown';
+}
+function getDisplayName(playerId) {
+  var p = profileMap[playerId];
+  if (!p) { return 'Unknown'; }
+  return formatDisplayName(p.full_name, p.username);
+}
+function whatsAppButtonHtml(opponentId) {
+  var opponent = profileMap[opponentId];
         if (!opponent) { return ''; }
         var link = buildWhatsAppLink(opponent.phone);
         if (!link) { return ''; }
@@ -180,7 +202,7 @@ function buildWhatsAppLink(phone) {
 var profilesResult = await sbClient.from('profiles').select('id, full_name, username, phone, avatar_url');
 if (profilesResult.data) {
   profilesResult.data.forEach(function(p) {
-    profileMap[p.id] = { name: p.full_name || p.username || 'Unknown', phone: p.phone || null, username: p.username || null, avatar_url: p.avatar_url || null };
+    profileMap[p.id] = { full_name: p.full_name || null, phone: p.phone || null, username: p.username || null, avatar_url: p.avatar_url || null };
   });
 }
         var result = await sbClient.from('tournaments').select('*').eq('id', tournamentId).single();
@@ -245,9 +267,9 @@ async function loadPlayers() {
   }
   function renderPlayerRow(p) {
     var profile = p.profiles || {};
-    var name = profile.full_name || profile.username || 'Unknown';
-    var username = profile.username ? '@' + profile.username : '';
-    var initial = name[0].toUpperCase();
+    var name = formatDisplayName(profile.full_name, profile.username);
+    var username = (!isUsernameMode() && profile.username) ? '@' + profile.username : '';
+    var initial = (name[0] || '?').toUpperCase();
     var removeBtn = isAdmin ? '<button class="btn-remove" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button>' : '';
     var checkinHtml = '';
     if (p.checked_in) {
@@ -282,7 +304,7 @@ async function doCheckIn(rowId) {
   container.innerHTML = groupsResult.data.map(function(group) {
     var groupPlayers = group.tournament_group_players || [];
     var playerMap = {};
-    groupPlayers.forEach(function(gp) { var profile = gp.profiles || {}; playerMap[gp.player_id] = profile.full_name || profile.username || 'Unknown'; });
+    groupPlayers.forEach(function(gp) { var profile = gp.profiles || {}; playerMap[gp.player_id] = formatDisplayName(profile.full_name, profile.username); });
     var standings = groupPlayers.map(function(gp) {
       var played = 0, won = 0, lost = 0, pts = 0;
       matches.forEach(function(m) {
@@ -391,8 +413,8 @@ container.innerHTML = toggleHtml + '<div id="bracketSectionContent"></div>';
       }
       function buildWinnerCardHtml(playerId, label) {
         var p = profileMap[playerId];
-        var name = p ? p.name : 'Unknown';
-        var username = p && p.username ? '@' + p.username : '';
+        var name = p ? formatDisplayName(p.full_name, p.username) : 'Unknown';
+        var username = (p && p.username && !isUsernameMode()) ? '@' + p.username : '';
         var avatarInner = p && p.avatar_url ? '' : (name[0] || '?').toUpperCase();
         var avatarStyle = p && p.avatar_url ? ' style="background-image:url(' + p.avatar_url + ');"' : '';
         return '<div class="winner-card">' +
@@ -465,8 +487,8 @@ if (!cardsHtml) { return; }
   var contentHtml = roundsPresent.map(function(r, i) {
     var rMatches = rounds[r];
     var matchesHtml = rMatches.map(function(m) {
-      var p1name = m.player1_id ? (profileMap[m.player1_id] ? profileMap[m.player1_id].name : 'Unknown') : 'TBD';
-      var p2name = m.player2_id ? (profileMap[m.player2_id] ? profileMap[m.player2_id].name : 'Unknown') : 'TBD';
+      var p1name = m.player1_id ? getDisplayName(m.player1_id) : 'TBD';
+      var p2name = m.player2_id ? getDisplayName(m.player2_id) : 'TBD';
       var p1winner = m.status === 'completed' && m.player1_score > m.player2_score;
       var p2winner = m.status === 'completed' && m.player2_score > m.player1_score;
       var isP1 = currentUserId === m.player1_id;
