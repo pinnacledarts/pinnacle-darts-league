@@ -63,8 +63,8 @@
       th abbr { text-decoration: none; cursor: help; border-bottom: 1px dotted #ffffff; }
       td { padding: 10px 8px; border-bottom: 1px solid #f0f0f0; font-size: 0.9em; color: var(--pd-text-dark); background-color: #ffffff; }
       tr:nth-child(4n+1) td, tr:nth-child(4n+2) td { background-color: #f7f7f7; }
-      th:nth-child(1), td:nth-child(1) { width: 42px; position: sticky; left: 0; z-index: 2; }
-      th:nth-child(2), td:nth-child(2) { width: 140px; position: sticky; left: 42px; z-index: 2; box-shadow: 2px 0 6px rgba(0,0,0,0.15); }
+      th:nth-child(1), td:nth-child(1) { width: 42px; position: sticky; left: 0; z-index: 2; transform: translateZ(0); -webkit-transform: translateZ(0); }
+      th:nth-child(2), td:nth-child(2) { width: 140px; position: sticky; left: 42px; z-index: 2; box-shadow: 2px 0 6px rgba(0,0,0,0.15); transform: translateZ(0); -webkit-transform: translateZ(0); }
       th:nth-child(3), td:nth-child(3) { width: 64px; }
       th:nth-child(4), td:nth-child(4), th:nth-child(5), td:nth-child(5), th:nth-child(6), td:nth-child(6), th:nth-child(7), td:nth-child(7), th:nth-child(8), td:nth-child(8), th:nth-child(9), td:nth-child(9), th:nth-child(10), td:nth-child(10), th:nth-child(11), td:nth-child(11) { width: 60px; }
       th:nth-child(1), th:nth-child(2) { background-color: var(--pd-text-dark); z-index: 3; }
@@ -230,7 +230,7 @@
           <select id="academyLeagueViewSelect" onchange="renderAcademyStandings()" style="width:100%;padding:10px 14px;border:1px solid var(--pd-border-strong);border-radius:var(--pd-radius-btn);font-size:1em;background-color:#f9f9f9;color:var(--pd-text-dark);"></select>
         </div>
         <div id="divisionSponsorLogos" style="display:flex;gap:16px;align-items:center;justify-content:center;margin-bottom:20px;flex-wrap:wrap;"></div>
-        <div class="card-panel" style="background-color:var(--pd-surface);border-radius:var(--pd-radius-card);box-shadow:var(--pd-shadow-card);padding:20px;overflow-x:auto;">
+        <div class="card-panel" style="background-color:var(--pd-surface);border-radius:var(--pd-radius-card);box-shadow:var(--pd-shadow-card);padding:20px;overflow-x:auto;-webkit-overflow-scrolling:touch;">
         <table>
           <thead>
             <tr>
