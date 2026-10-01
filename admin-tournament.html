@@ -424,7 +424,10 @@ tournamentData.max_players = update.max_players;
 tournamentData.checkin_start = update.checkin_start;
 tournamentData.checkin_end = update.checkin_end;
 tournamentData.bye_scoreline = update.bye_scoreline;
-showMsg('details-success', 'Details saved successfully! Refresh the page if you changed Format or Average Split to update the tabs shown.');
+var promotedCount = await promoteReserves(tournamentId);
+var promotionNote = promotedCount > 0 ? ' ' + promotedCount + ' reserve(s) promoted into the new open spot(s).' : '';
+showMsg('details-success', 'Details saved successfully!' + promotionNote + ' Refresh the page if you changed Format or Average Split to update the tabs shown.');
+await loadPlayers();
       }
       function buildPlayerChecklist(filter) {
         var checklist = document.getElementById('playerChecklist');
