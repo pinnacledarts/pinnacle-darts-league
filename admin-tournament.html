@@ -378,6 +378,21 @@ allProfiles = profilesResult.data || [];
         loadKnockouts();
         restoreActiveTab();
       }
+async function promoteReserves(tId) {
+  var tResult = await sbClient.from('tournaments').select('max_players').eq('id', tId).single();
+  var maxPlayers = tResult.data ? tResult.data.max_players : null;
+  if (!maxPlayers) { return 0; }
+  var mainCountResult = await sbClient.from('tournament_players').select('id').eq('tournament_id', tId).eq('is_reserve', false);
+  var mainCount = mainCountResult.data ? mainCountResult.data.length : 0;
+  var spotsOpen = maxPlayers - mainCount;
+  if (spotsOpen <= 0) { return 0; }
+  var reservesResult = await sbClient.from('tournament_players').select('id').eq('tournament_id', tId).eq('is_reserve', true).order('created_at', { ascending: true }).limit(spotsOpen);
+  var reserves = reservesResult.data || [];
+  for (var i = 0; i < reserves.length; i++) {
+    await sbClient.from('tournament_players').update({ is_reserve: false }).eq('id', reserves[i].id);
+  }
+  return reserves.length;
+}
 function toggleDetCheckinFields() {
   var noCheckin = document.getElementById('detNoCheckin').checked;
   document.getElementById('detCheckinFields').style.display = noCheckin ? 'none' : 'grid';
