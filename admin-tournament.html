@@ -378,21 +378,6 @@ allProfiles = profilesResult.data || [];
         loadKnockouts();
         restoreActiveTab();
       }
-async function promoteReserves(tId) {
-  var tResult = await sbClient.from('tournaments').select('max_players').eq('id', tId).single();
-  var maxPlayers = tResult.data ? tResult.data.max_players : null;
-  if (!maxPlayers) { return 0; }
-  var mainCountResult = await sbClient.from('tournament_players').select('id').eq('tournament_id', tId).eq('is_reserve', false);
-  var mainCount = mainCountResult.data ? mainCountResult.data.length : 0;
-  var spotsOpen = maxPlayers - mainCount;
-  if (spotsOpen <= 0) { return 0; }
-  var reservesResult = await sbClient.from('tournament_players').select('id').eq('tournament_id', tId).eq('is_reserve', true).order('created_at', { ascending: true }).limit(spotsOpen);
-  var reserves = reservesResult.data || [];
-  for (var i = 0; i < reserves.length; i++) {
-    await sbClient.from('tournament_players').update({ is_reserve: false }).eq('id', reserves[i].id);
-  }
-  return reserves.length;
-}
 function toggleDetCheckinFields() {
   var noCheckin = document.getElementById('detNoCheckin').checked;
   document.getElementById('detCheckinFields').style.display = noCheckin ? 'none' : 'grid';
@@ -424,10 +409,7 @@ tournamentData.max_players = update.max_players;
 tournamentData.checkin_start = update.checkin_start;
 tournamentData.checkin_end = update.checkin_end;
 tournamentData.bye_scoreline = update.bye_scoreline;
-var promotedCount = await promoteReserves(tournamentId);
-var promotionNote = promotedCount > 0 ? ' ' + promotedCount + ' reserve(s) promoted into the new open spot(s).' : '';
-showMsg('details-success', 'Details saved successfully!' + promotionNote + ' Refresh the page if you changed Format or Average Split to update the tabs shown.');
-await loadPlayers();
+showMsg('details-success', 'Details saved successfully! Refresh the page if you changed Format or Average Split to update the tabs shown.');
       }
       function buildPlayerChecklist(filter) {
         var checklist = document.getElementById('playerChecklist');
@@ -501,38 +483,27 @@ await loadPlayers();
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
 async function loadPlayers() {
-  var result = await sbClient.from('tournament_players').select('id, player_id, checked_in, is_reserve, paid, amount_owed, profiles(full_name, username)').eq('tournament_id', tournamentId).order('created_at');
+  var result = await sbClient.from('tournament_players').select('id, player_id, checked_in, is_reserve, paid, amount_owed, profiles(full_name, username)').eq('tournament_id', tournamentId).order('is_reserve').order('created_at');
   existingPlayerIds = result.data ? result.data.map(function(p) { return p.player_id; }) : [];
   var container = document.getElementById('playersList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
   var checkinEnabled = !!(tournamentData && tournamentData.checkin_start && tournamentData.checkin_end);
-  var mainPlayers = result.data.filter(function(p) { return !p.is_reserve; });
-  var reservePlayers = result.data.filter(function(p) { return p.is_reserve; });
-  function paymentLabelFor(p) {
-    return p.amount_owed > 0
-      ? (p.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid (£' + p.amount_owed + ')</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Pending (£' + p.amount_owed + ')</span>')
-      : '<span style="color:#888;">-</span>';
-  }
-  function nameCells(p, prefix) {
-    var profile = p.profiles || {};
-    var name = formatDisplayName(profile.full_name, profile.username);
-    var username = (profile.username && !isUsernameMode()) ? '@' + profile.username : '-';
-    return '<td>' + prefix + name + '</td><td>' + username + '</td>';
-  }
-  var mainRows = mainPlayers.map(function(p) {
-    var statusCell = checkinEnabled ? '<td>' + (p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Checked In</span>' : '<span style="color:#cc0000;">Not Checked In</span>') + '</td>' : '';
-    var checkinBtn = checkinEnabled ? '<button class="btn-small" onclick="toggleCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? 'Undo Check-in' : 'Check In') + '</button> ' : '';
-    return '<tr>' + nameCells(p, '') + statusCell + '<td>' + paymentLabelFor(p) + '</td><td>' + checkinBtn + '<button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
-  }).join('');
-  var reserveRows = reservePlayers.map(function(p, i) {
-    return '<tr>' + nameCells(p, (i + 1) + '. ') + '<td>' + paymentLabelFor(p) + '</td><td><button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
-  }).join('');
-  var maxText = (tournamentData && tournamentData.max_players) ? ' / ' + tournamentData.max_players : '';
-  container.innerHTML =
-    '<h4 style="margin:16px 0 0;">Players (' + mainPlayers.length + maxText + ')</h4>' +
-    (mainPlayers.length ? '<table><thead><tr><th>Name</th><th>Username</th>' + (checkinEnabled ? '<th>Status</th>' : '') + '<th>Payment</th><th>Actions</th></tr></thead><tbody>' + mainRows + '</tbody></table>' : '<p class="empty-state">No players yet.</p>') +
-    '<h4 style="margin:28px 0 0;">Reserve List (' + reservePlayers.length + ')</h4>' +
-    (reservePlayers.length ? '<table><thead><tr><th>Name</th><th>Username</th><th>Payment</th><th>Actions</th></tr></thead><tbody>' + reserveRows + '</tbody></table>' : '<p class="empty-state">No reserves.</p>');
+  var statusHeader = checkinEnabled ? '<th>Status</th>' : '';
+  container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th>' + statusHeader + '<th>Payment</th><th>Actions</th></tr></thead><tbody>' +
+    result.data.map(function(p) {
+      var profile = p.profiles || {};
+      var name = formatDisplayName(profile.full_name, profile.username);
+      var username = (profile.username && !isUsernameMode()) ? '@' + profile.username : '-';
+     var reserveLabel = p.is_reserve ? '<span style="color:#888;">Reserve</span> ' : '';
+var checkedInLabel = p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Checked In</span>' : '<span style="color:#cc0000;">Not Checked In</span>';
+var statusLabel = reserveLabel + checkedInLabel;
+      var statusCell = checkinEnabled ? '<td>' + statusLabel + '</td>' : '';
+      var paymentLabel = p.amount_owed > 0
+        ? (p.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid (£' + p.amount_owed + ')</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Pending (£' + p.amount_owed + ')</span>')
+        : '<span style="color:#888;">-</span>';
+      var checkinBtn = checkinEnabled ? '<button class="btn-small" onclick="toggleCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? 'Undo Check-in' : 'Check In') + '</button> ' : '';
+      return '<tr><td>' + name + '</td><td>' + username + '</td>' + statusCell + '<td>' + paymentLabel + '</td><td>' + checkinBtn + '<button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
+    }).join('') + '</tbody></table>';
 }
 async function toggleCheckIn(rowId, currentStatus) {
   await sbClient.from('tournament_players').update({ checked_in: !currentStatus }).eq('id', rowId);
@@ -549,7 +520,6 @@ async function toggleCheckIn(rowId, currentStatus) {
           var refundedBalance = currentBalance + parseFloat(entry.amount_owed);
           await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', playerId);
         }
-        await promoteReserves(tournamentId);
         await loadPlayers();
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
@@ -652,11 +622,28 @@ if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2
           var temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
         }
       }
-async function createBracketRounds(players, bracketType) {
-  bracketType = bracketType || 'A';
+function arrangeSlots(players) {
   var paddedLength = 1;
   while (paddedLength < players.length) { paddedLength *= 2; }
-  while (players.length < paddedLength) { players.push(null); }
+  var slots = players.slice();
+  while (slots.length < paddedLength) { slots.push(null); }
+  var clash = false;
+  for (var i = 0; i < slots.length; i += 2) { if (!slots[i] && !slots[i + 1]) { clash = true; } }
+  if (!clash) { return slots; }
+  var real = slots.filter(function (p) { return !!p; });
+  var matches = paddedLength / 2, byes = paddedLength - real.length;
+  var byeAt = {};
+  for (var b = 0; b < byes; b++) { byeAt[Math.floor((b + 0.5) * matches / byes)] = true; }
+  var out = [], idx = 0;
+  for (var m = 0; m < matches; m++) {
+    out.push(real[idx++]);
+    out.push(byeAt[m] ? null : real[idx++]);
+  }
+  return out;
+}
+async function createBracketRounds(players, bracketType) {
+  bracketType = bracketType || 'A';
+  players = arrangeSlots(players);
   var matchCount = players.length / 2;
   var firstRoundName = getRoundName(matchCount);
   var round1Inserted = [];
