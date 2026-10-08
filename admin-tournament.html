@@ -978,6 +978,8 @@ function editKnockoutAvg(matchId, p1Id, p2Id) {
           var loserId = m.player1_score > m.player2_score ? m.player2_id : m.player1_id;
           return { player_id: loserId };
         });
+        losers = losers.filter(function(p) { return !!p; });
+        if (losers.length < 2) { return; }
         await createBracketRounds(losers, plateType);
         showMsg('knockouts-success', 'Round 1 complete! Plate bracket generated.');
       }
