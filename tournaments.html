@@ -152,11 +152,14 @@ async function loadTournaments() {
           document.getElementById('statPlayers').textContent = '0';
           return;
         }
-        var countResult = await sbClient.from('tournament_players').select('tournament_id');
+var countResult = await sbClient.from('tournament_players').select('tournament_id, is_reserve');
         var playerCounts = {};
+        var reserveCounts = {};
         if (countResult.data) {
           countResult.data.forEach(function(row) {
-            playerCounts[parseInt(row.tournament_id)] = (playerCounts[parseInt(row.tournament_id)] || 0) + 1;
+            var tid = parseInt(row.tournament_id);
+            if (row.is_reserve) { reserveCounts[tid] = (reserveCounts[tid] || 0) + 1; }
+            else { playerCounts[tid] = (playerCounts[tid] || 0) + 1; }
           });
         }
         var formatLabels = {
@@ -186,8 +189,9 @@ for (var i = 0; i < result.data.length; i++) {
   var dateStr = t.date ? new Date(t.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'TBC';
   var timeStr = t.time ? ' at ' + t.time : '';
   var playerCount = playerCounts[parseInt(t.id)] || 0;
+  var reserveCount = reserveCounts[parseInt(t.id)] || 0;
   totalPlayersEntered += playerCount;
-  var maxStr = t.max_players ? playerCount + ' / ' + t.max_players + ' players' : playerCount + ' players';
+  var maxStr = t.max_players ? playerCount + ' / ' + t.max_players : '' + playerCount;
   var isFull = t.max_players && playerCount >= t.max_players;
   var hasJoined = joinedTournaments.indexOf(t.id) > -1;
 var joinBtn = '';
@@ -221,7 +225,7 @@ var cardHtml = '<div class="tournament-card' + (t.is_paid ? ' is-paid' : '') + (
     '<div class="meta-row"><i class="ti ti-device-gamepad-2"></i><strong>Platform:</strong> ' + (platformLabels[t.platform] || t.platform || 'TBC') + '</div>' +
     (t.description ? '<p class="desc">' + t.description + '</p>' : '') +
     '<div class="meta-row"><i class="ti ti-users"></i><strong>Players:</strong> ' + maxStr + (isFull ? ' — Full' : '') + '</div>' +
-    '<div class="card-actions">' +
+    (reserveCount > 0 ? '<div class="meta-row"><i class="ti ti-list"></i><strong>Reserve list:</strong> ' + reserveCount + '</div>' : '') +    '<div class="card-actions">' +
     '<a href="tournament.html?id=' + t.id + '" class="btn-view">View</a>' +
     joinBtn +
     '</div>' +
