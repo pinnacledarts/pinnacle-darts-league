@@ -501,27 +501,38 @@ await loadPlayers();
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
 async function loadPlayers() {
-  var result = await sbClient.from('tournament_players').select('id, player_id, checked_in, is_reserve, paid, amount_owed, profiles(full_name, username)').eq('tournament_id', tournamentId).order('is_reserve').order('created_at');
+  var result = await sbClient.from('tournament_players').select('id, player_id, checked_in, is_reserve, paid, amount_owed, profiles(full_name, username)').eq('tournament_id', tournamentId).order('created_at');
   existingPlayerIds = result.data ? result.data.map(function(p) { return p.player_id; }) : [];
   var container = document.getElementById('playersList');
   if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
   var checkinEnabled = !!(tournamentData && tournamentData.checkin_start && tournamentData.checkin_end);
-  var statusHeader = checkinEnabled ? '<th>Status</th>' : '';
-  container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th>' + statusHeader + '<th>Payment</th><th>Actions</th></tr></thead><tbody>' +
-    result.data.map(function(p) {
-      var profile = p.profiles || {};
-      var name = formatDisplayName(profile.full_name, profile.username);
-      var username = (profile.username && !isUsernameMode()) ? '@' + profile.username : '-';
-     var reserveLabel = p.is_reserve ? '<span style="color:#888;">Reserve</span> ' : '';
-var checkedInLabel = p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Checked In</span>' : '<span style="color:#cc0000;">Not Checked In</span>';
-var statusLabel = reserveLabel + checkedInLabel;
-      var statusCell = checkinEnabled ? '<td>' + statusLabel + '</td>' : '';
-      var paymentLabel = p.amount_owed > 0
-        ? (p.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid (£' + p.amount_owed + ')</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Pending (£' + p.amount_owed + ')</span>')
-        : '<span style="color:#888;">-</span>';
-      var checkinBtn = checkinEnabled ? '<button class="btn-small" onclick="toggleCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? 'Undo Check-in' : 'Check In') + '</button> ' : '';
-      return '<tr><td>' + name + '</td><td>' + username + '</td>' + statusCell + '<td>' + paymentLabel + '</td><td>' + checkinBtn + '<button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
-    }).join('') + '</tbody></table>';
+  var mainPlayers = result.data.filter(function(p) { return !p.is_reserve; });
+  var reservePlayers = result.data.filter(function(p) { return p.is_reserve; });
+  function paymentLabelFor(p) {
+    return p.amount_owed > 0
+      ? (p.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid (£' + p.amount_owed + ')</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Pending (£' + p.amount_owed + ')</span>')
+      : '<span style="color:#888;">-</span>';
+  }
+  function nameCells(p, prefix) {
+    var profile = p.profiles || {};
+    var name = formatDisplayName(profile.full_name, profile.username);
+    var username = (profile.username && !isUsernameMode()) ? '@' + profile.username : '-';
+    return '<td>' + prefix + name + '</td><td>' + username + '</td>';
+  }
+  var mainRows = mainPlayers.map(function(p) {
+    var statusCell = checkinEnabled ? '<td>' + (p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Checked In</span>' : '<span style="color:#cc0000;">Not Checked In</span>') + '</td>' : '';
+    var checkinBtn = checkinEnabled ? '<button class="btn-small" onclick="toggleCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? 'Undo Check-in' : 'Check In') + '</button> ' : '';
+    return '<tr>' + nameCells(p, '') + statusCell + '<td>' + paymentLabelFor(p) + '</td><td>' + checkinBtn + '<button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
+  }).join('');
+  var reserveRows = reservePlayers.map(function(p, i) {
+    return '<tr>' + nameCells(p, (i + 1) + '. ') + '<td>' + paymentLabelFor(p) + '</td><td><button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
+  }).join('');
+  var maxText = (tournamentData && tournamentData.max_players) ? ' / ' + tournamentData.max_players : '';
+  container.innerHTML =
+    '<h4 style="margin:16px 0 0;">Players (' + mainPlayers.length + maxText + ')</h4>' +
+    (mainPlayers.length ? '<table><thead><tr><th>Name</th><th>Username</th>' + (checkinEnabled ? '<th>Status</th>' : '') + '<th>Payment</th><th>Actions</th></tr></thead><tbody>' + mainRows + '</tbody></table>' : '<p class="empty-state">No players yet.</p>') +
+    '<h4 style="margin:28px 0 0;">Reserve List (' + reservePlayers.length + ')</h4>' +
+    (reservePlayers.length ? '<table><thead><tr><th>Name</th><th>Username</th><th>Payment</th><th>Actions</th></tr></thead><tbody>' + reserveRows + '</tbody></table>' : '<p class="empty-state">No reserves.</p>');
 }
 async function toggleCheckIn(rowId, currentStatus) {
   await sbClient.from('tournament_players').update({ checked_in: !currentStatus }).eq('id', rowId);
@@ -538,6 +549,7 @@ async function toggleCheckIn(rowId, currentStatus) {
           var refundedBalance = currentBalance + parseFloat(entry.amount_owed);
           await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', playerId);
         }
+        await promoteReserves(tournamentId);
         await loadPlayers();
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
