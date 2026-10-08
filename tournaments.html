@@ -248,8 +248,12 @@ async function joinTournament(tournamentId, btn, asReserve) {
   if (!currentUserId) { window.location.href = 'login.html'; return; }
   btn.disabled = true;
   btn.textContent = asReserve ? 'Joining as reserve...' : 'Joining...';
-  var tournamentResult = await sbClient.from('tournaments').select('is_paid, entry_fee').eq('id', tournamentId).single();
+var tournamentResult = await sbClient.from('tournaments').select('is_paid, entry_fee, max_players').eq('id', tournamentId).single();
   var tournament = tournamentResult.data || {};
+  if (tournament.max_players) {
+    var liveMain = await sbClient.from('tournament_players').select('id').eq('tournament_id', tournamentId).eq('is_reserve', false);
+    if (liveMain.data && liveMain.data.length >= tournament.max_players) { asReserve = true; }
+  }
   var isPaid = tournament.is_paid;
   var entryFee = parseFloat(tournament.entry_fee) || 0;
   var paidStatus = true;
