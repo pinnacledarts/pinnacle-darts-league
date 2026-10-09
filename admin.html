@@ -2718,7 +2718,7 @@ async function deleteDrillAttempt(id) {
           matches_lost: lost,
           attendance: 1,
           attitude: document.getElementById('sessionPositiveAttitude').checked ? 2 : 0,
-          match_win: 0,
+          match_win: won,
           break_throw: 0,
           nine_dart_challenge: 0,
           over_100_checkout: 0,
@@ -2801,6 +2801,7 @@ async function deleteDrillAttempt(id) {
           matches_played: played,
           matches_won: won,
           matches_lost: lost,
+          match_win: won,
           bonus_points: parseInt(document.getElementById('edit-bonus-' + id).value) || 0,
           attitude: document.getElementById('edit-posatt-' + id).checked ? 2 : 0
         };
