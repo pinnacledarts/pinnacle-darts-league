@@ -66,10 +66,14 @@
       #academyFrozenTable { width: 182px; flex-shrink: 0; }
       #academyFrozenTable th:nth-child(1), #academyFrozenTable td:nth-child(1) { width: 42px; }
       #academyFrozenTable th:nth-child(2), #academyFrozenTable td:nth-child(2) { width: 140px; }
-      #academyScrollTable { width: 320px; }
+      #academyScrollTable { width: 474px; }
       #academyScrollTable th:nth-child(1), #academyScrollTable td:nth-child(1) { width: 64px; }
-      #academyScrollTable th:nth-child(n+2), #academyScrollTable td:nth-child(n+2) { width: 64px; }
-      .key { font-size: 0.8em; color: var(--pd-text-muted); margin-top: 12px; border-top: 1px solid var(--pd-border); padding-top: 12px; }
+      #academyScrollTable th:nth-child(2), #academyScrollTable td:nth-child(2) { width: 90px; }
+      #academyScrollTable th:nth-child(3), #academyScrollTable td:nth-child(3) { width: 80px; }
+      #academyScrollTable th:nth-child(4), #academyScrollTable td:nth-child(4) { width: 64px; }
+      #academyScrollTable th:nth-child(5), #academyScrollTable td:nth-child(5) { width: 56px; }
+      #academyScrollTable th:nth-child(6), #academyScrollTable td:nth-child(6) { width: 56px; }
+      #academyScrollTable th:nth-child(7), #academyScrollTable td:nth-child(7) { width: 64px; }      .key { font-size: 0.8em; color: var(--pd-text-muted); margin-top: 12px; border-top: 1px solid var(--pd-border); padding-top: 12px; }
       .key span { margin-right: 16px; display: inline-block; }
       .search-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; margin-bottom: 20px; }
       .search-box label { font-weight: bold; display: block; margin-bottom: 10px; color: var(--pd-text-dark); font-size: 13px; }
@@ -247,19 +251,23 @@
               <thead>
                 <tr>
                   <th>Total</th>
+                  <th>Attendance</th>
+                  <th>Attitude</th>
                   <th>Played</th>
                   <th>Won</th>
                   <th>Lost</th>
                   <th>Bonus</th>
                 </tr>
               </thead>
-              <tbody id="academyStandingsScrollBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
+              <tbody id="academyStandingsScrollBody">
+                <tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
         <div class="key">
-          <span><strong>Bonus</strong> = bonus points, including +1 for attending and +2 for positive attitude</span>
-        </div>
+          <span><strong>Attendance</strong> = +1 per session attended</span>
+          <span><strong>Attitude</strong> = +2 per session for positive attitude</span>
+          <span><strong>Bonus</strong> = extra points awarded by the coaches</span>        </div>
         </div>
         <div style="text-align:center;margin-top:16px;">
           <button onclick="openDivisionEnquiryForm()" style="background-color:var(--pd-surface);color:var(--pd-text-dark);border:1px solid var(--pd-border-strong);padding:10px 20px;border-radius:var(--pd-radius-btn);font-size:0.9em;cursor:pointer;font-family:Arial, sans-serif;">💼 Sponsor this Division</button>
@@ -850,8 +858,9 @@ function formatDrillTime(totalSeconds) {
           return `<tr><td>${i + 1}</td><td>${p.name}</td></tr>`;
         }).join('');
         scrollBody.innerHTML = standings.map((p) => {
-          return `<tr><td><strong>${p.total}</strong></td><td>${p.played}</td><td>${p.won}</td><td>${p.lost}</td><td>${p.bonus + p.attendance + p.attitude}</td></tr>`;
-        }).join('');
+return `<tr><td><strong>${p.total}</strong></td><td>${p.attendance}</td><td>${p.attitude}</td><td>${p.played}</td>
+          <td>${p.won}</td>
+<td>${p.lost}</td><td>${p.bonus}</td></tr>`;        }).join('');
       }
       async function loadAcademyNews() {
         const { data: allArticles, error } = await sbClient
