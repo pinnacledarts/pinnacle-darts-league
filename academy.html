@@ -66,9 +66,9 @@
       #academyFrozenTable { width: 182px; flex-shrink: 0; }
       #academyFrozenTable th:nth-child(1), #academyFrozenTable td:nth-child(1) { width: 42px; }
       #academyFrozenTable th:nth-child(2), #academyFrozenTable td:nth-child(2) { width: 140px; }
-      #academyScrollTable { width: 544px; }
+      #academyScrollTable { width: 320px; }
       #academyScrollTable th:nth-child(1), #academyScrollTable td:nth-child(1) { width: 64px; }
-      #academyScrollTable th:nth-child(n+2), #academyScrollTable td:nth-child(n+2) { width: 60px; }
+      #academyScrollTable th:nth-child(n+2), #academyScrollTable td:nth-child(n+2) { width: 64px; }
       .key { font-size: 0.8em; color: var(--pd-text-muted); margin-top: 12px; border-top: 1px solid var(--pd-border); padding-top: 12px; }
       .key span { margin-right: 16px; display: inline-block; }
       .search-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 20px; margin-bottom: 20px; }
@@ -246,29 +246,19 @@
             <table id="academyScrollTable">
               <thead>
                 <tr>
-                  <th><abbr title="Total Points">Total</abbr></th>
-                  <th><abbr title="Attendance">Att</abbr></th>
-                  <th><abbr title="Attitude">Atd</abbr></th>
-                  <th><abbr title="Match Win">MW</abbr></th>
-                  <th><abbr title="Break Throw in Last Leg Decider">BT</abbr></th>
-                  <th><abbr title="9 Dart Challenge Score">9DC</abbr></th>
-                  <th><abbr title="Over 100 Checkout Within Session">100+</abbr></th>
-                  <th><abbr title="171+ Scored in a Match">171+</abbr></th>
-                  <th><abbr title="Bonus Points">Bonus</abbr></th>
+                  <th>Total</th>
+                  <th>Played</th>
+                  <th>Won</th>
+                  <th>Lost</th>
+                  <th>Bonus</th>
                 </tr>
               </thead>
-              <tbody id="academyStandingsScrollBody"><tr><td colspan="9" class="loading">Loading...</td></tr></tbody>
+              <tbody id="academyStandingsScrollBody"><tr><td colspan="5" class="loading">Loading...</td></tr></tbody>
             </table>
           </div>
         </div>
         <div class="key">
-          <span><strong>Att</strong> = Attendance</span>
-          <span><strong>Atd</strong> = Attitude</span>
-          <span><strong>MW</strong> = Match Win</span>
-          <span><strong>BT</strong> = Break Throw</span>
-          <span><strong>9DC</strong> = 9 Dart Challenge</span>
-          <span><strong>100+</strong> = Over 100 Checkout</span>
-          <span><strong>171+</strong> = 171+ Scored</span>
+          <span><strong>Bonus</strong> = bonus points, including +1 for attending and +2 for positive attitude</span>
         </div>
         </div>
         <div style="text-align:center;margin-top:16px;">
@@ -831,6 +821,7 @@ function formatDrillTime(totalSeconds) {
           const name = formatDisplayName(profile.full_name, profile.username);
           const playerSessions = sessions.filter(s => s.player_id === gp.player_id);
           const totals = {
+            played: 0, won: 0, lost: 0,
             attendance: 0, attitude: 0, matchWin: 0, breakThrow: 0,
             nineDart: 0, over100: 0, score171: 0, bonus: 0
           };
@@ -843,6 +834,9 @@ function formatDrillTime(totalSeconds) {
             totals.over100 += s.over_100_checkout || 0;
             totals.score171 += s.score_171_plus || 0;
             totals.bonus += s.bonus_points || 0;
+            totals.played += s.matches_played || 0;
+            totals.won += s.matches_won || 0;
+            totals.lost += s.matches_lost || 0;
           });
           const total = totals.attendance + totals.attitude + totals.matchWin + totals.breakThrow + totals.nineDart + totals.over100 + totals.score171 + totals.bonus;
           return { name, ...totals, total };
@@ -856,7 +850,7 @@ function formatDrillTime(totalSeconds) {
           return `<tr><td>${i + 1}</td><td>${p.name}</td></tr>`;
         }).join('');
         scrollBody.innerHTML = standings.map((p) => {
-          return `<tr><td><strong>${p.total}</strong></td><td>${p.attendance}</td><td>${p.attitude}</td><td>${p.matchWin}</td><td>${p.breakThrow}</td><td>${p.nineDart}</td><td>${p.over100}</td><td>${p.score171}</td><td>${p.bonus}</td></tr>`;
+          return `<tr><td><strong>${p.total}</strong></td><td>${p.played}</td><td>${p.won}</td><td>${p.lost}</td><td>${p.bonus + p.attendance + p.attitude}</td></tr>`;
         }).join('');
       }
       async function loadAcademyNews() {
