@@ -193,7 +193,7 @@ async function processCheckIns() {
       }
 var manualBracketPlayerIds = [];
 async function showManualBracketForm() {
-  var playersResult = await sbClient.from('tournament_players').select('player_id').eq('tournament_id', tournamentId);
+  var playersResult = await sbClient.from('tournament_players').select('player_id').eq('tournament_id', tournamentId).eq('is_reserve', false);
   if (!playersResult.data || playersResult.data.length < 2) { showMsg('knockouts-error', 'Need at least 2 players to build a bracket.'); return; }
   manualBracketPlayerIds = playersResult.data.map(function(p) { return p.player_id; });
   var slotsHtml = manualBracketPlayerIds.map(function(pid, i) {
@@ -386,6 +386,25 @@ function toggleDetCheckinFields() {
     document.getElementById('detCheckinEnd').value = '';
   }
 }
+async function promoteReserves(tId) {
+  var tRes = await sbClient.from('tournaments').select('max_players').eq('id', tId).single();
+  var max = tRes.data && tRes.data.max_players ? parseInt(tRes.data.max_players) : null;
+  if (!max) { return 0; }
+  var inRes = await sbClient.from('tournament_players').select('id').eq('tournament_id', tId).eq('is_reserve', false);
+  var spaces = max - (inRes.data ? inRes.data.length : 0);
+  if (spaces <= 0) { return 0; }
+  var resRes = await sbClient.from('tournament_players').select('id').eq('tournament_id', tId).eq('is_reserve', true).order('created_at', { ascending: true }).limit(spaces);
+  var list = resRes.data || [];
+  for (var i = 0; i < list.length; i++) {
+    await sbClient.from('tournament_players').update({ is_reserve: false }).eq('id', list[i].id);
+  }
+  return list.length;
+}
+async function promoteReserveNow(rowId) {
+  await sbClient.from('tournament_players').update({ is_reserve: false }).eq('id', rowId);
+  await loadPlayers();
+  buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
+}
 async function saveTournamentDetails() {
   var noCheckin = document.getElementById('detNoCheckin').checked;
   var update = {
@@ -409,7 +428,9 @@ tournamentData.max_players = update.max_players;
 tournamentData.checkin_start = update.checkin_start;
 tournamentData.checkin_end = update.checkin_end;
 tournamentData.bye_scoreline = update.bye_scoreline;
-showMsg('details-success', 'Details saved successfully! Refresh the page if you changed Format or Average Split to update the tabs shown.');
+var promotedCount = await promoteReserves(parseInt(tournamentId));
+await loadPlayers();
+showMsg('details-success', (promotedCount ? promotedCount + ' reserve(s) moved into the cup. ' : '') + 'Details saved successfully! Refresh the page if you changed Format or Average Split to update the tabs shown.');
       }
       function buildPlayerChecklist(filter) {
         var checklist = document.getElementById('playerChecklist');
@@ -451,9 +472,10 @@ showMsg('details-success', 'Details saved successfully! Refresh the page if you 
         var checked = document.querySelectorAll('#playerChecklist input[type="checkbox"]:checked');
         if (!checked.length) { showMsg('add-player-error', 'Please select at least one player.'); return; }
         if (tournamentData.max_players) {
-          var wouldBeTotal = existingPlayerIds.length + checked.length;
+          var activeCount = existingPlayerIds.length - reserveCount;
+          var wouldBeTotal = activeCount + checked.length;
           if (wouldBeTotal > tournamentData.max_players) {
-            var canAdd = tournamentData.max_players - existingPlayerIds.length;
+            var canAdd = tournamentData.max_players - activeCount;
             showMsg('add-player-error', 'Max players is ' + tournamentData.max_players + '. You can only add ' + (canAdd > 0 ? canAdd : 0) + ' more.');
             return;
           }
@@ -482,28 +504,40 @@ showMsg('details-success', 'Details saved successfully! Refresh the page if you 
         await loadPlayers();
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
+var reserveCount = 0;
 async function loadPlayers() {
-  var result = await sbClient.from('tournament_players').select('id, player_id, checked_in, is_reserve, paid, amount_owed, profiles(full_name, username)').eq('tournament_id', tournamentId).order('is_reserve').order('created_at');
+  var result = await sbClient.from('tournament_players').select('id, player_id, checked_in, is_reserve, paid, amount_owed, profiles(full_name, username)').eq('tournament_id', tournamentId).order('created_at');
   existingPlayerIds = result.data ? result.data.map(function(p) { return p.player_id; }) : [];
   var container = document.getElementById('playersList');
-  if (!result.data || !result.data.length) { container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
+  if (!result.data || !result.data.length) { reserveCount = 0; container.innerHTML = '<p class="empty-state">No players yet.</p>'; return; }
+  var mainList = result.data.filter(function(p) { return !p.is_reserve; });
+  var reserveList = result.data.filter(function(p) { return p.is_reserve; });
+  reserveCount = reserveList.length;
   var checkinEnabled = !!(tournamentData && tournamentData.checkin_start && tournamentData.checkin_end);
   var statusHeader = checkinEnabled ? '<th>Status</th>' : '';
-  container.innerHTML = '<table><thead><tr><th>Name</th><th>Username</th>' + statusHeader + '<th>Payment</th><th>Actions</th></tr></thead><tbody>' +
-    result.data.map(function(p) {
+  function buildRows(list, isReserveTable) {
+    return list.map(function(p) {
       var profile = p.profiles || {};
       var name = formatDisplayName(profile.full_name, profile.username);
       var username = (profile.username && !isUsernameMode()) ? '@' + profile.username : '-';
-     var reserveLabel = p.is_reserve ? '<span style="color:#888;">Reserve</span> ' : '';
-var checkedInLabel = p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Checked In</span>' : '<span style="color:#cc0000;">Not Checked In</span>';
-var statusLabel = reserveLabel + checkedInLabel;
-      var statusCell = checkinEnabled ? '<td>' + statusLabel + '</td>' : '';
+      var checkedInLabel = p.checked_in ? '<span style="color:#006600;font-weight:bold;">✓ Checked In</span>' : '<span style="color:#cc0000;">Not Checked In</span>';
+      var statusCell = checkinEnabled ? '<td>' + checkedInLabel + '</td>' : '';
       var paymentLabel = p.amount_owed > 0
         ? (p.paid ? '<span style="color:#006600;font-weight:bold;">✓ Paid (£' + p.amount_owed + ')</span>' : '<span style="color:#cc0000;font-weight:bold;">⚠ Pending (£' + p.amount_owed + ')</span>')
         : '<span style="color:#888;">-</span>';
-      var checkinBtn = checkinEnabled ? '<button class="btn-small" onclick="toggleCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? 'Undo Check-in' : 'Check In') + '</button> ' : '';
-      return '<tr><td>' + name + '</td><td>' + username + '</td>' + statusCell + '<td>' + paymentLabel + '</td><td>' + checkinBtn + '<button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
-    }).join('') + '</tbody></table>';
+      var checkinBtn = (checkinEnabled && !isReserveTable) ? '<button class="btn-small" onclick="toggleCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? 'Undo Check-in' : 'Check In') + '</button> ' : '';
+      var promoteBtn = isReserveTable ? '<button class="btn-small" onclick="promoteReserveNow(' + p.id + ')">Add to cup</button> ' : '';
+      return '<tr><td>' + name + '</td><td>' + username + '</td>' + statusCell + '<td>' + paymentLabel + '</td><td>' + checkinBtn + promoteBtn + '<button class="btn-small danger" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button></td></tr>';
+    }).join('');
+  }
+  var head = '<table><thead><tr><th>Name</th><th>Username</th>' + statusHeader + '<th>Payment</th><th>Actions</th></tr></thead><tbody>';
+  var maxTxt = tournamentData && tournamentData.max_players ? ' (' + mainList.length + ' / ' + tournamentData.max_players + ')' : ' (' + mainList.length + ')';
+  var html = '<h4 style="margin:0 0 8px;">Registered Players' + maxTxt + '</h4>' +
+    (mainList.length ? head + buildRows(mainList, false) + '</tbody></table>' : '<p class="empty-state">No registered players yet.</p>');
+  if (reserveList.length) {
+    html += '<h4 style="margin:24px 0 8px;">Reserve List (' + reserveList.length + ')</h4>' + head + buildRows(reserveList, true) + '</tbody></table>';
+  }
+  container.innerHTML = html;
 }
 async function toggleCheckIn(rowId, currentStatus) {
   await sbClient.from('tournament_players').update({ checked_in: !currentStatus }).eq('id', rowId);
@@ -520,6 +554,7 @@ async function toggleCheckIn(rowId, currentStatus) {
           var refundedBalance = currentBalance + parseFloat(entry.amount_owed);
           await sbClient.from('profiles').update({ credit_balance: refundedBalance }).eq('id', playerId);
         }
+        await promoteReserves(parseInt(tournamentId));
         await loadPlayers();
         buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
@@ -530,7 +565,7 @@ async function toggleCheckIn(rowId, currentStatus) {
           if (!confirm('Groups already exist. Regenerate?')) { return; }
           await sbClient.from('tournament_groups').delete().eq('tournament_id', tournamentId);
         }
-        var playersResult = await sbClient.from('tournament_players').select('player_id').eq('tournament_id', tournamentId);
+        var playersResult = await sbClient.from('tournament_players').select('player_id').eq('tournament_id', tournamentId).eq('is_reserve', false);
         if (!playersResult.data || !playersResult.data.length) { showMsg('groups-error', 'No players have joined yet.'); return; }
         var players = playersResult.data.slice();
         shuffleArray(players);
@@ -701,7 +736,7 @@ async function resolveByes(round1Matches, firstRoundName, bracketType) {
           if (!confirm('Bracket already exists. Regenerate?')) { return; }
           await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
         }
-        var playersResult = await sbClient.from('tournament_players').select('player_id').eq('tournament_id', tournamentId);
+        var playersResult = await sbClient.from('tournament_players').select('player_id').eq('tournament_id', tournamentId).eq('is_reserve', false);
         if (!playersResult.data || !playersResult.data.length) { showMsg('knockouts-error', 'No players have joined yet.'); return; }
         var players = playersResult.data.slice();
         shuffleArray(players);
@@ -715,7 +750,7 @@ async function resolveByes(round1Matches, firstRoundName, bracketType) {
           if (!confirm('Bracket already exists. Regenerate?')) { return; }
           await sbClient.from('tournament_matches').delete().eq('tournament_id', tournamentId).eq('stage', 'knockout');
         }
-        var playersResult = await sbClient.from('tournament_players').select('player_id, profiles(starter_average, average)').eq('tournament_id', tournamentId);
+        var playersResult = await sbClient.from('tournament_players').select('player_id, profiles(starter_average, average)').eq('tournament_id', tournamentId).eq('is_reserve', false);
         if (!playersResult.data || playersResult.data.length < 2) { showMsg('knockouts-error', 'Need at least 2 players to split.'); return; }
         var playersWithAvg = playersResult.data.map(function(p) {
           var profile = p.profiles || {};
