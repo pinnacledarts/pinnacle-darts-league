@@ -503,46 +503,31 @@ main { padding: 0 20px 32px; }
               <input type="date" id="sessionDate" />
             </div>
           </div>
-          <div class="form-row">
+                 <div class="form-row">
             <div class="form-group">
-              <label>Attendance</label>
-              <input type="number" id="sessionAttendance" value="0" />
+              <label>Matches Played</label>
+              <input type="number" id="sessionPlayed" value="0" min="0" />
             </div>
             <div class="form-group">
-              <label>Attitude</label>
-              <input type="number" id="sessionAttitude" value="0" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>Match Win</label>
-              <input type="number" id="sessionMatchWin" value="0" />
-            </div>
-            <div class="form-group">
-              <label>Break Throw in Last Leg Decider</label>
-              <input type="number" id="sessionBreakThrow" value="0" />
+              <label>Matches Won</label>
+              <input type="number" id="sessionWon" value="0" min="0" />
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label>9 Dart Challenge Score</label>
-              <input type="number" id="sessionNineDart" value="0" />
-            </div>
-            <div class="form-group">
-              <label>Over 100 Checkout Within Session</label>
-              <input type="number" id="sessionOver100" value="0" />
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label>171+ Scored in a Match</label>
-              <input type="number" id="session171" value="0" />
+              <label>Matches Lost</label>
+              <input type="number" id="sessionLost" value="0" min="0" />
             </div>
             <div class="form-group">
               <label>Bonus Points</label>
               <input type="number" id="sessionBonus" value="0" />
             </div>
           </div>
+          <div class="form-group" style="display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="sessionPositiveAttitude" style="width:18px;height:18px;" />
+            <label style="margin:0;">Positive attitude (+2 bonus)</label>
+          </div>
+          <p style="color:#666;font-size:0.85em;margin-top:0;">Attendance (+1 bonus) is added automatically when you submit.</p>
           <button class="btn btn-primary" onclick="submitSession()">Submit Session</button>
         </div>
         <div class="card">
@@ -2720,30 +2705,33 @@ async function deleteDrillAttempt(id) {
       async function submitSession() {
         var playerId = document.getElementById('sessionPlayer').value;
         if (!playerId) { showMsg('session-error', 'Please select a player.'); return; }
-        var leagueId = document.getElementById('sessionAcademyLeague').value;
+        var played = parseInt(document.getElementById('sessionPlayed').value) || 0;
+        var won = parseInt(document.getElementById('sessionWon').value) || 0;
+        var lost = parseInt(document.getElementById('sessionLost').value) || 0;
+        if (won + lost !== played) { showMsg('session-error', 'Won + Lost must equal Played.'); return; }        var leagueId = document.getElementById('sessionAcademyLeague').value;
         var result = await sbClient.from('academy_sessions').insert([{
           player_id: playerId,
           academy_league_id: leagueId || null,
           session_date: document.getElementById('sessionDate').value || null,
-          attendance: parseInt(document.getElementById('sessionAttendance').value) || 0,
-          attitude: parseInt(document.getElementById('sessionAttitude').value) || 0,
-          match_win: parseInt(document.getElementById('sessionMatchWin').value) || 0,
-          break_throw: parseInt(document.getElementById('sessionBreakThrow').value) || 0,
-          nine_dart_challenge: parseInt(document.getElementById('sessionNineDart').value) || 0,
-          over_100_checkout: parseInt(document.getElementById('sessionOver100').value) || 0,
-          score_171_plus: parseInt(document.getElementById('session171').value) || 0,
+          matches_played: played,
+          matches_won: won,
+          matches_lost: lost,
+          attendance: 1,
+          attitude: document.getElementById('sessionPositiveAttitude').checked ? 2 : 0,
+          match_win: 0,
+          break_throw: 0,
+          nine_dart_challenge: 0,
+          over_100_checkout: 0,
+          score_171_plus: 0,
           bonus_points: parseInt(document.getElementById('sessionBonus').value) || 0
         }]);
         if (result.error) { showMsg('session-error', result.error.message); return; }
         showMsg('session-success', 'Session submitted successfully!');
-        document.getElementById('sessionAttendance').value = 0;
-        document.getElementById('sessionAttitude').value = 0;
-        document.getElementById('sessionMatchWin').value = 0;
-        document.getElementById('sessionBreakThrow').value = 0;
-        document.getElementById('sessionNineDart').value = 0;
-        document.getElementById('sessionOver100').value = 0;
-        document.getElementById('session171').value = 0;
+        document.getElementById('sessionPlayed').value = 0;
+        document.getElementById('sessionWon').value = 0;
+        document.getElementById('sessionLost').value = 0;
         document.getElementById('sessionBonus').value = 0;
+        document.getElementById('sessionPositiveAttitude').checked = false;
         loadSessionLog();
       }
       async function loadSessionLog() {
@@ -2774,29 +2762,21 @@ async function deleteDrillAttempt(id) {
         }).join('');
       }
       function renderSessionDetailView(s) {
-        return '<strong>Attendance:</strong> ' + (s.attendance || 0) + '<br>' +
-          '<strong>Attitude:</strong> ' + (s.attitude || 0) + '<br>' +
-          '<strong>Match Win:</strong> ' + (s.match_win || 0) + '<br>' +
-          '<strong>Break Throw in Last Leg Decider:</strong> ' + (s.break_throw || 0) + '<br>' +
-          '<strong>9 Dart Challenge Score:</strong> ' + (s.nine_dart_challenge || 0) + '<br>' +
-          '<strong>Over 100 Checkout Within Session:</strong> ' + (s.over_100_checkout || 0) + '<br>' +
-          '<strong>171+ Scored in a Match:</strong> ' + (s.score_171_plus || 0) + '<br>' +
-          '<strong>Bonus Points:</strong> ' + (s.bonus_points || 0);
+        return '<strong>Played:</strong> ' + (s.matches_played || 0) + '<br>' +
+          '<strong>Won:</strong> ' + (s.matches_won || 0) + '<br>' +
+          '<strong>Lost:</strong> ' + (s.matches_lost || 0) + '<br>' +
+          '<strong>Bonus Points:</strong> ' + (s.bonus_points || 0) + ' <span style="color:#888;">(+ ' + ((s.attendance || 0) + (s.attitude || 0)) + ' automatic: attendance ' + (s.attendance || 0) + ', attitude ' + (s.attitude || 0) + ')</span>';
       }
       function renderSessionEditView(s) {
         return '<div class="form-row-3">' +
-          '<div class="form-group"><label>Attendance</label><input class="score-input" type="number" id="edit-att-' + s.id + '" value="' + (s.attendance || 0) + '" /></div>' +
-          '<div class="form-group"><label>Attitude</label><input class="score-input" type="number" id="edit-atd-' + s.id + '" value="' + (s.attitude || 0) + '" /></div>' +
-          '<div class="form-group"><label>Match Win</label><input class="score-input" type="number" id="edit-mw-' + s.id + '" value="' + (s.match_win || 0) + '" /></div>' +
+          '<div class="form-group"><label>Played</label><input class="score-input" type="number" id="edit-played-' + s.id + '" value="' + (s.matches_played || 0) + '" /></div>' +
+          '<div class="form-group"><label>Won</label><input class="score-input" type="number" id="edit-won-' + s.id + '" value="' + (s.matches_won || 0) + '" /></div>' +
+          '<div class="form-group"><label>Lost</label><input class="score-input" type="number" id="edit-lost-' + s.id + '" value="' + (s.matches_lost || 0) + '" /></div>' +
           '</div>' +
           '<div class="form-row-3">' +
-          '<div class="form-group"><label>Break Throw</label><input class="score-input" type="number" id="edit-bt-' + s.id + '" value="' + (s.break_throw || 0) + '" /></div>' +
-          '<div class="form-group"><label>9 Dart Challenge</label><input class="score-input" type="number" id="edit-9dc-' + s.id + '" value="' + (s.nine_dart_challenge || 0) + '" /></div>' +
-          '<div class="form-group"><label>Over 100 Checkout</label><input class="score-input" type="number" id="edit-100-' + s.id + '" value="' + (s.over_100_checkout || 0) + '" /></div>' +
-          '</div>' +
-          '<div class="form-row-3">' +
-          '<div class="form-group"><label>171+ Scored</label><input class="score-input" type="number" id="edit-171-' + s.id + '" value="' + (s.score_171_plus || 0) + '" /></div>' +
           '<div class="form-group"><label>Bonus Points</label><input class="score-input" type="number" id="edit-bonus-' + s.id + '" value="' + (s.bonus_points || 0) + '" /></div>' +
+          '<div class="form-group" style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="edit-posatt-' + s.id + '" style="width:18px;height:18px;"' + ((s.attitude || 0) > 0 ? ' checked' : '') + ' /><label style="margin:0;">Positive attitude (+2)</label></div>' +
+          '</div>' +
           '</div>' +
           '<button class="btn btn-primary" onclick="saveSessionEdit(' + s.id + ')">Save Changes</button>' +
           '<button class="btn btn-secondary" onclick="cancelSessionEdit(' + s.id + ')">Cancel</button>';
@@ -2814,21 +2794,22 @@ async function deleteDrillAttempt(id) {
       }
       async function saveSessionEdit(id) {
         var updated = {
-          attendance: parseInt(document.getElementById('edit-att-' + id).value) || 0,
-          attitude: parseInt(document.getElementById('edit-atd-' + id).value) || 0,
-          match_win: parseInt(document.getElementById('edit-mw-' + id).value) || 0,
-          break_throw: parseInt(document.getElementById('edit-bt-' + id).value) || 0,
-          nine_dart_challenge: parseInt(document.getElementById('edit-9dc-' + id).value) || 0,
-          over_100_checkout: parseInt(document.getElementById('edit-100-' + id).value) || 0,
-          score_171_plus: parseInt(document.getElementById('edit-171-' + id).value) || 0,
-          bonus_points: parseInt(document.getElementById('edit-bonus-' + id).value) || 0
+        var played = parseInt(document.getElementById('edit-played-' + id).value) || 0;
+        var won = parseInt(document.getElementById('edit-won-' + id).value) || 0;
+        var lost = parseInt(document.getElementById('edit-lost-' + id).value) || 0;
+        if (won + lost !== played) { alert('Won + Lost must equal Played.'); return; }
+        var updated = {
+          matches_played: played,
+          matches_won: won,
+          matches_lost: lost,
+          bonus_points: parseInt(document.getElementById('edit-bonus-' + id).value) || 0,
+          attitude: document.getElementById('edit-posatt-' + id).checked ? 2 : 0
         };
         var result = await sbClient.from('academy_sessions').update(updated).eq('id', id);
         if (result.error) { alert('Error saving: ' + result.error.message); return; }
         var session = allSessionsData.find(function(s) { return s.id === id; });
         if (session) { Object.assign(session, updated); }
-        var total = updated.attendance + updated.attitude + updated.match_win + updated.break_throw + updated.nine_dart_challenge + updated.over_100_checkout + updated.score_171_plus + updated.bonus_points;
-        document.getElementById('session-total-' + id).textContent = total;
+        var total = (session.attendance || 0) + (session.attitude || 0) + (session.match_win || 0) + (session.break_throw || 0) + (session.nine_dart_challenge || 0) + (session.over_100_checkout || 0) + (session.score_171_plus || 0) + (session.bonus_points || 0);        document.getElementById('session-total-' + id).textContent = total;
         document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
       }
       function toggleSessionDetail(id) {
