@@ -2793,7 +2793,6 @@ async function deleteDrillAttempt(id) {
         document.getElementById('session-detail-content-' + id).innerHTML = renderSessionDetailView(session);
       }
       async function saveSessionEdit(id) {
-        var updated = {
         var played = parseInt(document.getElementById('edit-played-' + id).value) || 0;
         var won = parseInt(document.getElementById('edit-won-' + id).value) || 0;
         var lost = parseInt(document.getElementById('edit-lost-' + id).value) || 0;
