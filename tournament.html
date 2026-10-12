@@ -272,7 +272,9 @@ async function loadPlayers() {
     var initial = (name[0] || '?').toUpperCase();
     var removeBtn = isAdmin ? '<button class="btn-remove" onclick="removePlayer(\'' + p.player_id + '\')">Remove</button>' : '';
     var checkinHtml = '';
-    if (p.checked_in) {
+    if (!tournamentData.checkin_start || !tournamentData.checkin_end) {
+      checkinHtml = '';
+    } else if (p.checked_in) {
       checkinHtml = '<span style="color:#006600;font-weight:bold;font-size:0.85em;">✓ Checked In</span>';
     } else if (currentUserId === p.player_id && checkinOpen) {
       checkinHtml = '<button class="btn-remove" style="border-color:#006600;color:#006600;" onclick="doCheckIn(' + p.id + ')">Check In</button>';
