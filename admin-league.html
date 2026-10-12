@@ -250,6 +250,7 @@ main { padding: 0 20px 32px; }
             '<div class="admin-bar"><button class="btn btn-primary" onclick="generateNextSwissRound()">Generate Next Round</button><button class="btn btn-danger" onclick="clearFixtures()">Clear All Fixtures</button></div>' :
             '<div class="admin-bar"><p style="margin:0;color:#666;font-size:0.9em;">Fixtures are generated automatically when you confirm divisions in View Registrations.</p><button class="btn btn-danger" onclick="clearFixtures()">Clear Fixtures</button></div>') +
           '<div class="admin-bar"><label>Filter by Player:</label><select id="fixturePlayerFilter" onchange="loadFixtures()" style="padding:8px 12px;border:1px solid var(--pd-border-strong);border-radius:6px;font-size:0.9em;flex:1;min-width:180px;"><option value="">-- All Players --</option></select></div>' +
+          '<div class="admin-bar"><label>Round:</label><select id="fixtureRoundFilter" onchange="loadFixtures()" style="padding:8px 12px;border:1px solid var(--pd-border-strong);border-radius:6px;font-size:0.9em;flex:1;min-width:140px;"><option value="">-- All Rounds --</option></select><label>Show:</label><select id="fixtureStatusFilter" onchange="loadFixtures()" style="padding:8px 12px;border:1px solid var(--pd-border-strong);border-radius:6px;font-size:0.9em;flex:1;min-width:140px;"><option value="">All fixtures</option><option value="unplayed">Unplayed only</option><option value="completed">Completed only</option></select></div>' +
           '<div id="fixturesContent"><p class="empty-state">No fixtures generated yet.</p></div>' +
           '</div>' +
           '<div id="tab-standings" class="tab-content">' +
@@ -728,7 +729,20 @@ function groupMatchesByWeek(matches) {
         }
         var filterValue = filterEl ? filterEl.value : '';
         var filteredMatches = filterValue ? allMatches.filter(function(m) { return m.player1_id === filterValue || m.player2_id === filterValue; }) : allMatches;
-        if (!filteredMatches.length) { container.innerHTML = '<p class="empty-state">No fixtures found for this player.</p>'; return; }
+        var roundEl = document.getElementById('fixtureRoundFilter');
+        if (roundEl && !roundEl.dataset.populated) {
+          var roundNames = [];
+          allMatches.forEach(function(m) { if (m.round && roundNames.indexOf(m.round) === -1) { roundNames.push(m.round); } });
+          roundNames.sort(function(a, b) { return (parseInt((a.match(/\d+/) || ['0'])[0]) - parseInt((b.match(/\d+/) || ['0'])[0])); });
+          roundNames.forEach(function(r) { roundEl.innerHTML += '<option value="' + r + '">' + r + '</option>'; });
+          roundEl.dataset.populated = 'true';
+        }
+        var roundValue = roundEl ? roundEl.value : '';
+        var statusEl = document.getElementById('fixtureStatusFilter');
+        var statusValue = statusEl ? statusEl.value : '';
+        if (roundValue) { filteredMatches = filteredMatches.filter(function(m) { return m.round === roundValue; }); }
+        if (statusValue === 'unplayed') { filteredMatches = filteredMatches.filter(function(m) { return m.status !== 'completed'; }); }
+        if (statusValue === 'completed') { filteredMatches = filteredMatches.filter(function(m) { return m.status === 'completed'; }); }        if (!filteredMatches.length) { container.innerHTML = '<p class="empty-state">No fixtures found for this player.</p>'; return; }
         var byDivision = {};
         filteredMatches.forEach(function(m) {
           var div = m.division || 1;
