@@ -477,6 +477,10 @@ main { padding: 0 20px 32px; }
               </select>
             </div>
           </div>
+          <div class="form-group">
+            <label>Starting Average</label>
+            <input type="number" step="0.01" id="manualAddStarterAvg" placeholder="e.g. 45.5" />
+          </div>
           <button class="btn btn-primary" onclick="manuallyAddPlayer()">Create Guest Profile</button>
         </div>
       </div>
@@ -1085,7 +1089,8 @@ async function deleteMerchCategory(id) {
   var dob = document.getElementById('manualAddDob').value;
   var platform = document.getElementById('manualAddPlatform').value;
   var access = document.getElementById('manualAddAccess').value;
-  if (!fullName || !username) {
+  var starterAvg = parseFloat(document.getElementById('manualAddStarterAvg').value); 
+  if (!fullName || !username || isNaN(starterAvg) || starterAvg <= 0 || starterAvg > 140) {
     showMsg('manualAdd-error', 'Please fill in at least a name and username.');
     return;
   }
@@ -1110,8 +1115,8 @@ async function deleteMerchCategory(id) {
     date_of_birth: dob || null,
     platform: platform || null,
     access: access,
-    is_guest: true
-  }]);
+    starter_average: starterAvg,
+    is_guest: true  }]);
   if (result.error) {
     showMsg('manualAdd-error', result.error.message);
     return;
@@ -1119,6 +1124,7 @@ async function deleteMerchCategory(id) {
   showMsg('manualAdd-success', fullName + ' has been added as a guest profile!');
   document.getElementById('manualAddFullName').value = '';
   document.getElementById('manualAddUsername').value = '';
+  document.getElementById('manualAddStarterAvg').value = '';
   document.getElementById('manualAddPhone').value = '';
   document.getElementById('manualAddDob').value = '';
   loadPlayers();
