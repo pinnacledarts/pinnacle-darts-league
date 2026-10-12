@@ -431,31 +431,57 @@ main { padding: 0 20px 32px; }
         }
       }
       var confirmingDivisions = false;
+      function downloadLeagueBackup(rows) {
+        try {
+          var blob = new Blob([JSON.stringify(rows, null, 2)], { type: 'application/json' });
+          var a = document.createElement('a');
+          a.href = URL.createObjectURL(blob);
+          a.download = 'league-' + leagueId + '-entries-backup-' + new Date().toISOString().replace(/[:.]/g, '-') + '.json';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } catch (e) { console.error('Backup download failed', e); }
+      }
       async function confirmAllDivisions() {
         if (confirmingDivisions) { return; }
         var divisionSize = parseInt(leagueData.players_per_division) || 8;
         var checkinEnabled = !!(leagueData.checkin_start && leagueData.checkin_end);
-        if (!confirm('Confirm all divisions now? ' + (checkinEnabled ? 'Anyone who has not checked in will be removed. ' : '') + 'This locks in the groupings and generates fixtures.')) { return; }
         confirmingDivisions = true;
         var confirmBtn = document.querySelector('button[onclick="confirmAllDivisions()"]');
         var confirmBtnOriginalText = confirmBtn ? confirmBtn.textContent : '';
-        if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Confirming...'; }
-        var result = await sbClient.from('league_players').select('id, player_id, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
+        function finish() {
+          confirmingDivisions = false;
+          if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = confirmBtnOriginalText || 'Confirm All Divisions'; }
+        }
+        function abort(msg) {
+          alert(msg + '\n\nNothing has been changed.');
+          finish();
+        }
+        if (confirmBtn) { confirmBtn.disabled = true; confirmBtn.textContent = 'Checking...'; }
+        var result = await sbClient.from('league_players').select('id, league_id, player_id, division, checked_in, paid, amount_owed, profiles(full_name, username, average, starter_average, is_bye)').eq('league_id', leagueId);
+        if (result.error) { abort('Could not load the entries: ' + result.error.message); return; }
         var allEntries = (result.data || []).filter(function(p) { return !(p.profiles && p.profiles.is_bye); });
+        if (allEntries.length === 0) { abort('There are no players entered in this league.'); return; }
         var keep = allEntries;
+        var notCheckedIn = [];
         if (checkinEnabled) {
-          var notCheckedIn = allEntries.filter(function(p) { return !p.checked_in; });
+          notCheckedIn = allEntries.filter(function(p) { return !p.checked_in; });
           keep = allEntries.filter(function(p) { return p.checked_in; });
-          for (var i = 0; i < notCheckedIn.length; i++) {
-            var entry = notCheckedIn[i];
-            await sbClient.from('league_players').delete().eq('id', entry.id);
-            if (entry.paid && entry.amount_owed > 0) {
-              var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', entry.player_id).single();
-              var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
-              await sbClient.from('profiles').update({ credit_balance: currentBalance + parseFloat(entry.amount_owed) }).eq('id', entry.player_id);
-            }
+          if (keep.length === 0) {
+            abort('Check-in is switched on and NOBODY has checked in yet (' + allEntries.length + ' entered). Confirming now would remove every player.');
+            return;
           }
         }
+        var divCount = Math.ceil(keep.length / divisionSize);
+        var msg = 'Confirm divisions?\n\n' + keep.length + ' player' + (keep.length === 1 ? '' : 's') + ' will be placed into ' + divCount + ' division' + (divCount === 1 ? '' : 's') + ' and fixtures will be generated.';
+        if (notCheckedIn.length > 0) {
+          var names = notCheckedIn.slice(0, 15).map(function(p) { return (p.profiles && (p.profiles.full_name || p.profiles.username)) || 'Unknown'; }).join(', ');
+          msg += '\n\n' + notCheckedIn.length + ' player' + (notCheckedIn.length === 1 ? ' has' : 's have') + ' NOT checked in and will be REMOVED (paid entries are refunded to credit):\n' + names + (notCheckedIn.length > 15 ? ', ...' : '');
+        }
+        msg += '\n\nA backup file of all current entries will be downloaded first.';
+        if (!confirm(msg)) { finish(); return; }
+        downloadLeagueBackup(result.data);
+        if (confirmBtn) { confirmBtn.textContent = 'Confirming...'; }
         var sorted = keep.slice().sort(function(a, b) { return getEffectiveAvg(b.profiles) - getEffectiveAvg(a.profiles); });
         var groups = [];
         for (var i = 0; i < sorted.length; i += divisionSize) {
@@ -463,7 +489,8 @@ main { padding: 0 20px 32px; }
         }
         for (var g = 0; g < groups.length; g++) {
           for (var m = 0; m < groups[g].length; m++) {
-            await sbClient.from('league_players').update({ division: g + 1 }).eq('id', groups[g][m].id);
+            var upd = await sbClient.from('league_players').update({ division: g + 1 }).eq('id', groups[g][m].id);
+            if (upd.error) { abort('Failed while saving divisions: ' + upd.error.message + '. No players were removed.'); return; }
           }
         }
         if (groups.length > 0) {
@@ -476,21 +503,29 @@ main { padding: 0 20px 32px; }
             }]);
           }
         }
+        for (var n = 0; n < notCheckedIn.length; n++) {
+          var entry = notCheckedIn[n];
+          await sbClient.from('league_players').delete().eq('id', entry.id);
+          if (entry.paid && entry.amount_owed > 0) {
+            var profileResult = await sbClient.from('profiles').select('credit_balance').eq('id', entry.player_id).single();
+            var currentBalance = profileResult.data ? parseFloat(profileResult.data.credit_balance || 0) : 0;
+            await sbClient.from('profiles').update({ credit_balance: currentBalance + parseFloat(entry.amount_owed) }).eq('id', entry.player_id);
+          }
+        }
         await sbClient.from('leagues').update({ divisions_locked: true }).eq('id', leagueId);
         leagueData.divisions_locked = true;
         await autoGenerateFixturesAfterConfirm();
         showMsg('divisions-success', 'Divisions confirmed and fixtures generated!');
-        confirmingDivisions = false;
-        if (confirmBtn) { confirmBtn.disabled = false; confirmBtn.textContent = confirmBtnOriginalText || 'Confirm All Divisions'; }
+        finish();
         loadPlayers();
         loadFixtures();
         loadStandings();
       }
       async function autoGenerateFixturesAfterConfirm() {
         if (leagueData.format === 'swiss') { return; }
-        await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'regular');
         var playersResult = await sbClient.from('league_players').select('player_id, division').eq('league_id', leagueId);
         if (!playersResult.data || !playersResult.data.length) { return; }
+        await sbClient.from('league_matches').delete().eq('league_id', leagueId).eq('stage', 'regular');
         var divisions = {};
         playersResult.data.forEach(function(p) {
           var div = p.division || 1;
