@@ -570,6 +570,7 @@ main { padding: 0 20px 32px; }
               <label>Manage Group</label>
               <select id="academyLeagueSelect" onchange="loadAcademyLeaguePlayers()"></select>
             </div>
+<button class="btn btn-secondary" onclick="renameAcademyGroup()">Rename Group</button>
             <button class="btn btn-secondary" onclick="endAcademySeason()">End Season</button>
             <button class="btn btn-danger" onclick="deleteAcademyLeague()">Delete This Group</button>
           </div>
@@ -2621,7 +2622,7 @@ async function deleteDrillAttempt(id) {
         if (!archivedGroups.length) { container.innerHTML = '<p class="empty-state">No archived groups yet.</p>'; return; }
         container.innerHTML = '<table><thead><tr><th>Group</th><th>Action</th></tr></thead><tbody>' +
           archivedGroups.map(function(g) {
-            return '<tr><td>' + g.name + '</td><td><button class="btn-small" onclick="reactivateAcademyGroup(' + g.id + ')">Reactivate</button> <button class="btn-small danger" onclick="permanentlyDeleteAcademyGroup(' + g.id + ')">Delete Permanently</button></td></tr>';
+            return '<tr><td>' + g.name + '</td><td><button class="btn-small" onclick="renameAcademyGroup(' + g.id + ')">Rename</button> <button class="btn-small" onclick="reactivateAcademyGroup(' + g.id + ')">Reactivate</button> <button class="btn-small danger" onclick="permanentlyDeleteAcademyGroup(' + g.id + ')">Delete Permanently</button></td></tr>';
           }).join('') + '</tbody></table>';
       }
       async function reactivateAcademyGroup(id) {
@@ -2650,6 +2651,21 @@ async function deleteDrillAttempt(id) {
         await sbClient.from('academy_leagues').update({ status: 'completed' }).eq('id', id);
         showMsg('academyleague-success', 'Season ended!');
         loadAcademyLeagueSelects();
+      }
+async function renameAcademyGroup(groupId) {
+        var id = groupId || document.getElementById('academyLeagueSelect').value;
+        if (!id) { return; }
+        var current = await sbClient.from('academy_leagues').select('name').eq('id', id).single();
+        var newName = prompt('New name for this group:', current.data ? current.data.name : '');
+        if (newName === null) { return; }
+        newName = newName.trim();
+        if (!newName) { alert('The group name cannot be empty.'); return; }
+        var res = await sbClient.from('academy_leagues').update({ name: newName }).eq('id', id);
+        if (res.error) { alert('Could not rename the group: ' + res.error.message); return; }
+        showMsg('academyleague-success', 'Group renamed to ' + newName + '.');
+        await loadAcademyLeagueSelects();
+        var sel = document.getElementById('academyLeagueSelect');
+        if (sel && Array.prototype.some.call(sel.options, function(o) { return o.value === String(id); })) { sel.value = id; loadAcademyLeaguePlayers(); }
       }
       async function deleteAcademyLeague() {
         var id = document.getElementById('academyLeagueSelect').value;
@@ -2735,7 +2751,7 @@ async function deleteDrillAttempt(id) {
         players.forEach(function(p) {
           select.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
         });
-        var filterSelect = document.getElementById('sessionSearch');
+var filterSelect = document.createElement('select');
         filterSelect.innerHTML = '<option value="">-- All Players --</option>';
         players.forEach(function(p) {
           filterSelect.innerHTML += '<option value="' + p.id + '">' + (p.full_name || p.username) + '</option>';
@@ -2775,7 +2791,14 @@ async function deleteDrillAttempt(id) {
       }
       async function loadSessionLog() {
         var result = await sbClient.from('academy_sessions').select('*, profiles(full_name, username)').order('session_date', { ascending: false });
-        allSessionsData = result.data || [];
+allSessionsData = result.data || [];
+        var logFilter = document.getElementById('sessionSearch');
+        var logFilterPrev = logFilter.value;
+        var seenPlayers = {};
+        allSessionsData.forEach(function(s) { if (s.player_id && !seenPlayers[s.player_id]) { seenPlayers[s.player_id] = (s.profiles && (s.profiles.full_name || s.profiles.username)) || 'Unknown'; } });
+        logFilter.innerHTML = '<option value="">-- All Players --</option>';
+        Object.keys(seenPlayers).sort(function(a, b) { return seenPlayers[a].localeCompare(seenPlayers[b]); }).forEach(function(pid) { logFilter.innerHTML += '<option value="' + pid + '">' + seenPlayers[pid] + '</option>'; });
+        logFilter.value = logFilterPrev;
         renderSessionLog(allSessionsData);
       }
       function renderSessionLog(data) {
