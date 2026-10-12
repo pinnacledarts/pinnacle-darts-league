@@ -710,6 +710,8 @@ function groupMatchesByWeek(matches) {
         var result = await sbClient.from('league_matches').select('*').eq('league_id', leagueId).eq('stage', 'regular').order('id');
         var container = document.getElementById('fixturesContent');
         var allMatches = result.data || [];
+        window.completedPairs = {};
+        allMatches.forEach(function(m) { if (m.status === 'completed') { window.completedPairs[m.player1_id + '|' + m.player2_id] = true; } });
         if (!allMatches.length) { container.innerHTML = '<p class="empty-state">No fixtures generated yet.</p>'; return; }
         var filterEl = document.getElementById('fixturePlayerFilter');
         if (filterEl && !filterEl.dataset.populated) {
@@ -745,7 +747,7 @@ function groupMatchesByWeek(matches) {
         var s2 = m.status === 'completed' ? m.player2_score : '';
         var a1 = m.player1_avg != null ? m.player1_avg : '';
         var a2 = m.player2_avg != null ? m.player2_avg : '';
-        return '<div class="fixture-item"><div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + '</div>' +
+        return '<div class="fixture-item"' + ((window.completedPairs || {})[m.player2_id + '|' + m.player1_id] ? ' style="border-left:4px solid #f5a623;background-color:#fff6e5;"' : '') + '><div class="fixture-players">' + p1name + ' <span class="fixture-vs">vs</span> ' + p2name + ((window.completedPairs || {})[m.player2_id + '|' + m.player1_id] ? ' <span style="background:#f5a623;color:#111;font-size:0.75em;font-weight:bold;padding:2px 8px;border-radius:10px;margin-left:6px;">Reverse played</span>' : '') + '</div>' +
           '<div class="score-inputs">' +
           '<input class="score-input" type="number" id="fs1_' + m.id + '" value="' + s1 + '" placeholder="0" />' +
           '<span>-</span>' +
