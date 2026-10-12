@@ -131,7 +131,7 @@ main { padding: 0 20px 32px; }
 <button class="tab" onclick="showTab('merch', event)">Merch</button>
 <button class="tab" onclick="showTab('credit', event)" id="creditTabBtn">Credit</button>
         <button class="tab" onclick="showTab('news', event)">News</button>
-      </div>
+        <button class="btn btn-secondary" id="backupBtn" onclick="downloadFullBackup()" style="margin-left:auto;">Download Backup</button>      </div>
 <!-- TOURNAMENTS TAB -->
       <div id="tab-tournaments" class="tab-content active">
         <div class="card">
@@ -1555,7 +1555,38 @@ async function deleteBugReport(id) {
         var sBtn2 = document.getElementById('switchBtn');
         if (sBtn2) { sBtn2.textContent = 'Return to Online'; sBtn2.href = 'index.html'; }
       }
-function showTab(name, event) {
+async function downloadFullBackup() {
+        var btn = document.getElementById('backupBtn');
+        var original = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Backing up...';
+        var tables = ['profiles', 'leagues', 'league_players', 'league_matches', 'tournaments', 'tournament_players', 'tournament_matches', 'academy_leagues', 'academy_league_players', 'academy_sessions', 'credit_top_ups', 'results', 'blocked_registrations'];
+        var backup = { created_at: new Date().toISOString(), tables: {}, errors: {} };
+        for (var t = 0; t < tables.length; t++) {
+          var rows = [];
+          var from = 0;
+          while (true) {
+            var res = await sbClient.from(tables[t]).select('*').range(from, from + 999);
+            if (res.error) { backup.errors[tables[t]] = res.error.message; break; }
+            rows = rows.concat(res.data || []);
+            if (!res.data || res.data.length < 1000) { break; }
+            from += 1000;
+          }
+          backup.tables[tables[t]] = rows;
+        }
+        var blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'pinnacle-backup-' + new Date().toISOString().slice(0, 10) + '.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        btn.disabled = false;
+        btn.textContent = original;
+        var errCount = Object.keys(backup.errors).length;
+        alert('Backup downloaded.' + (errCount ? '\n\nThese tables could not be read: ' + Object.keys(backup.errors).join(', ') : ''));
+      }
+      function showTab(name, event) {
         document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
         document.querySelectorAll('.tab-content').forEach(function(t) { t.classList.remove('active'); });
         event.target.classList.add('active');
