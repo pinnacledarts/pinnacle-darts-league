@@ -101,6 +101,8 @@ main { padding: 0 20px 32px; }
         table { font-size: 0.75em; }
         th, td { padding: 6px 4px; }
       }
+#tab-tournaments.active, #tab-leagues.active { display: flex; flex-direction: column; }
+      #tab-tournaments .card:has(#tournamentsList), #tab-leagues .card:has(#leaguesList) { order: -1; }
     </style>
   </head>
   <body>
