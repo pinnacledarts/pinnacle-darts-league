@@ -741,6 +741,14 @@ function groupMatchesByWeek(matches) {
         }).join('');
       }
       function renderFixtureItem(m) {
+        var html = renderFixtureItemBase(m);
+        if (m.status === 'completed') {
+          html = html.replace('<div class="fixture-item"', '<div class="fixture-item" style="border-left:4px solid #2e9e4f;background-color:#e8f6ec;"');
+          html = html.replace('</div><div class="score-inputs">', ' <span style="background:#2e9e4f;color:#ffffff;font-size:0.75em;font-weight:bold;padding:2px 8px;border-radius:10px;margin-left:6px;">Completed</span></div><div class="score-inputs">');
+        }
+        return html;
+      }
+      function renderFixtureItemBase(m) {
         var p1name = profileMapAdmin[m.player1_id] || 'Unknown';
         var p2name = profileMapAdmin[m.player2_id] || 'Unknown';
         var s1 = m.status === 'completed' ? m.player1_score : '';
