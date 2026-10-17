@@ -851,6 +851,7 @@ async function generateKnockouts() {
         document.getElementById('knockoutsContent').innerHTML = '<p class="empty-state">No bracket yet.</p>';
       }
       async function loadKnockouts() {
+        await ensurePlateBrackets();
         var result = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').order('match_order');
         var container = document.getElementById('knockoutsContent');
         var all = result.data || [];
@@ -967,7 +968,7 @@ if (a2Val && p2Id) { await updatePlayerAverage(p2Id); await updatePlayerStats(p2
   var isPlate = bracketType.indexOf('PLATE') > -1 || bracketType === 'B';
   showMsg('knockouts-success', advanced ? 'Score saved — winner advanced!' : '🏆 ' + (isPlate ? 'Plate' : 'Bracket') + ' complete! We have a winner!');
   if (tournamentData.format === 'single_elimination_b' && getPlateBracketType(bracketType)) {
-    await maybeGenerateBBracket(currentRound, bracketType);
+    // plate bracket is now created and filled automatically by ensurePlateBrackets()
   }
   loadKnockouts();
 }
@@ -1045,8 +1046,117 @@ function editKnockoutAvg(matchId, p1Id, p2Id) {
           loadKnockouts();
         });
       }
-      async function maybeGenerateBBracket(currentRound, bracketType) {
-        var plateType = getPlateBracketType(bracketType);
+var plateSyncing = false;
+async function ensurePlateBrackets() {
+  if (plateSyncing || !tournamentData || tournamentData.format !== 'single_elimination_b') { return; }
+  plateSyncing = true;
+  try {
+    var allRes = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout');
+    var all = allRes.data || [];
+    var mainTypes = ['A', 'CUPA', 'CUPB'];
+    for (var t = 0; t < mainTypes.length; t++) {
+      var mainType = mainTypes[t];
+      var main = all.filter(function(m) { return (m.bracket_type || 'A') === mainType; });
+      if (!main.length) { continue; }
+      var plateType = getPlateBracketType(mainType);
+      var plate = all.filter(function(m) { return m.bracket_type === plateType; });
+      await syncOnePlate(main, plate, plateType);
+    }
+  } catch (e) { console.error('Plate sync failed', e); }
+  plateSyncing = false;
+}
+async function syncOnePlate(main, plate, plateType) {
+  var firstMain = roundOrderFull.filter(function(r) { return main.some(function(m) { return m.round === r; }); })[0];
+  var real = main.filter(function(m) { return m.round === firstMain && m.player1_id && m.player2_id; }).sort(function(a, b) { return a.match_order - b.match_order; });
+  var R = real.length;
+  if (R < 2) { return; }
+  var losers = [];
+  real.forEach(function(m) {
+    if (m.status === 'completed' && m.player1_score != null && m.player2_score != null) {
+      losers.push(m.player1_score > m.player2_score ? m.player2_id : m.player1_id);
+    }
+  });
+  var P = 1;
+  while (P < R) { P *= 2; }
+  var B = P - R;
+  if (!plate.length) {
+    var rows = [];
+    for (var i = 0; i < P / 2; i++) {
+      rows.push({ tournament_id: parseInt(tournamentId), player1_id: null, player2_id: null, stage: 'knockout', round: getRoundName(P / 2), match_order: i, status: 'pending', bracket_type: plateType });
+    }
+    for (var c = P / 4; c >= 1; c = c / 2) {
+      for (var j = 0; j < c; j++) {
+        rows.push({ tournament_id: parseInt(tournamentId), player1_id: null, player2_id: null, stage: 'knockout', round: getRoundName(c), match_order: j, status: 'pending', bracket_type: plateType });
+      }
+    }
+    var ins = await sbClient.from('tournament_matches').insert(rows).select();
+    plate = ins.data || [];
+    if (!plate.length) { return; }
+  }
+  var plateFirst = roundOrderFull.filter(function(r) { return plate.some(function(m) { return m.round === r; }); })[0];
+  var p1 = plate.filter(function(m) { return m.round === plateFirst; }).sort(function(a, b) { return a.match_order - b.match_order; });
+  if (p1.length * 2 !== P) { return; }
+  var nextName = getNextRoundName(plateFirst);
+  var nextRound = nextName ? plate.filter(function(m) { return m.round === nextName; }) : [];
+  function nextMatchOf(k) { return nextRound.find(function(m) { return m.match_order === Math.floor(k / 2); }); }
+  var byeScore = (tournamentData && tournamentData.bye_scoreline) ? tournamentData.bye_scoreline : 3;
+  var inPlate = {};
+  p1.forEach(function(m, k) {
+    if (m.player1_id) { inPlate[m.player1_id] = { k: k, field: 'player1_id' }; }
+    if (m.player2_id) { inPlate[m.player2_id] = { k: k, field: 'player2_id' }; }
+  });
+  for (var pid in inPlate) {
+    if (losers.indexOf(pid) !== -1) { continue; }
+    var pos = inPlate[pid];
+    var pm = p1[pos.k];
+    var isByeMatch = pos.k < B;
+    if (pm.status === 'completed' && !isByeMatch) { continue; }
+    var nm = nextMatchOf(pos.k);
+    if (isByeMatch && nm && nm.status === 'completed') { continue; }
+    var upd = {};
+    upd[pos.field] = null;
+    if (isByeMatch) {
+      upd.player1_score = null; upd.player2_score = null; upd.status = 'pending';
+      if (nm) {
+        var clr = {};
+        clr[pos.k % 2 === 0 ? 'player1_id' : 'player2_id'] = null;
+        await sbClient.from('tournament_matches').update(clr).eq('id', nm.id);
+        Object.assign(nm, clr);
+      }
+    }
+    await sbClient.from('tournament_matches').update(upd).eq('id', pm.id);
+    Object.assign(pm, upd);
+    delete inPlate[pid];
+  }
+  var seq = [];
+  for (var k = B; k < P / 2; k++) { seq.push([k, 'player1_id']); seq.push([k, 'player2_id']); }
+  for (var k2 = 0; k2 < B; k2++) { seq.push([k2, 'player1_id']); }
+  for (var li = 0; li < losers.length; li++) {
+    var lid = losers[li];
+    if (inPlate[lid]) { continue; }
+    var slot = seq.find(function(s) { return !p1[s[0]][s[1]]; });
+    if (!slot) { break; }
+    var place = {};
+    place[slot[1]] = lid;
+    await sbClient.from('tournament_matches').update(place).eq('id', p1[slot[0]].id);
+    Object.assign(p1[slot[0]], place);
+    inPlate[lid] = { k: slot[0], field: slot[1] };
+    if (slot[0] < B) {
+      var byeUpd = { player1_score: byeScore, player2_score: 0, status: 'completed' };
+      await sbClient.from('tournament_matches').update(byeUpd).eq('id', p1[slot[0]].id);
+      Object.assign(p1[slot[0]], byeUpd);
+      var nxt = nextMatchOf(slot[0]);
+      if (nxt) {
+        var adv = {};
+        adv[slot[0] % 2 === 0 ? 'player1_id' : 'player2_id'] = lid;
+        await sbClient.from('tournament_matches').update(adv).eq('id', nxt.id);
+        Object.assign(nxt, adv);
+      }
+    }
+  }
+}
+async function maybeGenerateBBracket(currentRound, bracketType) {
+  var plateType = getPlateBracketType(bracketType);
         if (!plateType) { return; }
         var mainMatchesResult = await sbClient.from('tournament_matches').select('*').eq('tournament_id', tournamentId).eq('stage', 'knockout').eq('bracket_type', bracketType);
         var mainMatches = mainMatchesResult.data || [];
