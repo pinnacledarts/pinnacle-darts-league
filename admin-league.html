@@ -424,7 +424,7 @@ main { padding: 0 20px 32px; }
                 var checkinCell = checkinEnabled
                   ? '<button class="btn-small" onclick="toggleLeagueCheckIn(' + p.id + ', ' + p.checked_in + ')">' + (p.checked_in ? '✓ Checked In' : 'Check In') + '</button>'
                   : '-';
-                return '<tr><td>' + name + '</td><td>' + (avg || '-') + '</td><td>' + checkinCell + '</td><td>' + paymentLabelFor(p) + '</td></tr>';
+                return '<tr><td>' + name + '</td><td>' + (avg || '-') + '</td><td>' + checkinCell + '</td><td>' + paymentLabelFor(p) + '</td><td><button class="btn-small danger" onclick="removeLeagueEntry(' + p.id + ')">Remove</button></td></tr>';
               }).join('') + '</tbody></table>';
           });
           container.innerHTML = html || '<p class="empty-state">No players registered yet.</p>';
