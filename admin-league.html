@@ -416,7 +416,7 @@ main { padding: 0 20px 32px; }
           }
           var html = '';
           groups.forEach(function(g, idx) {
-            html += '<h4 style="margin:16px 0 8px;">Division ' + (idx + 1) + ' (Preview)</h4><table><thead><tr><th>Player</th><th>Average</th><th>Check-in</th><th>Payment</th></tr></thead><tbody>' +
+            html += '<h4 style="margin:16px 0 8px;">Division ' + (idx + 1) + ' (Preview)</h4><table><thead><tr><th>Player</th><th>Average</th><th>Check-in</th><th>Payment</th><th></th></tr></thead><tbody>' +
               g.map(function(p) {
                 var profile = p.profiles || {};
                 var name = formatDisplayName(profile.full_name, profile.username);
@@ -551,6 +551,24 @@ main { padding: 0 20px 32px; }
         loadPlayers();
         loadFixtures();
         loadStandings();
+      }
+async function removeLeagueEntry(rowId) {
+        var entryResult = await sbClient.from('league_players').select('id, player_id, paid, amount_owed, profiles(full_name, username)').eq('id', rowId).single();
+        var entry = entryResult.data;
+        if (!entry) { alert('Could not find this entry.'); return; }
+        var entryProfile = entry.profiles || {};
+        var entryName = formatDisplayName(entryProfile.full_name, entryProfile.username);
+        var refundNote = (entry.paid && entry.amount_owed > 0) ? ' Their entry fee will be refunded to their credit.' : '';
+        if (!confirm('Remove ' + entryName + ' from this league?' + refundNote)) { return; }
+        var delResult = await sbClient.from('league_players').delete().eq('id', rowId).select();
+        if (delResult.error || !delResult.data || !delResult.data.length) { alert('Could not remove this player.' + (delResult.error ? ' ' + delResult.error.message : '')); return; }
+        if (entry.paid && entry.amount_owed > 0) {
+          var balResult = await sbClient.from('profiles').select('credit_balance').eq('id', entry.player_id).single();
+          var balance = balResult.data ? parseFloat(balResult.data.credit_balance || 0) : 0;
+          await sbClient.from('profiles').update({ credit_balance: balance + parseFloat(entry.amount_owed) }).eq('id', entry.player_id);
+        }
+        await loadPlayers();
+        buildPlayerChecklist(document.getElementById('playerSearch').value.toLowerCase().trim());
       }
       async function removePlayer(playerId) {
         if (!confirm('Remove this player from the league? Any existing fixtures involving them will also be deleted.')) { return; }
