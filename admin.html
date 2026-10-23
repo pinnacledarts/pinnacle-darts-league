@@ -530,8 +530,14 @@ main { padding: 0 20px 32px; }
             </div>
           </div>
           <div class="form-group" style="display:flex;align-items:center;gap:8px;">
-            <input type="checkbox" id="sessionPositiveAttitude" style="width:18px;height:18px;" />
-            <label style="margin:0;">Positive attitude (+2 bonus)</label>
+<label style="margin:0;">Attitude</label>
+            <select id="sessionAttitudeSelect" style="padding:8px;border:1px solid #ddd;border-radius:4px;">
+              <option value="2">Positive (+2)</option>
+              <option value="0" selected>Neutral (0)</option>
+              <option value="-1">Poor (-1)</option>
+              <option value="-2">Negative (-2)</option>
+            </select>
+            <span style="color:#666;font-size:0.85em;">added to the player's total</span>
           </div>
           <p style="color:#666;font-size:0.85em;margin-top:0;">Attendance (+1 bonus) is added automatically when you submit.</p>
           <button class="btn btn-primary" onclick="submitSession()">Submit Session</button>
@@ -2772,7 +2778,7 @@ var filterSelect = document.createElement('select');
           matches_won: won,
           matches_lost: lost,
           attendance: 1,
-          attitude: document.getElementById('sessionPositiveAttitude').checked ? 2 : 0,
+          attitude: parseInt(document.getElementById('sessionAttitudeSelect').value) || 0,
           match_win: won * 2,
           break_throw: 0,
           nine_dart_challenge: 0,
@@ -2786,7 +2792,7 @@ var filterSelect = document.createElement('select');
         document.getElementById('sessionWon').value = 0;
         document.getElementById('sessionLost').value = 0;
         document.getElementById('sessionBonus').value = 0;
-        document.getElementById('sessionPositiveAttitude').checked = false;
+        document.getElementById('sessionAttitudeSelect').value = '0';
         loadSessionLog();
       }
       async function loadSessionLog() {
@@ -2827,7 +2833,12 @@ allSessionsData = result.data || [];
         return '<strong>Played:</strong> ' + (s.matches_played || 0) + '<br>' +
           '<strong>Won:</strong> ' + (s.matches_won || 0) + '<br>' +
           '<strong>Lost:</strong> ' + (s.matches_lost || 0) + '<br>' +
-          '<strong>Bonus Points:</strong> ' + (s.bonus_points || 0) + ' <span style="color:#888;">(+ ' + ((s.attendance || 0) + (s.attitude || 0)) + ' automatic: attendance ' + (s.attendance || 0) + ', attitude ' + (s.attitude || 0) + ')</span>';
+          '<strong>Bonus Points:</strong> ' + (s.bonus_points || 0) + ' <span style="color:#888;">(' + (((s.attendance || 0) + (s.attitude || 0)) >= 0 ? '+ ' : '- ') + Math.abs((s.attendance || 0) + (s.attitude || 0)) + ' automatic: attendance ' + (s.attendance || 0) + ', attitude ' + (s.attitude || 0) + ')</span>';
+      }
+function attitudeOptionsHtml(current) {
+        var opts = [[2, 'Positive (+2)'], [0, 'Neutral (0)'], [-1, 'Poor (-1)'], [-2, 'Negative (-2)']];
+        if (!opts.some(function(o) { return o[0] === current; })) { opts.push([current, 'Current (' + current + ')']); }
+        return opts.map(function(o) { return '<option value="' + o[0] + '"' + (o[0] === current ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('');
       }
       function renderSessionEditView(s) {
         return '<div class="form-row-3">' +
@@ -2837,7 +2848,7 @@ allSessionsData = result.data || [];
           '</div>' +
           '<div class="form-row-3">' +
           '<div class="form-group"><label>Bonus Points</label><input class="score-input" type="number" id="edit-bonus-' + s.id + '" value="' + (s.bonus_points || 0) + '" /></div>' +
-          '<div class="form-group" style="display:flex;align-items:center;gap:8px;"><input type="checkbox" id="edit-posatt-' + s.id + '" style="width:18px;height:18px;"' + ((s.attitude || 0) > 0 ? ' checked' : '') + ' /><label style="margin:0;">Positive attitude (+2)</label></div>' +
+          '<div class="form-group"><label>Attitude</label><select id="edit-posatt-' + s.id + '" style="padding:8px;border:1px solid #ddd;border-radius:4px;">' + attitudeOptionsHtml(s.attitude || 0) + '</select></div>' +
           '</div>' +
           '</div>' +
           '<button class="btn btn-primary" onclick="saveSessionEdit(' + s.id + ')">Save Changes</button>' +
@@ -2865,7 +2876,7 @@ allSessionsData = result.data || [];
           matches_lost: lost,
           match_win: won * 2,
           bonus_points: parseInt(document.getElementById('edit-bonus-' + id).value) || 0,
-          attitude: document.getElementById('edit-posatt-' + id).checked ? 2 : 0
+attitude: parseInt(document.getElementById('edit-posatt-' + id).value) || 0
         };
         var result = await sbClient.from('academy_sessions').update(updated).eq('id', id);
         if (result.error) { alert('Error saving: ' + result.error.message); return; }
