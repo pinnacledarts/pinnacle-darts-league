@@ -246,6 +246,7 @@ main { padding: 0 20px 32px; }
         </div>
         <div class="card">
           <h3>Manage Tournaments</h3>
+<label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:0.9em;cursor:pointer;"><input type="checkbox" onchange="showCompletedTournaments = this.checked; loadTournaments();" /> Show completed tournaments</label>
           <div id="tournamentsList"><p class="empty-state">Loading...</p></div>
         </div>
       </div>
@@ -378,6 +379,7 @@ main { padding: 0 20px 32px; }
         </div>
         <div class="card">
           <h3>Manage Leagues</h3>
+<label style="display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:0.9em;cursor:pointer;"><input type="checkbox" onchange="showCompletedLeagues = this.checked; loadLeagues();" /> Show completed leagues</label>
           <div id="leaguesList"><p class="empty-state">Loading...</p></div>
         </div>
       </div>
@@ -1752,6 +1754,7 @@ description: document.getElementById('tournamentDesc').value.trim() || null
   document.getElementById('tournamentCheckinEnd').value = '';
   loadTournaments();
 }
+      var showCompletedTournaments = false;
       async function loadTournaments() {
         var result = await sbClient.from('tournaments').select('*').order('created_at', { ascending: false });
         allTournamentsData = result.data || [];
@@ -1761,6 +1764,7 @@ description: document.getElementById('tournamentDesc').value.trim() || null
 var allStatuses = await Promise.all(allTournamentsData.map(function(t) { return computeTournamentStatus(t); }));
         for (var i = 0; i < allTournamentsData.length; i++) {
           var t = allTournamentsData[i];
+          if (!showCompletedTournaments && allStatuses[i] === 'completed') { continue; }
           var status = allStatuses[i];
           cardsHtml.push('<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
             '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleTournamentRow(\'' + t.id + '\')">' +
@@ -1840,6 +1844,7 @@ average_split: true,
         document.getElementById('leagueName').value = '';
         loadLeagues();
       }
+      var showCompletedLeagues = false;
       async function loadLeagues() {
         var result = await sbClient.from('leagues').select('*').order('created_at', { ascending: false });
         allLeaguesData = result.data || [];
@@ -1851,6 +1856,7 @@ average_split: true,
 var allStatuses = await Promise.all(allLeaguesData.map(function(l) { return computeLeagueStatus(l); }));
           for (var i = 0; i < allLeaguesData.length; i++) {
             var l = allLeaguesData[i];
+            if (!showCompletedLeagues && allStatuses[i] === 'completed') { continue; }
             var status = allStatuses[i];
             cardsHtml.push('<div class="card" style="padding:0;overflow:hidden;margin-bottom:10px;">' +
               '<div style="padding:14px 16px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;" onclick="toggleLeagueRow(\'' + l.id + '\')">' +
