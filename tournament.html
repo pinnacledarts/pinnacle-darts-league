@@ -116,6 +116,27 @@
         main { padding: 0 20px 32px; }
         .info-grid { grid-template-columns: 1fr; }
       }
+      .bracket-scroll { overflow-x: auto; padding-bottom: 16px; -webkit-overflow-scrolling: touch; }
+      .bracket { display: flex; gap: 32px; width: max-content; align-items: stretch; }
+      .bracket-round { display: flex; flex-direction: column; flex: 0 0 250px; width: 250px; }
+      .bracket-round-title { font-size: 12px; font-weight: bold; letter-spacing: 1px; text-transform: uppercase; color: var(--pd-text-light-muted); margin-bottom: 12px; text-align: center; }
+      .bracket-body { display: flex; flex-direction: column; flex: 1; }
+      .bm-pair { position: relative; display: flex; flex-direction: column; flex: 1; }
+      .bracket-round:not(:last-child) .bm-pair::after { content: ''; position: absolute; right: -16px; top: 25%; bottom: 25%; border-right: 2px solid #444444; }
+      .bm-wrap { position: relative; flex: 1; display: flex; align-items: center; padding: 6px 0; }
+      .bm-wrap > .bm { width: 100%; }
+      .bracket-round:not(:last-child) .bm-wrap::after { content: ''; position: absolute; right: -16px; top: 50%; width: 16px; border-top: 2px solid #444444; }
+      .bm-in::before { content: ''; position: absolute; left: -16px; top: 50%; width: 16px; border-top: 2px solid #444444; }
+      .bm { background-color: var(--pd-surface); border-radius: 10px; box-shadow: var(--pd-shadow-card); overflow: hidden; color: var(--pd-text-dark); font-size: 0.88em; }
+      .bm.mine { outline: 2px solid #f5c518; }
+      .bm-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 10px; gap: 8px; }
+      .bm-row + .bm-row { border-top: 1px solid #f0f0f0; }
+      .bm-row.winner { font-weight: bold; background-color: #f2fbf4; }
+      .bm-row.loser { color: #999999; }
+      .bm-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      .bm-score { font-weight: bold; min-width: 20px; text-align: right; }
+      .bm-foot { padding: 8px 10px; background-color: #f9f9f9; border-top: 1px solid #f0f0f0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+      .bm-foot .score-input { width: 44px; }
     </style>
   </head>
   <body>
@@ -478,8 +499,64 @@ if (!cardsHtml) { return; }
         btn.classList.add('active');
         renderBracketSection(cachedBracketsByType[type] || [], btn.textContent);
       }
+      function renderBracketMatch(m, r) {
+        var isP1 = currentUserId === m.player1_id;
+        var isP2 = currentUserId === m.player2_id;
+        var done = m.status === 'completed';
+        var p1name = m.player1_id ? getDisplayName(m.player1_id) : (done ? 'BYE' : 'TBD');
+        var p2name = m.player2_id ? getDisplayName(m.player2_id) : (done ? 'BYE' : 'TBD');
+        var p1win = done && m.player1_score > m.player2_score;
+        var p2win = done && m.player2_score > m.player1_score;
+        var row1 = '<div class="bm-row' + (p1win ? ' winner' : (p2win ? ' loser' : '')) + '"><span class="bm-name">' + p1name + '</span><span class="bm-score">' + (done ? m.player1_score : '') + '</span></div>';
+        var row2 = '<div class="bm-row' + (p2win ? ' winner' : (p1win ? ' loser' : '')) + '"><span class="bm-name">' + p2name + '</span><span class="bm-score">' + (done ? m.player2_score : '') + '</span></div>';
+        var foot = '';
+        var whatsAppHtml = '';
+        if (m.player1_id && m.player2_id) {
+          if (isP1) { whatsAppHtml = whatsAppButtonHtml(m.player2_id); }
+          else if (isP2) { whatsAppHtml = whatsAppButtonHtml(m.player1_id); }
+        }
+        var canSubmit = currentUserId && !done && m.player1_id && m.player2_id && (isP1 || isP2);
+        if (done) {
+          var myAvgMissing = (isP1 && m.player1_avg == null) || (isP2 && m.player2_avg == null);
+          if (myAvgMissing) {
+            var myAvgFieldId = isP1 ? 'kmyavg1_' + m.id : 'kmyavg2_' + m.id;
+            foot = '<input class="score-input" type="number" step="0.01" id="' + myAvgFieldId + '" placeholder="Your Avg" style="width:80px;" /><button class="btn-submit-score" onclick="submitKnockoutAverageOnly(' + m.id + ', ' + isP1 + ')">Add My Avg</button>';
+          }
+        } else if (canSubmit) {
+          var myAvgId = isP1 ? 'kavg1_' + m.id : 'kavg2_' + m.id;
+          foot = '<input class="score-input" type="number" id="ks1_' + m.id + '" min="0" placeholder="0" /><span>-</span><input class="score-input" type="number" id="ks2_' + m.id + '" min="0" placeholder="0" />' +
+            '<input class="score-input" type="number" step="0.01" id="' + myAvgId + '" placeholder="Your Avg" style="width:80px;" />' +
+            '<button class="btn-submit-score" onclick="submitKnockoutScore(' + m.id + ',\'' + r + '\',' + m.match_order + ',\'' + (m.bracket_type || 'A') + '\', ' + isP1 + ')">Submit</button>';
+        }
+        if (whatsAppHtml) { foot += '<div style="width:100%;">' + whatsAppHtml + '</div>'; }
+        return '<div class="bm' + ((isP1 || isP2) ? ' mine' : '') + '">' + row1 + row2 + (foot ? '<div class="bm-foot">' + foot + '</div>' : '') + '</div>';
+      }
       function renderBracketSection(matches, sectionLabel) {
-  var rounds = {};
+        var rounds = {};
+        matches.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
+        var roundsPresent = roundOrderFull.filter(function(r) { return rounds[r]; });
+        var headerHtml = sectionLabel ? '<h3 style="color:var(--pd-text-light);font-size:1.1em;margin:0 0 12px;">' + sectionLabel + '</h3>' : '';
+        var colsHtml = roundsPresent.map(function(r, ri) {
+          var rMatches = rounds[r].slice().sort(function(a, b) { return a.match_order - b.match_order; });
+          var isFirst = ri === 0;
+          var isLast = ri === roundsPresent.length - 1;
+          var cards = rMatches.map(function(m) {
+            return '<div class="bm-wrap' + (isFirst ? '' : ' bm-in') + '">' + renderBracketMatch(m, r) + '</div>';
+          });
+          var bodyHtml = '';
+          if (isLast) {
+            bodyHtml = cards.join('');
+          } else {
+            for (var i = 0; i < cards.length; i += 2) {
+              bodyHtml += '<div class="bm-pair">' + cards[i] + (cards[i + 1] || '') + '</div>';
+            }
+          }
+          return '<div class="bracket-round"><div class="bracket-round-title">' + r + '</div><div class="bracket-body">' + bodyHtml + '</div></div>';
+        }).join('');
+        document.getElementById('bracketSectionContent').innerHTML = headerHtml + '<p style="color:var(--pd-text-light-muted);font-size:0.8em;margin:0 0 8px;">Swipe sideways to see every round.</p><div class="bracket-scroll"><div class="bracket">' + colsHtml + '</div></div>';
+      }
+      function renderBracketSectionOld(matches, sectionLabel) {
+        var rounds = {};
   matches.forEach(function(m) { if (!rounds[m.round]) { rounds[m.round] = []; } rounds[m.round].push(m); });
   var roundsPresent = roundOrderFull.filter(function(r) { return rounds[r]; });
   var headerHtml = sectionLabel ? '<h3 style="color:var(--pd-text-light);font-size:1.1em;margin:0 0 12px;">' + sectionLabel + '</h3>' : '';
