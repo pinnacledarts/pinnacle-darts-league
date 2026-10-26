@@ -241,12 +241,19 @@ async function checkAuth() {
   if (session) {
 const { data: profile } = await sbClient
       .from('profiles')
-      .select('username, is_admin, requested_access, access_status, credit_balance')
+      .select('username, is_admin, access, requested_access, access_status, credit_balance')
       .eq('id', session.user.id)
       .single();
 
     if (profile && profile.requested_access === 'academy' && profile.access_status !== 'approved' && !window.location.pathname.includes('membership-status.html')) {
       window.location.href = profile.access_status === 'denied' ? 'membership-status.html?status=denied' : 'membership-status.html?status=pending';
+      return;
+    }
+
+var onlineOnlyPages = ['index.html', 'leagues.html', 'tournaments.html', 'players.html', 'leaderboards.html', 'drills.html', 'leagues-archive.html', 'tournaments-archive.html'];
+    var currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    if (profile && profile.access === 'academy' && !profile.is_admin && onlineOnlyPages.indexOf(currentPage) > -1) {
+      window.location.href = 'academy.html';
       return;
     }
 
