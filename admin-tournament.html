@@ -265,8 +265,9 @@ if (tournamentData.section === 'academy') {
 }
 var profilesResult = await profilesQuery;
 allProfiles = profilesResult.data || [];
-        allProfiles.forEach(function(p) { profileMapAdmin[p.id] = formatDisplayName(p.full_name, p.username); });
-        var isGroupKnockout = tournamentData.format === 'group_knockout';
+allProfiles.forEach(function(p) { profileMapAdmin[p.id] = formatDisplayName(p.full_name, p.username); });
+        var allNamesResult = await sbClient.from('profiles').select('id, full_name, username').range(0, 4999);
+        (allNamesResult.data || []).forEach(function(p) { if (!profileMapAdmin[p.id]) { profileMapAdmin[p.id] = formatDisplayName(p.full_name, p.username); } });        var isGroupKnockout = tournamentData.format === 'group_knockout';
         var isSingleElim = tournamentData.format === 'single_elimination' || tournamentData.format === 'single_elimination_b';
         var groupsTab = isGroupKnockout ? '<button class="tab" onclick="showTab(\'groups\', event)">Groups & Scores</button>' : '';
         document.getElementById('pageContent').innerHTML =
