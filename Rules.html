@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rules | Pinnacle Darts Online</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="auth.js?t=999999"></script>
+    <style>
+      * { box-sizing: border-box; }
+      :root {
+        --pd-bg-dark: #0a0a0a;
+        --pd-surface: #ffffff;
+        --pd-text-dark: #111111;
+        --pd-text-muted: #767676;
+        --pd-text-light: #ffffff;
+        --pd-text-light-muted: #8a8a8a;
+        --pd-border: #ececec;
+        --pd-border-strong: #dcdcdc;
+        --pd-radius-card: 14px;
+        --pd-radius-btn: 9px;
+        --pd-shadow-card: 0 1px 2px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.05);
+      }
+      body { margin: 0; font-family: Arial, sans-serif; background-color: var(--pd-bg-dark); color: var(--pd-text-light); }
+      header { background-color: var(--pd-bg-dark); padding: 18px 28px; display: flex; align-items: center; justify-content: space-between; gap: 16px; position: sticky; top: 0; z-index: 500; }
+      header .brand { display: flex; align-items: center; gap: 10px; }
+      header img { height: 34px; width: 34px; border-radius: 9px; background: #ffffff; padding: 2px; }
+      header .brand-name { color: var(--pd-text-light); font-weight: 600; font-size: 15px; letter-spacing: 0.2px; }
+      .hamburger { display: block; background: none; border: none; color: var(--pd-text-light); font-size: 1.6em; cursor: pointer; padding: 0; line-height: 1; }
+      nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--pd-bg-dark); z-index: 500; flex-direction: column; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+      nav.open { display: flex; }
+      nav a { color: var(--pd-text-light); text-decoration: none; font-size: 1em; padding: 14px 24px; border-bottom: 1px solid #222222; }
+      nav a:hover { background-color: #1a1a1a; }
+      nav .btn-switch, nav .btn-login, nav .btn-logout { display: block; width: 100%; box-sizing: border-box; text-align: left; border: none; border-bottom: 1px solid #222222; border-radius: 0; padding: 14px 24px; font-size: 1em; margin: 0; color: var(--pd-text-light); background: none; cursor: pointer; font-family: Arial, sans-serif; }
+      nav .btn-switch:hover, nav .btn-login:hover, nav .btn-logout:hover { background-color: #1a1a1a; }
+      nav .btn-username { display: block; padding: 14px 24px; border-bottom: 1px solid #222222; color: var(--pd-text-light); font-size: 0.9em; }
+      .hero { position: relative; padding: 8px 28px 30px; overflow: hidden; }
+      .hero-watermark { position: fixed; bottom: -120px; right: -80px; height: 520px; width: 520px; object-fit: contain; opacity: 0.15; pointer-events: none; z-index: 0; }
+      .hero-kicker { position: relative; font-size: 12px; font-weight: bold; letter-spacing: 1.5px; color: var(--pd-text-light-muted); margin-bottom: 10px; text-transform: uppercase; }
+      .hero-title { position: relative; font-size: 26px; font-weight: bold; color: var(--pd-text-light); line-height: 1.25; margin: 0; max-width: 460px; }
+      main { padding: 8px 28px 40px; max-width: 900px; margin: 0 auto; position: relative; z-index: 1; }
+      .back-link { display: inline-block; margin-bottom: 20px; color: var(--pd-text-light-muted); text-decoration: none; font-size: 0.9em; }
+      .back-link:hover { color: var(--pd-text-light); }
+      .viewing-select label { font-weight: bold; font-size: 0.85em; display: block; margin-bottom: 8px; color: var(--pd-text-light-muted); }
+      .viewing-select select { padding: 10px 14px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 1em; background-color: var(--pd-surface); color: var(--pd-text-dark); font-family: Arial, sans-serif; }
+      .title-row { display: flex; align-items: center; gap: 10px; margin: 20px 0 14px; }
+      .title-row h2 { margin: 0; font-size: 16px; font-weight: bold; color: var(--pd-text-light); }
+      .pencil-btn { background: none; border: none; cursor: pointer; font-size: 1em; color: var(--pd-text-light-muted); padding: 2px 4px; }
+      .pencil-btn:hover { color: var(--pd-text-light); }
+      .content-box { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); padding: 28px; color: var(--pd-text-dark); }
+      .content-box p, .content-text { color: #333333; line-height: 1.7; white-space: pre-wrap; margin: 0; }
+      .edit-textarea { width: 100%; min-height: 400px; padding: 14px; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); font-size: 1em; font-family: Arial, sans-serif; line-height: 1.6; resize: vertical; color: var(--pd-text-dark); }
+      .edit-textarea:focus { outline: none; border-color: var(--pd-text-dark); }
+      .edit-actions { margin-top: 12px; display: flex; gap: 8px; }
+      .save-btn { background-color: var(--pd-text-dark); color: #ffffff; border: none; border-radius: var(--pd-radius-btn); padding: 8px 20px; font-size: 0.9em; cursor: pointer; }
+      .save-btn:hover { background-color: #333333; }
+      .cancel-btn { background: none; border: 1px solid var(--pd-border-strong); border-radius: var(--pd-radius-btn); padding: 8px 20px; font-size: 0.9em; cursor: pointer; color: var(--pd-text-dark); }
+      .cancel-btn:hover { background-color: #f5f5f5; }
+      .rules-intro { color: var(--pd-text-light-muted); font-size: 0.9em; margin: 0 0 14px; line-height: 1.5; }
+      .rule-section { background-color: var(--pd-surface); border-radius: var(--pd-radius-card); box-shadow: var(--pd-shadow-card); margin-bottom: 10px; overflow: hidden; color: var(--pd-text-dark); }
+      .rule-head { width: 100%; display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 16px 20px; background: none; border: none; cursor: pointer; font-family: Arial, sans-serif; font-size: 1em; font-weight: bold; color: var(--pd-text-dark); text-align: left; }
+      .rule-head .chev { color: #aaaaaa; transition: transform 0.2s; flex-shrink: 0; }
+      .rule-section.open .chev { transform: rotate(180deg); }
+      .rule-body { display: none; padding: 0 20px 18px; border-top: 1px solid var(--pd-border); }
+      .rule-section.open .rule-body { display: block; }
+      .rule-body p { color: #333333; line-height: 1.7; white-space: pre-wrap; margin: 14px 0 0; }
+      .expand-row { margin: 0 0 12px; }
+      .expand-row button { background: none; border: none; color: var(--pd-text-light-muted); font-size: 0.85em; cursor: pointer; padding: 0; text-decoration: underline; font-family: Arial, sans-serif; }
+      .edit-hint { font-size: 0.8em; color: #767676; margin: 0 0 8px; }
+      .loading { text-align: center; padding: 40px; color: var(--pd-text-muted); }
+      @media (max-width: 700px) {
+        header { padding: 14px 20px; }
+        .hero { padding: 8px 20px 24px; }
+        .hero-title { font-size: 22px; }
+        .hero-watermark { height: 420px; width: 420px; bottom: -90px; right: -70px; }
+        main { padding: 8px 20px 32px; }
+      }
+    </style>
+  </head>
+  <body>
+<header>
+  <div class="brand">
+    <img src="logo.png" alt="Pinnacle Darts Logo">
+    <div class="brand-name">Pinnacle Darts League</div>
+  </div>
+  <button class="hamburger" onclick="toggleMenu()">☰</button>
+  <nav id="mainNav">
+    <a href="index.html">Home</a>
+    <a href="leagues.html">Leagues</a>
+    <a href="tournaments.html">Tournaments</a>
+    <a href="players.html">Players</a>
+    <a href="rules.html">Rules</a>
+    <a href="academy.html" class="btn-switch" style="border:none;text-align:left;">Switch to Academy</a>
+    <div id="authButtons" style="padding:14px 24px;"></div>
+  </nav>
+</header>
+<div class="hero">
+  <img src="logo-watermark.png" alt="" class="hero-watermark">
+  <div class="hero-kicker">Online</div>
+  <div class="hero-title">Rules</div>
+</div>
+    <main>
+      <a href="index.html" class="back-link">← Back to Home</a>
+      <div class="title-row">
+        <h2>Pinnacle Darts Online Rules</h2>
+        <button class="pencil-btn" id="editBtn" onclick="startEdit()" style="display:none;">✏️</button>
+      </div>
+      <div id="rulesBox"><p class="loading">Loading...</p></div>
+    </main>
+    <script>
+      var RULES_KEY = 'rules_online';
+      var isCurrentUserAdmin = false;
+      var currentContent = '';
+      function esc(t) { return String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+      function parseRules(text) {
+        var sections = [];
+        var intro = [];
+        var cur = null;
+        text.split(/\r?\n/).forEach(function(line) {
+          var m = line.match(/^##\s+(.*)$/);
+          if (m) { cur = { title: m[1].trim(), lines: [] }; sections.push(cur); }
+          else if (cur) { cur.lines.push(line); }
+          else { intro.push(line); }
+        });
+        return { intro: intro.join('\n').trim(), sections: sections };
+      }
+      function renderRules() {
+        var box = document.getElementById('rulesBox');
+        if (!currentContent.trim()) { box.innerHTML = '<div class="content-box"><p class="loading">No rules added yet.</p></div>'; return; }
+        var parsed = parseRules(currentContent);
+        var html = '';
+        if (parsed.intro) { html += '<p class="rules-intro">' + esc(parsed.intro) + '</p>'; }
+        if (parsed.sections.length > 1) { html += '<div class="expand-row"><button onclick="setAll(true)">Expand all</button> &nbsp;·&nbsp; <button onclick="setAll(false)">Collapse all</button></div>'; }
+        parsed.sections.forEach(function(sec) {
+          html += '<div class="rule-section"><button class="rule-head" onclick="this.parentNode.classList.toggle(\'open\')"><span>' + esc(sec.title) + '</span><span class="chev">▾</span></button>' +
+            '<div class="rule-body"><p>' + esc(sec.lines.join('\n').trim()) + '</p></div></div>';
+        });
+        if (!parsed.sections.length) { html += '<div class="content-box"><p class="content-text">' + esc(currentContent) + '</p></div>'; }
+        box.innerHTML = html;
+      }
+      function setAll(open) {
+        document.querySelectorAll('.rule-section').forEach(function(el) { if (open) { el.classList.add('open'); } else { el.classList.remove('open'); } });
+      }
+      async function loadRules() {
+        var sessionResult = await sbClient.auth.getSession();
+        var session = sessionResult.data.session;
+        if (session) {
+          var profileResult = await sbClient.from('profiles').select('is_admin').eq('id', session.user.id).single();
+          isCurrentUserAdmin = profileResult.data ? profileResult.data.is_admin : false;
+        }
+        var result = await sbClient.from('site_pages').select('*').eq('key', RULES_KEY).single();
+        currentContent = result.data ? (result.data.content || '') : '';
+        renderRules();
+        document.getElementById('editBtn').style.display = isCurrentUserAdmin ? 'inline' : 'none';
+      }
+      function startEdit() {
+        document.getElementById('rulesBox').innerHTML = '<div class="content-box">' +
+          '<p class="edit-hint">Start each section with a line beginning <strong>## </strong> (e.g. ## Match Rules). Anything above the first ## shows as an intro at the top.</p>' +
+          '<textarea class="edit-textarea" id="editArea"></textarea>' +
+          '<div class="edit-actions"><button class="save-btn" onclick="saveRules()">Save</button><button class="cancel-btn" onclick="loadRules()">Cancel</button></div></div>';
+        document.getElementById('editArea').value = currentContent;
+      }
+      async function saveRules() {
+        var newContent = document.getElementById('editArea').value;
+        var result = await sbClient.from('site_pages').update({ content: newContent, updated_at: new Date().toISOString() }).eq('key', RULES_KEY);
+        if (result.error) { alert('Error saving. Please try again.'); return; }
+        currentContent = newContent;
+        loadRules();
+      }
+      function toggleMenu() {
+        document.getElementById('mainNav').classList.toggle('open');
+      }
+      window.addEventListener('load', function() {
+        checkAuth();
+        loadRules();
+      });
+    </script>
+  </body>
+</html>
